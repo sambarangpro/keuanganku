@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Generator Logo Keuanganku</title>
+  <style>
+    body { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #f0f2f5; font-family: Inter, sans-serif; }
+    canvas { border: 1px solid #ccc; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-radius: 32px; }
+    button { margin-top: 20px; padding: 12px 24px; background: #3525cd; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 14px; }
+    button:hover { background: #271aa8; }
+  </style>
+</head>
+<body>
+
+  <canvas id="logoCanvas" width="512" height="512"></canvas>
+  <button onclick="downloadLogo()">Download logo.png (512x512)</button>
+
+  <script>
+    const canvas = document.getElementById('logoCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // 1. Background Gradient
+    let grad = ctx.createLinearGradient(0, 0, 512, 512);
+    grad.addColorStop(0, '#0a1128'); // Navy Dark
+    grad.addColorStop(0.5, '#3525cd'); // Primary Blue
+    grad.addColorStop(1, '#571ac0'); // Tertiary Purple
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 512, 512);
+
+    // 2. Lingkaran Ikon Dompet (Glassmorphism Effect)
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(256, 210, 95, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    // 3. Simbol Dompet (Wallet Icon Vector)
+    ctx.fillStyle = '#ffffff';
+    // Dompet Body
+    ctx.beginPath();
+    ctx.roundRect(206, 175, 100, 70, 14);
+    ctx.fill();
+    // Dompet Flap / Kunci
+    ctx.fillStyle = '#39b8fd';
+    ctx.beginPath();
+    ctx.roundRect(260, 200, 56, 26, 6);
+    ctx.fill();
+
+    // 4. Teks "KEUANGANKU"
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '800 42px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('KEUANGANKU', 256, 355);
+
+    // 5. Teks Subtitle
+    ctx.fillStyle = '#cbd5e1';
+    ctx.font = '600 16px Inter, sans-serif';
+    ctx.fillText('FINANCIAL PLANNER PRO', 256, 385);
+
+    function downloadLogo() {
+      let link = document.createElement('a');
+      link.download = 'logo.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+  </script>
+</body>
+</html>

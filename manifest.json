@@ -1,0 +1,15 @@
+{
+  "name": "KEUANGANKU - Financial Planner Pro",
+  "short_name": "KEUANGANKU",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0a1128",
+  "theme_color": "#3525cd",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

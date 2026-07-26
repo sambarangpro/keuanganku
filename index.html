@@ -4,6 +4,12 @@
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
   <title>KEUANGANKU - Financial Planner Pro</title>
+  
+  <!-- 📌 PWA Manifest & Logo Ikon untuk HP -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="logo.png">
+  <meta name="theme-color" content="#3525cd">
+
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -477,7 +483,7 @@
       </section>
     </div>
 
-    <!-- PAGE 3: SETUP (DENGAN TOMBOL RESET RIWAYAT TRANSAKSI) -->
+    <!-- PAGE 3: SETUP -->
     <div id="page-setup" class="hidden space-y-6">
       
       <div id="setup-lock-card" class="bg-white border border-outline-variant rounded-2xl p-8 max-w-md mx-auto text-center space-y-4 shadow-sm">
@@ -744,7 +750,7 @@
     }
 
     function loadStorageData() {
-      let stored = localStorage.getItem("KEUANGANKU_DB_V13");
+      let stored = localStorage.getItem("KEUANGANKU_DB_V14");
       if (stored) {
         try {
           globalData = JSON.parse(stored);
@@ -758,9 +764,8 @@
     }
 
     function saveStorageData() {
-      localStorage.setItem("KEUANGANKU_DB_V13", JSON.stringify(globalData));
+      localStorage.setItem("KEUANGANKU_DB_V14", JSON.stringify(globalData));
       populateFormDropdowns();
-      populateReportFilterCategories();
     }
 
     function manualSaveSetup() {
@@ -797,7 +802,6 @@
     function initApp() {
       renderDashboard();
       populateFormDropdowns();
-      populateReportFilterCategories();
       renderHistoryTable();
       renderSetupView();
       checkDueDateAlerts();
@@ -830,7 +834,6 @@
         if (nt) nt.className = "flex flex-col items-center text-primary px-4 py-1 font-bold";
         if (headerTitle) headerTitle.textContent = "TRANSAKSI & REKAP";
         populateFormDropdowns();
-        populateReportFilterCategories();
         applyCashflowLogic();
         renderHistoryTable();
       } else if (page === 'setup') {
@@ -1274,15 +1277,6 @@
       }, 100);
     }
 
-    function populateReportFilterCategories() {
-      let select = document.getElementById('rep-filter-category');
-      if (!select) return;
-      select.innerHTML = '<option value="all">Semua Kategori</option>';
-      let allCats = [].concat(globalData.incomes, globalData.spendings, globalData.bills, Object.keys(globalData.investData), Object.keys(globalData.goalsData));
-      let uniqueCats = [...new Set(allCats)];
-      uniqueCats.forEach(c => select.innerHTML += `<option value="${c}">${c}</option>`);
-    }
-
     function populateFormDropdowns() {
       let adminAcc = document.getElementById('tx-admin-account');
       if (adminAcc) {
@@ -1485,7 +1479,54 @@
       setTimeout(() => modal.classList.add('hidden'), 300);
     }
 
-    // RENDER RIWAYAT DENGAN PILIHAN FILTER WAKTU KUSTOM (TANGGAL, BULAN, TAHUN, RENTANG TANGGAL)
+    function toggleFilterModeInputs() {
+      let mode = document.getElementById('rep-filter-mode').value;
+      let container = document.getElementById('filter-input-container');
+      if (!container) return;
+
+      if (mode === 'date_range') {
+        container.className = "md:col-span-2 grid grid-cols-2 gap-2";
+        container.innerHTML = `
+          <div>
+            <label class="text-[10px] font-bold uppercase text-gray-500">Dari Tanggal</label>
+            <input type="date" id="rep-date-start" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-medium bg-surface">
+          </div>
+          <div>
+            <label class="text-[10px] font-bold uppercase text-gray-500">Sampai Tanggal</label>
+            <input type="date" id="rep-date-end" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-medium bg-surface">
+          </div>
+        `;
+      } else if (mode === 'exact_date') {
+        container.className = "md:col-span-2";
+        container.innerHTML = `
+          <div>
+            <label class="text-[10px] font-bold uppercase text-gray-500">Pilih Tanggal</label>
+            <input type="date" id="rep-exact-date" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-medium bg-surface">
+          </div>
+        `;
+      } else if (mode === 'exact_month') {
+        container.className = "md:col-span-2";
+        container.innerHTML = `
+          <div>
+            <label class="text-[10px] font-bold uppercase text-gray-500">Pilih Bulan & Tahun</label>
+            <input type="month" id="rep-exact-month" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-medium bg-surface">
+          </div>
+        `;
+      } else if (mode === 'exact_year') {
+        container.className = "md:col-span-2";
+        container.innerHTML = `
+          <div>
+            <label class="text-[10px] font-bold uppercase text-gray-500">Pilih Tahun</label>
+            <input type="number" id="rep-exact-year" value="2026" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-medium bg-surface">
+          </div>
+        `;
+      } else {
+        container.className = "md:col-span-2 hidden";
+        container.innerHTML = '';
+      }
+      renderHistoryTable();
+    }
+
     function renderHistoryTable() {
       let tbody = document.getElementById('tx-history-tbody');
       if (!tbody) return;
@@ -1528,7 +1569,7 @@
       });
 
       if (filtered.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-gray-400">Tidak ada transaksi yang cocok dengan filter tanggal.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-gray-400">Tidak ada transaksi yang cocok dengan filter.</td></tr>';
         return;
       }
 
@@ -1668,65 +1709,6 @@
             </span>
           `;
         });
-      }
-    }
-
-    function addRoutinePaymentItem() {
-      let name = prompt("Masukkan nama Pembayaran Rutin baru:");
-      if (name && name.trim() !== "") {
-        let clean = name.trim();
-        if (!globalData.routinePayments) globalData.routinePayments = {};
-        globalData.routinePayments[clean] = { amount: 0, dueDay: 1 };
-        saveStorageData();
-        renderSetupView();
-      }
-    }
-
-    function removeRoutinePaymentItem(key) {
-      delete globalData.routinePayments[key];
-      saveStorageData();
-      renderSetupView();
-    }
-
-    function changeOwnerPassword() {
-      let np = document.getElementById('new-pass-input').value;
-      if (np && np.trim() !== "") {
-        globalData.ownerPassword = np.trim();
-        saveStorageData();
-        alert("Password berhasil diperbarui!");
-        document.getElementById('new-pass-input').value = '';
-      }
-    }
-
-    function updateAccountDetail(accName, field, value) {
-      if (!globalData.accountDetails) globalData.accountDetails = {};
-      if (!globalData.accountDetails[accName]) globalData.accountDetails[accName] = {};
-      globalData.accountDetails[accName][field] = value;
-      saveStorageData();
-      renderDashboard();
-    }
-
-    function updateStartingBalance(val) {
-      globalData.startingBalance = parseFloat(val) || 0;
-      saveStorageData();
-    }
-
-    function updateAccountBalance(accName, newBal) {
-      globalData.currentBalances[accName] = parseFloat(newBal) || 0;
-      saveStorageData();
-      renderDashboard();
-    }
-
-    function verifySetupPassword() {
-      let p = document.getElementById('setup-pass-input').value;
-      let validPass = globalData.ownerPassword || "123";
-      
-      if (p === validPass || p === 'admin' || p === '1234') {
-        document.getElementById('setup-lock-card').classList.add('hidden');
-        document.getElementById('setup-unlocked-content').classList.remove('hidden');
-        renderSetupView();
-      } else {
-        alert('Password salah!');
       }
     }
   </script>
