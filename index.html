@@ -882,7 +882,7 @@
         def_bills: "Pengeluaran yang cenderung berulang setiap bulannya dengan jumlah yang cenderung sama (Cont: SPP/kos Bulanan, Subscribe Canva, dll).",
         btn_add_bills: "TAMBAHKAN BILLS",
         def_spending: "Pengeluaran sehari-hari, dapat dibuat dalam beberapa kategori.",
-        def_add_spending: "TAMBAHKAN SPENDING",
+        btn_add_spending: "TAMBAHKAN SPENDING",
         def_invest_setup: "Uang yang akan disimpan untuk jangka pendek dan dapat digunakan sewaktu-waktu.",
         btn_add_invest: "TAMBAHKAN INVEST / SAVINGS",
         def_sinking_setup: "Uang yang disisihkan secara berkala untuk membiayai pengeluaran besar yang sudah direncanakan sejak awal (Cont: Mudik, Pajak, Perawatan rumah, dll).",
@@ -1810,7 +1810,7 @@
                 <p class="font-bold text-error text-sm">${k}</p>
                 <span class="text-[9px] px-2 py-0.5 bg-primary/10 text-primary dark:text-blue-400 rounded-full font-bold">${item.category || 'Utang'}</span>
               </div>
-              <span class="text-[10px] px-2 py-0.5 bg-red-100 dark:bg-red-950 text-error rounded-full font-bold">Periode: ${item.period || 'Bulanan'} | Sisa: ${sisaBulan} Periode</span>
+              <span class="text-[10px] px-2 py-0.5 bg-red-100 dark:bg-red-950 text-error rounded-full font-bold">Bayar: ${item.period || 'Bulanan'} | Sisa: ${sisaBulan} Sesi</span>
             </div>
             <div class="grid grid-cols-4 gap-2 text-[11px]">
               <div><span class="text-gray-500">Total Utang:</span><br/><b class="font-mono-data">${formatRp(total)}</b></div>
@@ -2056,7 +2056,6 @@
           keAcc: "- not applicable -"
         };
 
-        // Rekam biaya admin tepat di bawah transaksi utama
         globalData.recentHistory.unshift(mainTx);
         globalData.recentHistory.unshift(adminTx);
       } else {
@@ -2301,6 +2300,12 @@
 
       Object.keys(globalData.debtData).forEach(k => {
         let item = globalData.debtData[k];
+        let currentPeriod = item.period || 'Bulanan';
+        
+        let isDateType = currentPeriod.startsWith('Setiap Tanggal');
+        let selectedBasePeriod = isDateType ? 'Setiap Tanggal' : currentPeriod;
+        let selectedDateNum = isDateType ? currentPeriod.replace('Setiap Tanggal ', '') : '1';
+
         container.innerHTML += `
           <div class="p-4 bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant space-y-3 text-xs">
             <div class="flex justify-between items-center border-b border-outline-variant/30 pb-2">
@@ -2332,17 +2337,40 @@
               </div>
               <div>
                 <label class="text-[9px] uppercase font-bold text-gray-500">Bayar Setiap</label>
-                <select onchange="updateDebtField('${k}', 'period', this.value)" class="w-full p-1.5 border rounded-lg text-xs bg-surface text-on-surface">
-                  <option value="Bulanan" ${item.period === 'Bulanan' ? 'selected' : ''}>Bulanan</option>
-                  <option value="Mingguan" ${item.period === 'Mingguan' ? 'selected' : ''}>Mingguan</option>
-                  <option value="Harian" ${item.period === 'Harian' ? 'selected' : ''}>Harian</option>
-                  <option value="Tahunan" ${item.period === 'Tahunan' ? 'selected' : ''}>Tahunan</option>
+                <select onchange="handleDebtPeriodChange('${k}', this.value)" class="w-full p-1.5 border rounded-lg text-xs bg-surface text-on-surface">
+                  <option value="Bulanan" ${selectedBasePeriod === 'Bulanan' ? 'selected' : ''}>Bulanan</option>
+                  <option value="Mingguan" ${selectedBasePeriod === 'Mingguan' ? 'selected' : ''}>Mingguan</option>
+                  <option value="Setiap Hari" ${selectedBasePeriod === 'Setiap Hari' ? 'selected' : ''}>Setiap Hari</option>
+                  <option value="Tahunan" ${selectedBasePeriod === 'Tahunan' ? 'selected' : ''}>Tahunan</option>
+                  <option value="Setiap Tanggal" ${selectedBasePeriod === 'Setiap Tanggal' ? 'selected' : ''}>Setiap Tanggal...</option>
                 </select>
               </div>
+            </div>
+            
+            <div id="debt-date-box-${k}" class="${isDateType ? '' : 'hidden'} pt-2 flex items-center gap-2">
+              <span class="text-[10px] font-bold text-gray-500">Pilih Tanggal:</span>
+              <select onchange="updateDebtDateNum('${k}', this.value)" class="p-1 border rounded text-xs bg-surface text-on-surface">
+                ${Array.from({length: 31}, (_, i) => `<option value="${i+1}" ${selectedDateNum == (i+1) ? 'selected' : ''}>${i+1}</option>`).join('')}
+              </select>
             </div>
           </div>
         `;
       });
+    }
+
+    function handleDebtPeriodChange(key, val) {
+      let dateBox = document.getElementById(`debt-date-box-${key}`);
+      if (val === 'Setiap Tanggal') {
+        if (dateBox) dateBox.classList.remove('hidden');
+        updateDebtField(key, 'period', 'Setiap Tanggal 1');
+      } else {
+        if (dateBox) dateBox.classList.add('hidden');
+        updateDebtField(key, 'period', val);
+      }
+    }
+
+    function updateDebtDateNum(key, dateNum) {
+      updateDebtField(key, 'period', `Setiap Tanggal ${dateNum}`);
     }
 
     function addDebtItemModal() {
