@@ -1179,7 +1179,7 @@
         btn_add_receivables: "إضافة دين مستحق جديد",
         title_nonmoney_setup: "9. الأصول غير النقدية وزكاة النصاب",
         def_nonmoney_setup: "إدخال الذهب، الفضة، والأراضي مع حساب نصاب الزكاة.",
-        btn_add_nonmoney: "إضافة أصل غير نقدي",
+        def_add_nonmoney: "إضافة أصل غير نقدي",
         title_debt_setup: "10. الديون والأقساط",
         def_debt_setup: "إدخال إجمالي الديون والأقساط الشهرية.",
         btn_add_debt: "إضافة دين / قسط",
@@ -1196,7 +1196,7 @@
     };
 
     let currentLang = 'id';
-    let isBalanceMasked = true; // Diatur true agar langsung sensor saat awal masuk
+    let isBalanceMasked = true;
 
     function toggleBalanceMask() {
       isBalanceMasked = !isBalanceMasked;
@@ -1316,7 +1316,7 @@
 
       loadStorageData();
       let dateInput = document.getElementById('tx-date');
-      if (dateInput) dateInput.valueAsDate = new Date();
+      if (dateInput) dateInput.valueAsDate = new Date(); // Set default tanggal hari ini
       initApp();
       requestNotificationPermission();
     };
@@ -1432,6 +1432,11 @@
         if (t) t.classList.remove('hidden');
         if (nt) nt.className = "flex flex-col items-center text-primary px-4 py-1 font-bold";
         if (headerTitle) headerTitle.textContent = TRANSLATIONS[currentLang].title_tx_record;
+        
+        // Pastikan tanggal selalu tereset ke hari ini setiap kali masuk menu transaksi
+        let dateInput = document.getElementById('tx-date');
+        if (dateInput) dateInput.valueAsDate = new Date();
+
         populateFormDropdowns();
         populateReportFilterCategories();
         applyCashflowLogic();
