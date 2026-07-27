@@ -219,8 +219,8 @@
           <div class="flex items-center gap-2">
             <!-- Tombol Sensor / Privacy Mode -->
             <button onclick="toggleBalanceMask()" id="btn-mask-balance" title="Sembunyikan/Tampilkan Saldo" class="p-1.5 rounded-lg border border-outline-variant hover:bg-surface-container flex items-center text-xs font-bold gap-1 text-on-surface-variant">
-              <span class="material-symbols-outlined text-sm" id="icon-mask-balance">visibility</span>
-              <span id="text-mask-balance">Sensor Saldo</span>
+              <span class="material-symbols-outlined text-sm" id="icon-mask-balance">visibility_off</span>
+              <span id="text-mask-balance">Tampilkan Saldo</span>
             </button>
             <span id="dash-acc-badge" class="text-xs font-bold text-secondary uppercase tracking-wider" data-i18n="badge_db_acc">DATABASE AKUN</span>
           </div>
@@ -959,7 +959,7 @@
         btn_add_receivables: "TAMBAHKAN PIUTANG BARU",
         title_nonmoney_setup: "9. Aset Selain Uang & Zakat Nisab",
         def_nonmoney_setup: "Input Emas, Perak, & Tanah beserta perhitungan nisab zakat.",
-        def_add_nonmoney: "TAMBAHKAN ASET NON-UANG",
+        btn_add_nonmoney: "TAMBAHKAN ASET NON-UANG",
         title_debt_setup: "10. Utang & Cicilan",
         def_debt_setup: "Input Total Utang & Cicilan per Bulan.",
         btn_add_debt: "TAMBAHKAN UTANG / CICILAN",
@@ -1179,7 +1179,7 @@
         btn_add_receivables: "إضافة دين مستحق جديد",
         title_nonmoney_setup: "9. الأصول غير النقدية وزكاة النصاب",
         def_nonmoney_setup: "إدخال الذهب، الفضة، والأراضي مع حساب نصاب الزكاة.",
-        def_add_nonmoney: "إضافة أصل غير نقدي",
+        btn_add_nonmoney: "إضافة أصل غير نقدي",
         title_debt_setup: "10. الديون والأقساط",
         def_debt_setup: "إدخال إجمالي الديون والأقساط الشهرية.",
         btn_add_debt: "إضافة دين / قسط",
@@ -1196,7 +1196,7 @@
     };
 
     let currentLang = 'id';
-    let isBalanceMasked = false;
+    let isBalanceMasked = true; // Diatur true agar langsung sensor saat awal masuk
 
     function toggleBalanceMask() {
       isBalanceMasked = !isBalanceMasked;
