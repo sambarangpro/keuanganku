@@ -742,12 +742,12 @@
             <span class="material-symbols-outlined text-error">receipt_long</span>
             <div>
               <h2 class="font-headline-md text-headline-md text-on-surface font-bold" data-i18n="title_debt_setup">10. Utang & Cicilan</h2>
-              <p class="text-[11px] text-gray-500 dark:text-gray-300 leading-snug mt-0.5" data-i18n="def_debt_setup">Input Total Utang & Cicilan per Bulan.</p>
+              <p class="text-[11px] text-gray-500 dark:text-gray-300 leading-snug mt-0.5" data-i18n="def_debt_setup">Input Total Utang, Sudah Dibayar, Sisa, Nominal & Periode Bayar.</p>
             </div>
           </div>
           <div class="bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-4 space-y-4 shadow-sm">
             <div id="setup-debt-list" class="space-y-3"></div>
-            <button onclick="addValuedCategory('debtData', 'Utang / Cicilan')" class="w-full py-3 bg-surface-container dark:bg-slate-900 border border-outline-variant rounded-xl text-primary dark:text-blue-400 font-bold text-xs flex items-center justify-center gap-2">
+            <button onclick="addDebtItemModal()" class="w-full py-3 bg-surface-container dark:bg-slate-900 border border-outline-variant rounded-xl text-primary dark:text-blue-400 font-bold text-xs flex items-center justify-center gap-2">
               <span class="material-symbols-outlined text-sm">add</span> <span data-i18n="btn_add_debt">TAMBAHKAN UTANG / CICILAN</span>
             </button>
           </div>
@@ -1218,7 +1218,7 @@
         "Tanah Kebun": { type: "Tanah", qty: 500, unit: "m²", estimatedPrice: 500000, used: 0 }
       },
       debtData: {
-        "Cicilan Motor": { total: 18000000, monthlyPay: 1500000, paid: 6000000 }
+        "Cicilan Motor": { total: 18000000, monthlyPay: 1500000, paid: 6000000, category: "Cicilan", period: "Bulanan" }
       },
       recentHistory: []
     };
@@ -1806,12 +1806,15 @@
         container.innerHTML += `
           <div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-2 text-xs">
             <div class="flex justify-between items-center">
-              <p class="font-bold text-error text-sm">${k}</p>
-              <span class="text-[10px] px-2 py-0.5 bg-red-100 dark:bg-red-950 text-error rounded-full font-bold">Sisa: ${sisaBulan} Bulan Cicilan</span>
+              <div class="flex items-center gap-2">
+                <p class="font-bold text-error text-sm">${k}</p>
+                <span class="text-[9px] px-2 py-0.5 bg-primary/10 text-primary dark:text-blue-400 rounded-full font-bold">${item.category || 'Utang'}</span>
+              </div>
+              <span class="text-[10px] px-2 py-0.5 bg-red-100 dark:bg-red-950 text-error rounded-full font-bold">Periode: ${item.period || 'Bulanan'} | Sisa: ${sisaBulan} Periode</span>
             </div>
             <div class="grid grid-cols-4 gap-2 text-[11px]">
               <div><span class="text-gray-500">Total Utang:</span><br/><b class="font-mono-data">${formatRp(total)}</b></div>
-              <div><span class="text-gray-500">Cicilan / Bulan:</span><br/><b class="font-mono-data text-primary dark:text-blue-400">${formatRp(monthly)}</b></div>
+              <div><span class="text-gray-500">Nominal Bayar:</span><br/><b class="font-mono-data text-primary dark:text-blue-400">${formatRp(monthly)}</b></div>
               <div><span class="text-gray-500">Paid (Dibayar):</span><br/><b class="font-mono-data text-green-600 dark:text-green-400">${formatRp(paid)}</b></div>
               <div><span class="text-gray-500">Unpaid (Sisa):</span><br/><b class="font-mono-data text-error">${formatRp(unpaid > 0 ? unpaid : 0)}</b></div>
             </div>
@@ -2033,6 +2036,8 @@
         keAcc: dKe
       };
 
+      if (!globalData.recentHistory) globalData.recentHistory = [];
+
       let adminAdded = false;
       if (dAdminFee > 0 && dAdminAcc !== '- not applicable -') {
         adminAdded = true;
@@ -2051,12 +2056,12 @@
           keAcc: "- not applicable -"
         };
 
-        if (!globalData.recentHistory) globalData.recentHistory = [];
+        // Rekam biaya admin tepat di bawah transaksi utama
+        globalData.recentHistory.unshift(mainTx);
         globalData.recentHistory.unshift(adminTx);
+      } else {
+        globalData.recentHistory.unshift(mainTx);
       }
-
-      if (!globalData.recentHistory) globalData.recentHistory = [];
-      globalData.recentHistory.unshift(mainTx);
 
       saveStorageData();
       renderDashboard();
@@ -2284,7 +2289,99 @@
       renderValuedCategoryList('goalsData', 'setup-goals-list', ['initial', 'target', 'timeframeVal']);
       renderValuedCategoryList('receivablesData', 'setup-receivables-list', ['total', 'deadline', 'paid']);
       renderValuedCategoryList('nonMoneyAssets', 'setup-nonmoney-list', ['qty', 'estimatedPrice', 'type', 'unit']);
-      renderValuedCategoryList('debtData', 'setup-debt-list', ['total', 'monthlyPay', 'paid']);
+      
+      renderDebtListSetup();
+    }
+
+    function renderDebtListSetup() {
+      let container = document.getElementById('setup-debt-list');
+      if (!container) return;
+      container.innerHTML = '';
+      if (!globalData.debtData) globalData.debtData = {};
+
+      Object.keys(globalData.debtData).forEach(k => {
+        let item = globalData.debtData[k];
+        container.innerHTML += `
+          <div class="p-4 bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant space-y-3 text-xs">
+            <div class="flex justify-between items-center border-b border-outline-variant/30 pb-2">
+              <div class="flex items-center gap-2">
+                <b class="text-sm font-bold text-primary dark:text-blue-400">${k}</b>
+                <span class="text-[10px] px-2 py-0.5 bg-primary/10 text-primary dark:text-blue-300 rounded-full font-bold">${item.category || 'Utang'}</span>
+              </div>
+              <span onclick="removeDebtItem('${k}')" class="material-symbols-outlined text-sm text-error cursor-pointer">close</span>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-2">
+              <div>
+                <label class="text-[9px] uppercase font-bold text-gray-500">Kategori</label>
+                <select onchange="updateDebtField('${k}', 'category', this.value)" class="w-full p-1.5 border rounded-lg text-xs bg-surface text-on-surface">
+                  <option value="Utang" ${item.category === 'Utang' ? 'selected' : ''}>Utang</option>
+                  <option value="Cicilan" ${item.category === 'Cicilan' ? 'selected' : ''}>Cicilan</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-[9px] uppercase font-bold text-gray-500">Total Harus Bayar</label>
+                <input type="number" value="${item.total || 0}" onchange="updateDebtField('${k}', 'total', this.value)" class="w-full p-1.5 border rounded-lg text-xs font-mono-data bg-surface text-on-surface">
+              </div>
+              <div>
+                <label class="text-[9px] uppercase font-bold text-gray-500">Sudah Bayar</label>
+                <input type="number" value="${item.paid || 0}" onchange="updateDebtField('${k}', 'paid', this.value)" class="w-full p-1.5 border rounded-lg text-xs font-mono-data bg-surface text-on-surface">
+              </div>
+              <div>
+                <label class="text-[9px] uppercase font-bold text-gray-500">Nominal Pembayaran</label>
+                <input type="number" value="${item.monthlyPay || 0}" onchange="updateDebtField('${k}', 'monthlyPay', this.value)" class="w-full p-1.5 border rounded-lg text-xs font-mono-data bg-surface text-on-surface">
+              </div>
+              <div>
+                <label class="text-[9px] uppercase font-bold text-gray-500">Bayar Setiap</label>
+                <select onchange="updateDebtField('${k}', 'period', this.value)" class="w-full p-1.5 border rounded-lg text-xs bg-surface text-on-surface">
+                  <option value="Bulanan" ${item.period === 'Bulanan' ? 'selected' : ''}>Bulanan</option>
+                  <option value="Mingguan" ${item.period === 'Mingguan' ? 'selected' : ''}>Mingguan</option>
+                  <option value="Harian" ${item.period === 'Harian' ? 'selected' : ''}>Harian</option>
+                  <option value="Tahunan" ${item.period === 'Tahunan' ? 'selected' : ''}>Tahunan</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function addDebtItemModal() {
+      let name = prompt("Masukkan Nama Utang / Cicilan baru:");
+      if (name && name.trim() !== "") {
+        let clean = name.trim();
+        if (!globalData.debtData) globalData.debtData = {};
+        if (!globalData.debtData[clean]) {
+          globalData.debtData[clean] = {
+            total: 1000000,
+            paid: 0,
+            monthlyPay: 100000,
+            category: "Cicilan",
+            period: "Bulanan"
+          };
+          saveStorageData();
+          renderSetupView();
+        } else {
+          alert("Nama utang/cicilan sudah ada!");
+        }
+      }
+    }
+
+    function updateDebtField(key, field, val) {
+      if (!globalData.debtData[key]) return;
+      if (field === 'category' || field === 'period') {
+        globalData.debtData[key][field] = val;
+      } else {
+        globalData.debtData[key][field] = parseFloat(val) || 0;
+      }
+      saveStorageData();
+    }
+
+    function removeDebtItem(key) {
+      if (confirm(`Hapus ${key} dari database utang/cicilan?`)) {
+        delete globalData.debtData[key];
+        saveStorageData();
+        renderSetupView();
+      }
     }
 
     function renderSimpleCategoryTags(key, containerId) {
@@ -2408,8 +2505,6 @@
             globalData[objKey][clean] = { total: 1000000, deadline: "2026-12-31", paid: 0 };
           } else if (objKey === 'nonMoneyAssets') {
             globalData[objKey][clean] = { type: "Emas", qty: 10, unit: "Gram", estimatedPrice: 1000000, used: 0 };
-          } else if (objKey === 'debtData') {
-            globalData[objKey][clean] = { total: 5000000, monthlyPay: 500000, paid: 0 };
           }
           saveStorageData();
           renderSetupView();
