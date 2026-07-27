@@ -1069,7 +1069,7 @@
         btn_add_receivables: "ADD NEW RECEIVABLE",
         title_nonmoney_setup: "9. Non-Cash Assets & Zakat Nisab",
         def_nonmoney_setup: "Input Gold, Silver, & Land along with zakat nisab calculations.",
-        btn_add_nonmoney: "ADD NON-CASH ASSET",
+        def_add_nonmoney: "ADD NON-CASH ASSET",
         title_debt_setup: "10. Debt & Installments",
         def_debt_setup: "Input Total Debt & Monthly Installments.",
         btn_add_debt: "ADD DEBT / INSTALLMENT",
@@ -1316,7 +1316,7 @@
 
       loadStorageData();
       let dateInput = document.getElementById('tx-date');
-      if (dateInput) dateInput.valueAsDate = new Date(); // Set default tanggal hari ini
+      if (dateInput) dateInput.valueAsDate = new Date();
       initApp();
       requestNotificationPermission();
     };
@@ -1433,7 +1433,6 @@
         if (nt) nt.className = "flex flex-col items-center text-primary px-4 py-1 font-bold";
         if (headerTitle) headerTitle.textContent = TRANSLATIONS[currentLang].title_tx_record;
         
-        // Pastikan tanggal selalu tereset ke hari ini setiap kali masuk menu transaksi
         let dateInput = document.getElementById('tx-date');
         if (dateInput) dateInput.valueAsDate = new Date();
 
@@ -2254,7 +2253,6 @@
       let newAmount = parseFloat(rawAmt) || 0;
       let newCat = document.getElementById('edit-tx-category').value;
 
-      // 1. Revert saldo lama dari akun
       let oldAmt = tx.amount;
       if (tx.dariAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.dariAcc)) {
         globalData.currentBalances[tx.dariAcc] += oldAmt;
@@ -2263,7 +2261,6 @@
         globalData.currentBalances[tx.keAcc] -= oldAmt;
       }
 
-      // 2. Terapkan saldo baru ke akun
       if (tx.dariAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.dariAcc)) {
         globalData.currentBalances[tx.dariAcc] -= newAmount;
       }
@@ -2271,7 +2268,6 @@
         globalData.currentBalances[tx.keAcc] += newAmount;
       }
 
-      // 3. Perbarui data transaksi
       tx.name = newName;
       tx.amount = newAmount;
       tx.category = newCat;
@@ -2289,7 +2285,6 @@
       if (!tx) return;
 
       if (confirm(`Hapus transaksi "${tx.name}" (${formatRp(tx.amount)})? Saldo akun akan dikembalikan secara otomatis.`)) {
-        // Revert saldo
         let amt = tx.amount;
         if (tx.dariAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.dariAcc)) {
           globalData.currentBalances[tx.dariAcc] += amt;
