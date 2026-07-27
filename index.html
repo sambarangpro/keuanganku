@@ -69,6 +69,10 @@
     html.dark input, html.dark select { background-color: #090d16 !important; color: #ffffff !important; border-color: #475569 !important; }
     html.dark .text-gray-500, html.dark .text-gray-600 { color: #94a3b8 !important; }
 
+    /* Tombol Hapus tersembunyi di riwayat, muncul saat baris di-hover */
+    .hidden-action-row .delete-action-btn { opacity: 0; transition: opacity 0.2s ease-in-out; }
+    .hidden-action-row:hover .delete-action-btn { opacity: 1; }
+
     @keyframes checkBounce {
       0% { transform: scale(0); opacity: 0; }
       50% { transform: scale(1.2); opacity: 1; }
@@ -114,6 +118,50 @@
       <button onclick="closeSuccessModal()" class="w-full py-2.5 bg-primary text-white font-bold rounded-xl hover:brightness-110 shadow">
         Tutup & Lanjutkan
       </button>
+    </div>
+  </div>
+
+  <!-- MODAL EDIT TRANSAKSI -->
+  <div id="edit-tx-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+    <div class="bg-white dark:bg-slate-900 border border-outline-variant rounded-2xl p-6 max-w-md w-full space-y-4 shadow-2xl transform scale-95 transition-transform duration-300" id="edit-tx-card">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="font-headline-md font-bold text-on-surface text-base flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">edit</span> Edit Riwayat Transaksi
+        </h3>
+        <span onclick="closeEditModal()" class="material-symbols-outlined cursor-pointer hover:text-error text-sm">close</span>
+      </div>
+      
+      <input type="hidden" id="edit-tx-index">
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="font-bold uppercase text-gray-500">Nama Transaksi</label>
+          <input type="text" id="edit-tx-name" class="w-full p-2 border rounded-xl bg-surface text-on-surface font-bold mt-1">
+        </div>
+        <div>
+          <label class="font-bold uppercase text-gray-500">Nominal (Rp)</label>
+          <input type="text" id="edit-tx-amount" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-xl font-mono-data bg-surface text-on-surface font-bold mt-1">
+        </div>
+        <div>
+          <label class="font-bold uppercase text-gray-500">Kategori</label>
+          <input type="text" id="edit-tx-category" class="w-full p-2 border rounded-xl bg-surface text-on-surface mt-1">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="font-bold uppercase text-gray-500">Dari Akun</label>
+            <input type="text" id="edit-tx-dari" readonly class="w-full p-2 border rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-500 mt-1">
+          </div>
+          <div>
+            <label class="font-bold uppercase text-gray-500">Ke Akun</label>
+            <input type="text" id="edit-tx-ke" readonly class="w-full p-2 border rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-500 mt-1">
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-2 pt-3 border-t">
+        <button onclick="saveEditedTransaction()" class="flex-1 py-2.5 bg-primary text-white font-bold rounded-xl hover:brightness-110 shadow">Simpan Perubahan</button>
+        <button onclick="closeEditModal()" class="px-4 py-2.5 border rounded-xl text-on-surface-variant">Batal</button>
+      </div>
     </div>
   </div>
 
@@ -168,7 +216,14 @@
           <h3 class="font-title-sm font-bold flex items-center gap-2 text-on-surface">
             <span class="material-symbols-outlined text-primary">account_balance</span> <span data-i18n="title_acc_balance">Saldo Per Akun</span>
           </h3>
-          <span id="dash-acc-badge" class="text-xs font-bold text-secondary uppercase tracking-wider" data-i18n="badge_db_acc">DATABASE AKUN</span>
+          <div class="flex items-center gap-2">
+            <!-- Tombol Sensor / Privacy Mode -->
+            <button onclick="toggleBalanceMask()" id="btn-mask-balance" title="Sembunyikan/Tampilkan Saldo" class="p-1.5 rounded-lg border border-outline-variant hover:bg-surface-container flex items-center text-xs font-bold gap-1 text-on-surface-variant">
+              <span class="material-symbols-outlined text-sm" id="icon-mask-balance">visibility</span>
+              <span id="text-mask-balance">Sensor Saldo</span>
+            </button>
+            <span id="dash-acc-badge" class="text-xs font-bold text-secondary uppercase tracking-wider" data-i18n="badge_db_acc">DATABASE AKUN</span>
+          </div>
         </div>
         <div id="account-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
       </section>
@@ -504,7 +559,7 @@
                   <th class="p-3" data-i18n="th_cat">Kategori</th>
                   <th class="p-3" data-i18n="th_from">Dari Akun</th>
                   <th class="p-3" data-i18n="th_to">Ke Akun</th>
-                  <th class="p-3 text-right" data-i18n="th_nominal">Nominal</th>
+                  <th class="p-3 text-right">Aksi / Nominal</th>
                 </tr>
               </thead>
               <tbody id="tx-history-tbody" class="divide-y divide-outline-variant">
@@ -888,23 +943,23 @@
         setup_acc_desc: "Input Nama Akun, Bank/E-Wallet, Nomor Rekening, Atas Nama, & Saldo Awal.",
         btn_add_acc: "TAMBAHKAN ACCOUNT BANK / E-WALLET",
         def_income: "Pendapatan/penghasilan, baik yang tetap ataupun tidak tetap.",
-        btn_add_income: "TAMBAHKAN INCOME",
+        def_add_income: "TAMBAHKAN INCOME",
         def_bills: "Pengeluaran yang cenderung berulang setiap bulannya dengan jumlah yang cenderung sama (Cont: SPP/kos Bulanan, Subscribe Canva, dll).",
-        btn_add_bills: "TAMBAHKAN BILLS",
+        def_add_bills: "TAMBAHKAN BILLS",
         def_spending: "Pengeluaran sehari-hari, dapat dibuat dalam beberapa kategori.",
-        btn_add_spending: "TAMBAHKAN SPENDING",
+        def_add_spending: "TAMBAHKAN SPENDING",
         def_invest_setup: "Uang yang akan disimpan untuk jangka pendek dan dapat digunakan sewaktu-waktu.",
-        btn_add_invest: "TAMBAHKAN INVEST / SAVINGS",
+        def_add_invest: "TAMBAHKAN INVEST / SAVINGS",
         def_sinking_setup: "Uang yang disisihkan secara berkala untuk membiayai pengeluaran besar yang sudah direncanakan sejak awal (Cont: Mudik, Pajak, Perawatan rumah, dll).",
-        btn_add_sinking: "TAMBAHKAN SINKING FUND",
+        def_add_sinking: "TAMBAHKAN SINKING FUND",
         def_goals_setup: "Perencanaan finansial, uang/asset yang disimpan untuk kebutuhan/tujuan tertentu ataupun untuk mencapai jumlah tertentu dalam jangka waktu yang ditentukan (Cont: Dana Pensiun, Dana Pendidikan, Haji, dll).",
-        btn_add_goals: "TAMBAHKAN FINANCIAL GOALS",
+        def_add_goals: "TAMBAHKAN FINANCIAL GOALS",
         title_receivables_setup: "8. Piutang (Orang Berutang ke Saya)",
         desc_receivables_setup: "Catat nama peminjam, jumlah piutang, dan deadline tanggal penagihan.",
         btn_add_receivables: "TAMBAHKAN PIUTANG BARU",
         title_nonmoney_setup: "9. Aset Selain Uang & Zakat Nisab",
         def_nonmoney_setup: "Input Emas, Perak, & Tanah beserta perhitungan nisab zakat.",
-        btn_add_nonmoney: "TAMBAHKAN ASET NON-UANG",
+        def_add_nonmoney: "TAMBAHKAN ASET NON-UANG",
         title_debt_setup: "10. Utang & Cicilan",
         def_debt_setup: "Input Total Utang & Cicilan per Bulan.",
         btn_add_debt: "TAMBAHKAN UTANG / CICILAN",
@@ -1141,6 +1196,21 @@
     };
 
     let currentLang = 'id';
+    let isBalanceMasked = false;
+
+    function toggleBalanceMask() {
+      isBalanceMasked = !isBalanceMasked;
+      let icon = document.getElementById('icon-mask-balance');
+      let text = document.getElementById('text-mask-balance');
+      if (isBalanceMasked) {
+        if (icon) icon.textContent = "visibility_off";
+        if (text) text.textContent = "Tampilkan Saldo";
+      } else {
+        if (icon) icon.textContent = "visibility";
+        if (text) text.textContent = "Sensor Saldo";
+      }
+      renderDashboard();
+    }
 
     function changeLanguage(lang) {
       currentLang = lang;
@@ -1380,6 +1450,7 @@
     }
 
     function formatRp(num) {
+      if (isBalanceMasked) return "Rp •••••••";
       return "Rp " + (parseFloat(num) || 0).toLocaleString('id-ID');
     }
 
@@ -2105,7 +2176,7 @@
 
       let filterCashflow = document.getElementById('rep-filter-cashflow') ? document.getElementById('rep-filter-cashflow').value : 'all';
 
-      historyList.forEach(tx => {
+      historyList.forEach((tx, idx) => {
         if (filterCashflow !== 'all' && tx.cashflow !== filterCashflow) {
           return;
         }
@@ -2115,17 +2186,119 @@
         if (tx.cashflow === 'Spending') badgeColor = "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300";
 
         tbody.innerHTML += `
-          <tr class="hover:bg-surface-container-low transition-colors">
+          <tr class="hover:bg-surface-container-low transition-colors hidden-action-row">
             <td class="p-3 font-mono-data text-[11px] text-gray-500">${tx.dateTime || '-'}</td>
             <td class="p-3 font-bold text-on-surface">${tx.name}</td>
             <td class="p-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${badgeColor}">${tx.cashflow}</span></td>
             <td class="p-3 text-on-surface-variant">${tx.category}</td>
             <td class="p-3 text-gray-500">${tx.dariAcc}</td>
             <td class="p-3 text-gray-500">${tx.keAcc}</td>
-            <td class="p-3 text-right font-mono-data font-extrabold text-primary dark:text-blue-400">${formatRp(tx.amount)}</td>
+            <td class="p-3 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <span class="font-mono-data font-extrabold text-primary dark:text-blue-400">${formatRp(tx.amount)}</span>
+                <button onclick="openEditModal(${idx})" title="Edit Transaksi" class="p-1 rounded hover:bg-surface-container text-gray-400 hover:text-primary transition-colors">
+                  <span class="material-symbols-outlined text-sm">edit</span>
+                </button>
+                <button onclick="deleteTransaction(${idx})" title="Hapus Transaksi" class="delete-action-btn p-1 rounded hover:bg-red-100 text-gray-300 hover:text-error transition-colors">
+                  <span class="material-symbols-outlined text-sm">delete</span>
+                </button>
+              </div>
+            </td>
           </tr>
         `;
       });
+    }
+
+    function openEditModal(idx) {
+      let tx = globalData.recentHistory[idx];
+      if (!tx) return;
+
+      document.getElementById('edit-tx-index').value = idx;
+      document.getElementById('edit-tx-name').value = tx.name || '';
+      document.getElementById('edit-tx-amount').value = (tx.amount || 0).toLocaleString('id-ID');
+      document.getElementById('edit-tx-category').value = tx.category || '';
+      document.getElementById('edit-tx-dari').value = tx.dariAcc || '';
+      document.getElementById('edit-tx-ke').value = tx.keAcc || '';
+
+      let modal = document.getElementById('edit-tx-modal');
+      let card = document.getElementById('edit-tx-card');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        card.classList.remove('scale-95');
+        card.classList.add('scale-100');
+      }, 10);
+    }
+
+    function closeEditModal() {
+      let modal = document.getElementById('edit-tx-modal');
+      let card = document.getElementById('edit-tx-card');
+      modal.classList.add('opacity-0');
+      card.classList.remove('scale-100');
+      card.classList.add('scale-95');
+      setTimeout(() => modal.classList.add('hidden'), 300);
+    }
+
+    function saveEditedTransaction() {
+      let idx = parseInt(document.getElementById('edit-tx-index').value, 10);
+      let tx = globalData.recentHistory[idx];
+      if (!tx) return;
+
+      let newName = document.getElementById('edit-tx-name').value;
+      let rawAmt = document.getElementById('edit-tx-amount').value.replace(/\./g, '');
+      let newAmount = parseFloat(rawAmt) || 0;
+      let newCat = document.getElementById('edit-tx-category').value;
+
+      // 1. Revert saldo lama dari akun
+      let oldAmt = tx.amount;
+      if (tx.dariAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.dariAcc)) {
+        globalData.currentBalances[tx.dariAcc] += oldAmt;
+      }
+      if (tx.keAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.keAcc)) {
+        globalData.currentBalances[tx.keAcc] -= oldAmt;
+      }
+
+      // 2. Terapkan saldo baru ke akun
+      if (tx.dariAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.dariAcc)) {
+        globalData.currentBalances[tx.dariAcc] -= newAmount;
+      }
+      if (tx.keAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.keAcc)) {
+        globalData.currentBalances[tx.keAcc] += newAmount;
+      }
+
+      // 3. Perbarui data transaksi
+      tx.name = newName;
+      tx.amount = newAmount;
+      tx.category = newCat;
+
+      saveStorageData();
+      renderDashboard();
+      renderHistoryTable();
+      closeEditModal();
+      playSuccessSound();
+      alert("Riwayat transaksi berhasil diperbarui & saldo akun disesuaikan!");
+    }
+
+    function deleteTransaction(idx) {
+      let tx = globalData.recentHistory[idx];
+      if (!tx) return;
+
+      if (confirm(`Hapus transaksi "${tx.name}" (${formatRp(tx.amount)})? Saldo akun akan dikembalikan secara otomatis.`)) {
+        // Revert saldo
+        let amt = tx.amount;
+        if (tx.dariAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.dariAcc)) {
+          globalData.currentBalances[tx.dariAcc] += amt;
+        }
+        if (tx.keAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.keAcc)) {
+          globalData.currentBalances[tx.keAcc] -= amt;
+        }
+
+        globalData.recentHistory.splice(idx, 1);
+        saveStorageData();
+        renderDashboard();
+        renderHistoryTable();
+        alert("Transaksi berhasil dihapus!");
+      }
     }
 
     function formatFullDateTime(dateStr) {
