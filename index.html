@@ -2424,17 +2424,17 @@
     }
 
     function verifySetupPassword() {
-      let p = document.getElementById('setup-pass-input').value;
-      let validPass = globalData.ownerPassword || "190412";
-      
-      if (p === validPass || p === 'admin' || p === '190412') {
-        document.getElementById('setup-lock-card').classList.add('hidden');
-        document.getElementById('setup-unlocked-content').classList.remove('hidden');
-        renderSetupView();
-      } else {
-        alert('Password salah!');
-      }
-    }
+  let p = document.getElementById('setup-pass-input').value;
+  let validPass = globalData.ownerPassword || "123";
+  
+  if (p === validPass) { // <-- Hanya mencocokkan dengan password kustom Anda
+    document.getElementById('setup-lock-card').classList.add('hidden');
+    document.getElementById('setup-unlocked-content').classList.remove('hidden');
+    renderSetupView();
+  } else {
+    alert('Password salah!');
+  }
+}
   </script>
 </body>
 </html>
