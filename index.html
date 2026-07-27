@@ -795,6 +795,9 @@
   </nav>
 
   <script>
+    // URL Web App Google Apps Script Anda yang terhubung ke Google Sheets
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzaFZWc0Nofs1uLELZJ8u2PHAdIkLROB1k6o0dwOAC5qk4QP48hyYa70nDwcQ4thznx-g/exec";
+
     const TRANSLATIONS = {
       id: {
         brand_title: "KEUANGANKU",
@@ -986,11 +989,11 @@
         setup_acc_desc: "Input Account Name, Bank/E-Wallet, Account Number, Owner Name, & Initial Balance.",
         btn_add_acc: "ADD BANK / E-WALLET ACCOUNT",
         def_income: "Income/earnings, whether fixed or variable.",
-        btn_add_income: "ADD INCOME",
+        def_add_income: "ADD INCOME",
         def_bills: "Expenses that tend to recur monthly with relatively fixed amounts (e.g., Monthly tuition/rent, Canva subscription, etc.).",
-        btn_add_bills: "ADD BILLS",
+        def_add_bills: "ADD BILLS",
         def_spending: "Daily expenses, can be organized into multiple categories.",
-        btn_add_spending: "ADD SPENDING",
+        def_add_spending: "ADD SPENDING",
         def_invest_setup: "Money saved for short-term and usable at any time.",
         def_add_invest: "ADD INVEST / SAVINGS",
         def_sinking_setup: "Money set aside regularly to fund major pre-planned expenses (e.g., Holidays, Taxes, Home maintenance, etc.).",
@@ -1245,25 +1248,42 @@
       }
     }
 
-    function loadStorageData() {
-      let stored = localStorage.getItem("KEUANGANKU_DB_V21");
-      if (stored) {
-        try {
+    async function loadStorageData() {
+      try {
+        let response = await fetch(WEB_APP_URL);
+        let cloudData = await response.json();
+        if (!cloudData || Object.keys(cloudData).length === 0) {
+          globalData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+          saveStorageData();
+        } else {
+          globalData = cloudData;
+        }
+      } catch(e) {
+        let stored = localStorage.getItem("KEUANGANKU_DB_V21");
+        if (stored) {
           globalData = JSON.parse(stored);
-          if (!globalData.receivablesData) globalData.receivablesData = {};
-        } catch(e) {
+        } else {
           globalData = JSON.parse(JSON.stringify(DEFAULT_DATA));
         }
-      } else {
-        globalData = JSON.parse(JSON.stringify(DEFAULT_DATA));
-        saveStorageData();
       }
+      initApp();
     }
 
-    function saveStorageData() {
+    async function saveStorageData() {
       localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData));
       populateFormDropdowns();
       populateReportFilterCategories();
+
+      try {
+        await fetch(WEB_APP_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(globalData)
+        });
+      } catch(e) {
+        console.log("Sinkronisasi latar belakang tertunda.");
+      }
     }
 
     function manualSaveSetup() {
