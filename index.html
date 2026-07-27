@@ -1479,42 +1479,50 @@
 
     function renderDashboard() {
       let sumInvest = 0;
-      Object.keys(globalData.investData).forEach(k => {
-        let item = globalData.investData[k];
-        let flow = getCategoryCashflowNet(k);
-        let currentNet = (item.initial || 0) + flow.net - (item.used || 0) - flow.used;
-        sumInvest += currentNet > 0 ? currentNet : 0;
-      });
+      if (globalData.investData) {
+        Object.keys(globalData.investData).forEach(k => {
+          let item = globalData.investData[k];
+          let flow = getCategoryCashflowNet(k);
+          let currentNet = (item.initial || 0) + flow.net - (item.used || 0) - flow.used;
+          sumInvest += currentNet > 0 ? currentNet : 0;
+        });
+      }
 
       let sumSinking = 0;
-      Object.keys(globalData.sinkingData).forEach(k => {
-        let item = globalData.sinkingData[k];
-        let flow = getCategoryCashflowNet(k);
-        let currentNet = (item.initial || 0) + flow.net - (item.used || 0) - flow.used;
-        sumSinking += currentNet > 0 ? currentNet : 0;
-      });
+      if (globalData.sinkingData) {
+        Object.keys(globalData.sinkingData).forEach(k => {
+          let item = globalData.sinkingData[k];
+          let flow = getCategoryCashflowNet(k);
+          let currentNet = (item.initial || 0) + flow.net - (item.used || 0) - flow.used;
+          sumSinking += currentNet > 0 ? currentNet : 0;
+        });
+      }
 
       let sumGoals = 0;
-      Object.keys(globalData.goalsData).forEach(k => {
-        let item = globalData.goalsData[k];
-        let flow = getCategoryCashflowNet(k);
-        let currentNet = (item.initial || 0) + flow.net - (item.used || 0) - flow.used;
-        sumGoals += currentNet > 0 ? currentNet : 0;
-      });
+      if (globalData.goalsData) {
+        Object.keys(globalData.goalsData).forEach(k => {
+          let item = globalData.goalsData[k];
+          let flow = getCategoryCashflowNet(k);
+          let currentNet = (item.initial || 0) + flow.net - (item.used || 0) - flow.used;
+          sumGoals += currentNet > 0 ? currentNet : 0;
+        });
+      }
 
       let totalAssetCash = sumInvest + sumSinking + sumGoals;
       let elAsset = document.getElementById('dash-total-asset');
       if (elAsset) elAsset.textContent = formatRp(totalAssetCash);
 
       let totalBank = 0;
-      for (let acc in globalData.currentBalances) {
-        totalBank += globalData.currentBalances[acc];
+      if (globalData.currentBalances) {
+        for (let acc in globalData.currentBalances) {
+          totalBank += globalData.currentBalances[acc];
+        }
       }
       let elBank = document.getElementById('dash-total-bank');
       if (elBank) elBank.textContent = formatRp(totalBank);
 
       let grid = document.getElementById('account-grid');
-      if (grid) {
+      if (grid && globalData.accounts) {
         grid.innerHTML = '';
         globalData.accounts.forEach(acc => {
           let bal = globalData.currentBalances[acc] || 0;
@@ -1557,6 +1565,7 @@
       let grid = document.getElementById('invest-recap-grid');
       if (!grid) return;
       grid.innerHTML = '';
+      if (!globalData.investData) return;
       Object.keys(globalData.investData).forEach(k => {
         let item = globalData.investData[k];
         let flow = getCategoryCashflowNet(k);
@@ -1580,6 +1589,7 @@
       let container = document.getElementById('sinking-recap-grid');
       if (!container) return;
       container.innerHTML = '';
+      if (!globalData.sinkingData) return;
       let today = new Date();
 
       Object.keys(globalData.sinkingData).forEach(k => {
@@ -1637,6 +1647,7 @@
       let container = document.getElementById('goals-recap-grid');
       if (!container) return;
       container.innerHTML = '';
+      if (!globalData.goalsData) return;
       Object.keys(globalData.goalsData).forEach(k => {
         let item = globalData.goalsData[k];
         let flow = getCategoryCashflowNet(k);
@@ -1676,18 +1687,20 @@
       let container = document.getElementById('receivables-recap-grid');
       if (!container) return;
       container.innerHTML = '';
-      if (!globalData.receivablesData) globalData.receivablesData = {};
+      if (!globalData.receivablesData) return;
 
       Object.keys(globalData.receivablesData).forEach(k => {
         let item = globalData.receivablesData[k];
         let total = parseFloat(item.total) || 0;
         let paid = parseFloat(item.paid) || 0;
 
-        globalData.recentHistory.forEach(tx => {
-          if (tx.category === k && tx.cashflow === 'Pelunasan Piutang') {
-            paid += tx.amount;
-          }
-        });
+        if (globalData.recentHistory) {
+          globalData.recentHistory.forEach(tx => {
+            if (tx.category === k && tx.cashflow === 'Pelunasan Piutang') {
+              paid += tx.amount;
+            }
+          });
+        }
 
         let remaining = total - paid;
 
@@ -1711,6 +1724,7 @@
       let container = document.getElementById('nonmoney-recap-grid');
       if (!container) return;
       container.innerHTML = '';
+      if (!globalData.nonMoneyAssets) return;
       Object.keys(globalData.nonMoneyAssets).forEach(k => {
         let item = globalData.nonMoneyAssets[k];
         let qty = parseFloat(item.qty) || 0;
@@ -1770,17 +1784,21 @@
       let container = document.getElementById('debt-recap-grid');
       if (!container) return;
       container.innerHTML = '';
+      if (!globalData.debtData) return;
+
       Object.keys(globalData.debtData).forEach(k => {
         let item = globalData.debtData[k];
         let total = parseFloat(item.total) || 0;
         let monthly = parseFloat(item.monthlyPay) || 1;
         let paid = parseFloat(item.paid) || 0;
 
-        globalData.recentHistory.forEach(tx => {
-          if (tx.category === k && tx.cashflow === 'Bayar Cicilan / Utang') {
-            paid += tx.amount;
-          }
-        });
+        if (globalData.recentHistory) {
+          globalData.recentHistory.forEach(tx => {
+            if (tx.category === k && tx.cashflow === 'Bayar Cicilan / Utang') {
+              paid += tx.amount;
+            }
+          });
+        }
 
         let unpaid = total - paid;
         let sisaBulan = Math.ceil((unpaid > 0 ? unpaid : 0) / (monthly || 1));
@@ -1816,20 +1834,22 @@
         let totalInc = 0, totalSpend = 0, totalBills = 0;
         let spendCatMap = {};
 
-        globalData.recentHistory.forEach(h => {
-          if (h.rawDate) {
-            let d = new Date(h.rawDate);
-            if (d.getMonth() === selectedMonthIdx) {
-              if (h.cashflow === 'Income') totalInc += h.amount;
-              if (h.cashflow === 'Spending') {
-                totalSpend += h.amount;
-                let cat = h.category || "Lainnya";
-                spendCatMap[cat] = (spendCatMap[cat] || 0) + h.amount;
+        if (globalData.recentHistory) {
+          globalData.recentHistory.forEach(h => {
+            if (h.rawDate) {
+              let d = new Date(h.rawDate);
+              if (d.getMonth() === selectedMonthIdx) {
+                if (h.cashflow === 'Income') totalInc += h.amount;
+                if (h.cashflow === 'Spending') {
+                  totalSpend += h.amount;
+                  let cat = h.category || "Lainnya";
+                  spendCatMap[cat] = (spendCatMap[cat] || 0) + h.amount;
+                }
+                if (h.cashflow === 'Bayar Cicilan / Utang') totalBills += h.amount;
               }
-              if (h.cashflow === 'Bayar Cicilan / Utang') totalBills += h.amount;
             }
-          }
-        });
+          });
+        }
 
         let mContainer = document.getElementById('monthly-summary-boxes');
         if (mContainer) {
@@ -1880,14 +1900,14 @@
       let select = document.getElementById('rep-filter-category');
       if (!select) return;
       select.innerHTML = '<option value="all">Semua Kategori</option>';
-      let allCats = [].concat(globalData.incomes, globalData.spendings, globalData.bills, Object.keys(globalData.investData), Object.keys(globalData.goalsData));
+      let allCats = [].concat(globalData.incomes || [], globalData.spendings || [], globalData.bills || [], Object.keys(globalData.investData || {}), Object.keys(globalData.goalsData || {}));
       let uniqueCats = [...new Set(allCats)];
       uniqueCats.forEach(c => select.innerHTML += `<option value="${c}">${c}</option>`);
     }
 
     function populateFormDropdowns() {
       let adminAcc = document.getElementById('tx-admin-account');
-      if (adminAcc) {
+      if (adminAcc && globalData.accounts) {
         adminAcc.innerHTML = `<option value="" data-i18n="opt_same_acc">${TRANSLATIONS[currentLang].opt_same_acc}</option>`;
         globalData.accounts.forEach(a => {
           adminAcc.innerHTML += `<option value="${a}">${a}</option>`;
@@ -1926,7 +1946,7 @@
         fillOptions(dariSelect, globalData.accounts);
       } else if (cf === 'Bayar Cicilan / Utang') {
         keSelect.disabled = true;
-        let debtKeys = Object.keys(globalData.debtData).concat(globalData.bills);
+        let debtKeys = Object.keys(globalData.debtData || {}).concat(globalData.bills || []);
         fillOptions(catSelect, debtKeys);
         fillOptions(dariSelect, globalData.accounts);
       } else if (cf === 'Piutang Baru') {
@@ -1938,15 +1958,15 @@
         fillOptions(dariSelect, globalData.accounts);
         fillOptions(keSelect, globalData.accounts);
       } else if (cf === 'Invest / Savings') {
-        fillOptions(catSelect, Object.keys(globalData.investData));
+        fillOptions(catSelect, Object.keys(globalData.investData || {}));
         fillOptions(dariSelect, globalData.accounts);
         fillOptions(keSelect, globalData.accounts);
       } else if (cf === 'Financial Goals') {
-        fillOptions(catSelect, Object.keys(globalData.goalsData));
+        fillOptions(catSelect, Object.keys(globalData.goalsData || {}));
         fillOptions(dariSelect, globalData.accounts);
         fillOptions(keSelect, globalData.accounts);
       } else if (cf === 'Dari Asset / Saving') {
-        let combined = Object.keys(globalData.sinkingData).concat(Object.keys(globalData.investData));
+        let combined = Object.keys(globalData.sinkingData || {}).concat(Object.keys(globalData.investData || {}));
         fillOptions(catSelect, combined);
         fillOptions(dariSelect, globalData.accounts);
         fillOptions(keSelect, globalData.accounts);
@@ -1994,6 +2014,7 @@
 
       let timeFormatted = formatFullDateTime(dDate);
 
+      if (!globalData.currentBalances) globalData.currentBalances = {};
       if (dDari !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(dDari)) {
         globalData.currentBalances[dDari] -= dAmount;
       }
@@ -2030,9 +2051,11 @@
           keAcc: "- not applicable -"
         };
 
+        if (!globalData.recentHistory) globalData.recentHistory = [];
         globalData.recentHistory.unshift(adminTx);
       }
 
+      if (!globalData.recentHistory) globalData.recentHistory = [];
       globalData.recentHistory.unshift(mainTx);
 
       saveStorageData();
@@ -2049,6 +2072,43 @@
       let title = document.getElementById('success-modal-title');
       if (title) title.textContent = "Transaksi Berhasil!";
       showSuccessModal(mainTx, adminAdded, dAdminFee);
+    }
+
+    function renderHistoryTable() {
+      let tbody = document.getElementById('tx-history-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      let historyList = globalData.recentHistory || [];
+
+      if (historyList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400">Belum ada transaksi diinput.</td></tr>`;
+        return;
+      }
+
+      let filterCashflow = document.getElementById('rep-filter-cashflow') ? document.getElementById('rep-filter-cashflow').value : 'all';
+
+      historyList.forEach(tx => {
+        if (filterCashflow !== 'all' && tx.cashflow !== filterCashflow) {
+          return;
+        }
+
+        let badgeColor = "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300";
+        if (tx.cashflow === 'Income') badgeColor = "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300";
+        if (tx.cashflow === 'Spending') badgeColor = "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300";
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-surface-container-low transition-colors">
+            <td class="p-3 font-mono-data text-[11px] text-gray-500">${tx.dateTime || '-'}</td>
+            <td class="p-3 font-bold text-on-surface">${tx.name}</td>
+            <td class="p-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${badgeColor}">${tx.cashflow}</span></td>
+            <td class="p-3 text-on-surface-variant">${tx.category}</td>
+            <td class="p-3 text-gray-500">${tx.dariAcc}</td>
+            <td class="p-3 text-gray-500">${tx.keAcc}</td>
+            <td class="p-3 text-right font-mono-data font-extrabold text-primary dark:text-blue-400">${formatRp(tx.amount)}</td>
+          </tr>
+        `;
+      });
     }
 
     function formatFullDateTime(dateStr) {
@@ -2172,7 +2232,7 @@
       }
 
       let accContainer = document.getElementById('setup-account-list');
-      if (accContainer) {
+      if (accContainer && globalData.accounts) {
         accContainer.innerHTML = '';
         if (!globalData.accountDetails) globalData.accountDetails = {};
 
@@ -2424,17 +2484,17 @@
     }
 
     function verifySetupPassword() {
-  let p = document.getElementById('setup-pass-input').value;
-  let validPass = globalData.ownerPassword || "123";
-  
-  if (p === validPass) { // <-- Hanya mencocokkan dengan password kustom Anda
-    document.getElementById('setup-lock-card').classList.add('hidden');
-    document.getElementById('setup-unlocked-content').classList.remove('hidden');
-    renderSetupView();
-  } else {
-    alert('Password salah!');
-  }
-}
+      let p = document.getElementById('setup-pass-input').value;
+      let validPass = globalData.ownerPassword || "123";
+      
+      if (p === validPass) {
+        document.getElementById('setup-lock-card').classList.add('hidden');
+        document.getElementById('setup-unlocked-content').classList.remove('hidden');
+        renderSetupView();
+      } else {
+        alert('Password salah!');
+      }
+    }
   </script>
 </body>
 </html>
