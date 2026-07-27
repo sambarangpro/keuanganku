@@ -362,8 +362,8 @@
               <option value="Spending">Spending (Pengeluaran)</option>
               <option value="Invest / Savings">Invest / Savings</option>
               <option value="Financial Goals">Financial Goals</option>
-              <option value="Cicilan / Utang Baru">Cicilan / Utang Baru</option>
-              <option value="Bayar Cicilan / Utang">Bayar Cicilan / Utang</option>
+              <option value="Cicilan / Utang Baru">Cicilan / Utang / Rembers Baru</option>
+              <option value="Bayar Cicilan / Utang">Bayar Cicilan / Utang / Rembers</option>
               <option value="Piutang Baru">Piutang Baru</option>
               <option value="Pelunasan Piutang">Pelunasan Piutang</option>
               <option value="Transfer">Transfer (Antar Rekening)</option>
@@ -472,7 +472,7 @@
               <option value="Spending">Spending</option>
               <option value="Invest / Savings">Invest / Savings</option>
               <option value="Financial Goals">Financial Goals</option>
-              <option value="Bayar Cicilan / Utang">Bayar Cicilan / Utang</option>
+              <option value="Bayar Cicilan / Utang">Bayar Cicilan / Utang / Rembers</option>
             </select>
           </div>
         </div>
@@ -882,13 +882,13 @@
         def_bills: "Pengeluaran yang cenderung berulang setiap bulannya dengan jumlah yang cenderung sama (Cont: SPP/kos Bulanan, Subscribe Canva, dll).",
         btn_add_bills: "TAMBAHKAN BILLS",
         def_spending: "Pengeluaran sehari-hari, dapat dibuat dalam beberapa kategori.",
-        btn_add_spending: "TAMBAHKAN SPENDING",
+        def_add_spending: "TAMBAHKAN SPENDING",
         def_invest_setup: "Uang yang akan disimpan untuk jangka pendek dan dapat digunakan sewaktu-waktu.",
-        btn_add_invest: "TAMBAHKAN INVEST / SAVINGS",
+        def_add_invest: "TAMBAHKAN INVEST / SAVINGS",
         def_sinking_setup: "Uang yang disisihkan secara berkala untuk membiayai pengeluaran besar yang sudah direncanakan sejak awal (Cont: Mudik, Pajak, Perawatan rumah, dll).",
-        btn_add_sinking: "TAMBAHKAN SINKING FUND",
+        def_add_sinking: "TAMBAHKAN SINKING FUND",
         def_goals_setup: "Perencanaan finansial, uang/asset yang disimpan untuk kebutuhan/tujuan tertentu ataupun untuk mencapai jumlah tertentu dalam jangka waktu yang ditentukan (Cont: Dana Pensiun, Dana Pendidikan, Haji, dll).",
-        btn_add_goals: "TAMBAHKAN FINANCIAL GOALS",
+        def_add_goals: "TAMBAHKAN FINANCIAL GOALS",
         title_receivables_setup: "8. Piutang (Orang Berutang ke Saya)",
         desc_receivables_setup: "Catat nama peminjam, jumlah piutang, dan deadline tanggal penagihan.",
         btn_add_receivables: "TAMBAHKAN PIUTANG BARU",
@@ -1794,14 +1794,15 @@
 
         if (globalData.recentHistory) {
           globalData.recentHistory.forEach(tx => {
-            if (tx.category === k && tx.cashflow === 'Bayar Cicilan / Utang') {
-              paid += tx.amount;
+            if (tx.category === k && (tx.cashflow === 'Bayar Cicilan / Utang' || tx.cashflow === 'Cicilan / Utang Baru')) {
+              if (tx.cashflow === 'Cicilan / Utang Baru') total += tx.amount;
+              if (tx.cashflow === 'Bayar Cicilan / Utang') paid += tx.amount;
             }
           });
         }
 
         let unpaid = total - paid;
-        let sisaBulan = Math.ceil((unpaid > 0 ? unpaid : 0) / (monthly || 1));
+        let sisaSesi = Math.ceil((unpaid > 0 ? unpaid : 0) / (monthly || 1));
 
         container.innerHTML += `
           <div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-2 text-xs">
@@ -1810,7 +1811,7 @@
                 <p class="font-bold text-error text-sm">${k}</p>
                 <span class="text-[9px] px-2 py-0.5 bg-primary/10 text-primary dark:text-blue-400 rounded-full font-bold">${item.category || 'Utang'}</span>
               </div>
-              <span class="text-[10px] px-2 py-0.5 bg-red-100 dark:bg-red-950 text-error rounded-full font-bold">Bayar: ${item.period || 'Bulanan'} | Sisa: ${sisaBulan} Sesi</span>
+              <span class="text-[10px] px-2 py-0.5 bg-red-100 dark:bg-red-950 text-error rounded-full font-bold">Bayar: ${item.period || 'Bulanan'} | Sisa: ${sisaSesi} Sesi</span>
             </div>
             <div class="grid grid-cols-4 gap-2 text-[11px]">
               <div><span class="text-gray-500">Total Utang:</span><br/><b class="font-mono-data">${formatRp(total)}</b></div>
@@ -1942,6 +1943,8 @@
         fillOptions(keSelect, globalData.accounts);
       } else if (cf === 'Cicilan / Utang Baru') {
         dariSelect.disabled = true;
+        let allPeople = Object.keys(globalData.receivablesData || {}).concat(Object.keys(globalData.debtData || {}));
+        fillOptions(catSelect, [...new Set(allPeople)]);
         fillOptions(keSelect, globalData.accounts);
       } else if (cf === 'Spending') {
         keSelect.disabled = true;
@@ -2321,6 +2324,7 @@
                 <select onchange="updateDebtField('${k}', 'category', this.value)" class="w-full p-1.5 border rounded-lg text-xs bg-surface text-on-surface">
                   <option value="Utang" ${item.category === 'Utang' ? 'selected' : ''}>Utang</option>
                   <option value="Cicilan" ${item.category === 'Cicilan' ? 'selected' : ''}>Cicilan</option>
+                  <option value="Remberg" ${item.category === 'Remberg' ? 'selected' : ''}>Remberg</option>
                 </select>
               </div>
               <div>
@@ -2374,7 +2378,7 @@
     }
 
     function addDebtItemModal() {
-      let name = prompt("Masukkan Nama Utang / Cicilan baru:");
+      let name = prompt("Masukkan Nama Utang / Cicilan / Rembers baru:");
       if (name && name.trim() !== "") {
         let clean = name.trim();
         if (!globalData.debtData) globalData.debtData = {};
@@ -2389,7 +2393,7 @@
           saveStorageData();
           renderSetupView();
         } else {
-          alert("Nama utang/cicilan sudah ada!");
+          alert("Nama sudah ada!");
         }
       }
     }
@@ -2405,7 +2409,7 @@
     }
 
     function removeDebtItem(key) {
-      if (confirm(`Hapus ${key} dari database utang/cicilan?`)) {
+      if (confirm(`Hapus ${key} dari database?`)) {
         delete globalData.debtData[key];
         saveStorageData();
         renderSetupView();
