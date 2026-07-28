@@ -89,18 +89,28 @@
 </head>
 <body class="bg-background text-on-surface font-body-md min-h-screen pb-32">
 
-  <!-- BUMPER SPLASH SCREEN -->
+  <!-- BUMPER SPLASH SCREEN DENGAN FITUR PIN -->
   <div id="splash-screen" class="fixed inset-0 bg-gradient-to-br from-navy-dark via-primary to-tertiary z-50 flex flex-col items-center justify-center text-white transition-opacity duration-700">
-    <div class="text-center space-y-4 p-6">
-      <div class="w-24 h-24 bg-white/10 backdrop-blur-md rounded-3xl flex items-center justify-center mx-auto shadow-2xl border border-white/20 animate-pulse-logo">
-        <span class="material-symbols-outlined text-white" style="font-size: 56px;">account_balance_wallet</span>
+    <div class="text-center space-y-4 p-6 max-w-xs w-full">
+      <div class="w-20 h-20 bg-white/10 backdrop-blur-md rounded-3xl flex items-center justify-center mx-auto shadow-2xl border border-white/20 animate-pulse-logo">
+        <span class="material-symbols-outlined text-white" style="font-size: 48px;">account_balance_wallet</span>
       </div>
       <div>
-        <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-white font-headline-md">KEUANGANKU</h1>
-        <p class="text-xs text-blue-200 mt-1 font-semibold tracking-widest uppercase">Financial Planner Pro</p>
+        <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight text-white font-headline-md">KEUANGANKU</h1>
+        <p class="text-[10px] text-blue-200 mt-0.5 font-semibold tracking-widest uppercase">Financial Planner Pro</p>
       </div>
-      <div class="pt-8">
-        <p class="text-[11px] text-gray-300 font-medium tracking-wider">By: <b class="text-white">Sambarang Production</b></p>
+
+      <!-- INPUT PIN DI BAWAH NAMA APLIKASI -->
+      <div class="pt-2 space-y-2">
+        <input type="password" id="bumper-pin-input" placeholder="Masukkan PIN Akses" maxlength="6" class="w-full py-2.5 px-3 bg-white/10 border border-white/30 rounded-xl text-center text-white placeholder-blue-200 text-sm font-mono-data outline-none tracking-widest focus:border-white">
+        <button onclick="verifyBumperPin()" class="w-full py-2.5 bg-white text-primary font-bold rounded-xl text-xs hover:bg-blue-50 shadow transition-all">
+          MASUK APLIKASI
+        </button>
+        <p id="bumper-error-msg" class="text-[11px] text-red-200 font-semibold hidden">PIN Salah! Gunakan PIN Password Pemilik.</p>
+      </div>
+
+      <div class="pt-4">
+        <p class="text-[10px] text-gray-300 font-medium tracking-wider uppercase">By: <b class="text-white">Sambarang Production</b></p>
       </div>
     </div>
   </div>
@@ -1198,6 +1208,22 @@
     let currentLang = 'id';
     let isBalanceMasked = true;
 
+    function verifyBumperPin() {
+      let pinInput = document.getElementById('bumper-pin-input').value;
+      let validPass = (globalData && globalData.ownerPassword) ? globalData.ownerPassword : "123";
+
+      if (pinInput === validPass) {
+        let splash = document.getElementById('splash-screen');
+        if (splash) {
+          splash.classList.add('opacity-0');
+          setTimeout(() => splash.classList.add('hidden'), 700);
+        }
+      } else {
+        let err = document.getElementById('bumper-error-msg');
+        if (err) err.classList.remove('hidden');
+      }
+    }
+
     function toggleBalanceMask() {
       isBalanceMasked = !isBalanceMasked;
       let icon = document.getElementById('icon-mask-balance');
@@ -1306,14 +1332,6 @@
     let globalData = {};
 
     window.onload = function() {
-      setTimeout(() => {
-        let splash = document.getElementById('splash-screen');
-        if (splash) {
-          splash.classList.add('opacity-0');
-          setTimeout(() => splash.classList.add('hidden'), 700);
-        }
-      }, 2000);
-
       loadStorageData();
       let dateInput = document.getElementById('tx-date');
       if (dateInput) dateInput.valueAsDate = new Date();
