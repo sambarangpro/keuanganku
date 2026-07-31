@@ -102,7 +102,6 @@
         <p class="text-[10px] text-blue-200 mt-0.5 font-semibold tracking-widest uppercase">Financial Planner Pro</p>
       </div>
 
-      <!-- INPUT PIN DI BAWAH NAMA APLIKASI -->
       <div class="pt-2 space-y-2">
         <input type="password" id="bumper-pin-input" placeholder="Masukkan PIN Akses" maxlength="6" class="w-full py-2.5 px-3 bg-white/10 border border-white/30 rounded-xl text-center text-white placeholder-blue-200 text-sm font-mono-data outline-none tracking-widest focus:border-white">
         <button onclick="verifyBumperPin()" class="w-full py-2.5 bg-white text-primary font-bold rounded-xl text-xs hover:bg-blue-50 shadow transition-all">
@@ -313,23 +312,6 @@
           </div>
         </div>
 
-        <!-- ASET NON UANG -->
-        <div class="collapse-item bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl overflow-hidden shadow-sm">
-          <button class="w-full flex items-center justify-between p-4 text-left hover:bg-surface-container-low dark:hover:bg-slate-700 transition-colors" onclick="toggleAccordion(this)">
-            <div class="flex items-center gap-3">
-              <span class="material-symbols-outlined text-yellow-600">diamond</span>
-              <div>
-                <p class="font-title-sm font-bold" data-i18n="title_nonmoney">Aset Selain Uang & Peringatan Nisab Zakat</p>
-                <p class="text-[11px] text-gray-500" data-i18n="desc_nonmoney">Emas (Gram), Perak (Gram), Tanah & Status Zakat</p>
-              </div>
-            </div>
-            <span class="material-symbols-outlined collapse-chevron transition-transform">expand_more</span>
-          </button>
-          <div class="collapse-content px-4 pb-4">
-            <div id="nonmoney-recap-grid" class="border-t border-outline-variant pt-3 space-y-3"></div>
-          </div>
-        </div>
-
         <!-- UTANG & CICILAN -->
         <div class="collapse-item bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl overflow-hidden shadow-sm">
           <button class="w-full flex items-center justify-between p-4 text-left hover:bg-surface-container-low dark:hover:bg-slate-700 transition-colors" onclick="toggleAccordion(this)">
@@ -360,9 +342,9 @@
             <span class="material-symbols-outlined collapse-chevron transition-transform">expand_more</span>
           </button>
           <div class="collapse-content px-4 pb-4 space-y-4">
-            <div class="border-t border-outline-variant pt-3 flex items-center justify-between">
+            <div class="border-t border-outline-variant pt-3 flex flex-col md:flex-row md:items-center justify-between gap-2">
               <label class="text-xs font-bold uppercase text-gray-500" data-i18n="lbl_select_month">Pilih Bulan Laporan:</label>
-              <select id="monthly-select-dropdown" onchange="renderMonthlyChart()" class="p-2 border rounded-xl text-xs font-bold bg-surface text-on-surface outline-none cursor-pointer">
+              <select id="monthly-select-dropdown" onchange="renderMonthlyChart()" class="p-2 border rounded-xl text-xs font-bold bg-surface text-on-surface outline-none cursor-pointer w-full md:w-auto">
                 <option value="0" data-i18n="m_jan">Januari</option>
                 <option value="1" data-i18n="m_feb">Februari</option>
                 <option value="2" data-i18n="m_mar">Maret</option>
@@ -388,10 +370,39 @@
                 </div>
               </div>
               <div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl h-64 flex flex-col">
-                <p class="text-xs font-bold text-center mb-4" data-i18n="chart_spending_title">Diagram Kategori Spending (Sesuai Transaksi)</p>
+                <p class="text-xs font-bold text-center mb-4" data-i18n="chart_spending_title">Klasemen Kategori Spending Terbesar</p>
                 <div class="flex-1 relative w-full h-full">
                   <canvas id="spendingCategoryChart"></canvas>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TREN KATEGORI PER BULAN (BARU) -->
+        <div class="collapse-item bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl overflow-hidden shadow-sm">
+          <button class="w-full flex items-center justify-between p-4 text-left hover:bg-surface-container-low dark:hover:bg-slate-700 transition-colors" onclick="toggleAccordion(this); initCategoryTrendChart();">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-purple-500">bar_chart</span>
+              <div>
+                <p class="font-title-sm font-bold">Tren Kategori per Bulan</p>
+                <p class="text-[11px] text-gray-500">Perbandingan nominal per kategori dari Januari - Desember</p>
+              </div>
+            </div>
+            <span class="material-symbols-outlined collapse-chevron transition-transform">expand_more</span>
+          </button>
+          <div class="collapse-content px-4 pb-4 space-y-4">
+            <div class="border-t border-outline-variant pt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <label class="text-xs font-bold uppercase text-gray-500">Pilih Kategori Transaksi:</label>
+              <select id="trend-category-select" onchange="updateCategoryTrendChart()" class="p-2 border rounded-xl text-xs font-bold bg-surface text-on-surface outline-none cursor-pointer w-full sm:w-1/2">
+                <option value="">-- Memuat Kategori --</option>
+              </select>
+            </div>
+            
+            <div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl h-72 flex flex-col">
+              <p id="trend-chart-title" class="text-xs font-bold text-center mb-4 text-primary dark:text-blue-400">Pilih kategori untuk melihat perbandingan</p>
+              <div class="flex-1 relative w-full h-full">
+                <canvas id="categoryTrendChart"></canvas>
               </div>
             </div>
           </div>
@@ -1226,7 +1237,8 @@
 
     function toggleDarkMode() {
       document.documentElement.classList.toggle('dark');
-      renderMonthlyChart(); // Refresh chart colors automatically
+      renderMonthlyChart(); 
+      updateCategoryTrendChart();
     }
 
     function checkDueDateAlerts() {
@@ -1370,18 +1382,111 @@
       renderNonMoneyRecap();
       renderDebtRecap();
       renderMonthlyChart();
+      if (document.getElementById('categoryTrendChart')) updateCategoryTrendChart();
     }
 
-    /* RECAP RENDERERS - SAMA PERSIS SEPERTI SEBELUMNYA KECUALI CHART.JS */
-    function renderInvestRecap() { /* omitted long string logic since structure is identical */ }
-    function renderSinkingRecap() { /* omitted */ }
-    function renderGoalsRecap() { /* omitted */ }
-    function renderReceivablesRecap() { /* omitted */ }
-    function renderNonMoneyRecap() { /* omitted */ }
-    function renderDebtRecap() { /* omitted */ }
+    function renderInvestRecap() {
+      let grid = document.getElementById('invest-recap-grid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      if (!globalData.investData) return;
+      Object.keys(globalData.investData).forEach(k => {
+        let item = globalData.investData[k];
+        let flow = getCategoryCashflowNet(k);
+        let totalMoney = (item.initial || 0) + flow.net;
+        let used = (item.used || 0) + flow.used;
+        let sisa = totalMoney - used;
+        grid.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-1 text-xs"><p class="font-bold text-primary dark:text-blue-400 text-sm">${k}</p><div class="flex justify-between"><span>Saldo Awal + Masuk:</span><span class="font-mono-data font-bold">${formatRp(totalMoney)}</span></div><div class="flex justify-between text-error"><span>Terpakai (Used):</span><span class="font-mono-data font-bold">${formatRp(used)}</span></div><div class="flex justify-between text-green-600 dark:text-green-400 font-bold border-t border-outline-variant/40 pt-1"><span>Sisa Uang:</span><span class="font-mono-data">${formatRp(sisa)}</span></div></div>`;
+      });
+    }
 
-    // --- BAGIAN BARU: PEMBARUAN DIAGRAM BATANG (BAR CHART) ---
-    let chart1 = null, chart2 = null;
+    function renderSinkingRecap() {
+      let container = document.getElementById('sinking-recap-grid');
+      if (!container) return;
+      container.innerHTML = '';
+      if (!globalData.sinkingData) return;
+      let today = new Date();
+      Object.keys(globalData.sinkingData).forEach(k => {
+        let item = globalData.sinkingData[k];
+        let flow = getCategoryCashflowNet(k);
+        let targetPerMonth = (item.target || 0) / (item.durationMonths || 1);
+        let current = (item.initial || 0) + flow.net;
+        let used = (item.used || 0) + flow.used;
+        let sisa = current - used;
+        let daysLeftText = "Durasi Terjadwal";
+        if (item.deadline) {
+          let diffDays = Math.ceil((new Date(item.deadline) - today) / (1000 * 60 * 60 * 24));
+          daysLeftText = diffDays > 0 ? (Math.floor(diffDays / 30) > 0 ? `${Math.floor(diffDays/30)} Bulan` : `${diffDays} Hari lagi`) : "Lewat";
+        }
+        let pct = Math.min(100, Math.round((current / (item.target || 1)) * 100));
+        container.innerHTML += `<div class="p-3.5 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-2.5 text-xs"><div class="flex justify-between items-center"><p class="font-bold text-tertiary dark:text-indigo-400 text-sm">${k}</p><span class="text-[10px] px-2.5 py-0.5 bg-tertiary/10 text-tertiary dark:text-indigo-300 rounded-full font-bold">Sisa Waktu: ${daysLeftText}</span></div><div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-[11px]"><div><span class="text-gray-500">Target Nominal:</span><br/><b class="font-mono-data">${formatRp(item.target)}</b></div><div><span class="text-gray-500">Target / Bulan:</span><br/><b class="font-mono-data text-primary dark:text-blue-400">${formatRp(targetPerMonth)}</b></div><div><span class="text-gray-500">Terkumpul (Cashflow):</span><br/><b class="font-mono-data text-green-600 dark:text-green-400">${formatRp(current)}</b></div><div><span class="text-gray-500">Terpakai:</span><br/><b class="font-mono-data text-error">${formatRp(used)}</b></div></div><div><div class="flex justify-between text-[10px] font-bold mb-1"><span>Progress (${pct}%)</span><span>Sisa Uang: ${formatRp(sisa)}</span></div><div class="w-full bg-gray-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden"><div class="bg-tertiary dark:bg-indigo-500 h-2 rounded-full" style="width: ${pct}%"></div></div></div></div>`;
+      });
+    }
+
+    function renderGoalsRecap() {
+      let container = document.getElementById('goals-recap-grid');
+      if (!container) return;
+      container.innerHTML = '';
+      if (!globalData.goalsData) return;
+      Object.keys(globalData.goalsData).forEach(k => {
+        let item = globalData.goalsData[k];
+        let flow = getCategoryCashflowNet(k);
+        let current = (item.initial || 0) + flow.net;
+        let used = (item.used || 0) + flow.used;
+        let sisa = current - used;
+        let pct = Math.min(100, Math.round((current / (item.target || 1)) * 100));
+        container.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-2 text-xs"><div class="flex justify-between items-center"><p class="font-bold text-secondary dark:text-sky-400 text-sm">${k}</p><span class="text-[10px] px-2 py-0.5 bg-secondary/10 text-secondary dark:text-sky-300 rounded-full font-bold">Waktu: ${item.timeframeVal || '-'} ${item.timeframeUnit || 'Tahun'}</span></div><div class="grid grid-cols-4 gap-2 text-[11px]"><div><span class="text-gray-500">Target Nominal:</span><br/><b class="font-mono-data">${formatRp(item.target)}</b></div><div><span class="text-gray-500">Terkumpul:</span><br/><b class="font-mono-data text-green-600 dark:text-green-400">${formatRp(current)}</b></div><div><span class="text-gray-500">Terpakai:</span><br/><b class="font-mono-data text-error">${formatRp(used)}</b></div><div><span class="text-gray-500">Sisa Uang:</span><br/><b class="font-mono-data text-primary dark:text-blue-400">${formatRp(sisa)}</b></div></div><div><div class="flex justify-between text-[10px] font-bold mb-1"><span>Progress Goal (${pct}%)</span><span>Kekurangan Target: ${formatRp(item.target - current > 0 ? item.target - current : 0)}</span></div><div class="w-full bg-gray-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden"><div class="bg-secondary dark:bg-sky-500 h-2 rounded-full" style="width: ${pct}%"></div></div></div></div>`;
+      });
+    }
+
+    function renderReceivablesRecap() {
+      let container = document.getElementById('receivables-recap-grid');
+      if (!container) return;
+      container.innerHTML = '';
+      if (!globalData.receivablesData) return;
+      Object.keys(globalData.receivablesData).forEach(k => {
+        let item = globalData.receivablesData[k];
+        let paid = parseFloat(item.paid) || 0;
+        if (globalData.recentHistory) globalData.recentHistory.forEach(tx => { if (tx.category === k && tx.cashflow === 'Pelunasan Piutang') paid += tx.amount; });
+        let remaining = (parseFloat(item.total) || 0) - paid;
+        container.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-2 text-xs"><div class="flex justify-between items-center"><p class="font-bold text-emerald-600 dark:text-emerald-400 text-sm">${k}</p><span class="text-[10px] px-2 py-0.5 bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 rounded-full font-bold">Deadline: ${item.deadline || '-'}</span></div><div class="grid grid-cols-3 gap-2 text-[11px]"><div><span class="text-gray-500">Total Piutang:</span><br/><b class="font-mono-data">${formatRp(item.total)}</b></div><div><span class="text-gray-500">Sudah Dibayar:</span><br/><b class="font-mono-data text-green-600 dark:text-green-400">${formatRp(paid)}</b></div><div><span class="text-gray-500">Belum Dibayar:</span><br/><b class="font-mono-data text-error">${formatRp(remaining > 0 ? remaining : 0)}</b></div></div></div>`;
+      });
+    }
+
+    function renderNonMoneyRecap() {
+      let container = document.getElementById('nonmoney-recap-grid');
+      if (!container) return;
+      container.innerHTML = '';
+      if (!globalData.nonMoneyAssets) return;
+      Object.keys(globalData.nonMoneyAssets).forEach(k => {
+        let item = globalData.nonMoneyAssets[k];
+        let totalVal = (parseFloat(item.qty) || 0) * (parseFloat(item.estimatedPrice) || 0);
+        let isNisabReached = (item.type === 'Emas' && item.qty >= 85) || (item.type === 'Perak' && item.qty >= 595);
+        let cardBg = isNisabReached ? "bg-red-50 dark:bg-red-950/40 border-2 border-red-500 shadow-md" : "bg-surface dark:bg-slate-900 border border-outline-variant";
+        container.innerHTML += `<div class="p-4 rounded-xl space-y-3 text-xs ${cardBg}"><div class="flex justify-between items-start"><div><p class="font-extrabold text-sm ${isNisabReached ? 'text-red-700 dark:text-red-400' : 'text-yellow-800 dark:text-yellow-400'}">${k} (${item.type})</p><p class="text-[10px] text-gray-500">Satuan: ${item.unit}</p></div>${isNisabReached ? `<div class="flex items-center gap-1 bg-red-600 text-white px-3 py-1 rounded-lg text-xs font-black animate-pulse shadow"><span class="material-symbols-outlined text-sm">warning</span><span>MASUK NISAB (2.5%)</span></div>` : `<span class="text-[10px] px-2 py-0.5 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 rounded-full font-bold">Belum Nisab</span>`}</div>${isNisabReached ? `<div class="p-2.5 bg-red-100 dark:bg-red-900/50 border border-red-300 dark:border-red-700 rounded-lg text-red-900 dark:text-red-200 font-bold text-xs flex items-center justify-between"><span class="flex items-center gap-1"><span class="material-symbols-outlined text-base text-red-600">error</span> PERINGATAN ZAKAT!</span><span>Wajib Zakat: <b class="font-mono-data text-red-700 dark:text-red-300">${formatRp(totalVal * 0.025)}</b></span></div>` : ''}<div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-[11px] pt-1"><div><span class="text-gray-500 font-bold">Total Kuantitas:</span><br/><b class="text-primary dark:text-blue-400 text-xs">${item.qty} ${item.unit}</b></div><div><span class="text-gray-500 font-bold">Estimasi / Satuan:</span><br/><b class="font-mono-data">${formatRp(item.estimatedPrice)}</b></div><div><span class="text-gray-500 font-bold">Total Nilai Aset:</span><br/><b class="font-mono-data text-green-600 dark:text-green-400 text-xs">${formatRp(totalVal)}</b></div><div><span class="text-gray-500 font-bold">Terpakai (Dijual):</span><br/><b class="text-error">${item.used || 0} ${item.unit}</b></div></div></div>`;
+      });
+    }
+
+    function renderDebtRecap() {
+      let container = document.getElementById('debt-recap-grid');
+      if (!container) return;
+      container.innerHTML = '';
+      if (!globalData.debtData) return;
+      Object.keys(globalData.debtData).forEach(k => {
+        let item = globalData.debtData[k];
+        let total = parseFloat(item.total) || 0, paid = parseFloat(item.paid) || 0;
+        if (globalData.recentHistory) globalData.recentHistory.forEach(tx => {
+          if (tx.category === k) {
+            if (tx.cashflow === 'Cicilan / Utang Baru') total += tx.amount;
+            if (tx.cashflow === 'Bayar Cicilan / Utang') paid += tx.amount;
+          }
+        });
+        let unpaid = total - paid;
+        container.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-2 text-xs"><div class="flex justify-between items-center"><div class="flex items-center gap-2"><p class="font-bold text-error text-sm">${k}</p><span class="text-[9px] px-2 py-0.5 bg-primary/10 text-primary dark:text-blue-400 rounded-full font-bold">${item.category || 'Utang'}</span></div><span class="text-[10px] px-2 py-0.5 bg-red-100 dark:bg-red-950 text-error rounded-full font-bold">Bayar: ${item.period || 'Bulanan'} | Sisa: ${Math.ceil((unpaid > 0 ? unpaid : 0) / (item.monthlyPay || 1))} Sesi</span></div><div class="grid grid-cols-4 gap-2 text-[11px]"><div><span class="text-gray-500">Total Utang:</span><br/><b class="font-mono-data">${formatRp(total)}</b></div><div><span class="text-gray-500">Nominal Bayar:</span><br/><b class="font-mono-data text-primary dark:text-blue-400">${formatRp(item.monthlyPay)}</b></div><div><span class="text-gray-500">Paid (Dibayar):</span><br/><b class="font-mono-data text-green-600 dark:text-green-400">${formatRp(paid)}</b></div><div><span class="text-gray-500">Unpaid (Sisa):</span><br/><b class="font-mono-data text-error">${formatRp(unpaid > 0 ? unpaid : 0)}</b></div></div></div>`;
+      });
+    }
+
+    let chart1 = null, chart2 = null, trendChart = null;
 
     function renderMonthlyChart() {
       setTimeout(() => {
@@ -1397,124 +1502,174 @@
 
         if (globalData.recentHistory) {
           globalData.recentHistory.forEach(h => {
-            if (h.rawDate) {
-              let d = new Date(h.rawDate);
-              if (d.getMonth() === selectedMonthIdx) {
-                if (h.cashflow === 'Income') totalInc += h.amount;
-                if (h.cashflow === 'Spending') {
-                  totalSpend += h.amount;
-                  let cat = h.category || "Lainnya";
-                  spendCatMap[cat] = (spendCatMap[cat] || 0) + h.amount;
-                }
-                if (h.cashflow === 'Bayar Cicilan / Utang') totalBills += h.amount;
+            if (h.rawDate && new Date(h.rawDate).getMonth() === selectedMonthIdx) {
+              if (h.cashflow === 'Income') totalInc += h.amount;
+              if (h.cashflow === 'Spending') {
+                totalSpend += h.amount;
+                let cat = h.category || "Lainnya";
+                spendCatMap[cat] = (spendCatMap[cat] || 0) + h.amount;
               }
+              if (h.cashflow === 'Bayar Cicilan / Utang') totalBills += h.amount;
             }
           });
         }
 
         let mContainer = document.getElementById('monthly-summary-boxes');
         if (mContainer) {
-          let sisa = totalInc - (totalSpend + totalBills);
           mContainer.innerHTML = `
             <div class="p-2.5 bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 rounded-xl"><span>Total Income</span><br/><b class="font-mono-data text-green-600 dark:text-green-400">${formatRp(totalInc)}</b></div>
             <div class="p-2.5 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-xl"><span>Total Spending</span><br/><b class="font-mono-data text-error">${formatRp(totalSpend)}</b></div>
             <div class="p-2.5 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 rounded-xl"><span>Bills Paid</span><br/><b class="font-mono-data text-tertiary dark:text-indigo-400">${formatRp(totalBills)}</b></div>
-            <div class="p-2.5 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-xl"><span>Sisa Uang</span><br/><b class="font-mono-data text-primary dark:text-blue-400">${formatRp(sisa)}</b></div>
+            <div class="p-2.5 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-xl"><span>Sisa Uang</span><br/><b class="font-mono-data text-primary dark:text-blue-400">${formatRp(totalInc - (totalSpend + totalBills))}</b></div>
           `;
         }
 
         let isDark = document.documentElement.classList.contains('dark');
         let labelColor = isDark ? '#cbd5e1' : '#475569';
 
-        // CHART 1: CASHFLOW (BATANG VERTIKAL)
         let ctx1 = document.getElementById('monthlyFlowChart');
         if (ctx1) {
           chart1 = new Chart(ctx1.getContext('2d'), {
             type: 'bar',
             data: {
               labels: ['Income', 'Spending', 'Bills Paid'],
-              datasets: [{ 
-                data: [totalInc, totalSpend, totalBills], 
-                backgroundColor: ['#22c55e', '#ef4444', '#6366f1'],
-                borderRadius: 6
-              }]
+              datasets: [{ data: [totalInc, totalSpend, totalBills], backgroundColor: ['#22c55e', '#ef4444', '#6366f1'], borderRadius: 6 }]
             },
             options: { 
-              responsive: true, 
-              maintainAspectRatio: false,
-              layout: { padding: { top: 25 } },
-              scales: {
-                y: { display: false, beginAtZero: true }, // Hilangkan garis y agar bersih
-                x: { grid: { display: false }, ticks: { font: { weight: 'bold' }, color: labelColor } }
-              },
+              responsive: true, maintainAspectRatio: false, layout: { padding: { top: 25 } },
+              scales: { y: { display: false, beginAtZero: true }, x: { grid: { display: false }, ticks: { font: { weight: 'bold' }, color: labelColor } } },
               plugins: {
                 legend: { display: false },
-                tooltip: {
-                  callbacks: { label: function(context) { return "Rp " + context.raw.toLocaleString('id-ID'); } }
-                },
-                datalabels: {
-                  anchor: 'end',
-                  align: 'top',
-                  formatter: function(value) { return value > 0 ? "Rp " + value.toLocaleString('id-ID') : ""; },
-                  font: { family: 'JetBrains Mono', size: 10, weight: 'bold' },
-                  color: labelColor
-                }
+                tooltip: { callbacks: { label: function(c) { return "Rp " + c.raw.toLocaleString('id-ID'); } } },
+                datalabels: { anchor: 'end', align: 'top', formatter: function(v) { return v > 0 ? "Rp " + v.toLocaleString('id-ID') : ""; }, font: { family: 'JetBrains Mono', size: 10, weight: 'bold' }, color: labelColor }
               }
             }
           });
         }
 
-        // Urutkan pengeluaran dari terbesar ke terkecil
-        let spendKeys = Object.keys(spendCatMap);
-        spendKeys.sort((a, b) => spendCatMap[b] - spendCatMap[a]);
-        
+        let spendKeys = Object.keys(spendCatMap).sort((a, b) => spendCatMap[b] - spendCatMap[a]);
         let labels = spendKeys.length > 0 ? spendKeys : ["Belum Ada Data"];
         let values = spendKeys.length > 0 ? spendKeys.map(k => spendCatMap[k]) : [0];
 
-        // CHART 2: SPENDING (BATANG HORIZONTAL)
         let ctx2 = document.getElementById('spendingCategoryChart');
         if (ctx2) {
           chart2 = new Chart(ctx2.getContext('2d'), {
             type: 'bar',
-            data: {
-              labels: labels,
-              datasets: [{ 
-                data: values, 
-                backgroundColor: '#38bdf8', // Warna biru seragam ala klasemen
-                borderRadius: 4
-              }]
-            },
+            data: { labels: labels, datasets: [{ data: values, backgroundColor: '#38bdf8', borderRadius: 4 }] },
             options: { 
-              indexAxis: 'y', // MENGUBAH JADI HORIZONTAL
-              responsive: true, 
-              maintainAspectRatio: false,
-              layout: { padding: { right: 80 } }, // Ruang lega untuk nominal di kanan
-              scales: {
-                x: { display: false, beginAtZero: true }, 
-                y: { grid: { display: false }, ticks: { font: { weight: 'bold' }, color: labelColor } }
-              },
+              indexAxis: 'y', responsive: true, maintainAspectRatio: false, layout: { padding: { right: 80 } },
+              scales: { x: { display: false, beginAtZero: true }, y: { grid: { display: false }, ticks: { font: { weight: 'bold' }, color: labelColor } } },
               plugins: {
                 legend: { display: false },
-                tooltip: {
-                  callbacks: { label: function(context) { return "Rp " + context.raw.toLocaleString('id-ID'); } }
-                },
-                datalabels: {
-                  anchor: 'end',
-                  align: 'right',
-                  formatter: function(value) { return value > 0 ? "Rp " + value.toLocaleString('id-ID') : ""; },
-                  font: { family: 'JetBrains Mono', size: 10, weight: 'bold' },
-                  color: labelColor
-                }
+                tooltip: { callbacks: { label: function(c) { return "Rp " + c.raw.toLocaleString('id-ID'); } } },
+                datalabels: { anchor: 'end', align: 'right', formatter: function(v) { return v > 0 ? "Rp " + v.toLocaleString('id-ID') : ""; }, font: { family: 'JetBrains Mono', size: 10, weight: 'bold' }, color: labelColor }
               }
             }
           });
         }
       }, 100);
     }
-    // --- AKHIR BAGIAN BARU ---
+
+    // --- FUNGSI BARU: TREN KATEGORI PER BULAN ---
+    function initCategoryTrendChart() {
+      let select = document.getElementById('trend-category-select');
+      if (!select) return;
+      
+      let uniqueCats = new Set();
+      if (globalData.recentHistory) {
+        globalData.recentHistory.forEach(tx => {
+          if (tx.category && tx.category !== '- not applicable -') {
+            uniqueCats.add(tx.category);
+          }
+        });
+      }
+      
+      let currentVal = select.value;
+      select.innerHTML = '<option value="">-- Pilih Kategori --</option>';
+      
+      let sortedCats = Array.from(uniqueCats).sort();
+      sortedCats.forEach(c => {
+        select.innerHTML += `<option value="${c}">${c}</option>`;
+      });
+      
+      if (sortedCats.length > 0) {
+        if (currentVal && sortedCats.includes(currentVal)) select.value = currentVal;
+        else select.value = sortedCats[0];
+      }
+      
+      updateCategoryTrendChart();
+    }
+
+    function updateCategoryTrendChart() {
+      let select = document.getElementById('trend-category-select');
+      if (!select) return;
+      let cat = select.value;
+      
+      let titleEl = document.getElementById('trend-chart-title');
+      if (titleEl) {
+        titleEl.textContent = cat ? `Perbandingan Tren: ${cat} (Jan-Des)` : "Pilih kategori untuk melihat perbandingan";
+      }
+      
+      let monthlyData = new Array(12).fill(0);
+      let currentYear = new Date().getFullYear(); // Hanya ambil data tahun ini
+      
+      if (cat && globalData.recentHistory) {
+        globalData.recentHistory.forEach(tx => {
+          if (tx.category === cat && tx.rawDate) {
+            let d = new Date(tx.rawDate);
+            if (d.getFullYear() === currentYear) {
+              monthlyData[d.getMonth()] += tx.amount;
+            }
+          }
+        });
+      }
+      
+      let isDark = document.documentElement.classList.contains('dark');
+      let labelColor = isDark ? '#cbd5e1' : '#475569';
+      
+      let ctx = document.getElementById('categoryTrendChart');
+      if (!ctx) return;
+      
+      if (trendChart) trendChart.destroy();
+      
+      trendChart = new Chart(ctx.getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
+          datasets: [{
+            data: monthlyData,
+            backgroundColor: '#a855f7', // Warna ungu agar beda dengan chart lain
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, layout: { padding: { top: 25 } },
+          scales: {
+            y: { display: false, beginAtZero: true },
+            x: { grid: { display: false }, ticks: { font: { weight: 'bold' }, color: labelColor } }
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: function(c) { return "Rp " + c.raw.toLocaleString('id-ID'); } } },
+            datalabels: {
+              anchor: 'end', align: 'top',
+              formatter: function(value) { 
+                if (value === 0) return "";
+                if (value >= 1000000) return (value/1000000).toFixed(1).replace('.0','') + 'Jt';
+                if (value >= 1000) return (value/1000).toFixed(0) + 'k';
+                return value.toLocaleString('id-ID');
+              },
+              font: { family: 'JetBrains Mono', size: 9, weight: 'bold' },
+              color: labelColor
+            }
+          }
+        }
+      });
+    }
+    // ---------------------------------------------
 
     function populateReportFilterCategories() {
-      let select = document.getElementById('rep-filter-cashflow'); // Fixed ID
+      let select = document.getElementById('rep-filter-cashflow');
       if (!select) return;
       select.innerHTML = '<option value="all">Semua Cashflow</option>';
       let cfs = ["Income", "Spending", "Invest / Savings", "Financial Goals", "Bayar Cicilan / Utang"];
@@ -1538,55 +1693,18 @@
       catSelect.innerHTML = '<option value="- not applicable -" selected>- not applicable -</option>';
       dariSelect.innerHTML = '<option value="- not applicable -" selected>- not applicable -</option>';
       keSelect.innerHTML = '<option value="- not applicable -" selected>- not applicable -</option>';
+      catSelect.disabled = false; dariSelect.disabled = false; keSelect.disabled = false;
 
-      catSelect.disabled = false;
-      dariSelect.disabled = false;
-      keSelect.disabled = false;
-
-      if (cf === 'Income') {
-        dariSelect.disabled = true;
-        fillOptions(catSelect, globalData.incomes);
-        fillOptions(keSelect, globalData.accounts);
-      } else if (cf === 'Pelunasan Piutang') {
-        dariSelect.disabled = true;
-        fillOptions(catSelect, Object.keys(globalData.receivablesData || {}));
-        fillOptions(keSelect, globalData.accounts);
-      } else if (cf === 'Cicilan / Utang Baru') {
-        dariSelect.disabled = true;
-        let allPeople = Object.keys(globalData.receivablesData || {}).concat(Object.keys(globalData.debtData || {}));
-        fillOptions(catSelect, [...new Set(allPeople)]);
-        fillOptions(keSelect, globalData.accounts);
-      } else if (cf === 'Spending') {
-        keSelect.disabled = true;
-        fillOptions(catSelect, globalData.spendings);
-        fillOptions(dariSelect, globalData.accounts);
-      } else if (cf === 'Bayar Cicilan / Utang') {
-        keSelect.disabled = true;
-        let debtKeys = Object.keys(globalData.debtData || {}).concat(globalData.bills || []);
-        fillOptions(catSelect, debtKeys);
-        fillOptions(dariSelect, globalData.accounts);
-      } else if (cf === 'Piutang Baru') {
-        keSelect.disabled = true;
-        fillOptions(catSelect, Object.keys(globalData.receivablesData || {}));
-        fillOptions(dariSelect, globalData.accounts);
-      } else if (cf === 'Transfer') {
-        catSelect.disabled = true;
-        fillOptions(dariSelect, globalData.accounts);
-        fillOptions(keSelect, globalData.accounts);
-      } else if (cf === 'Invest / Savings') {
-        fillOptions(catSelect, Object.keys(globalData.investData || {}));
-        fillOptions(dariSelect, globalData.accounts);
-        fillOptions(keSelect, globalData.accounts);
-      } else if (cf === 'Financial Goals') {
-        fillOptions(catSelect, Object.keys(globalData.goalsData || {}));
-        fillOptions(dariSelect, globalData.accounts);
-        fillOptions(keSelect, globalData.accounts);
-      } else if (cf === 'Dari Asset / Saving') {
-        let combined = Object.keys(globalData.sinkingData || {}).concat(Object.keys(globalData.investData || {}));
-        fillOptions(catSelect, combined);
-        fillOptions(dariSelect, globalData.accounts);
-        fillOptions(keSelect, globalData.accounts);
-      }
+      if (cf === 'Income') { dariSelect.disabled = true; fillOptions(catSelect, globalData.incomes); fillOptions(keSelect, globalData.accounts); }
+      else if (cf === 'Pelunasan Piutang') { dariSelect.disabled = true; fillOptions(catSelect, Object.keys(globalData.receivablesData || {})); fillOptions(keSelect, globalData.accounts); }
+      else if (cf === 'Cicilan / Utang Baru') { dariSelect.disabled = true; let allPeople = Object.keys(globalData.receivablesData || {}).concat(Object.keys(globalData.debtData || {})); fillOptions(catSelect, [...new Set(allPeople)]); fillOptions(keSelect, globalData.accounts); }
+      else if (cf === 'Spending') { keSelect.disabled = true; fillOptions(catSelect, globalData.spendings); fillOptions(dariSelect, globalData.accounts); }
+      else if (cf === 'Bayar Cicilan / Utang') { keSelect.disabled = true; let debtKeys = Object.keys(globalData.debtData || {}).concat(globalData.bills || []); fillOptions(catSelect, debtKeys); fillOptions(dariSelect, globalData.accounts); }
+      else if (cf === 'Piutang Baru') { keSelect.disabled = true; fillOptions(catSelect, Object.keys(globalData.receivablesData || {})); fillOptions(dariSelect, globalData.accounts); }
+      else if (cf === 'Transfer') { catSelect.disabled = true; fillOptions(dariSelect, globalData.accounts); fillOptions(keSelect, globalData.accounts); }
+      else if (cf === 'Invest / Savings') { fillOptions(catSelect, Object.keys(globalData.investData || {})); fillOptions(dariSelect, globalData.accounts); fillOptions(keSelect, globalData.accounts); }
+      else if (cf === 'Financial Goals') { fillOptions(catSelect, Object.keys(globalData.goalsData || {})); fillOptions(dariSelect, globalData.accounts); fillOptions(keSelect, globalData.accounts); }
+      else if (cf === 'Dari Asset / Saving') { let combined = Object.keys(globalData.sinkingData || {}).concat(Object.keys(globalData.investData || {})); fillOptions(catSelect, combined); fillOptions(dariSelect, globalData.accounts); fillOptions(keSelect, globalData.accounts); }
     }
 
     function fillOptions(selectElem, arr) {
@@ -1608,7 +1726,6 @@
 
     function submitTransaction(e) {
       e.preventDefault();
-
       let dDate = document.getElementById('tx-date').value;
       let dName = document.getElementById('tx-name').value;
       let rawAmount = document.getElementById('tx-amount').value.replace(/\./g, '');
@@ -1620,7 +1737,6 @@
       let rawAdmin = document.getElementById('tx-admin-fee').value.replace(/\./g, '');
       let dAdminFee = parseFloat(rawAdmin) || 0;
       let dAdminAcc = document.getElementById('tx-admin-account').value || dDari;
-
       let timeFormatted = formatFullDateTime(dDate);
 
       if (!globalData.currentBalances) globalData.currentBalances = {};
@@ -1628,9 +1744,7 @@
       if (dKe !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(dKe)) globalData.currentBalances[dKe] += dAmount;
 
       let mainTx = { dateTime: timeFormatted, rawDate: dDate, name: dName, amount: dAmount, cashflow: dCashflow, category: dCategory, dariAcc: dDari, keAcc: dKe };
-
       if (!globalData.recentHistory) globalData.recentHistory = [];
-
       let adminAdded = false;
       if (dAdminFee > 0 && dAdminAcc !== '- not applicable -') {
         adminAdded = true;
@@ -1642,30 +1756,19 @@
         globalData.recentHistory.unshift(mainTx);
       }
 
-      saveStorageData();
-      renderDashboard();
-      renderHistoryTable();
-
+      saveStorageData(); renderDashboard(); renderHistoryTable();
       document.getElementById('tx-form').reset();
       let dateInput = document.getElementById('tx-date');
       if (dateInput) dateInput.valueAsDate = new Date();
-      applyCashflowLogic();
-
-      playSuccessSound();
-      showSuccessModal(mainTx, adminAdded, dAdminFee);
+      applyCashflowLogic(); playSuccessSound(); showSuccessModal(mainTx, adminAdded, dAdminFee);
     }
 
     function renderHistoryTable() {
       let tbody = document.getElementById('tx-history-tbody');
       if (!tbody) return;
       tbody.innerHTML = '';
-
       let historyList = globalData.recentHistory || [];
-      if (historyList.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400">Belum ada transaksi diinput.</td></tr>`;
-        return;
-      }
-
+      if (historyList.length === 0) { tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400">Belum ada transaksi diinput.</td></tr>`; return; }
       let filterCashflow = document.getElementById('rep-filter-cashflow') ? document.getElementById('rep-filter-cashflow').value : 'all';
 
       historyList.forEach((tx, idx) => {
@@ -1710,8 +1813,7 @@
 
     function closeEditModal() {
       let modal = document.getElementById('edit-tx-modal'), card = document.getElementById('edit-tx-card');
-      modal.classList.add('opacity-0');
-      card.classList.remove('scale-100'); card.classList.add('scale-95');
+      modal.classList.add('opacity-0'); card.classList.remove('scale-100'); card.classList.add('scale-95');
       setTimeout(() => modal.classList.add('hidden'), 300);
     }
 
@@ -1731,7 +1833,6 @@
       if (tx.keAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.keAcc)) globalData.currentBalances[tx.keAcc] += newAmount;
 
       tx.name = newName; tx.amount = newAmount; tx.category = newCat;
-
       saveStorageData(); renderDashboard(); renderHistoryTable(); closeEditModal(); playSuccessSound();
       alert("Riwayat transaksi berhasil diperbarui & saldo akun disesuaikan!");
     }
@@ -1743,8 +1844,7 @@
         let amt = tx.amount;
         if (tx.dariAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.dariAcc)) globalData.currentBalances[tx.dariAcc] += amt;
         if (tx.keAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.keAcc)) globalData.currentBalances[tx.keAcc] -= amt;
-        globalData.recentHistory.splice(idx, 1);
-        saveStorageData(); renderDashboard(); renderHistoryTable();
+        globalData.recentHistory.splice(idx, 1); saveStorageData(); renderDashboard(); renderHistoryTable();
         alert("Transaksi berhasil dihapus!");
       }
     }
@@ -1853,11 +1953,9 @@
     function handleDebtPeriodChange(key, val) {
       let dateBox = document.getElementById(`debt-date-box-${key}`);
       if (val === 'Setiap Tanggal') {
-        if (dateBox) dateBox.classList.remove('hidden');
-        updateDebtField(key, 'period', 'Setiap Tanggal 1');
+        if (dateBox) dateBox.classList.remove('hidden'); updateDebtField(key, 'period', 'Setiap Tanggal 1');
       } else {
-        if (dateBox) dateBox.classList.add('hidden');
-        updateDebtField(key, 'period', val);
+        if (dateBox) dateBox.classList.add('hidden'); updateDebtField(key, 'period', val);
       }
     }
 
@@ -1868,10 +1966,8 @@
       if (name && name.trim() !== "") {
         let clean = name.trim();
         if (!globalData.debtData) globalData.debtData = {};
-        if (!globalData.debtData[clean]) {
-          globalData.debtData[clean] = { total: 1000000, paid: 0, monthlyPay: 100000, category: "Cicilan", period: "Bulanan" };
-          saveStorageData(); renderSetupView();
-        } else alert("Nama sudah ada!");
+        if (!globalData.debtData[clean]) { globalData.debtData[clean] = { total: 1000000, paid: 0, monthlyPay: 100000, category: "Cicilan", period: "Bulanan" }; saveStorageData(); renderSetupView(); } 
+        else alert("Nama sudah ada!");
       }
     }
 
@@ -1882,9 +1978,7 @@
       saveStorageData();
     }
 
-    function removeDebtItem(key) {
-      if (confirm(`Hapus ${key} dari database?`)) { delete globalData.debtData[key]; saveStorageData(); renderSetupView(); }
-    }
+    function removeDebtItem(key) { if (confirm(`Hapus ${key} dari database?`)) { delete globalData.debtData[key]; saveStorageData(); renderSetupView(); } }
 
     function renderSimpleCategoryTags(key, containerId) {
       let container = document.getElementById(containerId);
@@ -1892,11 +1986,8 @@
       container.innerHTML = '';
       if (!globalData[key]) globalData[key] = [];
       globalData[key].forEach((item, idx) => {
-        if (containerId === 'setup-bills-list') {
-          container.innerHTML += `<div class="flex items-center justify-between bg-surface-container dark:bg-slate-900 px-3 py-2 rounded-xl border border-outline-variant/40"><span class="text-xs font-bold text-on-surface">${item}</span><span onclick="removeSimpleCategory('${key}', ${idx})" class="material-symbols-outlined text-sm cursor-pointer hover:text-error">close</span></div>`;
-        } else {
-          container.innerHTML += `<span class="px-3.5 py-2 bg-surface dark:bg-slate-900 border border-outline-variant text-on-surface rounded-xl text-xs font-semibold flex items-center gap-1">${item}<span onclick="removeSimpleCategory('${key}', ${idx})" class="material-symbols-outlined text-xs cursor-pointer hover:text-error ml-1">close</span></span>`;
-        }
+        if (containerId === 'setup-bills-list') container.innerHTML += `<div class="flex items-center justify-between bg-surface-container dark:bg-slate-900 px-3 py-2 rounded-xl border border-outline-variant/40"><span class="text-xs font-bold text-on-surface">${item}</span><span onclick="removeSimpleCategory('${key}', ${idx})" class="material-symbols-outlined text-sm cursor-pointer hover:text-error">close</span></div>`;
+        else container.innerHTML += `<span class="px-3.5 py-2 bg-surface dark:bg-slate-900 border border-outline-variant text-on-surface rounded-xl text-xs font-semibold flex items-center gap-1">${item}<span onclick="removeSimpleCategory('${key}', ${idx})" class="material-symbols-outlined text-xs cursor-pointer hover:text-error ml-1">close</span></span>`;
       });
     }
 
@@ -1910,8 +2001,7 @@
         let inputsHtml = '';
         fields.forEach(f => {
           let val = item[f] !== undefined ? item[f] : '';
-          let labelName = f.toUpperCase();
-          inputsHtml += `<div><label class="text-[9px] uppercase font-bold text-gray-500">${labelName}</label><input type="${typeof val === 'number' ? 'number' : (f === 'deadline' ? 'date' : 'text')}" value="${val}" onchange="updateValuedCategoryField('${objKey}', '${k}', '${f}', this.value)" class="w-full p-1.5 border rounded-lg text-xs font-mono-data bg-surface dark:bg-slate-800 text-on-surface"></div>`;
+          inputsHtml += `<div><label class="text-[9px] uppercase font-bold text-gray-500">${f.toUpperCase()}</label><input type="${typeof val === 'number' ? 'number' : (f === 'deadline' ? 'date' : 'text')}" value="${val}" onchange="updateValuedCategoryField('${objKey}', '${k}', '${f}', this.value)" class="w-full p-1.5 border rounded-lg text-xs font-mono-data bg-surface dark:bg-slate-800 text-on-surface"></div>`;
         });
         container.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant space-y-2 text-xs"><div class="flex justify-between items-center border-b border-outline-variant/30 pb-1"><b class="font-bold text-primary dark:text-blue-400 text-sm">${k}</b><span onclick="removeValuedCategoryItem('${objKey}', '${k}')" class="material-symbols-outlined text-sm text-error cursor-pointer">close</span></div><div class="grid grid-cols-2 md:grid-cols-4 gap-2">${inputsHtml}</div></div>`;
       });
@@ -1998,15 +2088,12 @@
     function updateAccountDetail(accName, field, value) {
       if (!globalData.accountDetails) globalData.accountDetails = {};
       if (!globalData.accountDetails[accName]) globalData.accountDetails[accName] = {};
-      globalData.accountDetails[accName][field] = value;
-      saveStorageData(); renderDashboard();
+      globalData.accountDetails[accName][field] = value; saveStorageData(); renderDashboard();
     }
 
     function updateStartingBalance(val) { globalData.startingBalance = parseFloat(val) || 0; saveStorageData(); }
 
-    function updateAccountBalance(accName, newBal) {
-      globalData.currentBalances[accName] = parseFloat(newBal) || 0; saveStorageData(); renderDashboard();
-    }
+    function updateAccountBalance(accName, newBal) { globalData.currentBalances[accName] = parseFloat(newBal) || 0; saveStorageData(); renderDashboard(); }
 
     function verifySetupPassword() {
       let p = document.getElementById('setup-pass-input').value;
