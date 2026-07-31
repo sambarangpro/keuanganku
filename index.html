@@ -194,6 +194,11 @@
     </div>
   </header>
 
+  <!-- TOMBOL MENGAMBANG (FLOATING ACTION BUTTON) UNTUK SENSOR SALDO -->
+  <button onclick="toggleBalanceMask()" class="fixed bottom-24 right-6 z-50 bg-slate-800 dark:bg-slate-600 text-white p-3 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.2)] border border-slate-600 dark:border-slate-500 hover:scale-110 active:scale-95 transition-transform flex items-center justify-center group" title="Sembunyikan/Tampilkan Saldo">
+    <span class="material-symbols-outlined" id="icon-mask-balance-fab" style="font-size: 26px;">visibility_off</span>
+  </button>
+
   <main class="mt-20 px-4 md:px-8 max-w-5xl mx-auto space-y-6">
 
     <!-- PAGE 1: DASHBOARD -->
@@ -227,14 +232,7 @@
           <h3 class="font-title-sm font-bold flex items-center gap-2 text-on-surface">
             <span class="material-symbols-outlined text-primary">account_balance</span> <span data-i18n="title_acc_balance">Saldo Per Akun</span>
           </h3>
-          <div class="flex items-center gap-2">
-            <!-- Tombol Sensor / Privacy Mode -->
-            <button onclick="toggleBalanceMask()" id="btn-mask-balance" title="Sembunyikan/Tampilkan Saldo" class="p-1.5 rounded-lg border border-outline-variant hover:bg-surface-container flex items-center text-xs font-bold gap-1 text-on-surface-variant">
-              <span class="material-symbols-outlined text-sm" id="icon-mask-balance">visibility_off</span>
-              <span id="text-mask-balance">Tampilkan Saldo</span>
-            </button>
-            <span id="dash-acc-badge" class="text-xs font-bold text-secondary uppercase tracking-wider" data-i18n="badge_db_acc">DATABASE AKUN</span>
-          </div>
+          <span id="dash-acc-badge" class="text-xs font-bold text-secondary uppercase tracking-wider" data-i18n="badge_db_acc">DATABASE AKUN</span>
         </div>
         <div id="account-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
       </section>
@@ -244,7 +242,7 @@
           <span class="material-symbols-outlined text-tertiary">analytics</span> <span data-i18n="title_recap_analysis">Rekapitulasi & Analisis Finansial</span>
         </h3>
 
-        <!-- BUDGETING RECAP (BARU) -->
+        <!-- BUDGETING RECAP -->
         <div class="collapse-item bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl overflow-hidden shadow-sm">
           <button class="w-full flex items-center justify-between p-4 text-left hover:bg-surface-container-low dark:hover:bg-slate-700 transition-colors" onclick="toggleAccordion(this)">
             <div class="flex items-center gap-3">
@@ -567,7 +565,7 @@
         </div>
 
         <!-- TOOLBAR FILTER -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 bg-white dark:bg-slate-800 p-4 rounded-2xl border border-outline-variant shadow-sm text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 bg-white dark:bg-slate-800 p-4 rounded-2xl border border-outline-variant shadow-sm text-xs">
           <div>
             <label class="text-[10px] font-bold uppercase text-gray-500" data-i18n="lbl_filter_mode">Mode Filter Waktu</label>
             <select id="rep-filter-mode" onchange="toggleFilterModeInputs()" class="w-full p-2 border rounded-xl font-bold bg-surface text-on-surface outline-none cursor-pointer">
@@ -594,11 +592,16 @@
             <label class="text-[10px] font-bold uppercase text-gray-500" data-i18n="lbl_filter_cf">Cashflow / Kategori</label>
             <select id="rep-filter-cashflow" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-bold bg-surface text-on-surface outline-none cursor-pointer">
               <option value="all" data-i18n="f_all_cf">Semua Cashflow</option>
-              <option value="Income">Income</option>
-              <option value="Spending">Spending</option>
-              <option value="Invest / Savings">Invest / Savings</option>
-              <option value="Financial Goals">Financial Goals</option>
-              <option value="Bayar Cicilan / Utang">Bayar Cicilan / Utang / Rembers</option>
+              <!-- Diisi otomatis oleh Javascript -->
+            </select>
+          </div>
+
+          <!-- FILTER AKUN BARU -->
+          <div>
+            <label class="text-[10px] font-bold uppercase text-gray-500">Filter Akun</label>
+            <select id="rep-filter-account" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-bold bg-surface text-on-surface outline-none cursor-pointer">
+              <option value="all">Semua Akun</option>
+              <!-- Diisi otomatis oleh Javascript -->
             </select>
           </div>
         </div>
@@ -879,7 +882,7 @@
           </div>
         </section>
 
-        <!-- 11. BUDGETING BULANAN (BARU) -->
+        <!-- 11. BUDGETING BULANAN -->
         <section class="space-y-3">
           <div class="flex items-center gap-2">
             <span class="material-symbols-outlined text-orange-500">donut_small</span>
@@ -1072,16 +1075,12 @@
       }
     }
 
+    // UPDATED: Logic untuk Sensor Saldo melalui Tombol Mengambang (FAB)
     function toggleBalanceMask() {
       isBalanceMasked = !isBalanceMasked;
-      let icon = document.getElementById('icon-mask-balance');
-      let text = document.getElementById('text-mask-balance');
-      if (isBalanceMasked) {
-        if (icon) icon.textContent = "visibility_off";
-        if (text) text.textContent = "Tampilkan Saldo";
-      } else {
-        if (icon) icon.textContent = "visibility";
-        if (text) text.textContent = "Sensor Saldo";
+      let iconFab = document.getElementById('icon-mask-balance-fab');
+      if (iconFab) {
+        iconFab.textContent = isBalanceMasked ? "visibility_off" : "visibility";
       }
       renderDashboard();
     }
@@ -1093,9 +1092,7 @@
       
       document.querySelectorAll('[data-i18n]').forEach(el => {
         let key = el.getAttribute('data-i18n');
-        if (dict[key]) {
-          el.textContent = dict[key];
-        }
+        if (dict[key]) el.textContent = dict[key];
       });
     }
 
@@ -1104,26 +1101,20 @@
         let ctx = new (window.AudioContext || window.webkitAudioContext)();
         let osc = ctx.createOscillator();
         let gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.connect(gain);
-        gain.connect(ctx.destination);
+        osc.type = 'sine'; osc.connect(gain); gain.connect(ctx.destination);
         let now = ctx.currentTime;
         osc.frequency.setValueAtTime(523.25, now);
         osc.frequency.setValueAtTime(659.25, now + 0.08);
         osc.frequency.setValueAtTime(783.99, now + 0.16);
         gain.gain.setValueAtTime(0.15, now);
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
-        osc.start(now);
-        osc.stop(now + 0.45);
+        osc.start(now); osc.stop(now + 0.45);
       } catch(e) {}
     }
 
     function formatInputNominal(input) {
       let rawVal = input.value.replace(/[^0-9]/g, '');
-      if (rawVal === '') {
-        input.value = '';
-        return;
-      }
+      if (rawVal === '') { input.value = ''; return; }
       input.value = parseInt(rawVal, 10).toLocaleString('id-ID');
     }
 
@@ -1137,7 +1128,7 @@
       spendings: ["Makan/min", "Transport", "Belanja"],
       bills: ["Cicilan Motor", "Wifi"],
       routinePayments: { "Wifi": { amount: 275000, dueDay: 20 } },
-      monthlyBudgets: {}, // Menyimpan limit budget per kategori spending
+      monthlyBudgets: {},
       investData: {}, sinkingData: {}, goalsData: {}, receivablesData: {}, nonMoneyAssets: {}, debtData: {}, recentHistory: []
     };
 
@@ -1152,9 +1143,7 @@
     };
 
     function requestNotificationPermission() {
-      if ("Notification" in window && Notification.permission !== "granted") {
-        Notification.requestPermission();
-      }
+      if ("Notification" in window && Notification.permission !== "granted") Notification.requestPermission();
     }
 
     async function loadStorageData() {
@@ -1169,13 +1158,9 @@
         }
       } catch(e) {
         let stored = localStorage.getItem("KEUANGANKU_DB_V21");
-        if (stored) {
-          globalData = JSON.parse(stored);
-        } else {
-          globalData = JSON.parse(JSON.stringify(DEFAULT_DATA));
-        }
+        if (stored) globalData = JSON.parse(stored);
+        else globalData = JSON.parse(JSON.stringify(DEFAULT_DATA));
       }
-      // Inisialisasi object budgets jika pengguna lama belum punya
       if (!globalData.monthlyBudgets) globalData.monthlyBudgets = {};
       initApp();
     }
@@ -1184,11 +1169,9 @@
       localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData));
       populateFormDropdowns();
       populateReportFilterCategories();
-
       try {
         await fetch(WEB_APP_URL, {
-          method: "POST",
-          mode: "no-cors",
+          method: "POST", mode: "no-cors",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(globalData)
         });
@@ -1196,52 +1179,33 @@
     }
 
     function manualSaveSetup() {
-      saveStorageData();
-      renderDashboard();
-      playSuccessSound();
-      
+      saveStorageData(); renderDashboard(); playSuccessSound();
       let modal = document.getElementById('success-modal');
       let card = document.getElementById('success-card');
       document.getElementById('success-modal-title').textContent = "Database Berhasil Diperbarui!";
       document.getElementById('success-msg-text').innerHTML = "Seluruh saldo awal, budget bulanan, dan kategori pilihan telah tersimpan.";
-
       modal.classList.remove('hidden');
-      setTimeout(() => {
-        modal.classList.remove('opacity-0');
-        card.classList.remove('scale-95');
-        card.classList.add('scale-100');
-      }, 10);
+      setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); card.classList.add('scale-100'); }, 10);
     }
 
     function resetTransactionHistory() {
       if (confirm("Apakah Anda yakin ingin mereset seluruh riwayat transaksi? Data rekam transaksi akan dikosongkan.")) {
-        globalData.recentHistory = [];
-        saveStorageData();
-        renderDashboard();
-        renderHistoryTable();
+        globalData.recentHistory = []; saveStorageData(); renderDashboard(); renderHistoryTable();
         alert("Riwayat transaksi berhasil direset kosong!");
       }
     }
 
     function initApp() {
-      renderDashboard();
-      populateFormDropdowns();
-      populateReportFilterCategories();
-      renderHistoryTable();
-      renderSetupView();
-      checkDueDateAlerts();
-      checkReceivableAlerts();
+      renderDashboard(); populateFormDropdowns(); populateReportFilterCategories(); renderHistoryTable(); renderSetupView();
+      checkDueDateAlerts(); checkReceivableAlerts();
     }
 
     function navTo(page) {
       ['page-dashboard', 'page-transaksi', 'page-setup'].forEach(id => {
-        let el = document.getElementById(id);
-        if(el) el.classList.add('hidden');
+        let el = document.getElementById(id); if(el) el.classList.add('hidden');
       });
-
       ['nav-dash', 'nav-tx', 'nav-setup'].forEach(id => {
-        let el = document.getElementById(id);
-        if(el) el.className = "flex flex-col items-center text-on-surface-variant px-4 py-1 hover:text-primary";
+        let el = document.getElementById(id); if(el) el.className = "flex flex-col items-center text-on-surface-variant px-4 py-1 hover:text-primary";
       });
 
       let headerTitle = document.getElementById('header-brand-title');
@@ -1256,14 +1220,9 @@
         document.getElementById('page-transaksi').classList.remove('hidden');
         document.getElementById('nav-tx').className = "flex flex-col items-center text-primary px-4 py-1 font-bold";
         if (headerTitle) headerTitle.textContent = langDict.title_tx_record;
-        
         let dateInput = document.getElementById('tx-date');
         if (dateInput) dateInput.valueAsDate = new Date();
-
-        populateFormDropdowns();
-        populateReportFilterCategories();
-        applyCashflowLogic();
-        renderHistoryTable();
+        populateFormDropdowns(); populateReportFilterCategories(); applyCashflowLogic(); renderHistoryTable();
       } else if (page === 'setup') {
         document.getElementById('page-setup').classList.remove('hidden');
         document.getElementById('nav-setup').className = "flex flex-col items-center text-primary px-4 py-1 font-bold";
@@ -1272,9 +1231,7 @@
       }
     }
 
-    function toggleAccordion(btn) {
-      btn.closest('.collapse-item').classList.toggle('collapse-active');
-    }
+    function toggleAccordion(btn) { btn.closest('.collapse-item').classList.toggle('collapse-active'); }
 
     function formatRp(num) {
       if (isBalanceMasked) return "Rp •••••••";
@@ -1292,27 +1249,13 @@
       if (!container) return;
       container.innerHTML = '';
       if (!globalData.routinePayments) return;
-
       let currentDay = new Date().getDate();
-
       Object.keys(globalData.routinePayments).forEach(itemKey => {
         let item = globalData.routinePayments[itemKey];
         let diff = item.dueDay - currentDay;
-
         if (diff >= 0 && diff <= 3) {
           let warningText = diff === 0 ? "JATUH TEMPO HARI INI!" : `Sisa ${diff} Hari Lagi (Tgl ${item.dueDay})`;
-          container.innerHTML += `
-            <div class="bg-red-500 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between border-2 border-red-700 animate-pulse">
-              <div class="flex items-center gap-3">
-                <span class="material-symbols-outlined text-3xl">warning</span>
-                <div>
-                  <h4 class="font-extrabold text-sm uppercase">WAKTUNYA BAYAR: ${itemKey}</h4>
-                  <p class="text-xs text-red-100 font-medium">Nominal: <b>${formatRp(item.amount)}</b> | ${warningText}</p>
-                </div>
-              </div>
-              <button onclick="navTo('transaksi')" class="px-3 py-1.5 bg-white text-red-700 font-bold rounded-xl text-xs shadow">Bayar Sekarang</button>
-            </div>
-          `;
+          container.innerHTML += `<div class="bg-red-500 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between border-2 border-red-700 animate-pulse"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-3xl">warning</span><div><h4 class="font-extrabold text-sm uppercase">WAKTUNYA BAYAR: ${itemKey}</h4><p class="text-xs text-red-100 font-medium">Nominal: <b>${formatRp(item.amount)}</b> | ${warningText}</p></div></div><button onclick="navTo('transaksi')" class="px-3 py-1.5 bg-white text-red-700 font-bold rounded-xl text-xs shadow">Bayar Sekarang</button></div>`;
         }
       });
     }
@@ -1322,31 +1265,15 @@
       if (!container) return;
       container.innerHTML = '';
       if (!globalData.receivablesData) return;
-
-      let today = new Date();
-      today.setHours(0,0,0,0);
-
+      let today = new Date(); today.setHours(0,0,0,0);
       Object.keys(globalData.receivablesData).forEach(k => {
         let item = globalData.receivablesData[k];
         if (item.deadline) {
-          let dDate = new Date(item.deadline);
-          dDate.setHours(0,0,0,0);
+          let dDate = new Date(item.deadline); dDate.setHours(0,0,0,0);
           let diffDays = Math.ceil((dDate - today) / (1000 * 60 * 60 * 24));
-
           if (diffDays <= 3 && diffDays >= 0) {
             let timeText = diffDays === 0 ? "JATUH TEMPO PENAGIHAN HARI INI!" : `Deadline ${diffDays} Hari Lagi (${item.deadline})`;
-            container.innerHTML += `
-              <div class="bg-emerald-600 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between border-2 border-emerald-800 animate-pulse">
-                <div class="flex items-center gap-3">
-                  <span class="material-symbols-outlined text-3xl">notification_important</span>
-                  <div>
-                    <h4 class="font-extrabold text-sm uppercase">WAKTUNYA MENAGIH: ${k}</h4>
-                    <p class="text-xs text-emerald-100 font-medium">Nominal: <b>${formatRp(item.total)}</b> | ${timeText}</p>
-                  </div>
-                </div>
-                <button onclick="navTo('transaksi')" class="px-3 py-1.5 bg-white text-emerald-800 font-bold rounded-xl text-xs shadow">Pelunasan</button>
-              </div>
-            `;
+            container.innerHTML += `<div class="bg-emerald-600 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between border-2 border-emerald-800 animate-pulse"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-3xl">notification_important</span><div><h4 class="font-extrabold text-sm uppercase">WAKTUNYA MENAGIH: ${k}</h4><p class="text-xs text-emerald-100 font-medium">Nominal: <b>${formatRp(item.total)}</b> | ${timeText}</p></div></div><button onclick="navTo('transaksi')" class="px-3 py-1.5 bg-white text-emerald-800 font-bold rounded-xl text-xs shadow">Pelunasan</button></div>`;
           }
         }
       });
@@ -1355,7 +1282,6 @@
     function getCategoryCashflowNet(categoryName) {
       let net = 0, used = 0;
       if (!globalData.recentHistory) return { net, used };
-      
       globalData.recentHistory.forEach(tx => {
         if (tx.category === categoryName) {
           if (['Invest / Savings', 'Financial Goals', 'Income', 'Dari Asset / Saving'].includes(tx.cashflow)) net += tx.amount;
@@ -1367,28 +1293,21 @@
 
     function renderDashboard() {
       let sumInvest = 0, sumSinking = 0, sumGoals = 0;
-      
       const calcNet = (obj) => {
         let total = 0;
         if(obj) Object.keys(obj).forEach(k => {
           let flow = getCategoryCashflowNet(k);
           let net = (obj[k].initial || 0) + flow.net - (obj[k].used || 0) - flow.used;
           if(net > 0) total += net;
-        });
-        return total;
+        }); return total;
       };
-
-      sumInvest = calcNet(globalData.investData);
-      sumSinking = calcNet(globalData.sinkingData);
-      sumGoals = calcNet(globalData.goalsData);
+      sumInvest = calcNet(globalData.investData); sumSinking = calcNet(globalData.sinkingData); sumGoals = calcNet(globalData.goalsData);
 
       let elAsset = document.getElementById('dash-total-asset');
       if (elAsset) elAsset.textContent = formatRp(sumInvest + sumSinking + sumGoals);
 
       let totalBank = 0;
-      if (globalData.currentBalances) {
-        for (let acc in globalData.currentBalances) totalBank += globalData.currentBalances[acc];
-      }
+      if (globalData.currentBalances) { for (let acc in globalData.currentBalances) totalBank += globalData.currentBalances[acc]; }
       let elBank = document.getElementById('dash-total-bank');
       if (elBank) elBank.textContent = formatRp(totalBank);
 
@@ -1398,143 +1317,72 @@
         globalData.accounts.forEach(acc => {
           let bal = globalData.currentBalances[acc] || 0;
           let dt = (globalData.accountDetails && globalData.accountDetails[acc]) ? globalData.accountDetails[acc] : { bankName: acc, accNo: "-", owner: "-" };
-
-          grid.innerHTML += `
-            <div class="p-4 bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl shadow-sm hover:border-primary transition-all space-y-2">
-              <div class="flex justify-between items-start">
-                <div>
-                  <p class="text-xs font-bold text-primary dark:text-blue-400 uppercase">${acc}</p>
-                  <p class="text-[10px] text-gray-500">${dt.bankName || '-'}</p>
-                </div>
-                <span class="material-symbols-outlined text-primary/40">credit_card</span>
-              </div>
-              <div class="pt-1 border-t border-outline-variant/30 text-[10px] space-y-0.5">
-                <p class="text-gray-500">No. Rek: <b class="font-mono-data text-on-surface">${dt.accNo || '-'}</b></p>
-                <p class="text-gray-500">a.n: <b class="text-on-surface">${dt.owner || '-'}</b></p>
-              </div>
-              <div class="pt-1 border-t border-outline-variant/30 flex justify-between items-center">
-                <span class="text-[10px] font-bold text-gray-400">SALDO:</span>
-                <p class="text-sm font-extrabold text-on-surface font-mono-data">${formatRp(bal)}</p>
-              </div>
-            </div>
-          `;
+          grid.innerHTML += `<div class="p-4 bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl shadow-sm hover:border-primary transition-all space-y-2"><div class="flex justify-between items-start"><div><p class="text-xs font-bold text-primary dark:text-blue-400 uppercase">${acc}</p><p class="text-[10px] text-gray-500">${dt.bankName || '-'}</p></div><span class="material-symbols-outlined text-primary/40">credit_card</span></div><div class="pt-1 border-t border-outline-variant/30 text-[10px] space-y-0.5"><p class="text-gray-500">No. Rek: <b class="font-mono-data text-on-surface">${dt.accNo || '-'}</b></p><p class="text-gray-500">a.n: <b class="text-on-surface">${dt.owner || '-'}</b></p></div><div class="pt-1 border-t border-outline-variant/30 flex justify-between items-center"><span class="text-[10px] font-bold text-gray-400">SALDO:</span><p class="text-sm font-extrabold text-on-surface font-mono-data">${formatRp(bal)}</p></div></div>`;
         });
       }
 
-      renderBudgetRecap();
-      renderInvestRecap();
-      renderSinkingRecap();
-      renderGoalsRecap();
-      renderReceivablesRecap();
-      renderNonMoneyRecap();
-      renderDebtRecap();
-      renderMonthlyChart();
+      renderBudgetRecap(); renderInvestRecap(); renderSinkingRecap(); renderGoalsRecap(); renderReceivablesRecap(); renderNonMoneyRecap(); renderDebtRecap(); renderMonthlyChart();
       if (document.getElementById('categoryTrendChart')) updateCategoryTrendChart();
     }
 
-    // --- FUNGSI BARU: BUDGET RECAP ---
     function renderBudgetRecap() {
       let container = document.getElementById('budget-recap-grid');
       if (!container) return;
       container.innerHTML = '';
-      
       if (!globalData.monthlyBudgets || Object.keys(globalData.monthlyBudgets).length === 0) {
-        container.innerHTML = '<p class="text-center text-gray-500 text-xs py-2">Belum ada budget yang diatur. Silakan atur limit pengeluaran di menu Setup.</p>';
-        return;
+        container.innerHTML = '<p class="text-center text-gray-500 text-xs py-2">Belum ada budget yang diatur. Silakan atur limit pengeluaran di menu Setup.</p>'; return;
       }
-
       let dropdown = document.getElementById('monthly-select-dropdown');
       let targetMonth = dropdown ? parseInt(dropdown.value, 10) : new Date().getMonth();
       let currentYear = new Date().getFullYear();
-
-      // Hitung pengeluaran kategori bulan ini
       let spentThisMonth = {};
       if (globalData.recentHistory) {
         globalData.recentHistory.forEach(tx => {
           if (tx.cashflow === 'Spending' && tx.rawDate) {
             let d = new Date(tx.rawDate);
-            if (d.getMonth() === targetMonth && d.getFullYear() === currentYear) {
-              spentThisMonth[tx.category] = (spentThisMonth[tx.category] || 0) + tx.amount;
-            }
+            if (d.getMonth() === targetMonth && d.getFullYear() === currentYear) spentThisMonth[tx.category] = (spentThisMonth[tx.category] || 0) + tx.amount;
           }
         });
       }
-
       let hasActiveBudget = false;
-
       Object.keys(globalData.monthlyBudgets).forEach(cat => {
         let limit = parseFloat(globalData.monthlyBudgets[cat]) || 0;
         if (limit > 0) {
           hasActiveBudget = true;
-          let spent = spentThisMonth[cat] || 0;
-          let sisa = limit - spent;
+          let spent = spentThisMonth[cat] || 0; let sisa = limit - spent;
           let pct = Math.min(100, Math.round((spent / limit) * 100));
           let isOver = spent > limit;
-          
           let barColor = isOver ? 'bg-red-500' : (pct > 80 ? 'bg-orange-500' : 'bg-green-500');
           let badgeClass = isOver ? 'bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-400' : 'bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-400';
-
-          container.innerHTML += `
-            <div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-2 text-xs">
-              <div class="flex justify-between items-center">
-                <p class="font-bold text-sm text-on-surface">${cat}</p>
-                <span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${badgeClass}">
-                  ${isOver ? 'OVER BUDGET!' : 'Sisa: ' + formatRp(sisa)}
-                </span>
-              </div>
-              <div class="flex justify-between text-[10px] text-gray-500 mb-1">
-                <span>Terpakai: <b class="${isOver ? 'text-error' : 'text-on-surface'}">${formatRp(spent)}</b></span>
-                <span>Limit: <b class="text-on-surface font-mono-data">${formatRp(limit)}</b></span>
-              </div>
-              <div class="w-full bg-gray-200 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden">
-                <div class="${barColor} h-2.5 rounded-full transition-all duration-500" style="width: ${pct}%"></div>
-              </div>
-            </div>
-          `;
+          container.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-2 text-xs"><div class="flex justify-between items-center"><p class="font-bold text-sm text-on-surface">${cat}</p><span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${badgeClass}">${isOver ? 'OVER BUDGET!' : 'Sisa: ' + formatRp(sisa)}</span></div><div class="flex justify-between text-[10px] text-gray-500 mb-1"><span>Terpakai: <b class="${isOver ? 'text-error' : 'text-on-surface'}">${formatRp(spent)}</b></span><span>Limit: <b class="text-on-surface font-mono-data">${formatRp(limit)}</b></span></div><div class="w-full bg-gray-200 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden"><div class="${barColor} h-2.5 rounded-full transition-all duration-500" style="width: ${pct}%"></div></div></div>`;
         }
       });
-
-      if (!hasActiveBudget) {
-        container.innerHTML = '<p class="text-center text-gray-500 text-xs py-2">Belum ada nominal budget yang diatur. Silakan atur limit pengeluaran di menu Setup.</p>';
-      }
+      if (!hasActiveBudget) container.innerHTML = '<p class="text-center text-gray-500 text-xs py-2">Belum ada nominal budget yang diatur. Silakan atur limit pengeluaran di menu Setup.</p>';
     }
 
     function updateBudgetLimit(cat, val) {
       if (!globalData.monthlyBudgets) globalData.monthlyBudgets = {};
-      globalData.monthlyBudgets[cat] = parseFloat(val.replace(/\./g, '')) || 0;
-      saveStorageData();
-      renderDashboard(); // Auto refresh
+      globalData.monthlyBudgets[cat] = parseFloat(val.replace(/\./g, '')) || 0; saveStorageData(); renderDashboard();
     }
-    // ------------------------------------
 
     function renderInvestRecap() {
       let grid = document.getElementById('invest-recap-grid');
-      if (!grid) return;
-      grid.innerHTML = '';
-      if (!globalData.investData) return;
+      if (!grid) return; grid.innerHTML = ''; if (!globalData.investData) return;
       Object.keys(globalData.investData).forEach(k => {
-        let item = globalData.investData[k];
-        let flow = getCategoryCashflowNet(k);
-        let totalMoney = (item.initial || 0) + flow.net;
-        let used = (item.used || 0) + flow.used;
-        let sisa = totalMoney - used;
+        let item = globalData.investData[k]; let flow = getCategoryCashflowNet(k);
+        let totalMoney = (item.initial || 0) + flow.net; let used = (item.used || 0) + flow.used; let sisa = totalMoney - used;
         grid.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-1 text-xs"><p class="font-bold text-primary dark:text-blue-400 text-sm">${k}</p><div class="flex justify-between"><span>Saldo Awal + Masuk:</span><span class="font-mono-data font-bold">${formatRp(totalMoney)}</span></div><div class="flex justify-between text-error"><span>Terpakai (Used):</span><span class="font-mono-data font-bold">${formatRp(used)}</span></div><div class="flex justify-between text-green-600 dark:text-green-400 font-bold border-t border-outline-variant/40 pt-1"><span>Sisa Uang:</span><span class="font-mono-data">${formatRp(sisa)}</span></div></div>`;
       });
     }
 
     function renderSinkingRecap() {
       let container = document.getElementById('sinking-recap-grid');
-      if (!container) return;
-      container.innerHTML = '';
-      if (!globalData.sinkingData) return;
+      if (!container) return; container.innerHTML = ''; if (!globalData.sinkingData) return;
       let today = new Date();
       Object.keys(globalData.sinkingData).forEach(k => {
-        let item = globalData.sinkingData[k];
-        let flow = getCategoryCashflowNet(k);
+        let item = globalData.sinkingData[k]; let flow = getCategoryCashflowNet(k);
         let targetPerMonth = (item.target || 0) / (item.durationMonths || 1);
-        let current = (item.initial || 0) + flow.net;
-        let used = (item.used || 0) + flow.used;
-        let sisa = current - used;
+        let current = (item.initial || 0) + flow.net; let used = (item.used || 0) + flow.used; let sisa = current - used;
         let daysLeftText = "Durasi Terjadwal";
         if (item.deadline) {
           let diffDays = Math.ceil((new Date(item.deadline) - today) / (1000 * 60 * 60 * 24));
@@ -1547,15 +1395,10 @@
 
     function renderGoalsRecap() {
       let container = document.getElementById('goals-recap-grid');
-      if (!container) return;
-      container.innerHTML = '';
-      if (!globalData.goalsData) return;
+      if (!container) return; container.innerHTML = ''; if (!globalData.goalsData) return;
       Object.keys(globalData.goalsData).forEach(k => {
-        let item = globalData.goalsData[k];
-        let flow = getCategoryCashflowNet(k);
-        let current = (item.initial || 0) + flow.net;
-        let used = (item.used || 0) + flow.used;
-        let sisa = current - used;
+        let item = globalData.goalsData[k]; let flow = getCategoryCashflowNet(k);
+        let current = (item.initial || 0) + flow.net; let used = (item.used || 0) + flow.used; let sisa = current - used;
         let pct = Math.min(100, Math.round((current / (item.target || 1)) * 100));
         container.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-2 text-xs"><div class="flex justify-between items-center"><p class="font-bold text-secondary dark:text-sky-400 text-sm">${k}</p><span class="text-[10px] px-2 py-0.5 bg-secondary/10 text-secondary dark:text-sky-300 rounded-full font-bold">Waktu: ${item.timeframeVal || '-'} ${item.timeframeUnit || 'Tahun'}</span></div><div class="grid grid-cols-4 gap-2 text-[11px]"><div><span class="text-gray-500">Target Nominal:</span><br/><b class="font-mono-data">${formatRp(item.target)}</b></div><div><span class="text-gray-500">Terkumpul:</span><br/><b class="font-mono-data text-green-600 dark:text-green-400">${formatRp(current)}</b></div><div><span class="text-gray-500">Terpakai:</span><br/><b class="font-mono-data text-error">${formatRp(used)}</b></div><div><span class="text-gray-500">Sisa Uang:</span><br/><b class="font-mono-data text-primary dark:text-blue-400">${formatRp(sisa)}</b></div></div><div><div class="flex justify-between text-[10px] font-bold mb-1"><span>Progress Goal (${pct}%)</span><span>Kekurangan Target: ${formatRp(item.target - current > 0 ? item.target - current : 0)}</span></div><div class="w-full bg-gray-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden"><div class="bg-secondary dark:bg-sky-500 h-2 rounded-full" style="width: ${pct}%"></div></div></div></div>`;
       });
@@ -1563,12 +1406,9 @@
 
     function renderReceivablesRecap() {
       let container = document.getElementById('receivables-recap-grid');
-      if (!container) return;
-      container.innerHTML = '';
-      if (!globalData.receivablesData) return;
+      if (!container) return; container.innerHTML = ''; if (!globalData.receivablesData) return;
       Object.keys(globalData.receivablesData).forEach(k => {
-        let item = globalData.receivablesData[k];
-        let paid = parseFloat(item.paid) || 0;
+        let item = globalData.receivablesData[k]; let paid = parseFloat(item.paid) || 0;
         if (globalData.recentHistory) globalData.recentHistory.forEach(tx => { if (tx.category === k && tx.cashflow === 'Pelunasan Piutang') paid += tx.amount; });
         let remaining = (parseFloat(item.total) || 0) - paid;
         container.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-2 text-xs"><div class="flex justify-between items-center"><p class="font-bold text-emerald-600 dark:text-emerald-400 text-sm">${k}</p><span class="text-[10px] px-2 py-0.5 bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 rounded-full font-bold">Deadline: ${item.deadline || '-'}</span></div><div class="grid grid-cols-3 gap-2 text-[11px]"><div><span class="text-gray-500">Total Piutang:</span><br/><b class="font-mono-data">${formatRp(item.total)}</b></div><div><span class="text-gray-500">Sudah Dibayar:</span><br/><b class="font-mono-data text-green-600 dark:text-green-400">${formatRp(paid)}</b></div><div><span class="text-gray-500">Belum Dibayar:</span><br/><b class="font-mono-data text-error">${formatRp(remaining > 0 ? remaining : 0)}</b></div></div></div>`;
@@ -1577,9 +1417,7 @@
 
     function renderNonMoneyRecap() {
       let container = document.getElementById('nonmoney-recap-grid');
-      if (!container) return;
-      container.innerHTML = '';
-      if (!globalData.nonMoneyAssets) return;
+      if (!container) return; container.innerHTML = ''; if (!globalData.nonMoneyAssets) return;
       Object.keys(globalData.nonMoneyAssets).forEach(k => {
         let item = globalData.nonMoneyAssets[k];
         let totalVal = (parseFloat(item.qty) || 0) * (parseFloat(item.estimatedPrice) || 0);
@@ -1591,12 +1429,9 @@
 
     function renderDebtRecap() {
       let container = document.getElementById('debt-recap-grid');
-      if (!container) return;
-      container.innerHTML = '';
-      if (!globalData.debtData) return;
+      if (!container) return; container.innerHTML = ''; if (!globalData.debtData) return;
       Object.keys(globalData.debtData).forEach(k => {
-        let item = globalData.debtData[k];
-        let total = parseFloat(item.total) || 0, paid = parseFloat(item.paid) || 0;
+        let item = globalData.debtData[k]; let total = parseFloat(item.total) || 0, paid = parseFloat(item.paid) || 0;
         if (globalData.recentHistory) globalData.recentHistory.forEach(tx => {
           if (tx.category === k) {
             if (tx.cashflow === 'Cicilan / Utang Baru') total += tx.amount;
@@ -1616,11 +1451,9 @@
         if (!dropdown) return;
         let selectedMonthIdx = parseInt(dropdown.value, 10);
 
-        if (chart1) chart1.destroy();
-        if (chart2) chart2.destroy();
+        if (chart1) chart1.destroy(); if (chart2) chart2.destroy();
 
-        let totalInc = 0, totalSpend = 0, totalBills = 0;
-        let spendCatMap = {};
+        let totalInc = 0, totalSpend = 0, totalBills = 0; let spendCatMap = {};
 
         if (globalData.recentHistory) {
           globalData.recentHistory.forEach(h => {
@@ -1628,8 +1461,7 @@
               if (h.cashflow === 'Income') totalInc += h.amount;
               if (h.cashflow === 'Spending') {
                 totalSpend += h.amount;
-                let cat = h.category || "Lainnya";
-                spendCatMap[cat] = (spendCatMap[cat] || 0) + h.amount;
+                let cat = h.category || "Lainnya"; spendCatMap[cat] = (spendCatMap[cat] || 0) + h.amount;
               }
               if (h.cashflow === 'Bayar Cicilan / Utang') totalBills += h.amount;
             }
@@ -1638,12 +1470,7 @@
 
         let mContainer = document.getElementById('monthly-summary-boxes');
         if (mContainer) {
-          mContainer.innerHTML = `
-            <div class="p-2.5 bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 rounded-xl"><span>Total Income</span><br/><b class="font-mono-data text-green-600 dark:text-green-400">${formatRp(totalInc)}</b></div>
-            <div class="p-2.5 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-xl"><span>Total Spending</span><br/><b class="font-mono-data text-error">${formatRp(totalSpend)}</b></div>
-            <div class="p-2.5 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 rounded-xl"><span>Bills Paid</span><br/><b class="font-mono-data text-tertiary dark:text-indigo-400">${formatRp(totalBills)}</b></div>
-            <div class="p-2.5 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-xl"><span>Sisa Uang</span><br/><b class="font-mono-data text-primary dark:text-blue-400">${formatRp(totalInc - (totalSpend + totalBills))}</b></div>
-          `;
+          mContainer.innerHTML = `<div class="p-2.5 bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 rounded-xl"><span>Total Income</span><br/><b class="font-mono-data text-green-600 dark:text-green-400">${formatRp(totalInc)}</b></div><div class="p-2.5 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-xl"><span>Total Spending</span><br/><b class="font-mono-data text-error">${formatRp(totalSpend)}</b></div><div class="p-2.5 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 rounded-xl"><span>Bills Paid</span><br/><b class="font-mono-data text-tertiary dark:text-indigo-400">${formatRp(totalBills)}</b></div><div class="p-2.5 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-xl"><span>Sisa Uang</span><br/><b class="font-mono-data text-primary dark:text-blue-400">${formatRp(totalInc - (totalSpend + totalBills))}</b></div>`;
         }
 
         let isDark = document.documentElement.classList.contains('dark');
@@ -1653,18 +1480,11 @@
         if (ctx1) {
           chart1 = new Chart(ctx1.getContext('2d'), {
             type: 'bar',
-            data: {
-              labels: ['Income', 'Spending', 'Bills Paid'],
-              datasets: [{ data: [totalInc, totalSpend, totalBills], backgroundColor: ['#22c55e', '#ef4444', '#6366f1'], borderRadius: 6 }]
-            },
+            data: { labels: ['Income', 'Spending', 'Bills Paid'], datasets: [{ data: [totalInc, totalSpend, totalBills], backgroundColor: ['#22c55e', '#ef4444', '#6366f1'], borderRadius: 6 }] },
             options: { 
               responsive: true, maintainAspectRatio: false, layout: { padding: { top: 25 } },
               scales: { y: { display: false, beginAtZero: true }, x: { grid: { display: false }, ticks: { font: { weight: 'bold' }, color: labelColor } } },
-              plugins: {
-                legend: { display: false },
-                tooltip: { callbacks: { label: function(c) { return "Rp " + c.raw.toLocaleString('id-ID'); } } },
-                datalabels: { anchor: 'end', align: 'top', formatter: function(v) { return v > 0 ? "Rp " + v.toLocaleString('id-ID') : ""; }, font: { family: 'JetBrains Mono', size: 10, weight: 'bold' }, color: labelColor }
-              }
+              plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) { return "Rp " + c.raw.toLocaleString('id-ID'); } } }, datalabels: { anchor: 'end', align: 'top', formatter: function(v) { return v > 0 ? "Rp " + v.toLocaleString('id-ID') : ""; }, font: { family: 'JetBrains Mono', size: 10, weight: 'bold' }, color: labelColor } }
             }
           });
         }
@@ -1681,40 +1501,23 @@
             options: { 
               indexAxis: 'y', responsive: true, maintainAspectRatio: false, layout: { padding: { right: 80 } },
               scales: { x: { display: false, beginAtZero: true }, y: { grid: { display: false }, ticks: { font: { weight: 'bold' }, color: labelColor } } },
-              plugins: {
-                legend: { display: false },
-                tooltip: { callbacks: { label: function(c) { return "Rp " + c.raw.toLocaleString('id-ID'); } } },
-                datalabels: { anchor: 'end', align: 'right', formatter: function(v) { return v > 0 ? "Rp " + v.toLocaleString('id-ID') : ""; }, font: { family: 'JetBrains Mono', size: 10, weight: 'bold' }, color: labelColor }
-              }
+              plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) { return "Rp " + c.raw.toLocaleString('id-ID'); } } }, datalabels: { anchor: 'end', align: 'right', formatter: function(v) { return v > 0 ? "Rp " + v.toLocaleString('id-ID') : ""; }, font: { family: 'JetBrains Mono', size: 10, weight: 'bold' }, color: labelColor } }
             }
           });
         }
-        
-        // Panggil juga pembaruan budget recap karena bulannya mungkin berubah
         renderBudgetRecap();
-        
       }, 100);
     }
 
     function initCategoryTrendChart() {
       let select = document.getElementById('trend-category-select');
       if (!select) return;
-      
       let uniqueCats = new Set();
-      if (globalData.recentHistory) {
-        globalData.recentHistory.forEach(tx => {
-          if (tx.category && tx.category !== '- not applicable -') {
-            uniqueCats.add(tx.category);
-          }
-        });
-      }
-      
+      if (globalData.recentHistory) globalData.recentHistory.forEach(tx => { if (tx.category && tx.category !== '- not applicable -') uniqueCats.add(tx.category); });
       let currentVal = select.value;
       select.innerHTML = '<option value="">-- Pilih Kategori --</option>';
-      
       let sortedCats = Array.from(uniqueCats).sort();
       sortedCats.forEach(c => { select.innerHTML += `<option value="${c}">${c}</option>`; });
-      
       if (sortedCats.length > 0) {
         if (currentVal && sortedCats.includes(currentVal)) select.value = currentVal;
         else select.value = sortedCats[0];
@@ -1724,15 +1527,12 @@
 
     function updateCategoryTrendChart() {
       let select = document.getElementById('trend-category-select');
-      if (!select) return;
-      let cat = select.value;
-      
+      if (!select) return; let cat = select.value;
       let titleEl = document.getElementById('trend-chart-title');
       if (titleEl) titleEl.textContent = cat ? `Perbandingan Tren: ${cat} (Jan-Des)` : "Pilih kategori untuk melihat perbandingan";
       
       let monthlyData = new Array(12).fill(0);
       let currentYear = new Date().getFullYear();
-      
       if (cat && globalData.recentHistory) {
         globalData.recentHistory.forEach(tx => {
           if (tx.category === cat && tx.rawDate) {
@@ -1746,42 +1546,39 @@
       let labelColor = isDark ? '#cbd5e1' : '#475569';
       let ctx = document.getElementById('categoryTrendChart');
       if (!ctx) return;
-      
       if (trendChart) trendChart.destroy();
       
       trendChart = new Chart(ctx.getContext('2d'), {
         type: 'bar',
-        data: {
-          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
-          datasets: [{ data: monthlyData, backgroundColor: '#a855f7', borderRadius: 4 }]
-        },
+        data: { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'], datasets: [{ data: monthlyData, backgroundColor: '#a855f7', borderRadius: 4 }] },
         options: {
           responsive: true, maintainAspectRatio: false, layout: { padding: { top: 25 } },
           scales: { y: { display: false, beginAtZero: true }, x: { grid: { display: false }, ticks: { font: { weight: 'bold' }, color: labelColor } } },
-          plugins: {
-            legend: { display: false },
-            tooltip: { callbacks: { label: function(c) { return "Rp " + c.raw.toLocaleString('id-ID'); } } },
-            datalabels: {
-              anchor: 'end', align: 'top',
-              formatter: function(value) { 
-                if (value === 0) return "";
-                if (value >= 1000000) return (value/1000000).toFixed(1).replace('.0','') + 'Jt';
-                if (value >= 1000) return (value/1000).toFixed(0) + 'k';
-                return value.toLocaleString('id-ID');
-              },
-              font: { family: 'JetBrains Mono', size: 9, weight: 'bold' }, color: labelColor
-            }
-          }
+          plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) { return "Rp " + c.raw.toLocaleString('id-ID'); } } }, datalabels: { anchor: 'end', align: 'top', formatter: function(value) { if (value === 0) return ""; if (value >= 1000000) return (value/1000000).toFixed(1).replace('.0','') + 'Jt'; if (value >= 1000) return (value/1000).toFixed(0) + 'k'; return value.toLocaleString('id-ID'); }, font: { family: 'JetBrains Mono', size: 9, weight: 'bold' }, color: labelColor } }
         }
       });
     }
 
+    // UPDATED: Menambahkan opsi Filter Akun ke dropdown
     function populateReportFilterCategories() {
-      let select = document.getElementById('rep-filter-cashflow');
-      if (!select) return;
-      select.innerHTML = '<option value="all">Semua Cashflow</option>';
-      let cfs = ["Income", "Spending", "Invest / Savings", "Financial Goals", "Bayar Cicilan / Utang"];
-      cfs.forEach(c => select.innerHTML += `<option value="${c}">${c}</option>`);
+      let selectCf = document.getElementById('rep-filter-cashflow');
+      if (selectCf) {
+        let currCf = selectCf.value;
+        selectCf.innerHTML = '<option value="all">Semua Cashflow</option>';
+        let cfs = ["Income", "Spending", "Invest / Savings", "Financial Goals", "Bayar Cicilan / Utang"];
+        cfs.forEach(c => selectCf.innerHTML += `<option value="${c}">${c}</option>`);
+        if (cfs.includes(currCf)) selectCf.value = currCf;
+      }
+
+      let selectAcc = document.getElementById('rep-filter-account');
+      if (selectAcc) {
+        let currAcc = selectAcc.value;
+        selectAcc.innerHTML = '<option value="all">Semua Akun</option>';
+        if (globalData.accounts) {
+          globalData.accounts.forEach(a => { selectAcc.innerHTML += `<option value="${a}">${a}</option>`; });
+        }
+        if (globalData.accounts && globalData.accounts.includes(currAcc)) selectAcc.value = currAcc;
+      }
     }
 
     function populateFormDropdowns() {
@@ -1877,10 +1674,15 @@
       tbody.innerHTML = '';
       let historyList = globalData.recentHistory || [];
       if (historyList.length === 0) { tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400">Belum ada transaksi diinput.</td></tr>`; return; }
+      
       let filterCashflow = document.getElementById('rep-filter-cashflow') ? document.getElementById('rep-filter-cashflow').value : 'all';
+      let filterAcc = document.getElementById('rep-filter-account') ? document.getElementById('rep-filter-account').value : 'all';
 
       historyList.forEach((tx, idx) => {
         if (filterCashflow !== 'all' && tx.cashflow !== filterCashflow) return;
+        // UPDATED: Logika filter Akun (cek apakah akun tersebut ada di Dari Akun atau Ke Akun)
+        if (filterAcc !== 'all' && tx.dariAcc !== filterAcc && tx.keAcc !== filterAcc) return;
+
         let badgeColor = "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300";
         if (tx.cashflow === 'Income') badgeColor = "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300";
         if (tx.cashflow === 'Spending') badgeColor = "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300";
@@ -2040,7 +1842,6 @@
       
       renderDebtListSetup();
       
-      // RENDER SETUP BUDGETING BULANAN
       let budgetContainer = document.getElementById('setup-budget-list');
       if (budgetContainer) {
         budgetContainer.innerHTML = '';
@@ -2176,8 +1977,7 @@
       if (key === 'spendings' && globalData.monthlyBudgets && globalData.monthlyBudgets[catName] !== undefined) {
         delete globalData.monthlyBudgets[catName];
       }
-      saveStorageData(); 
-      renderSetupView(); 
+      saveStorageData(); renderSetupView(); 
     }
 
     function addValuedCategory(objKey, labelName) {
