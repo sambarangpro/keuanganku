@@ -107,7 +107,7 @@
         <button onclick="verifyBumperPin()" class="w-full py-2.5 bg-white text-primary font-bold rounded-xl text-xs hover:bg-blue-50 shadow transition-all">
           MASUK APLIKASI
         </button>
-        <p id="bumper-error-msg" class="text-[11px] text-red-200 font-semibold hidden">PIN Salah! Gunakan PIN Password Pemilik.</p>
+        <p id="bumper-error-msg" class="text-[11px] text-red-200 font-semibold hidden">PIN Salah!</p>
       </div>
 
       <div class="pt-4">
@@ -647,6 +647,7 @@
     <!-- PAGE 3: SETUP -->
     <div id="page-setup" class="hidden space-y-6">
       
+      <!-- LOCK SCREEN UNTUK SETUP -->
       <div id="setup-lock-card" class="bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-8 max-w-md mx-auto text-center space-y-4 shadow-sm">
         <div class="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto">
           <span class="material-symbols-outlined text-3xl">lock</span>
@@ -671,16 +672,34 @@
           </button>
         </div>
 
-        <section class="bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-6 shadow-sm space-y-3">
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-primary">key</span>
-            <h2 class="font-headline-md text-headline-md text-on-surface font-bold" data-i18n="setup_pass_title">Ubah Password Pemilik</h2>
-          </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
-            <input type="password" id="new-pass-input" placeholder="Masukkan Password Baru" class="p-2.5 border rounded-xl text-xs font-mono-data outline-none focus:ring-1 focus:ring-primary">
-            <button onclick="changeOwnerPassword()" class="py-2.5 bg-secondary text-white font-bold text-xs rounded-xl hover:brightness-110 shadow" data-i18n="btn_change_pass">Ubah Password</button>
-          </div>
-        </section>
+        <!-- NEW: PENGATURAN PIN DAN PASSWORD -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Ubah PIN Aplikasi -->
+          <section class="bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-6 shadow-sm space-y-3">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary">dialpad</span>
+              <h2 class="font-headline-md text-headline-md text-on-surface font-bold">Ubah PIN Aplikasi</h2>
+            </div>
+            <p class="text-[10px] text-gray-500">PIN sederhana untuk akses harian di halaman depan (Bumper).</p>
+            <div class="grid grid-cols-1 gap-2 pt-1">
+              <input type="password" id="new-pin-input" placeholder="Masukkan PIN Baru (Mis: 123456)" class="p-2.5 border rounded-xl text-xs font-mono-data outline-none focus:ring-1 focus:ring-primary">
+              <button onclick="changeAppPin()" class="py-2.5 bg-primary text-white font-bold text-xs rounded-xl hover:brightness-110 shadow">Ubah PIN Aplikasi</button>
+            </div>
+          </section>
+
+          <!-- Ubah Password Setup -->
+          <section class="bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-6 shadow-sm space-y-3">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-error">admin_panel_settings</span>
+              <h2 class="font-headline-md text-headline-md text-on-surface font-bold">Ubah Password Setup</h2>
+            </div>
+            <p class="text-[10px] text-gray-500">Password rahasia untuk membuka seluruh menu Master Setup ini.</p>
+            <div class="grid grid-cols-1 gap-2 pt-1">
+              <input type="password" id="new-pass-input" placeholder="Masukkan Password Baru" class="p-2.5 border rounded-xl text-xs font-mono-data outline-none focus:ring-1 focus:ring-error">
+              <button onclick="changeOwnerPassword()" class="py-2.5 bg-secondary text-white font-bold text-xs rounded-xl hover:brightness-110 shadow">Ubah Password Setup</button>
+            </div>
+          </section>
+        </div>
 
         <section class="space-y-3">
           <div class="flex items-center gap-2">
@@ -1057,8 +1076,7 @@
         nav_setup: "Setup",
         m_jan: "Januari", m_feb: "Februari", m_mar: "Maret", m_apr: "April", m_mei: "Mei", m_jun: "Juni",
         m_jul: "Juli", m_agu: "Agustus", m_sep: "September", m_okt: "Oktober", m_nov: "November", m_des: "Desember"
-      },
-      en: { /* Bagian English dibiarkan utuh demi durasi response, logika persis sama */ }
+      }
     };
 
     let currentLang = 'id';
@@ -1066,9 +1084,10 @@
 
     function verifyBumperPin() {
       let pinInput = document.getElementById('bumper-pin-input').value;
-      let validPass = (globalData && globalData.ownerPassword) ? globalData.ownerPassword : "123";
+      // Membaca PIN khusus App, default-nya sama dengan ownerPassword kalau belum di-set
+      let validPin = (globalData && globalData.appPin !== undefined) ? globalData.appPin : ((globalData && globalData.ownerPassword) ? globalData.ownerPassword : "123");
 
-      if (pinInput === validPass) {
+      if (pinInput === validPin) {
         let splash = document.getElementById('splash-screen');
         if (splash) {
           splash.classList.add('opacity-0');
@@ -1122,7 +1141,9 @@
     }
 
     const DEFAULT_DATA = {
-      ownerPassword: "123", startingBalance: 25000000,
+      appPin: "123", // PIN baru khusus Bumper Aplikasi
+      ownerPassword: "123", // Password khusus Menu Setup
+      startingBalance: 25000000,
       accounts: ["BSI Utama", "Kas Kecil Media", "Bank Jago Tabungan Nikah", "Bank Jago Zy Clothes", "Dana", "Gopay", "Ovo", "Cash"],
       accountDetails: { "BSI Utama": { bankName: "Bank Syariah Indonesia", accNo: "7123456789", owner: "Fulan", balance: 5979762 } },
       currentBalances: { "BSI Utama": 5979762 },
@@ -1159,6 +1180,11 @@
         if (stored) globalData = JSON.parse(stored);
         else globalData = JSON.parse(JSON.stringify(DEFAULT_DATA));
       }
+
+      // Migrasi data jika user lama belum punya property appPin
+      if (globalData.appPin === undefined) {
+        globalData.appPin = globalData.ownerPassword || "123";
+      }
       if (!globalData.monthlyBudgets) globalData.monthlyBudgets = {};
       initApp();
     }
@@ -1173,7 +1199,7 @@
       saveStorageData(); renderDashboard(); playSuccessSound();
       let modal = document.getElementById('success-modal'), card = document.getElementById('success-card');
       document.getElementById('success-modal-title').textContent = "Database Berhasil Diperbarui!";
-      document.getElementById('success-msg-text').innerHTML = "Seluruh saldo awal, budget bulanan, dan kategori pilihan telah tersimpan.";
+      document.getElementById('success-msg-text').innerHTML = "Seluruh saldo awal, budget bulanan, dan pengaturan PIN/Password telah tersimpan.";
       modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); card.classList.add('scale-100'); }, 10);
     }
 
@@ -1311,11 +1337,11 @@
           let sisa = limit - spent; 
           let pct = Math.min(100, Math.round((spent / limit) * 100)); 
           let isOver = spent > limit;
-          let overAmt = spent - limit; // HITUNG SELISIH OVER BUDGET
+          let overAmt = spent - limit; 
           
           let barColor = isOver ? 'bg-red-500' : (pct > 80 ? 'bg-orange-500' : 'bg-green-500'); 
           let badgeClass = isOver ? 'bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-400' : 'bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-400';
-          let badgeText = isOver ? 'OVER (-' + formatRp(overAmt) + ')' : 'Sisa: ' + formatRp(sisa); // TAMPILKAN SELISIH
+          let badgeText = isOver ? 'OVER (-' + formatRp(overAmt) + ')' : 'Sisa: ' + formatRp(sisa); 
           
           container.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-2 text-xs"><div class="flex justify-between items-center"><p class="font-bold text-sm text-on-surface">${cat}</p><span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${badgeClass}">${badgeText}</span></div><div class="flex justify-between text-[10px] text-gray-500 mb-1"><span>Terpakai: <b class="${isOver ? 'text-error' : 'text-on-surface'}">${formatRp(spent)}</b></span><span>Limit: <b class="text-on-surface font-mono-data">${formatRp(limit)}</b></span></div><div class="w-full bg-gray-200 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden"><div class="${barColor} h-2.5 rounded-full transition-all duration-500" style="width: ${pct}%"></div></div></div>`;
         }
@@ -2002,10 +2028,25 @@
 
     function removeRoutinePaymentItem(key) { delete globalData.routinePayments[key]; saveStorageData(); renderSetupView(); }
 
+    // FUNGSI BARU UNTUK UBAH PIN APLIKASI SAJA
+    function changeAppPin() {
+      let np = document.getElementById('new-pin-input').value;
+      if (np && np.trim() !== "") {
+        globalData.appPin = np.trim(); 
+        saveStorageData(); 
+        alert("PIN Masuk Aplikasi berhasil diperbarui!"); 
+        document.getElementById('new-pin-input').value = '';
+      }
+    }
+
+    // FUNGSI LAMA HANYA UNTUK UBAH PASSWORD MASTER SETUP
     function changeOwnerPassword() {
       let np = document.getElementById('new-pass-input').value;
       if (np && np.trim() !== "") {
-        globalData.ownerPassword = np.trim(); saveStorageData(); alert("Password berhasil diperbarui!"); document.getElementById('new-pass-input').value = '';
+        globalData.ownerPassword = np.trim(); 
+        saveStorageData(); 
+        alert("Password Setup berhasil diperbarui!"); 
+        document.getElementById('new-pass-input').value = '';
       }
     }
 
@@ -2026,7 +2067,7 @@
         document.getElementById('setup-lock-card').classList.add('hidden');
         document.getElementById('setup-unlocked-content').classList.remove('hidden');
         renderSetupView();
-      } else alert('Password salah!');
+      } else alert('Password Master salah!');
     }
   </script>
 </body>
