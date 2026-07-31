@@ -1084,10 +1084,12 @@
 
     function verifyBumperPin() {
       let pinInput = document.getElementById('bumper-pin-input').value;
-      // Membaca PIN khusus App, default-nya sama dengan ownerPassword kalau belum di-set
-      let validPin = (globalData && globalData.appPin !== undefined) ? globalData.appPin : ((globalData && globalData.ownerPassword) ? globalData.ownerPassword : "123");
+      
+      // Ambil PIN Aplikasi (jika kosong, fallback ke Password Master)
+      let validPin = (globalData && globalData.appPin && globalData.appPin.trim() !== "") ? globalData.appPin : globalData.ownerPassword;
 
-      if (pinInput === validPin) {
+      // IZINKAN KEDUANYA: Bisa pakai PIN Aplikasi, BISA JUGA pakai Password Master (sebagai kunci darurat)
+      if (pinInput === validPin || pinInput === globalData.ownerPassword) {
         let splash = document.getElementById('splash-screen');
         if (splash) {
           splash.classList.add('opacity-0');
@@ -2028,24 +2030,34 @@
 
     function removeRoutinePaymentItem(key) { delete globalData.routinePayments[key]; saveStorageData(); renderSetupView(); }
 
-    // FUNGSI BARU UNTUK UBAH PIN APLIKASI SAJA
-    function changeAppPin() {
+    // Ubah fungsi menjadi ASYNC (Menunggu data benar-benar tersimpan ke server sebelum muncul notif)
+    async function changeAppPin() {
       let np = document.getElementById('new-pin-input').value;
       if (np && np.trim() !== "") {
+        let btn = event.target;
+        btn.textContent = "Menyimpan..."; // Indikator visual
+        
         globalData.appPin = np.trim(); 
-        saveStorageData(); 
-        alert("PIN Masuk Aplikasi berhasil diperbarui!"); 
+        await saveStorageData(); // Tunggu sampai terkirim ke Google Sheets
+        
+        btn.textContent = "Ubah PIN Aplikasi";
+        alert("PIN Masuk Aplikasi berhasil diperbarui!\n\n(Catatan: Anda juga tetap bisa masuk menggunakan Password Master jika lupa PIN)."); 
         document.getElementById('new-pin-input').value = '';
       }
     }
 
-    // FUNGSI LAMA HANYA UNTUK UBAH PASSWORD MASTER SETUP
-    function changeOwnerPassword() {
+   // Ubah fungsi menjadi ASYNC
+    async function changeOwnerPassword() {
       let np = document.getElementById('new-pass-input').value;
       if (np && np.trim() !== "") {
+        let btn = event.target;
+        btn.textContent = "Menyimpan...";
+        
         globalData.ownerPassword = np.trim(); 
-        saveStorageData(); 
-        alert("Password Setup berhasil diperbarui!"); 
+        await saveStorageData(); 
+        
+        btn.textContent = "Ubah Password Setup";
+        alert("Password Master Setup berhasil diperbarui!"); 
         document.getElementById('new-pass-input').value = '';
       }
     }
