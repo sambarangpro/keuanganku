@@ -16,6 +16,7 @@
 
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Plugin Chart.js untuk menampilkan Label Data Nominal di atas diagram -->
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet"/>
@@ -70,12 +71,21 @@
     html.dark input, html.dark select { background-color: #090d16 !important; color: #ffffff !important; border-color: #475569 !important; }
     html.dark .text-gray-500, html.dark .text-gray-600 { color: #94a3b8 !important; }
 
+    /* Tombol Hapus tersembunyi di riwayat, muncul saat baris di-hover */
     .hidden-action-row .delete-action-btn { opacity: 0; transition: opacity 0.2s ease-in-out; }
     .hidden-action-row:hover .delete-action-btn { opacity: 1; }
 
-    @keyframes checkBounce { 0% { transform: scale(0); opacity: 0; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+    @keyframes checkBounce {
+      0% { transform: scale(0); opacity: 0; }
+      50% { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
     .animate-bounce-check { animation: checkBounce 0.5s ease-out forwards; }
-    @keyframes pulseLogo { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+    
+    @keyframes pulseLogo {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
     .animate-pulse-logo { animation: pulseLogo 1.5s infinite; }
   </style>
 </head>
@@ -97,7 +107,7 @@
         <button onclick="verifyBumperPin()" class="w-full py-2.5 bg-white text-primary font-bold rounded-xl text-xs hover:bg-blue-50 shadow transition-all">
           MASUK APLIKASI
         </button>
-        <p id="bumper-error-msg" class="text-[11px] text-red-200 font-semibold hidden">PIN Salah! Coba lagi atau gunakan Password Setup.</p>
+        <p id="bumper-error-msg" class="text-[11px] text-red-200 font-semibold hidden">PIN Salah! Gunakan PIN Password Pemilik.</p>
       </div>
 
       <div class="pt-4">
@@ -131,16 +141,34 @@
         </h3>
         <span onclick="closeEditModal()" class="material-symbols-outlined cursor-pointer hover:text-error text-sm">close</span>
       </div>
+      
       <input type="hidden" id="edit-tx-index">
+
       <div class="space-y-3 text-xs">
-        <div><label class="font-bold uppercase text-gray-500">Nama Transaksi</label><input type="text" id="edit-tx-name" class="w-full p-2 border rounded-xl bg-surface text-on-surface font-bold mt-1"></div>
-        <div><label class="font-bold uppercase text-gray-500">Nominal (Rp)</label><input type="text" id="edit-tx-amount" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-xl font-mono-data bg-surface text-on-surface font-bold mt-1"></div>
-        <div><label class="font-bold uppercase text-gray-500">Kategori</label><input type="text" id="edit-tx-category" class="w-full p-2 border rounded-xl bg-surface text-on-surface mt-1"></div>
+        <div>
+          <label class="font-bold uppercase text-gray-500">Nama Transaksi</label>
+          <input type="text" id="edit-tx-name" class="w-full p-2 border rounded-xl bg-surface text-on-surface font-bold mt-1">
+        </div>
+        <div>
+          <label class="font-bold uppercase text-gray-500">Nominal (Rp)</label>
+          <input type="text" id="edit-tx-amount" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-xl font-mono-data bg-surface text-on-surface font-bold mt-1">
+        </div>
+        <div>
+          <label class="font-bold uppercase text-gray-500">Kategori</label>
+          <input type="text" id="edit-tx-category" class="w-full p-2 border rounded-xl bg-surface text-on-surface mt-1">
+        </div>
         <div class="grid grid-cols-2 gap-2">
-          <div><label class="font-bold uppercase text-gray-500">Dari Akun</label><input type="text" id="edit-tx-dari" readonly class="w-full p-2 border rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-500 mt-1"></div>
-          <div><label class="font-bold uppercase text-gray-500">Ke Akun</label><input type="text" id="edit-tx-ke" readonly class="w-full p-2 border rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-500 mt-1"></div>
+          <div>
+            <label class="font-bold uppercase text-gray-500">Dari Akun</label>
+            <input type="text" id="edit-tx-dari" readonly class="w-full p-2 border rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-500 mt-1">
+          </div>
+          <div>
+            <label class="font-bold uppercase text-gray-500">Ke Akun</label>
+            <input type="text" id="edit-tx-ke" readonly class="w-full p-2 border rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-500 mt-1">
+          </div>
         </div>
       </div>
+
       <div class="flex gap-2 pt-3 border-t">
         <button onclick="saveEditedTransaction()" class="flex-1 py-2.5 bg-primary text-white font-bold rounded-xl hover:brightness-110 shadow">Simpan Perubahan</button>
         <button onclick="closeEditModal()" class="px-4 py-2.5 border rounded-xl text-on-surface-variant">Batal</button>
@@ -644,32 +672,16 @@
           </button>
         </div>
 
-        <!-- NEW: PENGATURAN PIN DAN PASSWORD -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <section class="bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-6 shadow-sm space-y-3">
-            <div class="flex items-center gap-2">
-              <span class="material-symbols-outlined text-primary">dialpad</span>
-              <h2 class="font-headline-md text-headline-md text-on-surface font-bold">Ubah PIN Aplikasi</h2>
-            </div>
-            <p class="text-[10px] text-gray-500">PIN sederhana untuk akses harian di halaman depan (Bumper).</p>
-            <div class="grid grid-cols-1 gap-2 pt-1">
-              <input type="password" id="new-pin-input" placeholder="Masukkan PIN Baru (Mis: 123456)" class="p-2.5 border rounded-xl text-xs font-mono-data outline-none focus:ring-1 focus:ring-primary">
-              <button onclick="changeAppPin(event)" class="py-2.5 bg-primary text-white font-bold text-xs rounded-xl hover:brightness-110 shadow">Ubah PIN Aplikasi</button>
-            </div>
-          </section>
-
-          <section class="bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-6 shadow-sm space-y-3">
-            <div class="flex items-center gap-2">
-              <span class="material-symbols-outlined text-error">admin_panel_settings</span>
-              <h2 class="font-headline-md text-headline-md text-on-surface font-bold">Ubah Password Setup</h2>
-            </div>
-            <p class="text-[10px] text-gray-500">Password rahasia untuk membuka seluruh menu Master Setup ini.</p>
-            <div class="grid grid-cols-1 gap-2 pt-1">
-              <input type="password" id="new-pass-input" placeholder="Masukkan Password Baru" class="p-2.5 border rounded-xl text-xs font-mono-data outline-none focus:ring-1 focus:ring-error">
-              <button onclick="changeOwnerPassword(event)" class="py-2.5 bg-secondary text-white font-bold text-xs rounded-xl hover:brightness-110 shadow">Ubah Password Setup</button>
-            </div>
-          </section>
-        </div>
+        <section class="bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-6 shadow-sm space-y-3">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">key</span>
+            <h2 class="font-headline-md text-headline-md text-on-surface font-bold" data-i18n="setup_pass_title">Ubah Password Pemilik</h2>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+            <input type="password" id="new-pass-input" placeholder="Masukkan Password Baru" class="p-2.5 border rounded-xl text-xs font-mono-data outline-none focus:ring-1 focus:ring-primary">
+            <button onclick="changeOwnerPassword()" class="py-2.5 bg-secondary text-white font-bold text-xs rounded-xl hover:brightness-110 shadow" data-i18n="btn_change_pass">Ubah Password</button>
+          </div>
+        </section>
 
         <section class="space-y-3">
           <div class="flex items-center gap-2">
@@ -937,21 +949,20 @@
     Chart.register(ChartDataLabels);
 
     const TRANSLATIONS = {
-      id: { /* Isi sama seperti sebelumnya, dihapus agar kode lebih ringkas dipandang */
+      id: { /* Teks Diringkas */
         brand_title: "KEUANGANKU", badge_cash: "Hanya Uang Kas", lbl_total_asset: "TOTAL ASSET & SAVINGS", lbl_asset_note: "*Akumulasi simpanan uang kas dari Invest/Savings, Sinking Fund, & Financial Goals.", lbl_total_bank: "AKUMULASI SELURUH REKENING", lbl_total_bank_sub: "Total Nominal Saldo Bank & E-Wallet Terkini", title_acc_balance: "Saldo Per Akun", badge_db_acc: "DATABASE AKUN", title_recap_analysis: "Rekapitulasi & Analisis Finansial", desc_invest: "Total Uang, Terpakai, & Sisa Uang", desc_sinking: "Target, Deadline, Target/Bln, Sisa Waktu, Progress & Sisa", desc_goals: "Target Nominal, Jangka Waktu, %, Terpakai, & Sisa", title_receivables: "Piutang (Orang Berutang ke Saya)", desc_receivables: "Total Piutang, Deadline Penagihan, & Status Pelunasan", title_nonmoney: "Aset Selain Uang & Peringatan Nisab Zakat", desc_nonmoney: "Emas (Gram), Perak (Gram), Tanah & Status Zakat", title_debt: "Utang & Cicilan", desc_debt: "Total, Paid, Unpaid, & Sisa Bulan Pembayaran", title_monthly_summary: "Monthly Financial Summary & Diagram Analisis", desc_monthly_summary: "Pilih Bulan & Analisis Diagram Pengeluaran", lbl_select_month: "Pilih Bulan Laporan:", chart_flow_title: "Perbandingan Cashflow Bulanan", chart_spending_title: "Klasemen Kategori Spending", title_tx_record: "Pencatatan Transaksi", desc_tx_record: "Input otomatis memperbarui saldo akun di Dashboard & tercatat di riwayat", lbl_tx_date: "Waktu / Tanggal", lbl_tx_name: "Nama Transaksi", lbl_tx_amount: "Nominal (Rp)", lbl_tx_cashflow: "Tipe Cashflow", opt_select_cf: "-- Pilih Cashflow --", lbl_tx_cat: "Category", lbl_tx_from: "Dari Account (Sumber)", lbl_tx_to: "Ke Account (Tujuan)", lbl_admin_fee: "Biaya Admin / Transaksi (Terpisah)", lbl_admin_nominal: "Nominal Admin (Rp)", lbl_admin_acc: "Potong Dari Akun", opt_same_acc: "Sama dengan Dari Account", btn_save_tx: "Simpan Transaksi", btn_cancel: "Batal", title_history: "Riwayat & Rekapitulasi Transaksi", desc_history: "Pilih Tanggal, Bulan, Tahun, atau Rentang Tanggal sesuai kebutuhan", btn_print_pdf: "Cetak PDF", lbl_filter_mode: "Mode Filter Waktu", f_all: "Semua Waktu", f_date: "Tanggal Tertentu", f_month: "Bulan Tertentu", f_year: "Tahun Tertentu", f_range: "Rentang Tanggal (Dari-Sampai)", lbl_date_start: "Dari Tanggal", lbl_date_end: "Sampai Tanggal", lbl_filter_cf: "Cashflow / Kategori", f_all_cf: "Semua Cashflow", table_header_title: "Tabel Data Rekam Transaksi", th_date: "Hari, Tgl & Jam", th_name: "Nama Transaksi", th_cf: "Cashflow", th_cat: "Kategori", th_from: "Dari Akun", th_to: "Ke Akun", th_nominal: "Nominal", empty_tx: "Belum ada transaksi diinput.", setup_lock_title: "Menu Setup Terkunci", setup_lock_desc: "Masukkan password pemilik akun untuk mengakses database master.", btn_unlock: "Buka Akses Setup", setup_db_title: "Pusat Konfigurasi Database", setup_db_desc: "Perbarui nilai atau kategori, lalu klik simpan di bawah.", btn_save_changes: "SIMPAN PERUBAHAN", setup_pass_title: "Ubah Password Pemilik", btn_change_pass: "Ubah Password", setup_routine_title: "Jadwal Pembayaran Rutin Bulanan", setup_routine_desc: "Aplikasi akan memberi peringatan di Dashboard saat memasuki tanggal bayar.", btn_add_routine: "TAMBAHKAN JADWAL PEMBAYARAN RUTIN", setup_startbal_title: "Saldo Awal", setup_startbal_desc: "Nominal awal yang dapat digunakan sebelum adanya transaksi.", setup_startbal_label: "Saldo Awal (Yang Bisa Digunakan)", setup_acc_title: "1. Akun Bank & E-Wallet", setup_acc_desc: "Input Nama Akun, Bank/E-Wallet, Nomor Rekening, Atas Nama, & Saldo Awal.", btn_add_acc: "TAMBAHKAN ACCOUNT BANK / E-WALLET", def_income: "Pendapatan/penghasilan, baik yang tetap ataupun tidak tetap.", def_add_income: "TAMBAHKAN INCOME", def_bills: "Pengeluaran yang cenderung berulang setiap bulannya dengan jumlah yang cenderung sama (Cont: SPP/kos Bulanan, Subscribe Canva, dll).", def_add_bills: "TAMBAHKAN BILLS", def_spending: "Pengeluaran sehari-hari, dapat dibuat dalam beberapa kategori.", def_add_spending: "TAMBAHKAN SPENDING", def_invest_setup: "Uang yang akan disimpan untuk jangka pendek dan dapat digunakan sewaktu-waktu.", def_add_invest: "TAMBAHKAN INVEST / SAVINGS", def_sinking_setup: "Uang yang disisihkan secara berkala untuk membiayai pengeluaran besar yang sudah direncanakan sejak awal (Cont: Mudik, Pajak, Perawatan rumah, dll).", def_add_sinking: "TAMBAHKAN SINKING FUND", def_goals_setup: "Perencanaan finansial, uang/asset yang disimpan untuk kebutuhan/tujuan tertentu ataupun untuk mencapai jumlah tertentu dalam jangka waktu yang ditentukan (Cont: Dana Pensiun, Dana Pendidikan, Haji, dll).", def_add_goals: "TAMBAHKAN FINANCIAL GOALS", title_receivables_setup: "8. Piutang (Orang Berutang ke Saya)", desc_receivables_setup: "Catat nama peminjam, jumlah piutang, dan deadline tanggal penagihan.", btn_add_receivables: "TAMBAHKAN PIUTANG BARU", title_nonmoney_setup: "9. Aset Selain Uang & Peringatan Nisab Zakat", def_nonmoney_setup: "Input Emas, Perak, & Tanah beserta perhitungan nisab zakat.", btn_add_nonmoney: "TAMBAHKAN ASET NON-UANG", title_debt_setup: "10. Utang & Cicilan", def_debt_setup: "Input Total Utang & Cicilan per Bulan.", btn_add_debt: "TAMBAHKAN UTANG / CICILAN", danger_zone: "Zona Bahaya / Reset Data", danger_desc: "Hapus seluruh riwayat transaksi yang tersimpan.", btn_reset_history: "RESET RIWAYAT", btn_save_all_db: "SIMPAN SELURUH PERUBAHAN DATABASE", nav_dash: "Dashboard", nav_tx: "Transaksi", nav_setup: "Setup", m_jan: "Januari", m_feb: "Februari", m_mar: "Maret", m_apr: "April", m_mei: "Mei", m_jun: "Juni", m_jul: "Juli", m_agu: "Agustus", m_sep: "September", m_okt: "Oktober", m_nov: "November", m_des: "Desember"
-      }
+      },
+      en: { /* Kosong, sama seperti sebelumnya */ }
     };
 
     let currentLang = 'id';
     let isBalanceMasked = true;
 
-    // KODE BARU: LOGIKA VERIFIKASI PIN
     function verifyBumperPin() {
       let pinInput = document.getElementById('bumper-pin-input').value;
-      let validAppPin = String(globalData.appPin || "123");
-      let validSetupPass = String(globalData.ownerPassword || "123");
+      let validPass = (globalData && globalData.ownerPassword) ? globalData.ownerPassword : "123";
 
-      if (pinInput === validAppPin || pinInput === validSetupPass) {
+      if (pinInput === validPass) {
         let splash = document.getElementById('splash-screen');
         if (splash) {
           splash.classList.add('opacity-0');
@@ -963,61 +974,24 @@
       }
     }
 
-    // KODE BARU: MENGUBAH FUNGSI MENJADI PROMISE AGAR BISA DITUNGGU
-    function changeAppPin(event) {
-      let np = document.getElementById('new-pin-input').value;
-      if (np && np.trim() !== "") {
-        let btn = event.target;
-        btn.textContent = "Menyimpan...";
-        globalData.appPin = np.trim(); 
-        
-        saveStorageData().then(() => {
-          btn.textContent = "Ubah PIN Aplikasi";
-          alert("PIN Masuk Aplikasi berhasil diperbarui!\n(Anda juga tetap bisa masuk menggunakan Password Setup jika lupa PIN)."); 
-          document.getElementById('new-pin-input').value = '';
-        });
-      }
-    }
-
-    function changeOwnerPassword(event) {
-      let np = document.getElementById('new-pass-input').value;
-      if (np && np.trim() !== "") {
-        let btn = event.target;
-        btn.textContent = "Menyimpan...";
-        globalData.ownerPassword = np.trim(); 
-        
-        saveStorageData().then(() => {
-          btn.textContent = "Ubah Password Setup";
-          alert("Password Setup berhasil diperbarui!"); 
-          document.getElementById('new-pass-input').value = '';
-        });
-      }
-    }
-
-    function verifySetupPassword() {
-      let p = document.getElementById('setup-pass-input').value;
-      let validSetupPass = String(globalData.ownerPassword || "123");
-
-      if (p === validSetupPass) {
-        document.getElementById('setup-lock-card').classList.add('hidden');
-        document.getElementById('setup-unlocked-content').classList.remove('hidden');
-        renderSetupView();
-      } else {
-        alert('Password Master salah!');
-      }
-    }
-
     function toggleBalanceMask() {
       isBalanceMasked = !isBalanceMasked;
       let iconFab = document.getElementById('icon-mask-balance-fab');
-      if (iconFab) iconFab.textContent = isBalanceMasked ? "visibility_off" : "visibility";
+      if (iconFab) {
+        iconFab.textContent = isBalanceMasked ? "visibility_off" : "visibility";
+      }
       renderDashboard();
     }
 
     function changeLanguage(lang) {
-      currentLang = lang; document.documentElement.dir = (lang === 'ar') ? 'rtl' : 'ltr';
+      currentLang = lang;
+      document.documentElement.dir = (lang === 'ar') ? 'rtl' : 'ltr';
       let dict = TRANSLATIONS[lang] || TRANSLATIONS['id'];
-      document.querySelectorAll('[data-i18n]').forEach(el => { let key = el.getAttribute('data-i18n'); if (dict[key]) el.textContent = dict[key]; });
+      
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        let key = el.getAttribute('data-i18n');
+        if (dict[key]) el.textContent = dict[key];
+      });
     }
 
     function playSuccessSound() {
@@ -1026,7 +1000,9 @@
         let osc = ctx.createOscillator(); let gain = ctx.createGain();
         osc.type = 'sine'; osc.connect(gain); gain.connect(ctx.destination);
         let now = ctx.currentTime;
-        osc.frequency.setValueAtTime(523.25, now); osc.frequency.setValueAtTime(659.25, now + 0.08); osc.frequency.setValueAtTime(783.99, now + 0.16);
+        osc.frequency.setValueAtTime(523.25, now);
+        osc.frequency.setValueAtTime(659.25, now + 0.08);
+        osc.frequency.setValueAtTime(783.99, now + 0.16);
         gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
         osc.start(now); osc.stop(now + 0.45);
       } catch(e) {}
@@ -1039,8 +1015,7 @@
     }
 
     const DEFAULT_DATA = {
-      appPin: "123",
-      ownerPassword: "123", 
+      ownerPassword: "123",
       startingBalance: 25000000,
       accounts: ["BSI Utama", "Kas Kecil Media", "Bank Jago Tabungan Nikah", "Bank Jago Zy Clothes", "Dana", "Gopay", "Ovo", "Cash"],
       accountDetails: { "BSI Utama": { bankName: "Bank Syariah Indonesia", accNo: "7123456789", owner: "Fulan", balance: 5979762 } },
@@ -1058,6 +1033,7 @@
       loadStorageData();
       let dateInput = document.getElementById('tx-date');
       if (dateInput) dateInput.valueAsDate = new Date();
+      initApp();
       requestNotificationPermission();
     };
 
@@ -1065,76 +1041,34 @@
       if ("Notification" in window && Notification.permission !== "granted") Notification.requestPermission();
     }
 
-    // KODE BARU: MESIN SINKRONISASI OFFLINE-FIRST TIMESTAMP
     async function loadStorageData() {
-      let localStr = localStorage.getItem("KEUANGANKU_DB_V21");
-      let localData = localStr ? JSON.parse(localStr) : null;
-
       try {
         let response = await fetch(WEB_APP_URL);
         let cloudData = await response.json();
-
         if (!cloudData || Object.keys(cloudData).length === 0) {
-          globalData = localData || JSON.parse(JSON.stringify(DEFAULT_DATA));
-          saveStorageData();
-        } else {
-          // Bandingkan waktu pembaruan
-          let cloudTime = cloudData.lastUpdated || 0;
-          let localTime = localData ? (localData.lastUpdated || 0) : 0;
-
-          if (localData && localTime > cloudTime) {
-            // Jika data lokal lebih baru (karena upload sebelumnya terputus)
-            globalData = localData;
-            saveStorageData(); // Paksa upload ulang ke Cloud
-          } else {
-            // Jika cloud lebih baru
-            globalData = cloudData;
-            localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData));
-          }
-        }
+          globalData = JSON.parse(JSON.stringify(DEFAULT_DATA)); saveStorageData();
+        } else globalData = cloudData;
       } catch(e) {
-        // Jika sedang offline atau server Google Sheets gagal dimuat
-        globalData = localData || JSON.parse(JSON.stringify(DEFAULT_DATA));
+        let stored = localStorage.getItem("KEUANGANKU_DB_V21");
+        if (stored) globalData = JSON.parse(stored);
+        else globalData = JSON.parse(JSON.stringify(DEFAULT_DATA));
       }
-      
-      // Fallback jika user lama belum punya key ini
-      if (globalData.appPin === undefined) globalData.appPin = globalData.ownerPassword || "123";
       if (!globalData.monthlyBudgets) globalData.monthlyBudgets = {};
-
       initApp();
     }
 
-    // KODE BARU: PENYEMPURNAAN UPLOAD KE GOOGLE SHEETS
     async function saveStorageData() {
-      // 1. Tambahkan Timestamp (Penanda Waktu)
-      globalData.lastUpdated = new Date().getTime(); 
-      
-      // 2. Simpan di Lokal Terlebih Dahulu (Prioritas Utama)
       localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData));
-      
-      populateFormDropdowns(); 
-      populateReportFilterCategories();
-      
-      // 3. Kirim ke Google Sheets di Latar Belakang (Menggunakan text/plain agar tidak diblokir CORS)
-      try { 
-        await fetch(WEB_APP_URL, { 
-          method: "POST", 
-          headers: { "Content-Type": "text/plain;charset=utf-8" }, 
-          body: JSON.stringify(globalData) 
-        }); 
-      } catch(e) {
-        console.log("Pengiriman ke cloud tertunda, akan dikirim ulang nanti.");
-      }
+      populateFormDropdowns(); populateReportFilterCategories();
+      try { await fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(globalData) }); } catch(e) {}
     }
 
     function manualSaveSetup() {
-      saveStorageData().then(() => {
-        renderDashboard(); playSuccessSound();
-        let modal = document.getElementById('success-modal'), card = document.getElementById('success-card');
-        document.getElementById('success-modal-title').textContent = "Database Berhasil Diperbarui!";
-        document.getElementById('success-msg-text').innerHTML = "Seluruh saldo awal, budget bulanan, dan pengaturan PIN/Password telah tersimpan.";
-        modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); card.classList.add('scale-100'); }, 10);
-      });
+      saveStorageData(); renderDashboard(); playSuccessSound();
+      let modal = document.getElementById('success-modal'), card = document.getElementById('success-card');
+      document.getElementById('success-modal-title').textContent = "Database Berhasil Diperbarui!";
+      document.getElementById('success-msg-text').innerHTML = "Seluruh saldo awal, budget bulanan, dan kategori pilihan telah tersimpan.";
+      modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); card.classList.add('scale-100'); }, 10);
     }
 
     function resetTransactionHistory() {
@@ -1274,7 +1208,7 @@
 
     function updateBudgetLimit(cat, val) {
       if (!globalData.monthlyBudgets) globalData.monthlyBudgets = {};
-      globalData.monthlyBudgets[cat] = parseFloat(val.replace(/\./g, '')) || 0; saveStorageData().then(()=> renderDashboard());
+      globalData.monthlyBudgets[cat] = parseFloat(val.replace(/\./g, '')) || 0; saveStorageData(); renderDashboard();
     }
 
     function renderInvestRecap() {
@@ -1351,16 +1285,27 @@
         if (!dropdown) return;
         let selectedMonthIdx = parseInt(dropdown.value, 10);
 
-        if (chart1) chart1.destroy(); if (chart2) chart2.destroy(); if (chart3) chart3.destroy();
+        if (chart1) chart1.destroy(); 
+        if (chart2) chart2.destroy();
+        if (chart3) chart3.destroy();
 
         let totalInc = 0, totalSpend = 0, totalBills = 0; 
-        let spendCatMap = {}; let incCatMap = {}; 
+        let spendCatMap = {};
+        let incCatMap = {}; 
 
         if (globalData.recentHistory) {
           globalData.recentHistory.forEach(h => {
             if (h.rawDate && new Date(h.rawDate).getMonth() === selectedMonthIdx) {
-              if (h.cashflow === 'Income') { totalInc += h.amount; let cat = h.category || "Lainnya"; incCatMap[cat] = (incCatMap[cat] || 0) + h.amount; }
-              if (h.cashflow === 'Spending') { totalSpend += h.amount; let cat = h.category || "Lainnya"; spendCatMap[cat] = (spendCatMap[cat] || 0) + h.amount; }
+              if (h.cashflow === 'Income') {
+                totalInc += h.amount;
+                let cat = h.category || "Lainnya"; 
+                incCatMap[cat] = (incCatMap[cat] || 0) + h.amount;
+              }
+              if (h.cashflow === 'Spending') {
+                totalSpend += h.amount;
+                let cat = h.category || "Lainnya"; 
+                spendCatMap[cat] = (spendCatMap[cat] || 0) + h.amount;
+              }
               if (h.cashflow === 'Bayar Cicilan / Utang') totalBills += h.amount;
             }
           });
@@ -1371,39 +1316,73 @@
           mContainer.innerHTML = `<div class="p-2.5 bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 rounded-xl"><span>Total Income</span><br/><b class="font-mono-data text-green-600 dark:text-green-400">${formatRp(totalInc)}</b></div><div class="p-2.5 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-xl"><span>Total Spending</span><br/><b class="font-mono-data text-error">${formatRp(totalSpend)}</b></div><div class="p-2.5 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 rounded-xl"><span>Bills Paid</span><br/><b class="font-mono-data text-tertiary dark:text-indigo-400">${formatRp(totalBills)}</b></div><div class="p-2.5 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-xl"><span>Sisa Uang</span><br/><b class="font-mono-data text-primary dark:text-blue-400">${formatRp(totalInc - (totalSpend + totalBills))}</b></div>`;
         }
 
-        let isDark = document.documentElement.classList.contains('dark'); let labelColor = isDark ? '#cbd5e1' : '#475569';
+        let isDark = document.documentElement.classList.contains('dark');
+        let labelColor = isDark ? '#cbd5e1' : '#475569';
 
         let ctx1 = document.getElementById('monthlyFlowChart');
         if (ctx1) {
           chart1 = new Chart(ctx1.getContext('2d'), {
             type: 'doughnut',
-            data: { labels: ['Income', 'Spending', 'Bills Paid'], datasets: [{ data: [totalInc, totalSpend, totalBills], backgroundColor: ['#22c55e', '#ef4444', '#6366f1'], borderWidth: 2, borderColor: isDark ? '#0f172a' : '#ffffff' }] },
+            data: { 
+              labels: ['Income', 'Spending', 'Bills Paid'], 
+              datasets: [{ 
+                data: [totalInc, totalSpend, totalBills], 
+                backgroundColor: ['#22c55e', '#ef4444', '#6366f1'], 
+                borderWidth: 2,
+                borderColor: isDark ? '#0f172a' : '#ffffff' 
+              }] 
+            },
             options: { 
               responsive: true, maintainAspectRatio: false, layout: { padding: { top: 10, bottom: 10 } },
-              plugins: { legend: { display: true, position: 'bottom', labels: { color: labelColor, font: {size: 10} } }, tooltip: { callbacks: { label: function(c) { return "Rp " + c.raw.toLocaleString('id-ID'); } } }, datalabels: { formatter: function(v) { if(v === 0) return ""; if (v >= 1000000) return (v/1000000).toFixed(1).replace('.0','') + 'Jt'; if (v >= 1000) return (v/1000).toFixed(0) + 'k'; return v.toLocaleString('id-ID'); }, font: { family: 'JetBrains Mono', size: 10, weight: 'bold' }, color: '#ffffff' } }
+              plugins: { 
+                legend: { display: true, position: 'bottom', labels: { color: labelColor, font: {size: 10} } }, 
+                tooltip: { callbacks: { label: function(c) { return "Rp " + c.raw.toLocaleString('id-ID'); } } }, 
+                datalabels: { 
+                  formatter: function(v) { 
+                    if(v === 0) return "";
+                    if (v >= 1000000) return (v/1000000).toFixed(1).replace('.0','') + 'Jt';
+                    if (v >= 1000) return (v/1000).toFixed(0) + 'k';
+                    return v.toLocaleString('id-ID');
+                  }, 
+                  font: { family: 'JetBrains Mono', size: 10, weight: 'bold' }, 
+                  color: '#ffffff' 
+                } 
+              }
             }
           });
         }
 
         let spendKeys = Object.keys(spendCatMap).sort((a, b) => spendCatMap[b] - spendCatMap[a]);
-        let labelsSpend = spendKeys.length > 0 ? spendKeys : ["Belum Ada Data"]; let valuesSpend = spendKeys.length > 0 ? spendKeys.map(k => spendCatMap[k]) : [0];
+        let labelsSpend = spendKeys.length > 0 ? spendKeys : ["Belum Ada Data"];
+        let valuesSpend = spendKeys.length > 0 ? spendKeys.map(k => spendCatMap[k]) : [0];
+
         let ctx2 = document.getElementById('spendingCategoryChart');
         if (ctx2) {
           chart2 = new Chart(ctx2.getContext('2d'), {
             type: 'bar',
             data: { labels: labelsSpend, datasets: [{ data: valuesSpend, backgroundColor: '#ef4444', borderRadius: 4 }] },
-            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, layout: { padding: { right: 80 } }, scales: { x: { display: false, beginAtZero: true }, y: { grid: { display: false }, ticks: { font: { weight: 'bold' }, color: labelColor } } }, plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) { return "Rp " + c.raw.toLocaleString('id-ID'); } } }, datalabels: { anchor: 'end', align: 'right', formatter: function(v) { return v > 0 ? "Rp " + v.toLocaleString('id-ID') : ""; }, font: { family: 'JetBrains Mono', size: 10, weight: 'bold' }, color: labelColor } } }
+            options: { 
+              indexAxis: 'y', responsive: true, maintainAspectRatio: false, layout: { padding: { right: 80 } },
+              scales: { x: { display: false, beginAtZero: true }, y: { grid: { display: false }, ticks: { font: { weight: 'bold' }, color: labelColor } } },
+              plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) { return "Rp " + c.raw.toLocaleString('id-ID'); } } }, datalabels: { anchor: 'end', align: 'right', formatter: function(v) { return v > 0 ? "Rp " + v.toLocaleString('id-ID') : ""; }, font: { family: 'JetBrains Mono', size: 10, weight: 'bold' }, color: labelColor } }
+            }
           });
         }
 
         let incKeys = Object.keys(incCatMap).sort((a, b) => incCatMap[b] - incCatMap[a]);
-        let labelsInc = incKeys.length > 0 ? incKeys : ["Belum Ada Data"]; let valuesInc = incKeys.length > 0 ? incKeys.map(k => incCatMap[k]) : [0];
+        let labelsInc = incKeys.length > 0 ? incKeys : ["Belum Ada Data"];
+        let valuesInc = incKeys.length > 0 ? incKeys.map(k => incCatMap[k]) : [0];
+
         let ctx3 = document.getElementById('incomeCategoryChart');
         if (ctx3) {
           chart3 = new Chart(ctx3.getContext('2d'), {
             type: 'bar',
             data: { labels: labelsInc, datasets: [{ data: valuesInc, backgroundColor: '#22c55e', borderRadius: 4 }] },
-            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, layout: { padding: { right: 80 } }, scales: { x: { display: false, beginAtZero: true }, y: { grid: { display: false }, ticks: { font: { weight: 'bold' }, color: labelColor } } }, plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) { return "Rp " + c.raw.toLocaleString('id-ID'); } } }, datalabels: { anchor: 'end', align: 'right', formatter: function(v) { return v > 0 ? "Rp " + v.toLocaleString('id-ID') : ""; }, font: { family: 'JetBrains Mono', size: 10, weight: 'bold' }, color: labelColor } } }
+            options: { 
+              indexAxis: 'y', responsive: true, maintainAspectRatio: false, layout: { padding: { right: 80 } },
+              scales: { x: { display: false, beginAtZero: true }, y: { grid: { display: false }, ticks: { font: { weight: 'bold' }, color: labelColor } } },
+              plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) { return "Rp " + c.raw.toLocaleString('id-ID'); } } }, datalabels: { anchor: 'end', align: 'right', formatter: function(v) { return v > 0 ? "Rp " + v.toLocaleString('id-ID') : ""; }, font: { family: 'JetBrains Mono', size: 10, weight: 'bold' }, color: labelColor } }
+            }
           });
         }
 
@@ -1453,15 +1432,20 @@
     function populateReportFilterCategories() {
       let selectCf = document.getElementById('rep-filter-cashflow');
       if (selectCf) {
-        let currCf = selectCf.value; selectCf.innerHTML = '<option value="all">Semua Cashflow</option>';
+        let currCf = selectCf.value;
+        selectCf.innerHTML = '<option value="all">Semua Cashflow</option>';
         let cfs = ["Income", "Spending", "Invest / Savings", "Financial Goals", "Bayar Cicilan / Utang"];
         cfs.forEach(c => selectCf.innerHTML += `<option value="${c}">${c}</option>`);
         if (cfs.includes(currCf)) selectCf.value = currCf;
       }
+
       let selectAcc = document.getElementById('rep-filter-account');
       if (selectAcc) {
-        let currAcc = selectAcc.value; selectAcc.innerHTML = '<option value="all">Semua Akun</option>';
-        if (globalData.accounts) { globalData.accounts.forEach(a => { selectAcc.innerHTML += `<option value="${a}">${a}</option>`; }); }
+        let currAcc = selectAcc.value;
+        selectAcc.innerHTML = '<option value="all">Semua Akun</option>';
+        if (globalData.accounts) {
+          globalData.accounts.forEach(a => { selectAcc.innerHTML += `<option value="${a}">${a}</option>`; });
+        }
         if (globalData.accounts && globalData.accounts.includes(currAcc)) selectAcc.value = currAcc;
       }
     }
@@ -1476,9 +1460,13 @@
 
     function applyCashflowLogic() {
       let cf = document.getElementById('tx-cashflow').value;
-      let catSelect = document.getElementById('tx-category'), dariSelect = document.getElementById('tx-dari'), keSelect = document.getElementById('tx-ke');
+      let catSelect = document.getElementById('tx-category');
+      let dariSelect = document.getElementById('tx-dari');
+      let keSelect = document.getElementById('tx-ke');
 
-      catSelect.innerHTML = '<option value="- not applicable -" selected>- not applicable -</option>'; dariSelect.innerHTML = '<option value="- not applicable -" selected>- not applicable -</option>'; keSelect.innerHTML = '<option value="- not applicable -" selected>- not applicable -</option>';
+      catSelect.innerHTML = '<option value="- not applicable -" selected>- not applicable -</option>';
+      dariSelect.innerHTML = '<option value="- not applicable -" selected>- not applicable -</option>';
+      keSelect.innerHTML = '<option value="- not applicable -" selected>- not applicable -</option>';
       catSelect.disabled = false; dariSelect.disabled = false; keSelect.disabled = false;
 
       if (cf === 'Income') { dariSelect.disabled = true; fillOptions(catSelect, globalData.incomes); fillOptions(keSelect, globalData.accounts); }
@@ -1494,25 +1482,34 @@
     }
 
     function fillOptions(selectElem, arr) {
-      if (!arr || arr.length === 0) return; selectElem.innerHTML = '';
+      if (!arr || arr.length === 0) return;
+      selectElem.innerHTML = '';
       arr.forEach(item => { selectElem.innerHTML += `<option value="${item}">${item}</option>`; });
     }
 
     function getSelectedValueDirect(elementId) {
-      let el = document.getElementById(elementId); if (!el) return "- not applicable -";
+      let el = document.getElementById(elementId);
+      if (!el) return "- not applicable -";
       if (el.options && el.options.length > 0) {
-        let idx = el.selectedIndex >= 0 ? el.selectedIndex : 0; let selectedOpt = el.options[idx];
+        let idx = el.selectedIndex >= 0 ? el.selectedIndex : 0;
+        let selectedOpt = el.options[idx];
         if (selectedOpt && selectedOpt.value && selectedOpt.value.trim() !== "") return selectedOpt.value.trim();
-      } return "- not applicable -";
+      }
+      return "- not applicable -";
     }
 
     function submitTransaction(e) {
       e.preventDefault();
-      let dDate = document.getElementById('tx-date').value, dName = document.getElementById('tx-name').value;
-      let rawAmount = document.getElementById('tx-amount').value.replace(/\./g, ''), dAmount = parseFloat(rawAmount) || 0;
-      let dCashflow = document.getElementById('tx-cashflow').value, dCategory = getSelectedValueDirect('tx-category');
-      let dDari = getSelectedValueDirect('tx-dari'), dKe = getSelectedValueDirect('tx-ke');
-      let rawAdmin = document.getElementById('tx-admin-fee').value.replace(/\./g, ''), dAdminFee = parseFloat(rawAdmin) || 0;
+      let dDate = document.getElementById('tx-date').value;
+      let dName = document.getElementById('tx-name').value;
+      let rawAmount = document.getElementById('tx-amount').value.replace(/\./g, '');
+      let dAmount = parseFloat(rawAmount) || 0;
+      let dCashflow = document.getElementById('tx-cashflow').value;
+      let dCategory = getSelectedValueDirect('tx-category');
+      let dDari = getSelectedValueDirect('tx-dari');
+      let dKe = getSelectedValueDirect('tx-ke');
+      let rawAdmin = document.getElementById('tx-admin-fee').value.replace(/\./g, '');
+      let dAdminFee = parseFloat(rawAdmin) || 0;
       let dAdminAcc = document.getElementById('tx-admin-account').value || dDari;
       let timeFormatted = formatFullDateTime(dDate);
 
@@ -1527,19 +1524,23 @@
         adminAdded = true;
         if (globalData.currentBalances.hasOwnProperty(dAdminAcc)) globalData.currentBalances[dAdminAcc] -= dAdminFee;
         let adminTx = { dateTime: timeFormatted, rawDate: dDate, name: "Biaya Admin - " + dName, amount: dAdminFee, cashflow: "Spending", category: "Biaya Transaksi / Admin", dariAcc: dAdminAcc, keAcc: "- not applicable -" };
-        globalData.recentHistory.unshift(mainTx); globalData.recentHistory.unshift(adminTx);
-      } else { globalData.recentHistory.unshift(mainTx); }
+        globalData.recentHistory.unshift(mainTx);
+        globalData.recentHistory.unshift(adminTx);
+      } else {
+        globalData.recentHistory.unshift(mainTx);
+      }
 
-      saveStorageData().then(() => {
-        renderDashboard(); renderHistoryTable();
-        document.getElementById('tx-form').reset();
-        let dateInput = document.getElementById('tx-date'); if (dateInput) dateInput.valueAsDate = new Date();
-        applyCashflowLogic(); playSuccessSound(); showSuccessModal(mainTx, adminAdded, dAdminFee);
-      });
+      saveStorageData(); renderDashboard(); renderHistoryTable();
+      document.getElementById('tx-form').reset();
+      let dateInput = document.getElementById('tx-date');
+      if (dateInput) dateInput.valueAsDate = new Date();
+      applyCashflowLogic(); playSuccessSound(); showSuccessModal(mainTx, adminAdded, dAdminFee);
     }
 
     function renderHistoryTable() {
-      let tbody = document.getElementById('tx-history-tbody'); if (!tbody) return; tbody.innerHTML = '';
+      let tbody = document.getElementById('tx-history-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
       let historyList = globalData.recentHistory || [];
       if (historyList.length === 0) { tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400">Belum ada transaksi diinput.</td></tr>`; return; }
       
@@ -1554,17 +1555,38 @@
         if (tx.cashflow === 'Income') badgeColor = "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300";
         if (tx.cashflow === 'Spending') badgeColor = "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300";
 
-        tbody.innerHTML += `<tr class="hover:bg-surface-container-low transition-colors hidden-action-row"><td class="p-3 font-mono-data text-[11px] text-gray-500">${tx.dateTime || '-'}</td><td class="p-3 font-bold text-on-surface">${tx.name}</td><td class="p-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${badgeColor}">${tx.cashflow}</span></td><td class="p-3 text-on-surface-variant">${tx.category}</td><td class="p-3 text-gray-500">${tx.dariAcc}</td><td class="p-3 text-gray-500">${tx.keAcc}</td><td class="p-3 text-right"><div class="flex items-center justify-end gap-2"><span class="font-mono-data font-extrabold text-primary dark:text-blue-400">${formatRp(tx.amount)}</span><button onclick="openEditModal(${idx})" class="p-1 rounded hover:bg-surface-container text-gray-400 hover:text-primary transition-colors"><span class="material-symbols-outlined text-sm">edit</span></button><button onclick="deleteTransaction(${idx})" class="delete-action-btn p-1 rounded hover:bg-red-100 text-gray-300 hover:text-error transition-colors"><span class="material-symbols-outlined text-sm">delete</span></button></div></td></tr>`;
+        tbody.innerHTML += `
+          <tr class="hover:bg-surface-container-low transition-colors hidden-action-row">
+            <td class="p-3 font-mono-data text-[11px] text-gray-500">${tx.dateTime || '-'}</td>
+            <td class="p-3 font-bold text-on-surface">${tx.name}</td>
+            <td class="p-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${badgeColor}">${tx.cashflow}</span></td>
+            <td class="p-3 text-on-surface-variant">${tx.category}</td>
+            <td class="p-3 text-gray-500">${tx.dariAcc}</td>
+            <td class="p-3 text-gray-500">${tx.keAcc}</td>
+            <td class="p-3 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <span class="font-mono-data font-extrabold text-primary dark:text-blue-400">${formatRp(tx.amount)}</span>
+                <button onclick="openEditModal(${idx})" class="p-1 rounded hover:bg-surface-container text-gray-400 hover:text-primary transition-colors"><span class="material-symbols-outlined text-sm">edit</span></button>
+                <button onclick="deleteTransaction(${idx})" class="delete-action-btn p-1 rounded hover:bg-red-100 text-gray-300 hover:text-error transition-colors"><span class="material-symbols-outlined text-sm">delete</span></button>
+              </div>
+            </td>
+          </tr>
+        `;
       });
     }
 
     function openEditModal(idx) {
-      let tx = globalData.recentHistory[idx]; if (!tx) return;
-      document.getElementById('edit-tx-index').value = idx; document.getElementById('edit-tx-name').value = tx.name || '';
+      let tx = globalData.recentHistory[idx];
+      if (!tx) return;
+      document.getElementById('edit-tx-index').value = idx;
+      document.getElementById('edit-tx-name').value = tx.name || '';
       document.getElementById('edit-tx-amount').value = (tx.amount || 0).toLocaleString('id-ID');
-      document.getElementById('edit-tx-category').value = tx.category || ''; document.getElementById('edit-tx-dari').value = tx.dariAcc || ''; document.getElementById('edit-tx-ke').value = tx.keAcc || '';
+      document.getElementById('edit-tx-category').value = tx.category || '';
+      document.getElementById('edit-tx-dari').value = tx.dariAcc || '';
+      document.getElementById('edit-tx-ke').value = tx.keAcc || '';
       let modal = document.getElementById('edit-tx-modal'), card = document.getElementById('edit-tx-card');
-      modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); card.classList.add('scale-100'); }, 10);
+      modal.classList.remove('hidden');
+      setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); card.classList.add('scale-100'); }, 10);
     }
 
     function closeEditModal() {
@@ -1574,8 +1596,13 @@
     }
 
     function saveEditedTransaction() {
-      let idx = parseInt(document.getElementById('edit-tx-index').value, 10); let tx = globalData.recentHistory[idx]; if (!tx) return;
-      let newName = document.getElementById('edit-tx-name').value, newAmount = parseFloat(document.getElementById('edit-tx-amount').value.replace(/\./g, '')) || 0, newCat = document.getElementById('edit-tx-category').value;
+      let idx = parseInt(document.getElementById('edit-tx-index').value, 10);
+      let tx = globalData.recentHistory[idx];
+      if (!tx) return;
+      let newName = document.getElementById('edit-tx-name').value;
+      let newAmount = parseFloat(document.getElementById('edit-tx-amount').value.replace(/\./g, '')) || 0;
+      let newCat = document.getElementById('edit-tx-category').value;
+
       let oldAmt = tx.amount;
       if (tx.dariAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.dariAcc)) globalData.currentBalances[tx.dariAcc] += oldAmt;
       if (tx.keAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.keAcc)) globalData.currentBalances[tx.keAcc] -= oldAmt;
@@ -1584,23 +1611,27 @@
       if (tx.keAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.keAcc)) globalData.currentBalances[tx.keAcc] += newAmount;
 
       tx.name = newName; tx.amount = newAmount; tx.category = newCat;
-      saveStorageData().then(() => { renderDashboard(); renderHistoryTable(); closeEditModal(); playSuccessSound(); alert("Riwayat transaksi berhasil diperbarui & saldo akun disesuaikan!"); });
+      saveStorageData(); renderDashboard(); renderHistoryTable(); closeEditModal(); playSuccessSound();
+      alert("Riwayat transaksi berhasil diperbarui & saldo akun disesuaikan!");
     }
 
     function deleteTransaction(idx) {
-      let tx = globalData.recentHistory[idx]; if (!tx) return;
+      let tx = globalData.recentHistory[idx];
+      if (!tx) return;
       if (confirm(`Hapus transaksi "${tx.name}" (${formatRp(tx.amount)})? Saldo akun akan dikembalikan secara otomatis.`)) {
         let amt = tx.amount;
         if (tx.dariAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.dariAcc)) globalData.currentBalances[tx.dariAcc] += amt;
         if (tx.keAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.keAcc)) globalData.currentBalances[tx.keAcc] -= amt;
-        globalData.recentHistory.splice(idx, 1); 
-        saveStorageData().then(() => { renderDashboard(); renderHistoryTable(); alert("Transaksi berhasil dihapus!"); });
+        globalData.recentHistory.splice(idx, 1); saveStorageData(); renderDashboard(); renderHistoryTable();
+        alert("Transaksi berhasil dihapus!");
       }
     }
 
     function formatFullDateTime(dateStr) {
-      let days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"]; let months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
-      let now = new Date(); let hours = String(now.getHours()).padStart(2, '0'), mins = String(now.getMinutes()).padStart(2, '0');
+      let days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+      let months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+      let now = new Date();
+      let hours = String(now.getHours()).padStart(2, '0'), mins = String(now.getMinutes()).padStart(2, '0');
       if (!dateStr) return `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()} (${hours}:${mins})`;
       let p = dateStr.split('-'); let dObj = new Date(p[0], parseInt(p[1], 10) - 1, p[2]);
       return `${days[dObj.getDay()]}, ${p[2]} ${months[dObj.getMonth()]} ${p[0]} (${hours}:${mins})`;
@@ -1610,7 +1641,8 @@
       let modal = document.getElementById('success-modal'), card = document.getElementById('success-card'), msg = document.getElementById('success-msg-text');
       var adminInfo = hasAdmin ? `<br/><span class="text-xs text-primary dark:text-blue-400 font-bold">+ Biaya Admin (${formatRp(adminFee)}) dicatat terpisah.</span>` : "";
       msg.innerHTML = `Transaksi berhasil dicatat ke sistem!${adminInfo}<br/><br/><b>Detail:</b> ${data.name} (${formatRp(data.amount)})<br/><b>Category:</b> ${data.category}<br/><b>Dari:</b> ${data.dariAcc} ➔ <b>Ke:</b> ${data.keAcc}`;
-      modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); card.classList.add('scale-100'); }, 10);
+      modal.classList.remove('hidden');
+      setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); card.classList.add('scale-100'); }, 10);
     }
 
     function closeSuccessModal() {
@@ -1620,62 +1652,111 @@
     }
 
     function toggleFilterModeInputs() {
-      let mode = document.getElementById('rep-filter-mode').value, container = document.getElementById('filter-input-container'); if (!container) return;
-      if (mode === 'date_range') container.innerHTML = `<div><label class="text-[10px] font-bold uppercase text-gray-500">Dari Tanggal</label><input type="date" id="rep-date-start" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-medium bg-surface text-on-surface"></div><div><label class="text-[10px] font-bold uppercase text-gray-500">Sampai Tanggal</label><input type="date" id="rep-date-end" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-medium bg-surface text-on-surface"></div>`;
-      else if (mode === 'exact_date') container.innerHTML = `<div><label class="text-[10px] font-bold uppercase text-gray-500">Pilih Tanggal</label><input type="date" id="rep-exact-date" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-medium bg-surface text-on-surface"></div>`;
-      else if (mode === 'exact_month') container.innerHTML = `<div><label class="text-[10px] font-bold uppercase text-gray-500">Pilih Bulan & Tahun</label><input type="month" id="rep-exact-month" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-medium bg-surface text-on-surface"></div>`;
-      else if (mode === 'exact_year') container.innerHTML = `<div><label class="text-[10px] font-bold uppercase text-gray-500">Pilih Tahun</label><input type="number" id="rep-exact-year" value="2026" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-medium bg-surface text-on-surface"></div>`;
-      else container.innerHTML = '';
-      container.className = mode === 'all' ? "md:col-span-2 hidden" : (mode === 'date_range' ? "md:col-span-2 grid grid-cols-2 gap-2" : "md:col-span-2");
+      let mode = document.getElementById('rep-filter-mode').value;
+      let container = document.getElementById('filter-input-container');
+      if (!container) return;
+      if (mode === 'date_range') {
+        container.className = "md:col-span-2 grid grid-cols-2 gap-2";
+        container.innerHTML = `<div><label class="text-[10px] font-bold uppercase text-gray-500">Dari Tanggal</label><input type="date" id="rep-date-start" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-medium bg-surface text-on-surface"></div><div><label class="text-[10px] font-bold uppercase text-gray-500">Sampai Tanggal</label><input type="date" id="rep-date-end" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-medium bg-surface text-on-surface"></div>`;
+      } else if (mode === 'exact_date') {
+        container.className = "md:col-span-2";
+        container.innerHTML = `<div><label class="text-[10px] font-bold uppercase text-gray-500">Pilih Tanggal</label><input type="date" id="rep-exact-date" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-medium bg-surface text-on-surface"></div>`;
+      } else if (mode === 'exact_month') {
+        container.className = "md:col-span-2";
+        container.innerHTML = `<div><label class="text-[10px] font-bold uppercase text-gray-500">Pilih Bulan & Tahun</label><input type="month" id="rep-exact-month" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-medium bg-surface text-on-surface"></div>`;
+      } else if (mode === 'exact_year') {
+        container.className = "md:col-span-2";
+        container.innerHTML = `<div><label class="text-[10px] font-bold uppercase text-gray-500">Pilih Tahun</label><input type="number" id="rep-exact-year" value="2026" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-medium bg-surface text-on-surface"></div>`;
+      } else {
+        container.className = "md:col-span-2 hidden"; container.innerHTML = '';
+      }
       renderHistoryTable();
     }
 
     function renderSetupView() {
-      let sb = document.getElementById('setup-starting-balance'); if (sb) sb.value = globalData.startingBalance || 25000000;
+      let sb = document.getElementById('setup-starting-balance');
+      if (sb) sb.value = globalData.startingBalance || 25000000;
+
       let rContainer = document.getElementById('setup-routine-list');
       if (rContainer) {
-        rContainer.innerHTML = ''; if (!globalData.routinePayments) globalData.routinePayments = {};
+        rContainer.innerHTML = '';
+        if (!globalData.routinePayments) globalData.routinePayments = {};
         Object.keys(globalData.routinePayments).forEach(k => {
           let item = globalData.routinePayments[k];
           rContainer.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant flex items-center justify-between gap-2 text-xs"><b class="font-bold text-primary dark:text-blue-400 w-1/3">${k}</b><div class="grid grid-cols-2 gap-2 w-2/3"><input type="number" value="${item.amount||0}" placeholder="Nominal" onchange="globalData.routinePayments['${k}'].amount=parseFloat(this.value)||0; saveStorageData();" class="p-1.5 border rounded-lg font-mono-data bg-surface text-on-surface"><div class="flex items-center gap-1"><input type="number" min="1" max="31" value="${item.dueDay||1}" placeholder="Tgl" onchange="globalData.routinePayments['${k}'].dueDay=parseInt(this.value,10)||1;" class="p-1.5 border rounded-lg font-mono-data w-16 bg-surface text-on-surface"><span onclick="removeRoutinePaymentItem('${k}')" class="material-symbols-outlined text-sm text-error cursor-pointer">close</span></div></div></div>`;
         });
       }
+
       let accContainer = document.getElementById('setup-account-list');
       if (accContainer && globalData.accounts) {
-        accContainer.innerHTML = ''; if (!globalData.accountDetails) globalData.accountDetails = {};
+        accContainer.innerHTML = '';
+        if (!globalData.accountDetails) globalData.accountDetails = {};
         globalData.accounts.forEach((acc, idx) => {
-          let bal = globalData.currentBalances[acc] || 0, dt = globalData.accountDetails[acc] || { bankName: acc, accNo: "", owner: "" };
+          let bal = globalData.currentBalances[acc] || 0;
+          let dt = globalData.accountDetails[acc] || { bankName: acc, accNo: "", owner: "" };
           accContainer.innerHTML += `<div class="p-4 bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant space-y-3"><div class="flex justify-between items-center border-b border-outline-variant/40 pb-2"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary dark:text-blue-400">account_balance</span><b class="text-sm font-bold text-on-surface">${acc}</b></div><button onclick="removeAccountItem(${idx})" class="text-xs text-error font-bold flex items-center gap-0.5 hover:underline"><span class="material-symbols-outlined text-sm">close</span> Hapus Akun</button></div><div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs"><div><label class="text-[10px] text-gray-500 font-bold uppercase">Nama Bank / E-Wallet</label><input type="text" value="${dt.bankName||acc}" onchange="updateAccountDetail('${acc}', 'bankName', this.value)" class="w-full bg-white dark:bg-slate-800 text-on-surface border rounded-lg p-1.5 font-bold"></div><div><label class="text-[10px] text-gray-500 font-bold uppercase">Nomor Rekening</label><input type="text" value="${dt.accNo||''}" placeholder="Contoh: 712345..." onchange="updateAccountDetail('${acc}', 'accNo', this.value)" class="w-full bg-white dark:bg-slate-800 text-on-surface border rounded-lg p-1.5 font-mono-data"></div><div><label class="text-[10px] text-gray-500 font-bold uppercase">Atas Nama (a.n)</label><input type="text" value="${dt.owner||''}" placeholder="Pemilik" onchange="updateAccountDetail('${acc}', 'owner', this.value)" class="w-full bg-white dark:bg-slate-800 text-on-surface border rounded-lg p-1.5 font-bold"></div><div><label class="text-[10px] text-gray-500 font-bold uppercase">Saldo Awal (Rp)</label><input type="number" value="${bal}" onchange="updateAccountBalance('${acc}', this.value)" class="w-full bg-white dark:bg-slate-800 text-on-surface border border-primary/50 rounded-lg p-1.5 font-mono-data font-bold text-primary dark:text-blue-400"></div></div></div>`;
         });
       }
-      renderSimpleCategoryTags('incomes', 'setup-income-tags'); renderSimpleCategoryTags('bills', 'setup-bills-list'); renderSimpleCategoryTags('spendings', 'setup-spending-tags');
-      renderValuedCategoryList('investData', 'setup-invest-list', ['initial']); renderValuedCategoryList('sinkingData', 'setup-sinking-list', ['initial', 'target', 'deadline', 'durationMonths']); renderValuedCategoryList('goalsData', 'setup-goals-list', ['initial', 'target', 'timeframeVal']); renderValuedCategoryList('receivablesData', 'setup-receivables-list', ['total', 'deadline', 'paid']); renderValuedCategoryList('nonMoneyAssets', 'setup-nonmoney-list', ['qty', 'estimatedPrice', 'type', 'unit']);
+
+      renderSimpleCategoryTags('incomes', 'setup-income-tags');
+      renderSimpleCategoryTags('bills', 'setup-bills-list');
+      renderSimpleCategoryTags('spendings', 'setup-spending-tags');
+
+      renderValuedCategoryList('investData', 'setup-invest-list', ['initial']);
+      renderValuedCategoryList('sinkingData', 'setup-sinking-list', ['initial', 'target', 'deadline', 'durationMonths']);
+      renderValuedCategoryList('goalsData', 'setup-goals-list', ['initial', 'target', 'timeframeVal']);
+      renderValuedCategoryList('receivablesData', 'setup-receivables-list', ['total', 'deadline', 'paid']);
+      renderValuedCategoryList('nonMoneyAssets', 'setup-nonmoney-list', ['qty', 'estimatedPrice', 'type', 'unit']);
+      
       renderDebtListSetup();
+      
       let budgetContainer = document.getElementById('setup-budget-list');
       if (budgetContainer) {
-        budgetContainer.innerHTML = ''; if (!globalData.monthlyBudgets) globalData.monthlyBudgets = {};
+        budgetContainer.innerHTML = '';
+        if (!globalData.monthlyBudgets) globalData.monthlyBudgets = {};
         if (globalData.spendings && globalData.spendings.length > 0) {
           globalData.spendings.forEach(cat => {
             let limit = globalData.monthlyBudgets[cat] || 0;
-            budgetContainer.innerHTML += `<div class="flex justify-between items-center bg-surface-container dark:bg-slate-900 p-2 rounded-lg border border-outline-variant/40 mb-2 text-xs"><span class="font-bold w-1/2">${cat}</span><div class="w-1/2 relative"><span class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-[10px]">Rp</span><input type="text" value="${limit.toLocaleString('id-ID')}" oninput="formatInputNominal(this)" onchange="updateBudgetLimit('${cat}', this.value)" placeholder="Limit Budget..." class="w-full pl-6 pr-2 py-1.5 border rounded-lg font-mono-data bg-white dark:bg-slate-800 text-on-surface font-bold text-right outline-none focus:border-primary"></div></div>`;
+            budgetContainer.innerHTML += `
+              <div class="flex justify-between items-center bg-surface-container dark:bg-slate-900 p-2 rounded-lg border border-outline-variant/40 mb-2 text-xs">
+                <span class="font-bold w-1/2">${cat}</span>
+                <div class="w-1/2 relative">
+                  <span class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-[10px]">Rp</span>
+                  <input type="text" value="${limit.toLocaleString('id-ID')}" oninput="formatInputNominal(this)" onchange="updateBudgetLimit('${cat}', this.value)" placeholder="Limit Budget..." class="w-full pl-6 pr-2 py-1.5 border rounded-lg font-mono-data bg-white dark:bg-slate-800 text-on-surface font-bold text-right outline-none focus:border-primary">
+                </div>
+              </div>
+            `;
           });
-        } else { budgetContainer.innerHTML = '<p class="text-xs text-gray-500">Silakan tambahkan kategori Spending terlebih dahulu.</p>'; }
+        } else {
+          budgetContainer.innerHTML = '<p class="text-xs text-gray-500">Silakan tambahkan kategori Spending terlebih dahulu.</p>';
+        }
       }
     }
 
     function renderDebtListSetup() {
-      let container = document.getElementById('setup-debt-list'); if (!container) return; container.innerHTML = ''; if (!globalData.debtData) globalData.debtData = {};
+      let container = document.getElementById('setup-debt-list');
+      if (!container) return;
+      container.innerHTML = '';
+      if (!globalData.debtData) globalData.debtData = {};
+
       Object.keys(globalData.debtData).forEach(k => {
-        let item = globalData.debtData[k]; let currentPeriod = item.period || 'Bulanan';
-        let isDateType = currentPeriod.startsWith('Setiap Tanggal'); let selectedBasePeriod = isDateType ? 'Setiap Tanggal' : currentPeriod; let selectedDateNum = isDateType ? currentPeriod.replace('Setiap Tanggal ', '') : '1';
+        let item = globalData.debtData[k];
+        let currentPeriod = item.period || 'Bulanan';
+        let isDateType = currentPeriod.startsWith('Setiap Tanggal');
+        let selectedBasePeriod = isDateType ? 'Setiap Tanggal' : currentPeriod;
+        let selectedDateNum = isDateType ? currentPeriod.replace('Setiap Tanggal ', '') : '1';
+
         container.innerHTML += `<div class="p-4 bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant space-y-3 text-xs"><div class="flex justify-between items-center border-b border-outline-variant/30 pb-2"><div class="flex items-center gap-2"><b class="text-sm font-bold text-primary dark:text-blue-400">${k}</b><span class="text-[10px] px-2 py-0.5 bg-primary/10 text-primary dark:text-blue-300 rounded-full font-bold">${item.category || 'Utang'}</span></div><span onclick="removeDebtItem('${k}')" class="material-symbols-outlined text-sm text-error cursor-pointer">close</span></div><div class="grid grid-cols-2 md:grid-cols-5 gap-2"><div><label class="text-[9px] uppercase font-bold text-gray-500">Kategori</label><select onchange="updateDebtField('${k}', 'category', this.value)" class="w-full p-1.5 border rounded-lg text-xs bg-surface text-on-surface"><option value="Utang" ${item.category === 'Utang' ? 'selected' : ''}>Utang</option><option value="Cicilan" ${item.category === 'Cicilan' ? 'selected' : ''}>Cicilan</option><option value="Remberg" ${item.category === 'Remberg' ? 'selected' : ''}>Remberg</option></select></div><div><label class="text-[9px] uppercase font-bold text-gray-500">Total Harus Bayar</label><input type="number" value="${item.total || 0}" onchange="updateDebtField('${k}', 'total', this.value)" class="w-full p-1.5 border rounded-lg text-xs font-mono-data bg-surface text-on-surface"></div><div><label class="text-[9px] uppercase font-bold text-gray-500">Sudah Bayar</label><input type="number" value="${item.paid || 0}" onchange="updateDebtField('${k}', 'paid', this.value)" class="w-full p-1.5 border rounded-lg text-xs font-mono-data bg-surface text-on-surface"></div><div><label class="text-[9px] uppercase font-bold text-gray-500">Nominal Pembayaran</label><input type="number" value="${item.monthlyPay || 0}" onchange="updateDebtField('${k}', 'monthlyPay', this.value)" class="w-full p-1.5 border rounded-lg text-xs font-mono-data bg-surface text-on-surface"></div><div><label class="text-[9px] uppercase font-bold text-gray-500">Bayar Setiap</label><select onchange="handleDebtPeriodChange('${k}', this.value)" class="w-full p-1.5 border rounded-lg text-xs bg-surface text-on-surface"><option value="Bulanan" ${selectedBasePeriod === 'Bulanan' ? 'selected' : ''}>Bulanan</option><option value="Mingguan" ${selectedBasePeriod === 'Mingguan' ? 'selected' : ''}>Mingguan</option><option value="Setiap Hari" ${selectedBasePeriod === 'Setiap Hari' ? 'selected' : ''}>Setiap Hari</option><option value="Tahunan" ${selectedBasePeriod === 'Tahunan' ? 'selected' : ''}>Tahunan</option><option value="Setiap Tanggal" ${selectedBasePeriod === 'Setiap Tanggal' ? 'selected' : ''}>Setiap Tanggal...</option></select></div></div><div id="debt-date-box-${k}" class="${isDateType ? '' : 'hidden'} pt-2 flex items-center gap-2"><span class="text-[10px] font-bold text-gray-500">Pilih Tanggal:</span><select onchange="updateDebtDateNum('${k}', this.value)" class="p-1 border rounded text-xs bg-surface text-on-surface">${Array.from({length: 31}, (_, i) => `<option value="${i+1}" ${selectedDateNum == (i+1) ? 'selected' : ''}>${i+1}</option>`).join('')}</select></div></div>`;
       });
     }
 
     function handleDebtPeriodChange(key, val) {
       let dateBox = document.getElementById(`debt-date-box-${key}`);
-      if (val === 'Setiap Tanggal') { if (dateBox) dateBox.classList.remove('hidden'); updateDebtField(key, 'period', 'Setiap Tanggal 1'); } 
-      else { if (dateBox) dateBox.classList.add('hidden'); updateDebtField(key, 'period', val); }
+      if (val === 'Setiap Tanggal') {
+        if (dateBox) dateBox.classList.remove('hidden'); updateDebtField(key, 'period', 'Setiap Tanggal 1');
+      } else {
+        if (dateBox) dateBox.classList.add('hidden'); updateDebtField(key, 'period', val);
+      }
     }
 
     function updateDebtDateNum(key, dateNum) { updateDebtField(key, 'period', `Setiap Tanggal ${dateNum}`); }
@@ -1683,22 +1764,27 @@
     function addDebtItemModal() {
       let name = prompt("Masukkan Nama Utang / Cicilan / Rembers baru:");
       if (name && name.trim() !== "") {
-        let clean = name.trim(); if (!globalData.debtData) globalData.debtData = {};
-        if (!globalData.debtData[clean]) { globalData.debtData[clean] = { total: 1000000, paid: 0, monthlyPay: 100000, category: "Cicilan", period: "Bulanan" }; saveStorageData().then(()=> renderSetupView()); } 
+        let clean = name.trim();
+        if (!globalData.debtData) globalData.debtData = {};
+        if (!globalData.debtData[clean]) { globalData.debtData[clean] = { total: 1000000, paid: 0, monthlyPay: 100000, category: "Cicilan", period: "Bulanan" }; saveStorageData(); renderSetupView(); } 
         else alert("Nama sudah ada!");
       }
     }
 
     function updateDebtField(key, field, val) {
       if (!globalData.debtData[key]) return;
-      if (field === 'category' || field === 'period') globalData.debtData[key][field] = val; else globalData.debtData[key][field] = parseFloat(val) || 0;
+      if (field === 'category' || field === 'period') globalData.debtData[key][field] = val;
+      else globalData.debtData[key][field] = parseFloat(val) || 0;
       saveStorageData();
     }
 
-    function removeDebtItem(key) { if (confirm(`Hapus ${key} dari database?`)) { delete globalData.debtData[key]; saveStorageData().then(()=> renderSetupView()); } }
+    function removeDebtItem(key) { if (confirm(`Hapus ${key} dari database?`)) { delete globalData.debtData[key]; saveStorageData(); renderSetupView(); } }
 
     function renderSimpleCategoryTags(key, containerId) {
-      let container = document.getElementById(containerId); if (!container) return; container.innerHTML = ''; if (!globalData[key]) globalData[key] = [];
+      let container = document.getElementById(containerId);
+      if (!container) return;
+      container.innerHTML = '';
+      if (!globalData[key]) globalData[key] = [];
       globalData[key].forEach((item, idx) => {
         if (containerId === 'setup-bills-list') container.innerHTML += `<div class="flex items-center justify-between bg-surface-container dark:bg-slate-900 px-3 py-2 rounded-xl border border-outline-variant/40"><span class="text-xs font-bold text-on-surface">${item}</span><span onclick="removeSimpleCategory('${key}', ${idx})" class="material-symbols-outlined text-sm cursor-pointer hover:text-error">close</span></div>`;
         else container.innerHTML += `<span class="px-3.5 py-2 bg-surface dark:bg-slate-900 border border-outline-variant text-on-surface rounded-xl text-xs font-semibold flex items-center gap-1">${item}<span onclick="removeSimpleCategory('${key}', ${idx})" class="material-symbols-outlined text-xs cursor-pointer hover:text-error ml-1">close</span></span>`;
@@ -1706,9 +1792,13 @@
     }
 
     function renderValuedCategoryList(objKey, containerId, fields) {
-      let container = document.getElementById(containerId); if (!container) return; container.innerHTML = ''; if (!globalData[objKey]) globalData[objKey] = {};
+      let container = document.getElementById(containerId);
+      if (!container) return;
+      container.innerHTML = '';
+      if (!globalData[objKey]) globalData[objKey] = {};
       Object.keys(globalData[objKey]).forEach(k => {
-        let item = globalData[objKey][k]; let inputsHtml = '';
+        let item = globalData[objKey][k];
+        let inputsHtml = '';
         fields.forEach(f => {
           let val = item[f] !== undefined ? item[f] : '';
           inputsHtml += `<div><label class="text-[9px] uppercase font-bold text-gray-500">${f.toUpperCase()}</label><input type="${typeof val === 'number' ? 'number' : (f === 'deadline' ? 'date' : 'text')}" value="${val}" onchange="updateValuedCategoryField('${objKey}', '${k}', '${f}', this.value)" class="w-full p-1.5 border rounded-lg text-xs font-mono-data bg-surface dark:bg-slate-800 text-on-surface"></div>`;
@@ -1723,8 +1813,9 @@
         let clean = name.trim();
         if (!globalData.accounts.includes(clean)) {
           globalData.accounts.push(clean); globalData.currentBalances[clean] = 0;
-          if (!globalData.accountDetails) globalData.accountDetails = {}; globalData.accountDetails[clean] = { bankName: clean, accNo: "-", owner: "-" };
-          saveStorageData().then(()=> renderSetupView());
+          if (!globalData.accountDetails) globalData.accountDetails = {};
+          globalData.accountDetails[clean] = { bankName: clean, accNo: "-", owner: "-" };
+          saveStorageData(); renderSetupView();
         } else alert("Nama akun sudah ada!");
       }
     }
@@ -1734,64 +1825,92 @@
       if (confirm(`Hapus akun ${accName}?`)) {
         globalData.accounts.splice(idx, 1); delete globalData.currentBalances[accName];
         if (globalData.accountDetails) delete globalData.accountDetails[accName];
-        saveStorageData().then(()=> renderSetupView());
+        saveStorageData(); renderSetupView();
       }
     }
 
     function addSimpleCategory(key, labelName) {
       let name = prompt(`Masukkan nama ${labelName} baru:`);
       if (name && name.trim() !== "") {
-        let clean = name.trim(); if (!globalData[key]) globalData[key] = [];
-        if (!globalData[key].includes(clean)) { globalData[key].push(clean); saveStorageData().then(()=> renderSetupView()); } else alert("Kategori tersebut sudah ada!");
+        let clean = name.trim();
+        if (!globalData[key]) globalData[key] = [];
+        if (!globalData[key].includes(clean)) { globalData[key].push(clean); saveStorageData(); renderSetupView(); } 
+        else alert("Kategori tersebut sudah ada!");
       }
     }
 
     function removeSimpleCategory(key, idx) { 
-      let catName = globalData[key][idx]; globalData[key].splice(idx, 1); 
-      if (key === 'spendings' && globalData.monthlyBudgets && globalData.monthlyBudgets[catName] !== undefined) delete globalData.monthlyBudgets[catName];
-      saveStorageData().then(()=> renderSetupView()); 
+      let catName = globalData[key][idx];
+      globalData[key].splice(idx, 1); 
+      if (key === 'spendings' && globalData.monthlyBudgets && globalData.monthlyBudgets[catName] !== undefined) {
+        delete globalData.monthlyBudgets[catName];
+      }
+      saveStorageData(); renderSetupView(); 
     }
 
     function addValuedCategory(objKey, labelName) {
       let name = prompt(`Masukkan nama ${labelName} baru:`);
       if (name && name.trim() !== "") {
-        let clean = name.trim(); if (!globalData[objKey]) globalData[objKey] = {};
+        let clean = name.trim();
+        if (!globalData[objKey]) globalData[objKey] = {};
         if (!globalData[objKey][clean]) {
           if (['investData', 'sinkingData', 'goalsData'].includes(objKey)) globalData[objKey][clean] = { initial: 0, target: 1000000, deadline: "2027-01-01", durationMonths: 12, used: 0 };
           else if (objKey === 'receivablesData') globalData[objKey][clean] = { total: 1000000, deadline: "2026-12-31", paid: 0 };
           else if (objKey === 'nonMoneyAssets') globalData[objKey][clean] = { type: "Emas", qty: 10, unit: "Gram", estimatedPrice: 1000000, used: 0 };
-          saveStorageData().then(()=> renderSetupView());
+          saveStorageData(); renderSetupView();
         } else alert("Nama item sudah ada!");
       }
     }
 
-    function removeValuedCategoryItem(objKey, keyName) { if (confirm(`Hapus ${keyName}?`)) { delete globalData[objKey][keyName]; saveStorageData().then(()=> renderSetupView()); } }
+    function removeValuedCategoryItem(objKey, keyName) {
+      if (confirm(`Hapus ${keyName}?`)) { delete globalData[objKey][keyName]; saveStorageData(); renderSetupView(); }
+    }
 
     function updateValuedCategoryField(objKey, itemKey, field, val) {
       if (!globalData[objKey][itemKey]) return;
-      if (['deadline', 'type', 'unit'].includes(field)) globalData[objKey][itemKey][field] = val; else globalData[objKey][itemKey][field] = parseFloat(val) || 0;
+      if (['deadline', 'type', 'unit'].includes(field)) globalData[objKey][itemKey][field] = val;
+      else globalData[objKey][itemKey][field] = parseFloat(val) || 0;
       saveStorageData();
     }
 
     function addRoutinePaymentItem() {
       let name = prompt("Masukkan nama Pembayaran Rutin baru:");
       if (name && name.trim() !== "") {
-        let clean = name.trim(); if (!globalData.routinePayments) globalData.routinePayments = {}; globalData.routinePayments[clean] = { amount: 0, dueDay: 1 };
-        saveStorageData().then(()=> renderSetupView());
+        let clean = name.trim();
+        if (!globalData.routinePayments) globalData.routinePayments = {};
+        globalData.routinePayments[clean] = { amount: 0, dueDay: 1 };
+        saveStorageData(); renderSetupView();
       }
     }
 
-    function removeRoutinePaymentItem(key) { delete globalData.routinePayments[key]; saveStorageData().then(()=> renderSetupView()); }
+    function removeRoutinePaymentItem(key) { delete globalData.routinePayments[key]; saveStorageData(); renderSetupView(); }
+
+    function changeOwnerPassword() {
+      let np = document.getElementById('new-pass-input').value;
+      if (np && np.trim() !== "") {
+        globalData.ownerPassword = np.trim(); saveStorageData(); alert("Password berhasil diperbarui!"); document.getElementById('new-pass-input').value = '';
+      }
+    }
 
     function updateAccountDetail(accName, field, value) {
-      if (!globalData.accountDetails) globalData.accountDetails = {}; if (!globalData.accountDetails[accName]) globalData.accountDetails[accName] = {};
-      globalData.accountDetails[accName][field] = value; saveStorageData().then(()=> renderDashboard());
+      if (!globalData.accountDetails) globalData.accountDetails = {};
+      if (!globalData.accountDetails[accName]) globalData.accountDetails[accName] = {};
+      globalData.accountDetails[accName][field] = value; saveStorageData(); renderDashboard();
     }
 
     function updateStartingBalance(val) { globalData.startingBalance = parseFloat(val) || 0; saveStorageData(); }
 
-    function updateAccountBalance(accName, newBal) { globalData.currentBalances[accName] = parseFloat(newBal) || 0; saveStorageData().then(()=> renderDashboard()); }
+    function updateAccountBalance(accName, newBal) { globalData.currentBalances[accName] = parseFloat(newBal) || 0; saveStorageData(); renderDashboard(); }
 
+    function verifySetupPassword() {
+      let p = document.getElementById('setup-pass-input').value;
+      let validPass = globalData.ownerPassword || "123";
+      if (p === validPass) {
+        document.getElementById('setup-lock-card').classList.add('hidden');
+        document.getElementById('setup-unlocked-content').classList.remove('hidden');
+        renderSetupView();
+      } else alert('Password salah!');
+    }
   </script>
 </body>
 </html>
