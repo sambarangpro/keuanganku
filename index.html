@@ -107,7 +107,7 @@
         <button onclick="verifyBumperPin()" class="w-full py-2.5 bg-white text-primary font-bold rounded-xl text-xs hover:bg-blue-50 shadow transition-all">
           MASUK APLIKASI
         </button>
-        <p id="bumper-error-msg" class="text-[11px] text-red-200 font-semibold hidden">PIN Salah! Coba lagi atau gunakan Password Setup.</p>
+        <p id="bumper-error-msg" class="text-[11px] text-red-200 font-semibold hidden">PIN Salah! Gunakan PIN Password Pemilik.</p>
       </div>
 
       <div class="pt-4">
@@ -981,6 +981,7 @@
         iconFab.textContent = isBalanceMasked ? "visibility_off" : "visibility";
       }
       renderDashboard();
+      renderHistoryTable(); // UPDATE: Sinkronisasi pembaruan ke tabel Riwayat
     }
 
     function changeLanguage(lang) {
@@ -1103,6 +1104,17 @@
     }
 
     function toggleAccordion(btn) { btn.closest('.collapse-item').classList.toggle('collapse-active'); }
+
+    function formatRp(num) {
+      if (isBalanceMasked) return "Rp •••••••";
+      return "Rp " + (parseFloat(num) || 0).toLocaleString('id-ID');
+    }
+
+    function toggleDarkMode() {
+      document.documentElement.classList.toggle('dark');
+      renderMonthlyChart(); 
+      if (typeof updateCategoryTrendChart === "function") updateCategoryTrendChart();
+    }
 
     function checkDueDateAlerts() {
       let container = document.getElementById('due-date-alert-container'); if (!container) return; container.innerHTML = ''; if (!globalData.routinePayments) return;
@@ -1537,6 +1549,7 @@
       applyCashflowLogic(); playSuccessSound(); showSuccessModal(mainTx, adminAdded, dAdminFee);
     }
 
+    // UPDATE: KEMBALIKAN KE formatRp() UNTUK SENSOR TRANSAKSI
     function renderHistoryTable() {
       let tbody = document.getElementById('tx-history-tbody');
       if (!tbody) return;
@@ -1565,7 +1578,8 @@
             <td class="p-3 text-gray-500">${tx.keAcc}</td>
             <td class="p-3 text-right">
               <div class="flex items-center justify-end gap-2">
-                <span class="font-mono-data font-extrabold text-primary dark:text-blue-400">Rp ${(parseFloat(tx.amount) || 0).toLocaleString('id-ID')}</span>
+                <!-- Gunakan kembali formatRp() di sini -->
+                <span class="font-mono-data font-extrabold text-primary dark:text-blue-400">${formatRp(tx.amount)}</span>
                 <button onclick="openEditModal(${idx})" class="p-1 rounded hover:bg-surface-container text-gray-400 hover:text-primary transition-colors"><span class="material-symbols-outlined text-sm">edit</span></button>
                 <button onclick="deleteTransaction(${idx})" class="delete-action-btn p-1 rounded hover:bg-red-100 text-gray-300 hover:text-error transition-colors"><span class="material-symbols-outlined text-sm">delete</span></button>
               </div>
