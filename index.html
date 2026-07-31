@@ -107,7 +107,7 @@
         <button onclick="verifyBumperPin()" class="w-full py-2.5 bg-white text-primary font-bold rounded-xl text-xs hover:bg-blue-50 shadow transition-all">
           MASUK APLIKASI
         </button>
-        <p id="bumper-error-msg" class="text-[11px] text-red-200 font-semibold hidden">PIN Salah! Gunakan PIN Password Pemilik.</p>
+        <p id="bumper-error-msg" class="text-[11px] text-red-200 font-semibold hidden">PIN Salah!</p>
       </div>
 
       <div class="pt-4">
@@ -672,16 +672,34 @@
           </button>
         </div>
 
-        <section class="bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-6 shadow-sm space-y-3">
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-primary">key</span>
-            <h2 class="font-headline-md text-headline-md text-on-surface font-bold" data-i18n="setup_pass_title">Ubah Password Pemilik</h2>
-          </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
-            <input type="password" id="new-pass-input" placeholder="Masukkan Password Baru" class="p-2.5 border rounded-xl text-xs font-mono-data outline-none focus:ring-1 focus:ring-primary">
-            <button onclick="changeOwnerPassword()" class="py-2.5 bg-secondary text-white font-bold text-xs rounded-xl hover:brightness-110 shadow" data-i18n="btn_change_pass">Ubah Password</button>
-          </div>
-        </section>
+        <!-- NEW: PENGATURAN PIN DAN PASSWORD -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Ubah PIN Aplikasi -->
+          <section class="bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-6 shadow-sm space-y-3">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary">dialpad</span>
+              <h2 class="font-headline-md text-headline-md text-on-surface font-bold">Ubah PIN Aplikasi</h2>
+            </div>
+            <p class="text-[10px] text-gray-500">PIN sederhana untuk akses harian di halaman depan (Bumper).</p>
+            <div class="grid grid-cols-1 gap-2 pt-1">
+              <input type="password" id="new-pin-input" placeholder="Masukkan PIN Baru (Mis: 123456)" class="p-2.5 border rounded-xl text-xs font-mono-data outline-none focus:ring-1 focus:ring-primary">
+              <button onclick="changeAppPin()" class="py-2.5 bg-primary text-white font-bold text-xs rounded-xl hover:brightness-110 shadow">Ubah PIN Aplikasi</button>
+            </div>
+          </section>
+
+          <!-- Ubah Password Setup -->
+          <section class="bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-6 shadow-sm space-y-3">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-error">admin_panel_settings</span>
+              <h2 class="font-headline-md text-headline-md text-on-surface font-bold">Ubah Password Setup</h2>
+            </div>
+            <p class="text-[10px] text-gray-500">Password rahasia untuk membuka seluruh menu Master Setup ini.</p>
+            <div class="grid grid-cols-1 gap-2 pt-1">
+              <input type="password" id="new-pass-input" placeholder="Masukkan Password Baru" class="p-2.5 border rounded-xl text-xs font-mono-data outline-none focus:ring-1 focus:ring-error">
+              <button onclick="changeOwnerPassword()" class="py-2.5 bg-secondary text-white font-bold text-xs rounded-xl hover:brightness-110 shadow">Ubah Password Setup</button>
+            </div>
+          </section>
+        </div>
 
         <section class="space-y-3">
           <div class="flex items-center gap-2">
@@ -949,10 +967,116 @@
     Chart.register(ChartDataLabels);
 
     const TRANSLATIONS = {
-      id: { /* Teks Diringkas */
-        brand_title: "KEUANGANKU", badge_cash: "Hanya Uang Kas", lbl_total_asset: "TOTAL ASSET & SAVINGS", lbl_asset_note: "*Akumulasi simpanan uang kas dari Invest/Savings, Sinking Fund, & Financial Goals.", lbl_total_bank: "AKUMULASI SELURUH REKENING", lbl_total_bank_sub: "Total Nominal Saldo Bank & E-Wallet Terkini", title_acc_balance: "Saldo Per Akun", badge_db_acc: "DATABASE AKUN", title_recap_analysis: "Rekapitulasi & Analisis Finansial", desc_invest: "Total Uang, Terpakai, & Sisa Uang", desc_sinking: "Target, Deadline, Target/Bln, Sisa Waktu, Progress & Sisa", desc_goals: "Target Nominal, Jangka Waktu, %, Terpakai, & Sisa", title_receivables: "Piutang (Orang Berutang ke Saya)", desc_receivables: "Total Piutang, Deadline Penagihan, & Status Pelunasan", title_nonmoney: "Aset Selain Uang & Peringatan Nisab Zakat", desc_nonmoney: "Emas (Gram), Perak (Gram), Tanah & Status Zakat", title_debt: "Utang & Cicilan", desc_debt: "Total, Paid, Unpaid, & Sisa Bulan Pembayaran", title_monthly_summary: "Monthly Financial Summary & Diagram Analisis", desc_monthly_summary: "Pilih Bulan & Analisis Diagram Pengeluaran", lbl_select_month: "Pilih Bulan Laporan:", chart_flow_title: "Perbandingan Cashflow Bulanan", chart_spending_title: "Klasemen Kategori Spending", title_tx_record: "Pencatatan Transaksi", desc_tx_record: "Input otomatis memperbarui saldo akun di Dashboard & tercatat di riwayat", lbl_tx_date: "Waktu / Tanggal", lbl_tx_name: "Nama Transaksi", lbl_tx_amount: "Nominal (Rp)", lbl_tx_cashflow: "Tipe Cashflow", opt_select_cf: "-- Pilih Cashflow --", lbl_tx_cat: "Category", lbl_tx_from: "Dari Account (Sumber)", lbl_tx_to: "Ke Account (Tujuan)", lbl_admin_fee: "Biaya Admin / Transaksi (Terpisah)", lbl_admin_nominal: "Nominal Admin (Rp)", lbl_admin_acc: "Potong Dari Akun", opt_same_acc: "Sama dengan Dari Account", btn_save_tx: "Simpan Transaksi", btn_cancel: "Batal", title_history: "Riwayat & Rekapitulasi Transaksi", desc_history: "Pilih Tanggal, Bulan, Tahun, atau Rentang Tanggal sesuai kebutuhan", btn_print_pdf: "Cetak PDF", lbl_filter_mode: "Mode Filter Waktu", f_all: "Semua Waktu", f_date: "Tanggal Tertentu", f_month: "Bulan Tertentu", f_year: "Tahun Tertentu", f_range: "Rentang Tanggal (Dari-Sampai)", lbl_date_start: "Dari Tanggal", lbl_date_end: "Sampai Tanggal", lbl_filter_cf: "Cashflow / Kategori", f_all_cf: "Semua Cashflow", table_header_title: "Tabel Data Rekam Transaksi", th_date: "Hari, Tgl & Jam", th_name: "Nama Transaksi", th_cf: "Cashflow", th_cat: "Kategori", th_from: "Dari Akun", th_to: "Ke Akun", th_nominal: "Nominal", empty_tx: "Belum ada transaksi diinput.", setup_lock_title: "Menu Setup Terkunci", setup_lock_desc: "Masukkan password pemilik akun untuk mengakses database master.", btn_unlock: "Buka Akses Setup", setup_db_title: "Pusat Konfigurasi Database", setup_db_desc: "Perbarui nilai atau kategori, lalu klik simpan di bawah.", btn_save_changes: "SIMPAN PERUBAHAN", setup_pass_title: "Ubah Password Pemilik", btn_change_pass: "Ubah Password", setup_routine_title: "Jadwal Pembayaran Rutin Bulanan", setup_routine_desc: "Aplikasi akan memberi peringatan di Dashboard saat memasuki tanggal bayar.", btn_add_routine: "TAMBAHKAN JADWAL PEMBAYARAN RUTIN", setup_startbal_title: "Saldo Awal", setup_startbal_desc: "Nominal awal yang dapat digunakan sebelum adanya transaksi.", setup_startbal_label: "Saldo Awal (Yang Bisa Digunakan)", setup_acc_title: "1. Akun Bank & E-Wallet", setup_acc_desc: "Input Nama Akun, Bank/E-Wallet, Nomor Rekening, Atas Nama, & Saldo Awal.", btn_add_acc: "TAMBAHKAN ACCOUNT BANK / E-WALLET", def_income: "Pendapatan/penghasilan, baik yang tetap ataupun tidak tetap.", def_add_income: "TAMBAHKAN INCOME", def_bills: "Pengeluaran yang cenderung berulang setiap bulannya dengan jumlah yang cenderung sama (Cont: SPP/kos Bulanan, Subscribe Canva, dll).", def_add_bills: "TAMBAHKAN BILLS", def_spending: "Pengeluaran sehari-hari, dapat dibuat dalam beberapa kategori.", def_add_spending: "TAMBAHKAN SPENDING", def_invest_setup: "Uang yang akan disimpan untuk jangka pendek dan dapat digunakan sewaktu-waktu.", def_add_invest: "TAMBAHKAN INVEST / SAVINGS", def_sinking_setup: "Uang yang disisihkan secara berkala untuk membiayai pengeluaran besar yang sudah direncanakan sejak awal (Cont: Mudik, Pajak, Perawatan rumah, dll).", def_add_sinking: "TAMBAHKAN SINKING FUND", def_goals_setup: "Perencanaan finansial, uang/asset yang disimpan untuk kebutuhan/tujuan tertentu ataupun untuk mencapai jumlah tertentu dalam jangka waktu yang ditentukan (Cont: Dana Pensiun, Dana Pendidikan, Haji, dll).", def_add_goals: "TAMBAHKAN FINANCIAL GOALS", title_receivables_setup: "8. Piutang (Orang Berutang ke Saya)", desc_receivables_setup: "Catat nama peminjam, jumlah piutang, dan deadline tanggal penagihan.", btn_add_receivables: "TAMBAHKAN PIUTANG BARU", title_nonmoney_setup: "9. Aset Selain Uang & Peringatan Nisab Zakat", def_nonmoney_setup: "Input Emas, Perak, & Tanah beserta perhitungan nisab zakat.", btn_add_nonmoney: "TAMBAHKAN ASET NON-UANG", title_debt_setup: "10. Utang & Cicilan", def_debt_setup: "Input Total Utang & Cicilan per Bulan.", btn_add_debt: "TAMBAHKAN UTANG / CICILAN", danger_zone: "Zona Bahaya / Reset Data", danger_desc: "Hapus seluruh riwayat transaksi yang tersimpan.", btn_reset_history: "RESET RIWAYAT", btn_save_all_db: "SIMPAN SELURUH PERUBAHAN DATABASE", nav_dash: "Dashboard", nav_tx: "Transaksi", nav_setup: "Setup", m_jan: "Januari", m_feb: "Februari", m_mar: "Maret", m_apr: "April", m_mei: "Mei", m_jun: "Juni", m_jul: "Juli", m_agu: "Agustus", m_sep: "September", m_okt: "Oktober", m_nov: "November", m_des: "Desember"
-      },
-      en: { /* Kosong, sama seperti sebelumnya */ }
+      id: {
+        brand_title: "KEUANGANKU",
+        badge_cash: "Hanya Uang Kas",
+        lbl_total_asset: "TOTAL ASSET & SAVINGS",
+        lbl_asset_note: "*Akumulasi simpanan uang kas dari Invest/Savings, Sinking Fund, & Financial Goals.",
+        lbl_total_bank: "AKUMULASI SELURUH REKENING",
+        lbl_total_bank_sub: "Total Nominal Saldo Bank & E-Wallet Terkini",
+        title_acc_balance: "Saldo Per Akun",
+        badge_db_acc: "DATABASE AKUN",
+        title_recap_analysis: "Rekapitulasi & Analisis Finansial",
+        desc_invest: "Total Uang, Terpakai, & Sisa Uang",
+        desc_sinking: "Target, Deadline, Target/Bln, Sisa Waktu, Progress & Sisa",
+        desc_goals: "Target Nominal, Jangka Waktu, %, Terpakai, & Sisa",
+        title_receivables: "Piutang (Orang Berutang ke Saya)",
+        desc_receivables: "Total Piutang, Deadline Penagihan, & Status Pelunasan",
+        title_nonmoney: "Aset Selain Uang & Peringatan Nisab Zakat",
+        desc_nonmoney: "Emas (Gram), Perak (Gram), Tanah & Status Zakat",
+        title_debt: "Utang & Cicilan",
+        desc_debt: "Total, Paid, Unpaid, & Sisa Bulan Pembayaran",
+        title_monthly_summary: "Monthly Financial Summary & Diagram Analisis",
+        desc_monthly_summary: "Pilih Bulan & Analisis Diagram Pengeluaran",
+        lbl_select_month: "Pilih Bulan Laporan:",
+        chart_flow_title: "Perbandingan Cashflow Bulanan",
+        chart_spending_title: "Klasemen Kategori Spending",
+        title_tx_record: "Pencatatan Transaksi",
+        desc_tx_record: "Input otomatis memperbarui saldo akun di Dashboard & tercatat di riwayat",
+        lbl_tx_date: "Waktu / Tanggal",
+        lbl_tx_name: "Nama Transaksi",
+        lbl_tx_amount: "Nominal (Rp)",
+        lbl_tx_cashflow: "Tipe Cashflow",
+        opt_select_cf: "-- Pilih Cashflow --",
+        lbl_tx_cat: "Category",
+        lbl_tx_from: "Dari Account (Sumber)",
+        lbl_tx_to: "Ke Account (Tujuan)",
+        lbl_admin_fee: "Biaya Admin / Transaksi (Terpisah)",
+        lbl_admin_nominal: "Nominal Admin (Rp)",
+        lbl_admin_acc: "Potong Dari Akun",
+        opt_same_acc: "Sama dengan Dari Account",
+        btn_save_tx: "Simpan Transaksi",
+        btn_cancel: "Batal",
+        title_history: "Riwayat & Rekapitulasi Transaksi",
+        desc_history: "Pilih Tanggal, Bulan, Tahun, atau Rentang Tanggal sesuai kebutuhan",
+        btn_print_pdf: "Cetak PDF",
+        lbl_filter_mode: "Mode Filter Waktu",
+        f_all: "Semua Waktu",
+        f_date: "Tanggal Tertentu",
+        f_month: "Bulan Tertentu",
+        f_year: "Tahun Tertentu",
+        f_range: "Rentang Tanggal (Dari-Sampai)",
+        lbl_date_start: "Dari Tanggal",
+        lbl_date_end: "Sampai Tanggal",
+        lbl_filter_cf: "Cashflow / Kategori",
+        f_all_cf: "Semua Cashflow",
+        table_header_title: "Tabel Data Rekam Transaksi",
+        th_date: "Hari, Tgl & Jam",
+        th_name: "Nama Transaksi",
+        th_cf: "Cashflow",
+        th_cat: "Kategori",
+        th_from: "Dari Akun",
+        th_to: "Ke Akun",
+        th_nominal: "Nominal",
+        empty_tx: "Belum ada transaksi diinput.",
+        setup_lock_title: "Menu Setup Terkunci",
+        setup_lock_desc: "Masukkan password pemilik akun untuk mengakses database master.",
+        btn_unlock: "Buka Akses Setup",
+        setup_db_title: "Pusat Konfigurasi Database",
+        setup_db_desc: "Perbarui nilai atau kategori, lalu klik simpan di bawah.",
+        btn_save_changes: "SIMPAN PERUBAHAN",
+        setup_pass_title: "Ubah Password Pemilik",
+        btn_change_pass: "Ubah Password",
+        setup_routine_title: "Jadwal Pembayaran Rutin Bulanan",
+        setup_routine_desc: "Aplikasi akan memberi peringatan di Dashboard saat memasuki tanggal bayar.",
+        btn_add_routine: "TAMBAHKAN JADWAL PEMBAYARAN RUTIN",
+        setup_startbal_title: "Saldo Awal",
+        setup_startbal_desc: "Nominal awal yang dapat digunakan sebelum adanya transaksi.",
+        setup_startbal_label: "Saldo Awal (Yang Bisa Digunakan)",
+        setup_acc_title: "1. Akun Bank & E-Wallet",
+        setup_acc_desc: "Input Nama Akun, Bank/E-Wallet, Nomor Rekening, Atas Nama, & Saldo Awal.",
+        btn_add_acc: "TAMBAHKAN ACCOUNT BANK / E-WALLET",
+        def_income: "Pendapatan/penghasilan, baik yang tetap ataupun tidak tetap.",
+        def_add_income: "TAMBAHKAN INCOME",
+        def_bills: "Pengeluaran yang cenderung berulang setiap bulannya dengan jumlah yang cenderung sama (Cont: SPP/kos Bulanan, Subscribe Canva, dll).",
+        def_add_bills: "TAMBAHKAN BILLS",
+        def_spending: "Pengeluaran sehari-hari, dapat dibuat dalam beberapa kategori.",
+        def_add_spending: "TAMBAHKAN SPENDING",
+        def_invest_setup: "Uang yang akan disimpan untuk jangka pendek dan dapat digunakan sewaktu-waktu.",
+        def_add_invest: "TAMBAHKAN INVEST / SAVINGS",
+        def_sinking_setup: "Uang yang disisihkan secara berkala untuk membiayai pengeluaran besar yang sudah direncanakan sejak awal (Cont: Mudik, Pajak, Perawatan rumah, dll).",
+        def_add_sinking: "TAMBAHKAN SINKING FUND",
+        def_goals_setup: "Perencanaan finansial, uang/asset yang disimpan untuk kebutuhan/tujuan tertentu ataupun untuk mencapai jumlah tertentu dalam jangka waktu yang ditentukan (Cont: Dana Pensiun, Dana Pendidikan, Haji, dll).",
+        def_add_goals: "TAMBAHKAN FINANCIAL GOALS",
+        title_receivables_setup: "8. Piutang (Orang Berutang ke Saya)",
+        desc_receivables_setup: "Catat nama peminjam, jumlah piutang, dan deadline tanggal penagihan.",
+        btn_add_receivables: "TAMBAHKAN PIUTANG BARU",
+        title_nonmoney_setup: "9. Aset Selain Uang & Peringatan Nisab Zakat",
+        def_nonmoney_setup: "Input Emas, Perak, & Tanah beserta perhitungan nisab zakat.",
+        btn_add_nonmoney: "TAMBAHKAN ASET NON-UANG",
+        title_debt_setup: "10. Utang & Cicilan",
+        def_debt_setup: "Input Total Utang & Cicilan per Bulan.",
+        btn_add_debt: "TAMBAHKAN UTANG / CICILAN",
+        danger_zone: "Zona Bahaya / Reset Data",
+        danger_desc: "Hapus seluruh riwayat transaksi yang tersimpan.",
+        btn_reset_history: "RESET RIWAYAT",
+        btn_save_all_db: "SIMPAN SELURUH PERUBAHAN DATABASE",
+        nav_dash: "Dashboard",
+        nav_tx: "Transaksi",
+        nav_setup: "Setup",
+        m_jan: "Januari", m_feb: "Februari", m_mar: "Maret", m_apr: "April", m_mei: "Mei", m_jun: "Juni",
+        m_jul: "Juli", m_agu: "Agustus", m_sep: "September", m_okt: "Oktober", m_nov: "November", m_des: "Desember"
+      }
     };
 
     let currentLang = 'id';
@@ -960,9 +1084,10 @@
 
     function verifyBumperPin() {
       let pinInput = document.getElementById('bumper-pin-input').value;
-      let validPass = (globalData && globalData.ownerPassword) ? globalData.ownerPassword : "123";
+      // Membaca PIN khusus App, default-nya sama dengan ownerPassword kalau belum di-set
+      let validPin = (globalData && globalData.appPin !== undefined) ? globalData.appPin : ((globalData && globalData.ownerPassword) ? globalData.ownerPassword : "123");
 
-      if (pinInput === validPass) {
+      if (pinInput === validPin) {
         let splash = document.getElementById('splash-screen');
         if (splash) {
           splash.classList.add('opacity-0');
@@ -974,6 +1099,7 @@
       }
     }
 
+    // Tombol Mengambang (FAB) Sensor Saldo
     function toggleBalanceMask() {
       isBalanceMasked = !isBalanceMasked;
       let iconFab = document.getElementById('icon-mask-balance-fab');
@@ -1015,7 +1141,8 @@
     }
 
     const DEFAULT_DATA = {
-      ownerPassword: "123",
+      appPin: "123", // PIN baru khusus Bumper Aplikasi
+      ownerPassword: "123", // Password khusus Menu Setup
       startingBalance: 25000000,
       accounts: ["BSI Utama", "Kas Kecil Media", "Bank Jago Tabungan Nikah", "Bank Jago Zy Clothes", "Dana", "Gopay", "Ovo", "Cash"],
       accountDetails: { "BSI Utama": { bankName: "Bank Syariah Indonesia", accNo: "7123456789", owner: "Fulan", balance: 5979762 } },
@@ -1053,6 +1180,11 @@
         if (stored) globalData = JSON.parse(stored);
         else globalData = JSON.parse(JSON.stringify(DEFAULT_DATA));
       }
+
+      // Migrasi data jika user lama belum punya property appPin
+      if (globalData.appPin === undefined) {
+        globalData.appPin = globalData.ownerPassword || "123";
+      }
       if (!globalData.monthlyBudgets) globalData.monthlyBudgets = {};
       initApp();
     }
@@ -1067,7 +1199,7 @@
       saveStorageData(); renderDashboard(); playSuccessSound();
       let modal = document.getElementById('success-modal'), card = document.getElementById('success-card');
       document.getElementById('success-modal-title').textContent = "Database Berhasil Diperbarui!";
-      document.getElementById('success-msg-text').innerHTML = "Seluruh saldo awal, budget bulanan, dan kategori pilihan telah tersimpan.";
+      document.getElementById('success-msg-text').innerHTML = "Seluruh saldo awal, budget bulanan, dan pengaturan PIN/Password telah tersimpan.";
       modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); card.classList.add('scale-100'); }, 10);
     }
 
@@ -1103,6 +1235,17 @@
     }
 
     function toggleAccordion(btn) { btn.closest('.collapse-item').classList.toggle('collapse-active'); }
+
+    function formatRp(num) {
+      if (isBalanceMasked) return "Rp •••••••";
+      return "Rp " + (parseFloat(num) || 0).toLocaleString('id-ID');
+    }
+
+    function toggleDarkMode() {
+      document.documentElement.classList.toggle('dark');
+      renderMonthlyChart(); 
+      if (typeof updateCategoryTrendChart === "function") updateCategoryTrendChart();
+    }
 
     function checkDueDateAlerts() {
       let container = document.getElementById('due-date-alert-container'); if (!container) return; container.innerHTML = ''; if (!globalData.routinePayments) return;
@@ -1885,10 +2028,25 @@
 
     function removeRoutinePaymentItem(key) { delete globalData.routinePayments[key]; saveStorageData(); renderSetupView(); }
 
+    // FUNGSI BARU UNTUK UBAH PIN APLIKASI SAJA
+    function changeAppPin() {
+      let np = document.getElementById('new-pin-input').value;
+      if (np && np.trim() !== "") {
+        globalData.appPin = np.trim(); 
+        saveStorageData(); 
+        alert("PIN Masuk Aplikasi berhasil diperbarui!"); 
+        document.getElementById('new-pin-input').value = '';
+      }
+    }
+
+    // FUNGSI LAMA HANYA UNTUK UBAH PASSWORD MASTER SETUP
     function changeOwnerPassword() {
       let np = document.getElementById('new-pass-input').value;
       if (np && np.trim() !== "") {
-        globalData.ownerPassword = np.trim(); saveStorageData(); alert("Password berhasil diperbarui!"); document.getElementById('new-pass-input').value = '';
+        globalData.ownerPassword = np.trim(); 
+        saveStorageData(); 
+        alert("Password Setup berhasil diperbarui!"); 
+        document.getElementById('new-pass-input').value = '';
       }
     }
 
@@ -1909,7 +2067,7 @@
         document.getElementById('setup-lock-card').classList.add('hidden');
         document.getElementById('setup-unlocked-content').classList.remove('hidden');
         renderSetupView();
-      } else alert('Password salah!');
+      } else alert('Password Master salah!');
     }
   </script>
 </body>
