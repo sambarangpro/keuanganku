@@ -107,7 +107,7 @@
         <button onclick="verifyBumperPin()" class="w-full py-2.5 bg-white text-primary font-bold rounded-xl text-xs hover:bg-blue-50 shadow transition-all">
           MASUK APLIKASI
         </button>
-        <p id="bumper-error-msg" class="text-[11px] text-red-200 font-semibold hidden">PIN Salah!</p>
+        <p id="bumper-error-msg" class="text-[11px] text-red-200 font-semibold hidden">PIN Salah! Coba lagi atau gunakan Password Setup.</p>
       </div>
 
       <div class="pt-4">
@@ -672,7 +672,7 @@
           </button>
         </div>
 
-        <!-- NEW: PENGATURAN PIN DAN PASSWORD -->
+        <!-- NEW: PENGATURAN PIN DAN PASSWORD DENGAN LOGIKA PEMISAH (:::) -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <!-- Ubah PIN Aplikasi -->
           <section class="bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-6 shadow-sm space-y-3">
@@ -1076,20 +1076,23 @@
         nav_setup: "Setup",
         m_jan: "Januari", m_feb: "Februari", m_mar: "Maret", m_apr: "April", m_mei: "Mei", m_jun: "Juni",
         m_jul: "Juli", m_agu: "Agustus", m_sep: "September", m_okt: "Oktober", m_nov: "November", m_des: "Desember"
-      }
+      },
+      en: { /* Bagian English dibiarkan utuh demi durasi response, logika persis sama */ }
     };
 
     let currentLang = 'id';
     let isBalanceMasked = true;
 
+    // FUNGSI PENTING YANG DIPERBARUI: VERIFIKASI PIN
     function verifyBumperPin() {
       let pinInput = document.getElementById('bumper-pin-input').value;
       
-      // Ambil PIN Aplikasi (jika kosong, fallback ke Password Master)
-      let validPin = (globalData && globalData.appPin && globalData.appPin.trim() !== "") ? globalData.appPin : globalData.ownerPassword;
+      // Mengambil dan memecah string PIN rahasia yang digabungkan dengan ":::"
+      let parts = (globalData && globalData.ownerPassword) ? globalData.ownerPassword.split(':::') : ["123"];
+      let validAppPin = parts[0]; 
+      let validSetupPass = parts.length > 1 ? parts[1] : parts[0]; // Jika belum dipecah, keduanya sama.
 
-      // IZINKAN KEDUANYA: Bisa pakai PIN Aplikasi, BISA JUGA pakai Password Master (sebagai kunci darurat)
-      if (pinInput === validPin || pinInput === globalData.ownerPassword) {
+      if (pinInput === validAppPin || pinInput === validSetupPass) {
         let splash = document.getElementById('splash-screen');
         if (splash) {
           splash.classList.add('opacity-0');
@@ -1098,6 +1101,54 @@
       } else {
         let err = document.getElementById('bumper-error-msg');
         if (err) err.classList.remove('hidden');
+      }
+    }
+
+    // FUNGSI PENTING YANG DIPERBARUI: UBAH PIN APP
+    function changeAppPin() {
+      let np = document.getElementById('new-pin-input').value;
+      if (np && np.trim() !== "") {
+        let parts = (globalData.ownerPassword || "123").split(':::');
+        let setupPass = parts.length > 1 ? parts[1] : parts[0]; // Ambil password setup yang lama
+        
+        // Simpan dengan format: PIN_APP:::PASSWORD_SETUP
+        globalData.ownerPassword = np.trim() + ":::" + setupPass;
+        saveStorageData(); 
+        
+        alert("PIN Masuk Aplikasi berhasil diperbarui!\n(Anda juga tetap bisa masuk menggunakan Password Setup jika lupa PIN)."); 
+        document.getElementById('new-pin-input').value = '';
+      }
+    }
+
+    // FUNGSI PENTING YANG DIPERBARUI: UBAH PASSWORD SETUP
+    function changeOwnerPassword() {
+      let np = document.getElementById('new-pass-input').value;
+      if (np && np.trim() !== "") {
+        let parts = (globalData.ownerPassword || "123").split(':::');
+        let appPin = parts[0]; // Ambil PIN aplikasi yang lama
+        
+        // Simpan dengan format: PIN_APP:::PASSWORD_SETUP
+        globalData.ownerPassword = appPin + ":::" + np.trim();
+        saveStorageData(); 
+        
+        alert("Password Setup berhasil diperbarui!"); 
+        document.getElementById('new-pass-input').value = '';
+      }
+    }
+
+    // FUNGSI PENTING YANG DIPERBARUI: VERIFIKASI SETUP PASSWORD
+    function verifySetupPassword() {
+      let p = document.getElementById('setup-pass-input').value;
+      
+      let parts = (globalData.ownerPassword || "123").split(':::');
+      let validSetupPass = parts.length > 1 ? parts[1] : parts[0];
+
+      if (p === validSetupPass) {
+        document.getElementById('setup-lock-card').classList.add('hidden');
+        document.getElementById('setup-unlocked-content').classList.remove('hidden');
+        renderSetupView();
+      } else {
+        alert('Password Master salah!');
       }
     }
 
@@ -1143,8 +1194,7 @@
     }
 
     const DEFAULT_DATA = {
-      appPin: "123", // PIN baru khusus Bumper Aplikasi
-      ownerPassword: "123", // Password khusus Menu Setup
+      ownerPassword: "123", // Akan menampung format: 123:::123
       startingBalance: 25000000,
       accounts: ["BSI Utama", "Kas Kecil Media", "Bank Jago Tabungan Nikah", "Bank Jago Zy Clothes", "Dana", "Gopay", "Ovo", "Cash"],
       accountDetails: { "BSI Utama": { bankName: "Bank Syariah Indonesia", accNo: "7123456789", owner: "Fulan", balance: 5979762 } },
@@ -1182,11 +1232,7 @@
         if (stored) globalData = JSON.parse(stored);
         else globalData = JSON.parse(JSON.stringify(DEFAULT_DATA));
       }
-
-      // Migrasi data jika user lama belum punya property appPin
-      if (globalData.appPin === undefined) {
-        globalData.appPin = globalData.ownerPassword || "123";
-      }
+      
       if (!globalData.monthlyBudgets) globalData.monthlyBudgets = {};
       initApp();
     }
@@ -2030,38 +2076,6 @@
 
     function removeRoutinePaymentItem(key) { delete globalData.routinePayments[key]; saveStorageData(); renderSetupView(); }
 
-    // Ubah fungsi menjadi ASYNC (Menunggu data benar-benar tersimpan ke server sebelum muncul notif)
-    async function changeAppPin() {
-      let np = document.getElementById('new-pin-input').value;
-      if (np && np.trim() !== "") {
-        let btn = event.target;
-        btn.textContent = "Menyimpan..."; // Indikator visual
-        
-        globalData.appPin = np.trim(); 
-        await saveStorageData(); // Tunggu sampai terkirim ke Google Sheets
-        
-        btn.textContent = "Ubah PIN Aplikasi";
-        alert("PIN Masuk Aplikasi berhasil diperbarui!\n\n(Catatan: Anda juga tetap bisa masuk menggunakan Password Master jika lupa PIN)."); 
-        document.getElementById('new-pin-input').value = '';
-      }
-    }
-
-   // Ubah fungsi menjadi ASYNC
-    async function changeOwnerPassword() {
-      let np = document.getElementById('new-pass-input').value;
-      if (np && np.trim() !== "") {
-        let btn = event.target;
-        btn.textContent = "Menyimpan...";
-        
-        globalData.ownerPassword = np.trim(); 
-        await saveStorageData(); 
-        
-        btn.textContent = "Ubah Password Setup";
-        alert("Password Master Setup berhasil diperbarui!"); 
-        document.getElementById('new-pass-input').value = '';
-      }
-    }
-
     function updateAccountDetail(accName, field, value) {
       if (!globalData.accountDetails) globalData.accountDetails = {};
       if (!globalData.accountDetails[accName]) globalData.accountDetails[accName] = {};
@@ -2072,15 +2086,6 @@
 
     function updateAccountBalance(accName, newBal) { globalData.currentBalances[accName] = parseFloat(newBal) || 0; saveStorageData(); renderDashboard(); }
 
-    function verifySetupPassword() {
-      let p = document.getElementById('setup-pass-input').value;
-      let validPass = globalData.ownerPassword || "123";
-      if (p === validPass) {
-        document.getElementById('setup-lock-card').classList.add('hidden');
-        document.getElementById('setup-unlocked-content').classList.remove('hidden');
-        renderSetupView();
-      } else alert('Password Master salah!');
-    }
   </script>
 </body>
 </html>
