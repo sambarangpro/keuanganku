@@ -1030,12 +1030,18 @@
 
     let globalData = {};
 
-    window.onload = function() {
+        window.onload = function() {
       loadStorageData();
       let dateInput = document.getElementById('tx-date');
       if (dateInput) dateInput.valueAsDate = new Date();
-      initApp();
       requestNotificationPermission();
+
+      // KODE BARU: Otomatis memilih bulan saat ini di seluruh sistem pelaporan
+      let currentMonthIndex = new Date().getMonth(); // Akan membaca bulan 7 (Agustus)
+      let monthDropdown = document.getElementById('monthly-select-dropdown');
+      if (monthDropdown) {
+        monthDropdown.value = currentMonthIndex;
+      }
     };
 
     function requestNotificationPermission() {
