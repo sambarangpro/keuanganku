@@ -53,17 +53,9 @@
     .hidden-action-row .delete-action-btn { opacity: 0; transition: opacity 0.2s ease-in-out; }
     .hidden-action-row:hover .delete-action-btn { opacity: 1; }
 
-    @keyframes checkBounce {
-      0% { transform: scale(0); opacity: 0; }
-      50% { transform: scale(1.2); opacity: 1; }
-      100% { transform: scale(1); opacity: 1; }
-    }
+    @keyframes checkBounce { 0% { transform: scale(0); opacity: 0; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
     .animate-bounce-check { animation: checkBounce 0.5s ease-out forwards; }
-    
-    @keyframes pulseLogo {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-    }
+    @keyframes pulseLogo { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
     .animate-pulse-logo { animation: pulseLogo 1.5s infinite; }
   </style>
 </head>
@@ -79,11 +71,10 @@
         <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight text-white font-headline-md">KEUANGANKU</h1>
         <p class="text-[10px] text-blue-200 mt-0.5 font-semibold tracking-widest uppercase">Financial Planner Pro</p>
       </div>
-
       <div class="pt-2 space-y-2">
         <input type="password" id="bumper-pin-input" placeholder="Masukkan PIN Akses" maxlength="6" class="w-full py-2.5 px-3 bg-white/10 border border-white/30 rounded-xl text-center text-white placeholder-blue-200 text-sm font-mono-data outline-none tracking-widest focus:border-white">
         <button onclick="verifyBumperPin()" class="w-full py-2.5 bg-white text-primary font-bold rounded-xl text-xs hover:bg-blue-50 shadow transition-all">MASUK APLIKASI</button>
-        <p id="bumper-error-msg" class="text-[11px] text-red-200 font-semibold hidden">PIN Salah! Gunakan PIN Password Pemilik.</p>
+        <p id="bumper-error-msg" class="text-[11px] text-red-200 font-semibold hidden">PIN Salah! Coba lagi.</p>
       </div>
       <div class="pt-4"><p class="text-[10px] text-gray-300 font-medium tracking-wider uppercase">By: <b class="text-white">Sambarang Production</b></p></div>
     </div>
@@ -92,9 +83,7 @@
   <!-- MODAL SUKSES -->
   <div id="success-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
     <div class="bg-white dark:bg-slate-900 border border-outline-variant rounded-2xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl transform scale-95 transition-transform duration-300" id="success-card">
-      <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-full flex items-center justify-center mx-auto animate-bounce-check">
-        <span class="material-symbols-outlined text-4xl">check_circle</span>
-      </div>
+      <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-full flex items-center justify-center mx-auto animate-bounce-check"><span class="material-symbols-outlined text-4xl">check_circle</span></div>
       <div>
         <h3 id="success-modal-title" class="font-headline-md font-bold text-on-surface text-lg">Berhasil!</h3>
         <p id="success-msg-text" class="text-xs text-on-surface-variant mt-2 leading-relaxed"></p>
@@ -107,14 +96,10 @@
   <div id="edit-tx-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
     <div class="bg-white dark:bg-slate-900 border border-outline-variant rounded-2xl p-6 max-w-md w-full space-y-4 shadow-2xl transform scale-95 transition-transform duration-300" id="edit-tx-card">
       <div class="flex justify-between items-center border-b pb-2">
-        <h3 class="font-headline-md font-bold text-on-surface text-base flex items-center gap-2">
-          <span class="material-symbols-outlined text-primary">edit</span> Edit Riwayat Transaksi
-        </h3>
+        <h3 class="font-headline-md font-bold text-on-surface text-base flex items-center gap-2"><span class="material-symbols-outlined text-primary">edit</span> Edit Riwayat Transaksi</h3>
         <span onclick="closeEditModal()" class="material-symbols-outlined cursor-pointer hover:text-error text-sm">close</span>
       </div>
-      
       <input type="hidden" id="edit-tx-index">
-
       <div class="space-y-3 text-xs">
         <div><label class="font-bold uppercase text-gray-500">Nama Transaksi</label><input type="text" id="edit-tx-name" class="w-full p-2 border rounded-xl bg-surface text-on-surface font-bold mt-1"></div>
         <div><label class="font-bold uppercase text-gray-500">Nominal (Rp)</label><input type="text" id="edit-tx-amount" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-xl font-mono-data bg-surface text-on-surface font-bold mt-1"></div>
@@ -124,7 +109,6 @@
           <div><label class="font-bold uppercase text-gray-500">Ke Akun</label><input type="text" id="edit-tx-ke" readonly class="w-full p-2 border rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-500 mt-1"></div>
         </div>
       </div>
-
       <div class="flex gap-2 pt-3 border-t">
         <button onclick="saveEditedTransaction()" class="flex-1 py-2.5 bg-primary text-white font-bold rounded-xl hover:brightness-110 shadow">Simpan Perubahan</button>
         <button onclick="closeEditModal()" class="px-4 py-2.5 border rounded-xl text-on-surface-variant">Batal</button>
@@ -132,7 +116,7 @@
     </div>
   </div>
 
-  <!-- TOP HEADER -->
+  <!-- HEADER -->
   <header class="bg-surface border-b border-outline-variant fixed top-0 w-full z-40 flex justify-between items-center px-4 md:px-8 h-16 shadow-sm">
     <div class="flex items-center gap-3">
       <span class="material-symbols-outlined text-primary" style="font-size: 28px;">account_balance_wallet</span>
@@ -145,7 +129,7 @@
     </div>
   </header>
 
-  <!-- TOMBOL MENGAMBANG -->
+  <!-- TOMBOL SENSOR SALDO -->
   <button onclick="toggleBalanceMask()" class="fixed bottom-24 right-6 z-50 bg-slate-800 dark:bg-slate-600 text-white p-3 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.2)] border border-slate-600 dark:border-slate-500 hover:scale-110 active:scale-95 transition-transform flex items-center justify-center group" title="Sembunyikan/Tampilkan Saldo">
     <span class="material-symbols-outlined" id="icon-mask-balance-fab" style="font-size: 26px;">visibility_off</span>
   </button>
@@ -179,79 +163,67 @@
         </div>
 
         <div class="flex items-center justify-between">
-          <h3 class="font-title-sm font-bold flex items-center gap-2 text-on-surface">
-            <span class="material-symbols-outlined text-primary">account_balance</span> <span>Saldo Per Akun</span>
-          </h3>
+          <h3 class="font-title-sm font-bold flex items-center gap-2 text-on-surface"><span class="material-symbols-outlined text-primary">account_balance</span> <span>Saldo Per Akun</span></h3>
           <span class="text-xs font-bold text-secondary uppercase tracking-wider">DATABASE AKUN</span>
         </div>
         <div id="account-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
       </section>
 
       <section class="space-y-3 pt-2">
-        <h3 class="font-title-sm font-bold text-on-surface flex items-center gap-2">
-          <span class="material-symbols-outlined text-tertiary">analytics</span> <span>Rekapitulasi & Analisis Finansial</span>
-        </h3>
+        <h3 class="font-title-sm font-bold text-on-surface flex items-center gap-2"><span class="material-symbols-outlined text-tertiary">analytics</span> <span>Rekapitulasi & Analisis Finansial</span></h3>
 
         <div class="collapse-item bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl overflow-hidden shadow-sm">
-          <button class="w-full flex items-center justify-between p-4 text-left hover:bg-surface-container-low dark:hover:bg-slate-700 transition-colors" onclick="toggleAccordion(this)">
-            <div class="flex items-center gap-3"><span class="material-symbols-outlined text-orange-500">donut_small</span><div><p class="font-title-sm font-bold">Monthly Budgeting Recap</p></div></div>
-            <span class="material-symbols-outlined collapse-chevron transition-transform">expand_more</span>
+          <button class="w-full flex items-center justify-between p-4 text-left hover:bg-surface-container-low transition-colors" onclick="toggleAccordion(this)">
+            <div class="flex items-center gap-3"><span class="material-symbols-outlined text-orange-500">donut_small</span><div><p class="font-title-sm font-bold">Monthly Budgeting Recap</p></div></div><span class="material-symbols-outlined collapse-chevron transition-transform">expand_more</span>
           </button>
           <div class="collapse-content px-4 pb-4"><div id="budget-recap-grid" class="border-t border-outline-variant pt-3 grid grid-cols-1 md:grid-cols-2 gap-3"></div></div>
         </div>
 
         <div class="collapse-item bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl overflow-hidden shadow-sm">
-          <button class="w-full flex items-center justify-between p-4 text-left hover:bg-surface-container-low dark:hover:bg-slate-700 transition-colors" onclick="toggleAccordion(this)">
-            <div class="flex items-center gap-3"><span class="material-symbols-outlined text-primary">savings</span><div><p class="font-title-sm font-bold">Invest / Savings Recap</p></div></div>
-            <span class="material-symbols-outlined collapse-chevron transition-transform">expand_more</span>
+          <button class="w-full flex items-center justify-between p-4 text-left hover:bg-surface-container-low transition-colors" onclick="toggleAccordion(this)">
+            <div class="flex items-center gap-3"><span class="material-symbols-outlined text-primary">savings</span><div><p class="font-title-sm font-bold">Invest / Savings Recap</p></div></div><span class="material-symbols-outlined collapse-chevron transition-transform">expand_more</span>
           </button>
           <div class="collapse-content px-4 pb-4"><div id="invest-recap-grid" class="border-t border-outline-variant pt-3 grid grid-cols-1 md:grid-cols-2 gap-3"></div></div>
         </div>
 
         <div class="collapse-item bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl overflow-hidden shadow-sm">
-          <button class="w-full flex items-center justify-between p-4 text-left hover:bg-surface-container-low dark:hover:bg-slate-700 transition-colors" onclick="toggleAccordion(this)">
-            <div class="flex items-center gap-3"><span class="material-symbols-outlined text-tertiary">water_drop</span><div><p class="font-title-sm font-bold">Sinking Fund Recap</p></div></div>
-            <span class="material-symbols-outlined collapse-chevron transition-transform">expand_more</span>
+          <button class="w-full flex items-center justify-between p-4 text-left hover:bg-surface-container-low transition-colors" onclick="toggleAccordion(this)">
+            <div class="flex items-center gap-3"><span class="material-symbols-outlined text-tertiary">water_drop</span><div><p class="font-title-sm font-bold">Sinking Fund Recap</p></div></div><span class="material-symbols-outlined collapse-chevron transition-transform">expand_more</span>
           </button>
           <div class="collapse-content px-4 pb-4"><div id="sinking-recap-grid" class="border-t border-outline-variant pt-3 space-y-3"></div></div>
         </div>
 
         <div class="collapse-item bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl overflow-hidden shadow-sm">
-          <button class="w-full flex items-center justify-between p-4 text-left hover:bg-surface-container-low dark:hover:bg-slate-700 transition-colors" onclick="toggleAccordion(this)">
-            <div class="flex items-center gap-3"><span class="material-symbols-outlined text-secondary">track_changes</span><div><p class="font-title-sm font-bold">Financial Goals</p></div></div>
-            <span class="material-symbols-outlined collapse-chevron transition-transform">expand_more</span>
+          <button class="w-full flex items-center justify-between p-4 text-left hover:bg-surface-container-low transition-colors" onclick="toggleAccordion(this)">
+            <div class="flex items-center gap-3"><span class="material-symbols-outlined text-secondary">track_changes</span><div><p class="font-title-sm font-bold">Financial Goals</p></div></div><span class="material-symbols-outlined collapse-chevron transition-transform">expand_more</span>
           </button>
           <div class="collapse-content px-4 pb-4"><div id="goals-recap-grid" class="border-t border-outline-variant pt-3 space-y-3"></div></div>
         </div>
 
         <div class="collapse-item bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl overflow-hidden shadow-sm">
-          <button class="w-full flex items-center justify-between p-4 text-left hover:bg-surface-container-low dark:hover:bg-slate-700 transition-colors" onclick="toggleAccordion(this)">
-            <div class="flex items-center gap-3"><span class="material-symbols-outlined text-green-600">request_quote</span><div><p class="font-title-sm font-bold">Piutang (Orang Berutang ke Saya)</p></div></div>
-            <span class="material-symbols-outlined collapse-chevron transition-transform">expand_more</span>
+          <button class="w-full flex items-center justify-between p-4 text-left hover:bg-surface-container-low transition-colors" onclick="toggleAccordion(this)">
+            <div class="flex items-center gap-3"><span class="material-symbols-outlined text-green-600">request_quote</span><div><p class="font-title-sm font-bold">Piutang (Orang Berutang ke Saya)</p></div></div><span class="material-symbols-outlined collapse-chevron transition-transform">expand_more</span>
           </button>
           <div class="collapse-content px-4 pb-4"><div id="receivables-recap-grid" class="border-t border-outline-variant pt-3 space-y-3"></div></div>
         </div>
 
         <div class="collapse-item bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl overflow-hidden shadow-sm">
-          <button class="w-full flex items-center justify-between p-4 text-left hover:bg-surface-container-low dark:hover:bg-slate-700 transition-colors" onclick="toggleAccordion(this)">
-            <div class="flex items-center gap-3"><span class="material-symbols-outlined text-yellow-600">diamond</span><div><p class="font-title-sm font-bold">Aset Selain Uang & Zakat Nisab</p></div></div>
-            <span class="material-symbols-outlined collapse-chevron transition-transform">expand_more</span>
+          <button class="w-full flex items-center justify-between p-4 text-left hover:bg-surface-container-low transition-colors" onclick="toggleAccordion(this)">
+            <div class="flex items-center gap-3"><span class="material-symbols-outlined text-yellow-600">diamond</span><div><p class="font-title-sm font-bold">Aset Selain Uang & Zakat Nisab</p></div></div><span class="material-symbols-outlined collapse-chevron transition-transform">expand_more</span>
           </button>
           <div class="collapse-content px-4 pb-4"><div id="nonmoney-recap-grid" class="border-t border-outline-variant pt-3 space-y-3"></div></div>
         </div>
 
         <div class="collapse-item bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl overflow-hidden shadow-sm">
-          <button class="w-full flex items-center justify-between p-4 text-left hover:bg-surface-container-low dark:hover:bg-slate-700 transition-colors" onclick="toggleAccordion(this)">
-            <div class="flex items-center gap-3"><span class="material-symbols-outlined text-error">receipt_long</span><div><p class="font-title-sm font-bold">Utang & Cicilan</p></div></div>
-            <span class="material-symbols-outlined collapse-chevron transition-transform">expand_more</span>
+          <button class="w-full flex items-center justify-between p-4 text-left hover:bg-surface-container-low transition-colors" onclick="toggleAccordion(this)">
+            <div class="flex items-center gap-3"><span class="material-symbols-outlined text-error">receipt_long</span><div><p class="font-title-sm font-bold">Utang & Cicilan</p></div></div><span class="material-symbols-outlined collapse-chevron transition-transform">expand_more</span>
           </button>
           <div class="collapse-content px-4 pb-4"><div id="debt-recap-grid" class="border-t border-outline-variant pt-3 space-y-3"></div></div>
         </div>
 
         <div class="collapse-item bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl overflow-hidden shadow-sm">
-          <button class="w-full flex items-center justify-between p-4 text-left hover:bg-surface-container-low dark:hover:bg-slate-700 transition-colors" onclick="toggleAccordion(this); renderMonthlyChart();">
-            <div class="flex items-center gap-3"><span class="material-symbols-outlined text-primary">calendar_month</span><div><p class="font-title-sm font-bold">Diagram Analisis Bulanan</p></div></div>
-            <span class="material-symbols-outlined collapse-chevron transition-transform">expand_more</span>
+          <button class="w-full flex items-center justify-between p-4 text-left hover:bg-surface-container-low transition-colors" onclick="toggleAccordion(this); renderMonthlyChart();">
+            <div class="flex items-center gap-3"><span class="material-symbols-outlined text-primary">calendar_month</span><div><p class="font-title-sm font-bold">Diagram Analisis Bulanan</p></div></div><span class="material-symbols-outlined collapse-chevron transition-transform">expand_more</span>
           </button>
           <div class="collapse-content px-4 pb-4 space-y-4">
             <div class="border-t border-outline-variant pt-3 flex flex-col md:flex-row md:items-center justify-between gap-2">
@@ -262,30 +234,18 @@
                 <option value="8">September</option><option value="9">Oktober</option><option value="10">November</option><option value="11">Desember</option>
               </select>
             </div>
-
             <div id="monthly-summary-boxes" class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs"></div>
-            
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 pt-2">
-              <div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl h-64 flex flex-col">
-                <p class="text-xs font-bold text-center mb-2">Perbandingan Cashflow</p>
-                <div class="flex-1 relative w-full h-full"><canvas id="monthlyFlowChart"></canvas></div>
-              </div>
-              <div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl h-64 flex flex-col">
-                <p class="text-xs font-bold text-center mb-2 text-error">Klasemen Kategori Spending</p>
-                <div class="flex-1 relative w-full h-full"><canvas id="spendingCategoryChart"></canvas></div>
-              </div>
-              <div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl h-64 flex flex-col">
-                <p class="text-xs font-bold text-center mb-2 text-green-600 dark:text-green-400">Klasemen Kategori Income</p>
-                <div class="flex-1 relative w-full h-full"><canvas id="incomeCategoryChart"></canvas></div>
-              </div>
+              <div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl h-64 flex flex-col"><p class="text-xs font-bold text-center mb-2">Perbandingan Cashflow</p><div class="flex-1 relative w-full h-full"><canvas id="monthlyFlowChart"></canvas></div></div>
+              <div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl h-64 flex flex-col"><p class="text-xs font-bold text-center mb-2 text-error">Klasemen Kategori Spending</p><div class="flex-1 relative w-full h-full"><canvas id="spendingCategoryChart"></canvas></div></div>
+              <div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl h-64 flex flex-col"><p class="text-xs font-bold text-center mb-2 text-green-600">Klasemen Kategori Income</p><div class="flex-1 relative w-full h-full"><canvas id="incomeCategoryChart"></canvas></div></div>
             </div>
           </div>
         </div>
 
         <div class="collapse-item bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl overflow-hidden shadow-sm">
-          <button class="w-full flex items-center justify-between p-4 text-left hover:bg-surface-container-low dark:hover:bg-slate-700 transition-colors" onclick="toggleAccordion(this); initCategoryTrendChart();">
-            <div class="flex items-center gap-3"><span class="material-symbols-outlined text-purple-500">bar_chart</span><div><p class="font-title-sm font-bold">Tren Kategori per Bulan</p></div></div>
-            <span class="material-symbols-outlined collapse-chevron transition-transform">expand_more</span>
+          <button class="w-full flex items-center justify-between p-4 text-left hover:bg-surface-container-low transition-colors" onclick="toggleAccordion(this); initCategoryTrendChart();">
+            <div class="flex items-center gap-3"><span class="material-symbols-outlined text-purple-500">bar_chart</span><div><p class="font-title-sm font-bold">Tren Kategori per Bulan</p></div></div><span class="material-symbols-outlined collapse-chevron transition-transform">expand_more</span>
           </button>
           <div class="collapse-content px-4 pb-4 space-y-4">
             <div class="border-t border-outline-variant pt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -293,7 +253,7 @@
               <select id="trend-category-select" onchange="updateCategoryTrendChart()" class="p-2 border rounded-xl text-xs font-bold bg-surface text-on-surface outline-none cursor-pointer w-full sm:w-1/2"></select>
             </div>
             <div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl h-72 flex flex-col">
-              <p id="trend-chart-title" class="text-xs font-bold text-center mb-4 text-primary dark:text-blue-400">Pilih kategori untuk melihat perbandingan</p>
+              <p id="trend-chart-title" class="text-xs font-bold text-center mb-4 text-primary">Pilih kategori untuk melihat perbandingan</p>
               <div class="flex-1 relative w-full h-full"><canvas id="categoryTrendChart"></canvas></div>
             </div>
           </div>
@@ -302,7 +262,7 @@
       <footer class="pt-6 pb-2 text-center border-t border-outline-variant/50"><p class="text-[10px] text-gray-400 font-medium tracking-widest uppercase">By: Sambarang Production</p></footer>
     </div>
 
-    <!-- PAGE 2: TRANSAKSI & FILTER RENTANG WAKTU -->
+    <!-- PAGE 2: TRANSAKSI -->
     <div id="page-transaksi" class="hidden space-y-6">
       <section class="space-y-4">
         <div class="flex flex-col gap-1">
@@ -312,19 +272,19 @@
 
         <form id="tx-form" onsubmit="submitTransaction(event)" class="bg-white dark:bg-slate-800 border border-outline-variant p-6 space-y-4 shadow-sm relative rounded-2xl">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="flex flex-col gap-1"><label class="text-xs font-bold uppercase text-on-surface-variant">Waktu / Tanggal</label><input type="date" id="tx-date" required class="w-full px-3 py-2.5 border border-outline rounded-xl text-sm focus:ring-1 focus:ring-primary outline-none bg-surface"></div>
-            <div class="flex flex-col gap-1"><label class="text-xs font-bold uppercase text-on-surface-variant">Nama Transaksi</label><input type="text" id="tx-name" placeholder="Contoh: Honor / Belanja ATK" required class="w-full px-3 py-2.5 border border-outline rounded-xl text-sm focus:ring-1 focus:ring-primary outline-none bg-surface"></div>
+            <div class="flex flex-col gap-1"><label class="text-xs font-bold uppercase text-gray-500">Waktu / Tanggal</label><input type="date" id="tx-date" required class="w-full px-3 py-2.5 border rounded-xl text-sm bg-surface"></div>
+            <div class="flex flex-col gap-1"><label class="text-xs font-bold uppercase text-gray-500">Nama Transaksi</label><input type="text" id="tx-name" placeholder="Contoh: Honor / Belanja ATK" required class="w-full px-3 py-2.5 border rounded-xl text-sm bg-surface"></div>
           </div>
           <div class="flex flex-col gap-1">
-            <label class="text-xs font-bold uppercase text-on-surface-variant">Nominal (Rp)</label>
+            <label class="text-xs font-bold uppercase text-gray-500">Nominal (Rp)</label>
             <div class="relative">
-              <span class="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-primary dark:text-blue-400 text-sm">Rp</span>
-              <input type="text" id="tx-amount" placeholder="0" required oninput="formatInputNominal(this)" class="w-full pl-9 pr-3 py-2.5 border border-outline rounded-xl font-mono-data text-sm focus:ring-1 focus:ring-primary outline-none font-bold bg-surface">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-primary text-sm">Rp</span>
+              <input type="text" id="tx-amount" placeholder="0" required oninput="formatInputNominal(this)" class="w-full pl-9 pr-3 py-2.5 border rounded-xl font-mono-data text-sm font-bold bg-surface">
             </div>
           </div>
           <div class="flex flex-col gap-1">
-            <label class="text-xs font-bold uppercase text-on-surface-variant">Tipe Cashflow</label>
-            <select id="tx-cashflow" onchange="applyCashflowLogic()" required class="w-full px-3 py-2.5 border border-outline rounded-xl text-sm bg-white dark:bg-slate-900 text-on-surface focus:ring-1 focus:ring-primary outline-none font-semibold">
+            <label class="text-xs font-bold uppercase text-gray-500">Tipe Cashflow</label>
+            <select id="tx-cashflow" onchange="applyCashflowLogic()" required class="w-full px-3 py-2.5 border rounded-xl text-sm bg-surface font-semibold">
               <option value="">-- Pilih Cashflow --</option>
               <option value="Income">Income (Pemasukan)</option><option value="Spending">Spending (Pengeluaran)</option>
               <option value="Invest / Savings">Invest / Savings</option><option value="Financial Goals">Financial Goals</option>
@@ -335,24 +295,24 @@
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2 border-t border-outline-variant">
-            <div id="box-category" class="flex flex-col gap-1"><label class="text-xs font-bold uppercase text-on-surface-variant">Category</label><select id="tx-category" class="w-full px-3 py-2.5 border border-outline rounded-xl text-sm bg-white dark:bg-slate-900 text-on-surface disabled:bg-gray-100 font-medium"><option value="- not applicable -">- not applicable -</option></select></div>
-            <div id="box-dari" class="flex flex-col gap-1"><label class="text-xs font-bold uppercase text-on-surface-variant">Dari Account</label><select id="tx-dari" class="w-full px-3 py-2.5 border border-outline rounded-xl text-sm bg-white dark:bg-slate-900 text-on-surface disabled:bg-gray-100 font-medium"><option value="- not applicable -">- not applicable -</option></select></div>
-            <div id="box-ke" class="flex flex-col gap-1"><label class="text-xs font-bold uppercase text-on-surface-variant">Ke Account</label><select id="tx-ke" class="w-full px-3 py-2.5 border border-outline rounded-xl text-sm bg-white dark:bg-slate-900 text-on-surface disabled:bg-gray-100 font-medium"><option value="- not applicable -">- not applicable -</option></select></div>
+            <div id="box-category" class="flex flex-col gap-1"><label class="text-xs font-bold uppercase text-gray-500">Category</label><select id="tx-category" class="w-full px-3 py-2.5 border rounded-xl text-sm bg-surface"></select></div>
+            <div id="box-dari" class="flex flex-col gap-1"><label class="text-xs font-bold uppercase text-gray-500">Dari Account</label><select id="tx-dari" class="w-full px-3 py-2.5 border rounded-xl text-sm bg-surface"></select></div>
+            <div id="box-ke" class="flex flex-col gap-1"><label class="text-xs font-bold uppercase text-gray-500">Ke Account</label><select id="tx-ke" class="w-full px-3 py-2.5 border rounded-xl text-sm bg-surface"></select></div>
           </div>
 
           <div class="p-3 bg-surface-container dark:bg-slate-900 rounded-xl border border-outline-variant">
             <div class="flex items-center justify-between cursor-pointer" onclick="document.getElementById('admin-fields').classList.toggle('hidden')">
-              <span class="text-xs font-bold text-primary dark:text-blue-400 flex items-center gap-1"><span class="material-symbols-outlined text-sm">add_circle</span> Biaya Admin / Transaksi</span><span class="material-symbols-outlined text-sm">expand_more</span>
+              <span class="text-xs font-bold text-primary flex items-center gap-1"><span class="material-symbols-outlined text-sm">add_circle</span> Biaya Admin / Transaksi</span><span class="material-symbols-outlined text-sm">expand_more</span>
             </div>
             <div id="admin-fields" class="hidden grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-              <div><label class="text-[10px] uppercase font-bold text-on-surface-variant">Nominal Admin (Rp)</label><input type="text" id="tx-admin-fee" placeholder="0" oninput="formatInputNominal(this)" class="w-full p-2 border border-outline rounded-lg text-sm font-mono-data bg-surface"></div>
-              <div><label class="text-[10px] uppercase font-bold text-on-surface-variant">Potong Dari Akun</label><select id="tx-admin-account" class="w-full p-2 border border-outline rounded-lg text-sm bg-white dark:bg-slate-900 text-on-surface font-medium"><option value="">Sama dengan Dari Account</option></select></div>
+              <div><label class="text-[10px] uppercase font-bold text-gray-500">Nominal Admin (Rp)</label><input type="text" id="tx-admin-fee" placeholder="0" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-lg text-sm font-mono-data bg-surface"></div>
+              <div><label class="text-[10px] uppercase font-bold text-gray-500">Potong Dari Akun</label><select id="tx-admin-account" class="w-full p-2 border rounded-lg text-sm bg-surface"><option value="">Sama dengan Dari Account</option></select></div>
             </div>
           </div>
 
           <div class="flex items-center gap-3 pt-3 border-t border-outline-variant">
-            <button type="submit" id="btn-submit" class="flex-1 bg-primary hover:bg-primary-container text-white py-3 rounded-xl font-bold text-sm transition-all shadow flex items-center justify-center gap-2">Simpan Transaksi</button>
-            <button type="reset" class="px-5 py-3 border border-outline-variant text-on-surface-variant rounded-xl text-sm hover:bg-surface-container">Batal</button>
+            <button type="submit" id="btn-submit" class="flex-1 bg-primary hover:bg-primary-container text-white py-3 rounded-xl font-bold text-sm shadow">Simpan Transaksi</button>
+            <button type="reset" class="px-5 py-3 border border-outline-variant rounded-xl text-sm">Batal</button>
           </div>
         </form>
       </section>
@@ -368,25 +328,25 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 bg-white dark:bg-slate-800 p-4 rounded-2xl border border-outline-variant shadow-sm text-xs">
           <div>
             <label class="text-[10px] font-bold uppercase text-gray-500">Mode Filter Waktu</label>
-            <select id="rep-filter-mode" onchange="toggleFilterModeInputs()" class="w-full p-2 border rounded-xl font-bold bg-surface text-on-surface outline-none cursor-pointer">
+            <select id="rep-filter-mode" onchange="toggleFilterModeInputs()" class="w-full p-2 border rounded-xl font-bold bg-surface">
               <option value="all">Semua Waktu</option><option value="exact_date">Tanggal Tertentu</option><option value="exact_month">Bulan Tertentu</option><option value="exact_year">Tahun Tertentu</option><option value="date_range" selected>Rentang Tanggal</option>
             </select>
           </div>
           <div id="filter-input-container" class="md:col-span-2 grid grid-cols-2 gap-2">
-            <div><label class="text-[10px] font-bold uppercase text-gray-500">Dari Tanggal</label><input type="date" id="rep-date-start" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-medium bg-surface text-on-surface"></div>
-            <div><label class="text-[10px] font-bold uppercase text-gray-500">Sampai Tanggal</label><input type="date" id="rep-date-end" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-medium bg-surface text-on-surface"></div>
+            <div><label class="text-[10px] font-bold uppercase text-gray-500">Dari Tanggal</label><input type="date" id="rep-date-start" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl bg-surface"></div>
+            <div><label class="text-[10px] font-bold uppercase text-gray-500">Sampai Tanggal</label><input type="date" id="rep-date-end" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl bg-surface"></div>
           </div>
-          <div><label class="text-[10px] font-bold uppercase text-gray-500">Cashflow / Kategori</label><select id="rep-filter-cashflow" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-bold bg-surface text-on-surface outline-none cursor-pointer"><option value="all">Semua Cashflow</option></select></div>
-          <div><label class="text-[10px] font-bold uppercase text-gray-500">Filter Akun</label><select id="rep-filter-account" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-bold bg-surface text-on-surface outline-none cursor-pointer"><option value="all">Semua Akun</option></select></div>
+          <div><label class="text-[10px] font-bold uppercase text-gray-500">Cashflow / Kategori</label><select id="rep-filter-cashflow" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-bold bg-surface"><option value="all">Semua Cashflow</option></select></div>
+          <div><label class="text-[10px] font-bold uppercase text-gray-500">Filter Akun</label><select id="rep-filter-account" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-bold bg-surface"><option value="all">Semua Akun</option></select></div>
         </div>
 
         <div id="report-printable-area" class="bg-white dark:bg-slate-800 rounded-2xl border border-outline-variant p-4 shadow-sm space-y-3">
-          <div class="flex justify-between items-center border-b pb-2"><span class="text-xs font-extrabold text-primary uppercase tracking-wider">Tabel Data Rekam Transaksi</span><b class="text-[10px] text-gray-400">KEUANGANKU PLANNER</b></div>
+          <div class="flex justify-between items-center border-b pb-2"><span class="text-xs font-extrabold text-primary uppercase tracking-wider">Tabel Data Rekam Transaksi</span></div>
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse text-xs">
               <thead>
-                <tr class="bg-surface-container-low dark:bg-slate-900 border-b border-outline-variant text-on-surface-variant uppercase font-bold">
-                  <th class="p-3">Hari, Tgl & Jam</th><th class="p-3">Nama Transaksi</th><th class="p-3">Cashflow</th><th class="p-3">Kategori</th><th class="p-3">Dari Akun</th><th class="p-3">Ke Akun</th><th class="p-3 text-right">Aksi / Nominal</th>
+                <tr class="bg-surface-container-low border-b border-outline-variant font-bold uppercase text-gray-500">
+                  <th class="p-3">Waktu</th><th class="p-3">Nama Transaksi</th><th class="p-3">Cashflow</th><th class="p-3">Kategori</th><th class="p-3">Dari Akun</th><th class="p-3">Ke Akun</th><th class="p-3 text-right">Aksi / Nominal</th>
                 </tr>
               </thead>
               <tbody id="tx-history-tbody" class="divide-y divide-outline-variant"><tr><td colspan="7" class="p-4 text-center text-gray-400">Belum ada transaksi diinput.</td></tr></tbody>
@@ -399,68 +359,69 @@
 
     <!-- PAGE 3: SETUP -->
     <div id="page-setup" class="hidden space-y-6">
-      <div id="setup-lock-card" class="bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-8 max-w-md mx-auto text-center space-y-4 shadow-sm">
+      <div id="setup-lock-card" class="bg-white dark:bg-slate-800 border rounded-2xl p-8 max-w-md mx-auto text-center space-y-4 shadow-sm">
         <div class="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto"><span class="material-symbols-outlined text-3xl">lock</span></div>
         <div><h3 class="font-headline-md font-bold text-on-surface">Menu Setup Terkunci</h3><p class="text-xs text-on-surface-variant mt-1">Masukkan password pemilik akun untuk mengakses database master.</p></div>
-        <input type="password" id="setup-pass-input" placeholder="Masukkan Password Pemilik" class="w-full p-3 border border-outline rounded-xl text-center font-mono-data text-sm outline-none focus:ring-1 focus:ring-primary bg-surface">
-        <button onclick="verifySetupPassword()" class="w-full py-3 bg-primary text-white font-bold rounded-xl hover:brightness-110 shadow">Buka Akses Setup</button>
+        <input type="password" id="setup-pass-input" placeholder="Masukkan Password Pemilik" class="w-full p-3 border rounded-xl text-center font-mono-data text-sm bg-surface">
+        <button onclick="verifySetupPassword()" class="w-full py-3 bg-primary text-white font-bold rounded-xl shadow">Buka Akses Setup</button>
       </div>
 
       <div id="setup-unlocked-content" class="hidden space-y-6">
         <div class="bg-primary/10 border border-primary/30 rounded-2xl p-4 flex items-center justify-between shadow-sm">
-          <div><p class="font-bold text-primary dark:text-blue-400 text-sm">Pusat Konfigurasi Database</p><p class="text-[11px] text-gray-600 dark:text-gray-300">Perbarui nilai atau kategori, lalu klik simpan di bawah.</p></div>
-          <button onclick="manualSaveSetup()" class="px-5 py-2.5 bg-primary text-white font-bold rounded-xl hover:bg-primary-container transition-all text-xs shadow flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">save</span> SIMPAN</button>
+          <div><p class="font-bold text-primary text-sm">Pusat Konfigurasi Database</p><p class="text-[11px] text-gray-600">Perbarui nilai atau kategori, lalu klik simpan di bawah.</p></div>
+          <button onclick="manualSaveSetup()" class="px-5 py-2.5 bg-primary text-white font-bold rounded-xl text-xs shadow flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">save</span> SIMPAN PERUBAHAN</button>
         </div>
 
-        <section class="bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-6 shadow-sm space-y-3">
-          <div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary">key</span><h2 class="font-headline-md text-headline-md text-on-surface font-bold">Ubah Password Pemilik</h2></div>
+        <section class="bg-white dark:bg-slate-800 border rounded-2xl p-6 shadow-sm space-y-3">
+          <div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary">key</span><h2 class="font-headline-md text-headline-md font-bold">Ubah Password Pemilik</h2></div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
-            <input type="password" id="new-pass-input" placeholder="Masukkan Password Baru" class="p-2.5 border rounded-xl text-xs font-mono-data outline-none focus:ring-1 focus:ring-primary bg-surface">
-            <button onclick="changeOwnerPassword()" class="py-2.5 bg-secondary text-white font-bold text-xs rounded-xl hover:brightness-110 shadow">Ubah Password</button>
+            <input type="password" id="new-pass-input" placeholder="Masukkan Password Baru" class="p-2.5 border rounded-xl text-xs font-mono-data bg-surface">
+            <button onclick="changeOwnerPassword()" class="py-2.5 bg-secondary text-white font-bold text-xs rounded-xl shadow">Ubah Password</button>
           </div>
         </section>
 
         <section class="space-y-3">
-          <div class="flex items-center gap-2"><span class="material-symbols-outlined text-tertiary">alarm</span><div><h2 class="font-headline-md text-headline-md text-on-surface font-bold">Jadwal Pembayaran Rutin</h2></div></div>
-          <div class="bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-4 space-y-3 shadow-sm">
+          <div class="flex items-center gap-2"><span class="material-symbols-outlined text-tertiary">alarm</span><h2 class="font-headline-md text-headline-md font-bold">Jadwal Pembayaran Rutin Bulanan</h2></div>
+          <div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 space-y-3 shadow-sm">
             <div id="setup-routine-list" class="space-y-2"></div>
-            <button onclick="addRoutinePaymentItem()" class="w-full py-3 bg-surface-container dark:bg-slate-900 hover:bg-surface-container-high border rounded-xl text-primary dark:text-blue-400 font-bold text-xs flex items-center justify-center gap-1"><span class="material-symbols-outlined text-sm">add</span> TAMBAH JADWAL PEMBAYARAN RUTIN</button>
+            <button onclick="addRoutinePaymentItem()" class="w-full py-3 bg-surface-container hover:bg-surface-container-high border rounded-xl text-primary font-bold text-xs flex items-center justify-center gap-1"><span class="material-symbols-outlined text-sm">add</span> TAMBAHKAN JADWAL RUTIN</button>
           </div>
         </section>
 
         <section class="space-y-3">
-          <div class="flex items-center gap-2"><span class="material-symbols-outlined text-secondary">account_balance_wallet</span><div><h2 class="font-headline-md text-headline-md text-on-surface font-bold">Saldo Awal</h2></div></div>
-          <div class="bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-6 shadow-sm space-y-2">
-            <label class="block font-label-caps text-xs text-on-surface-variant font-bold uppercase">Saldo Awal (Yang Bisa Digunakan)</label>
+          <div class="flex items-center gap-2"><span class="material-symbols-outlined text-secondary">account_balance_wallet</span><h2 class="font-headline-md text-headline-md font-bold">Saldo Awal</h2></div>
+          <div class="bg-white dark:bg-slate-800 border rounded-2xl p-6 shadow-sm space-y-2">
+            <label class="block font-label-caps text-xs font-bold uppercase">Saldo Awal (Yang Bisa Digunakan)</label>
             <div class="relative pt-2">
               <span class="absolute left-4 top-1/2 -translate-y-1/2 font-extrabold text-primary text-lg">Rp</span>
-              <input type="number" id="setup-starting-balance" value="25000000" onchange="updateStartingBalance(this.value)" class="w-full bg-surface dark:bg-slate-900 border border-outline-variant focus:border-primary rounded-xl py-3 pl-12 pr-4 font-mono-data font-bold text-xl text-on-surface outline-none">
+              <input type="number" id="setup-starting-balance" onchange="updateStartingBalance(this.value)" class="w-full bg-surface border rounded-xl py-3 pl-12 pr-4 font-mono-data font-bold text-xl outline-none">
             </div>
           </div>
         </section>
 
-        <section class="space-y-3"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-secondary">credit_card</span><h2 class="font-headline-md text-headline-md text-on-surface font-bold">1. Akun Bank & E-Wallet</h2></div><div class="bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-4 space-y-4 shadow-sm"><div id="setup-account-list" class="space-y-3"></div><button onclick="addAccountItem()" class="w-full py-3.5 bg-surface-container dark:bg-slate-900 hover:bg-surface-container-high text-primary dark:text-blue-400 font-bold text-xs border border-outline-variant rounded-xl flex items-center justify-center gap-2"><span class="material-symbols-outlined text-sm">add</span> TAMBAHKAN ACCOUNT BANK</button></div></section>
+        <section class="space-y-3"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-secondary">credit_card</span><h2 class="font-headline-md text-headline-md font-bold">1. Akun Bank & E-Wallet</h2></div><div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 space-y-4 shadow-sm"><div id="setup-account-list" class="space-y-3"></div><button onclick="addAccountItem()" class="w-full py-3.5 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2"><span class="material-symbols-outlined text-sm">add</span> TAMBAHKAN ACCOUNT BANK</button></div></section>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <section class="space-y-3"><h2 class="font-bold">2. Income</h2><div class="bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-4 shadow-sm"><div id="setup-income-tags" class="flex flex-wrap gap-2 mb-6"></div><button onclick="addSimpleCategory('incomes', 'Income')" class="w-full py-3 border-2 border-dashed border-outline-variant hover:border-secondary text-on-surface-variant font-bold text-xs rounded-xl flex items-center justify-center gap-2"><span class="material-symbols-outlined text-sm">add_circle</span> TAMBAHKAN INCOME</button></div></section>
-          <section class="space-y-3"><h2 class="font-bold">3. Bills</h2><div class="bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-4 shadow-sm"><div id="setup-bills-list" class="space-y-2 mb-6"></div><button onclick="addSimpleCategory('bills', 'Tagihan/Bill')" class="w-full py-3 border-2 border-dashed border-outline-variant hover:border-tertiary text-on-surface-variant font-bold text-xs rounded-xl flex items-center justify-center gap-2"><span class="material-symbols-outlined text-sm">add_circle</span> TAMBAHKAN BILLS</button></div></section>
+          <section class="space-y-3"><h2 class="font-bold">2. Income</h2><div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm"><div id="setup-income-tags" class="flex flex-wrap gap-2 mb-6"></div><button onclick="addSimpleCategory('incomes', 'Income')" class="w-full py-3 border-2 border-dashed rounded-xl font-bold text-xs flex items-center justify-center gap-2"><span class="material-symbols-outlined text-sm">add_circle</span> TAMBAHKAN INCOME</button></div></section>
+          <section class="space-y-3"><h2 class="font-bold">3. Bills</h2><div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm"><div id="setup-bills-list" class="space-y-2 mb-6"></div><button onclick="addSimpleCategory('bills', 'Tagihan')" class="w-full py-3 border-2 border-dashed rounded-xl font-bold text-xs flex items-center justify-center gap-2"><span class="material-symbols-outlined text-sm">add_circle</span> TAMBAHKAN BILLS</button></div></section>
         </div>
 
-        <section class="space-y-3"><h2 class="font-bold">4. Spending</h2><div class="bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-6 shadow-sm space-y-6"><div id="setup-spending-tags" class="flex flex-wrap gap-2"></div><button onclick="addSimpleCategory('spendings', 'Spending')" class="w-full py-3.5 bg-primary text-white hover:brightness-110 rounded-xl font-bold text-xs shadow flex items-center justify-center gap-2"><span class="material-symbols-outlined text-sm">add</span> TAMBAHKAN SPENDING</button></div></section>
-        <section class="space-y-3"><h2 class="font-bold">5. Invest / Savings</h2><div class="bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-4 space-y-4 shadow-sm"><div id="setup-invest-list" class="space-y-3"></div><button onclick="addValuedCategory('investData', 'Invest / Savings')" class="w-full py-3 bg-surface-container dark:bg-slate-900 border border-outline-variant rounded-xl text-primary dark:text-blue-400 font-bold text-xs flex items-center justify-center gap-2"><span class="material-symbols-outlined text-sm">add</span> TAMBAH INVEST</button></div></section>
-        <section class="space-y-3"><h2 class="font-bold">6. Sinking Fund</h2><div class="bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-4 space-y-4 shadow-sm"><div id="setup-sinking-list" class="space-y-3"></div><button onclick="addValuedCategory('sinkingData', 'Sinking Fund')" class="w-full py-3 bg-surface-container dark:bg-slate-900 border border-outline-variant rounded-xl text-primary dark:text-blue-400 font-bold text-xs flex items-center justify-center gap-2"><span class="material-symbols-outlined text-sm">add</span> TAMBAH SINKING FUND</button></div></section>
-        <section class="space-y-3"><h2 class="font-bold">7. Financial Goals</h2><div class="bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-4 space-y-4 shadow-sm"><div id="setup-goals-list" class="space-y-3"></div><button onclick="addValuedCategory('goalsData', 'Financial Goal')" class="w-full py-3 bg-surface-container dark:bg-slate-900 border border-outline-variant rounded-xl text-primary dark:text-blue-400 font-bold text-xs flex items-center justify-center gap-2"><span class="material-symbols-outlined text-sm">add</span> TAMBAH GOALS</button></div></section>
-        <section class="space-y-3"><h2 class="font-bold">8. Piutang (Orang Berutang ke Saya)</h2><div class="bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-4 space-y-4 shadow-sm"><div id="setup-receivables-list" class="space-y-3"></div><button onclick="addValuedCategory('receivablesData', 'Piutang')" class="w-full py-3 bg-surface-container dark:bg-slate-900 border border-outline-variant rounded-xl text-primary dark:text-blue-400 font-bold text-xs flex items-center justify-center gap-2"><span class="material-symbols-outlined text-sm">add</span> TAMBAH PIUTANG</button></div></section>
-        <section class="space-y-3"><h2 class="font-bold">9. Aset Selain Uang & Zakat Nisab</h2><div class="bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-4 space-y-4 shadow-sm"><div id="setup-nonmoney-list" class="space-y-3"></div><button onclick="addValuedCategory('nonMoneyAssets', 'Aset Non-Uang')" class="w-full py-3 bg-surface-container dark:bg-slate-900 border border-outline-variant rounded-xl text-primary dark:text-blue-400 font-bold text-xs flex items-center justify-center gap-2"><span class="material-symbols-outlined text-sm">add</span> TAMBAH ASET NON-UANG</button></div></section>
-        <section class="space-y-3"><h2 class="font-bold">10. Utang & Cicilan</h2><div class="bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-4 space-y-4 shadow-sm"><div id="setup-debt-list" class="space-y-3"></div><button onclick="addDebtItemModal()" class="w-full py-3 bg-surface-container dark:bg-slate-900 border border-outline-variant rounded-xl text-primary dark:text-blue-400 font-bold text-xs flex items-center justify-center gap-2"><span class="material-symbols-outlined text-sm">add</span> TAMBAH UTANG / CICILAN</button></div></section>
-        <section class="space-y-3"><h2 class="font-bold">11. Monthly Budgeting (Batas Pengeluaran)</h2><div class="bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-4 shadow-sm"><div id="setup-budget-list" class="space-y-2"></div></div></section>
+        <section class="space-y-3"><h2 class="font-bold">4. Spending</h2><div class="bg-white dark:bg-slate-800 border rounded-2xl p-6 shadow-sm"><div id="setup-spending-tags" class="flex flex-wrap gap-2 mb-6"></div><button onclick="addSimpleCategory('spendings', 'Spending')" class="w-full py-3.5 bg-primary text-white rounded-xl font-bold text-xs shadow flex items-center justify-center gap-2"><span class="material-symbols-outlined text-sm">add</span> TAMBAHKAN SPENDING</button></div></section>
+        <section class="space-y-3"><h2 class="font-bold">5. Invest / Savings</h2><div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm"><div id="setup-invest-list" class="space-y-3"></div><button onclick="addValuedCategory('investData', 'Invest')" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2">TAMBAH INVEST</button></div></section>
+        <section class="space-y-3"><h2 class="font-bold">6. Sinking Fund</h2><div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm"><div id="setup-sinking-list" class="space-y-3"></div><button onclick="addValuedCategory('sinkingData', 'Sinking Fund')" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2">TAMBAH SINKING FUND</button></div></section>
+        <section class="space-y-3"><h2 class="font-bold">7. Financial Goals</h2><div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm"><div id="setup-goals-list" class="space-y-3"></div><button onclick="addValuedCategory('goalsData', 'Goals')" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2">TAMBAH GOALS</button></div></section>
+        <section class="space-y-3"><h2 class="font-bold">8. Piutang</h2><div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm"><div id="setup-receivables-list" class="space-y-3"></div><button onclick="addValuedCategory('receivablesData', 'Piutang')" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2">TAMBAH PIUTANG</button></div></section>
+        <section class="space-y-3"><h2 class="font-bold">9. Aset Non Uang & Nisab</h2><div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm"><div id="setup-nonmoney-list" class="space-y-3"></div><button onclick="addValuedCategory('nonMoneyAssets', 'Aset')" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2">TAMBAH ASET NON-UANG</button></div></section>
+        <section class="space-y-3"><h2 class="font-bold">10. Utang & Cicilan</h2><div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm"><div id="setup-debt-list" class="space-y-3"></div><button onclick="addDebtItemModal()" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2">TAMBAH UTANG</button></div></section>
 
-        <section class="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 rounded-2xl p-5 flex items-center justify-between shadow-sm mt-6">
-          <div><p class="font-bold text-error text-sm">Zona Bahaya / Reset Data</p><p class="text-xs text-gray-600 dark:text-gray-300">Hapus seluruh riwayat transaksi yang tersimpan.</p></div>
-          <button onclick="resetTransactionHistory()" class="px-4 py-2.5 bg-error text-white font-bold rounded-xl hover:brightness-110 text-xs shadow flex items-center gap-1"><span class="material-symbols-outlined text-sm">delete_sweep</span> RESET RIWAYAT</button>
+        <section class="space-y-3"><h2 class="font-bold">11. Budgeting Bulanan</h2><div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm"><div id="setup-budget-list" class="space-y-2"></div></div></section>
+
+        <section class="bg-red-50 border border-red-200 rounded-2xl p-5 flex items-center justify-between shadow-sm mt-6">
+          <div><p class="font-bold text-error text-sm">Zona Bahaya</p><p class="text-xs text-gray-600">Hapus seluruh riwayat transaksi.</p></div>
+          <button onclick="resetTransactionHistory()" class="px-4 py-2.5 bg-error text-white font-bold rounded-xl text-xs shadow">RESET RIWAYAT</button>
         </section>
 
-        <button onclick="manualSaveSetup()" class="w-full py-4 bg-primary text-white font-extrabold text-sm rounded-2xl shadow-lg hover:brightness-110 flex items-center justify-center gap-2"><span class="material-symbols-outlined text-lg">save</span> SIMPAN SELURUH PERUBAHAN DATABASE</button>
+        <button onclick="manualSaveSetup()" class="w-full py-4 bg-primary text-white font-extrabold text-sm rounded-2xl shadow-lg">SIMPAN SELURUH PERUBAHAN</button>
       </div>
       <footer class="pt-6 pb-2 text-center border-t border-outline-variant/50"><p class="text-[10px] text-gray-400 font-medium tracking-widest uppercase">By: Sambarang Production</p></footer>
     </div>
@@ -474,22 +435,16 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <!-- Konversi Mata Uang -->
           <button onclick="openCalcSub('calc-sub-currency')" class="p-5 bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl shadow-sm hover:border-primary transition-all text-left flex items-start gap-4 group">
-            <div class="p-3 bg-blue-100 dark:bg-blue-950 text-primary rounded-xl group-hover:scale-110 transition-transform">
-              <span class="material-symbols-outlined text-2xl">currency_exchange</span>
-            </div>
+            <div class="p-3 bg-blue-100 dark:bg-blue-950 text-primary rounded-xl group-hover:scale-110 transition-transform"><span class="material-symbols-outlined text-2xl">currency_exchange</span></div>
             <div>
               <h3 class="font-bold text-sm text-on-surface group-hover:text-primary">Konversi Mata Uang</h3>
               <p class="text-[11px] text-gray-500 mt-1">Konversi nilai uang antar negara dengan kurs pasar terbaru secara real-time.</p>
             </div>
           </button>
           
-          <!-- Kalkulator HPP ZY CLOTHES -->
           <button onclick="openCalcSub('calc-sub-hpp')" class="p-5 bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl shadow-sm hover:border-primary transition-all text-left flex items-start gap-4 group">
-            <div class="p-3 bg-emerald-100 dark:bg-emerald-950 text-emerald-600 rounded-xl group-hover:scale-110 transition-transform">
-              <span class="material-symbols-outlined text-2xl">inventory_2</span>
-            </div>
+            <div class="p-3 bg-emerald-100 dark:bg-emerald-950 text-emerald-600 rounded-xl group-hover:scale-110 transition-transform"><span class="material-symbols-outlined text-2xl">inventory_2</span></div>
             <div>
               <h3 class="font-bold text-sm text-on-surface group-hover:text-primary">Kalkulator HPP ZY CLOTHES</h3>
               <p class="text-[11px] text-gray-500 mt-1">Hitung modal konveksi maklon atau produksi sablon DTF beserta margin idealnya.</p>
@@ -499,34 +454,22 @@
       </div>
 
       <div id="calc-sub-container" class="hidden space-y-4">
-        <button onclick="backToCalcMenu()" class="text-xs font-bold text-primary flex items-center gap-1 hover:underline">
-          <span class="material-symbols-outlined text-sm">arrow_back</span> Kembali ke Menu Kalkulator
-        </button>
+        <button onclick="backToCalcMenu()" class="text-xs font-bold text-primary flex items-center gap-1 hover:underline"><span class="material-symbols-outlined text-sm">arrow_back</span> Kembali</button>
 
         <!-- SUB: KONVERSI MATA UANG -->
         <div id="calc-sub-currency" class="calc-sub-item hidden bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-6 space-y-4 shadow-sm">
           <h3 class="font-bold text-base text-primary flex items-center gap-2"><span class="material-symbols-outlined">currency_exchange</span> Konversi Mata Uang (Real-time)</h3>
           <div class="space-y-3 text-xs">
-            <div><label class="font-bold text-gray-500">Nominal yang ingin dikonversi</label><input type="text" id="calc-curr-amount" placeholder="Contoh: 1.000.000" oninput="formatInputNominal(this)" class="w-full p-2.5 border rounded-xl font-mono-data font-bold mt-1 bg-surface text-on-surface focus:border-primary outline-none"></div>
+            <div><label class="font-bold text-gray-500">Nominal</label><input type="text" id="calc-curr-amount" placeholder="Contoh: 1.000.000" oninput="formatInputNominal(this)" class="w-full p-2.5 border rounded-xl font-mono-data font-bold mt-1 bg-surface outline-none"></div>
             <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="font-bold text-gray-500">Dari Kurs Asal</label>
-                <select id="calc-curr-from" class="w-full p-2.5 border rounded-xl font-bold mt-1 bg-surface text-on-surface outline-none cursor-pointer">
-                  <option value="IDR" selected>IDR - Rupiah</option><option value="USD">USD - Dolar AS</option><option value="EUR">EUR - Euro</option><option value="SAR">SAR - Riyal Arab</option><option value="MYR">MYR - Ringgit</option><option value="SGD">SGD - Dolar Singapur</option><option value="JPY">JPY - Yen Jepang</option><option value="KRW">KRW - Won Korea</option>
-                </select>
-              </div>
-              <div>
-                <label class="font-bold text-gray-500">Ke Kurs Tujuan</label>
-                <select id="calc-curr-to" class="w-full p-2.5 border rounded-xl font-bold mt-1 bg-surface text-on-surface outline-none cursor-pointer">
-                  <option value="USD" selected>USD - Dolar AS</option><option value="IDR">IDR - Rupiah</option><option value="EUR">EUR - Euro</option><option value="SAR">SAR - Riyal Arab</option><option value="MYR">MYR - Ringgit</option><option value="SGD">SGD - Dolar Singapur</option><option value="JPY">JPY - Yen Jepang</option><option value="KRW">KRW - Won Korea</option>
-                </select>
-              </div>
+              <div><label class="font-bold text-gray-500">Dari Kurs</label><select id="calc-curr-from" class="w-full p-2.5 border rounded-xl font-bold mt-1 bg-surface outline-none cursor-pointer"><option value="IDR" selected>IDR - Rupiah</option><option value="USD">USD - Dolar AS</option><option value="EUR">EUR - Euro</option><option value="SAR">SAR - Riyal Arab</option><option value="MYR">MYR - Ringgit</option><option value="SGD">SGD - Dolar Singapur</option><option value="JPY">JPY - Yen Jepang</option><option value="KRW">KRW - Won Korea</option></select></div>
+              <div><label class="font-bold text-gray-500">Ke Kurs</label><select id="calc-curr-to" class="w-full p-2.5 border rounded-xl font-bold mt-1 bg-surface outline-none cursor-pointer"><option value="USD" selected>USD - Dolar AS</option><option value="IDR">IDR - Rupiah</option><option value="EUR">EUR - Euro</option><option value="SAR">SAR - Riyal Arab</option><option value="MYR">MYR - Ringgit</option><option value="SGD">SGD - Dolar Singapur</option><option value="JPY">JPY - Yen Jepang</option><option value="KRW">KRW - Won Korea</option></select></div>
             </div>
-            <button onclick="calculateCurrency()" class="w-full py-3 bg-primary text-white font-bold rounded-xl shadow mt-2 hover:brightness-110 flex items-center justify-center gap-2"><span class="material-symbols-outlined text-sm">sync</span> Konversi Sekarang</button>
+            <button onclick="calculateCurrency()" class="w-full py-3 bg-primary text-white font-bold rounded-xl shadow mt-2 hover:brightness-110">Konversi Sekarang</button>
             <div id="calc-curr-loading" class="hidden text-center py-4 text-primary font-bold text-[11px] animate-pulse">Mengambil data kurs pasar saat ini...</div>
-            <div id="calc-curr-result" class="hidden p-4 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-xl text-center mt-3">
+            <div id="calc-curr-result" class="hidden p-4 bg-blue-50 border border-blue-200 rounded-xl text-center mt-3">
               <p class="text-[10px] text-gray-500 font-bold uppercase" id="calc-curr-label-from"></p>
-              <p class="text-2xl font-mono-data font-extrabold text-primary dark:text-blue-400 mt-1" id="calc-curr-val-to"></p>
+              <p class="text-2xl font-mono-data font-extrabold text-primary mt-1" id="calc-curr-val-to"></p>
               <p class="text-[9px] text-gray-400 mt-2 italic" id="calc-curr-rate-info"></p>
             </div>
           </div>
@@ -536,53 +479,55 @@
         <div id="calc-sub-hpp" class="calc-sub-item hidden bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-6 space-y-4 shadow-sm">
           <h3 class="font-bold text-base text-emerald-600 flex items-center gap-2"><span class="material-symbols-outlined">inventory_2</span> Kalkulator HPP ZY CLOTHES</h3>
           <div class="space-y-4 text-xs">
-            <div class="flex gap-2 p-1 bg-surface-container dark:bg-slate-900 rounded-lg">
-              <button id="btn-hpp-vendor" onclick="setHPPMode('vendor')" class="flex-1 py-1.5 bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 font-bold rounded shadow text-[10px] uppercase transition-all">Order Vendor Konveksi</button>
-              <button id="btn-hpp-mandiri" onclick="setHPPMode('mandiri')" class="flex-1 py-1.5 text-gray-500 font-bold rounded text-[10px] uppercase transition-all">Produksi Mandiri (Sablon)</button>
+            <div class="flex gap-2 p-1 bg-surface-container rounded-lg">
+              <button id="btn-hpp-vendor" onclick="setHPPMode('vendor')" class="flex-1 py-1.5 bg-white text-emerald-600 font-bold rounded shadow text-[10px] uppercase">Order Vendor</button>
+              <button id="btn-hpp-mandiri" onclick="setHPPMode('mandiri')" class="flex-1 py-1.5 text-gray-500 font-bold rounded text-[10px] uppercase">Produksi Mandiri</button>
             </div>
 
+            <!-- FORM VENDOR -->
             <div id="hpp-form-vendor" class="space-y-3">
-              <div><label class="font-bold text-gray-500">Nama Order / Proyek</label><input type="text" id="hpp-v-name" placeholder="Contoh: PDH Mahasiswa / Lanyard" class="w-full p-2 border rounded-xl bg-surface text-on-surface mt-1 focus:ring-1 focus:ring-emerald-500 outline-none"></div>
-              <div><label class="font-bold text-gray-500">Harga Modal Vendor per Pcs (Rp)</label><input type="text" id="hpp-v-harga" placeholder="0" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-xl font-mono-data bg-surface text-on-surface font-bold mt-1"></div>
-              <div><label class="font-bold text-gray-500">Biaya Transport / Kirim per Pcs (Rp)</label><input type="text" id="hpp-v-ongkir" placeholder="0" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-xl font-mono-data bg-surface text-on-surface font-bold mt-1"></div>
-              <div><label class="font-bold text-gray-500">Biaya Packaging per Pcs (Rp)</label><input type="text" id="hpp-v-pack" placeholder="0" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-xl font-mono-data bg-surface text-on-surface font-bold mt-1"></div>
+              <div><label class="font-bold text-gray-500">Nama Order / Proyek</label><input type="text" id="hpp-v-name" placeholder="Contoh: PDH Mahasiswa" class="w-full p-2 border rounded-xl bg-surface mt-1 outline-none"></div>
+              <div><label class="font-bold text-gray-500">Jumlah Order (Pcs)</label><input type="number" id="hpp-v-qty" value="1" min="1" class="w-full p-2 border rounded-xl font-mono-data bg-surface font-bold mt-1"></div>
+              <div><label class="font-bold text-gray-500">Harga Modal Vendor (Per Pcs)</label><input type="text" id="hpp-v-harga" placeholder="0" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-xl font-mono-data bg-surface font-bold mt-1"></div>
+              <div><label class="font-bold text-primary">Biaya Transport / Bensin (Total 1 Orderan)</label><input type="text" id="hpp-v-ongkir" placeholder="0" oninput="formatInputNominal(this)" class="w-full p-2 border border-primary/40 rounded-xl font-mono-data bg-surface font-bold mt-1"></div>
+              <div><label class="font-bold text-gray-500">Biaya Packaging (Per Pcs)</label><input type="text" id="hpp-v-pack" placeholder="0" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-xl font-mono-data bg-surface font-bold mt-1"></div>
             </div>
 
+            <!-- FORM MANDIRI -->
             <div id="hpp-form-mandiri" class="space-y-3 hidden">
-              <div><label class="font-bold text-gray-500">Nama Order / Artikel</label><input type="text" id="hpp-m-name" placeholder="Contoh: Kaos Custom ZY CLOTHES" class="w-full p-2 border rounded-xl bg-surface text-on-surface mt-1 focus:ring-1 focus:ring-emerald-500 outline-none"></div>
-              <div><label class="font-bold text-gray-500">Harga Blanko Kaos Polos per Pcs (Rp)</label><input type="text" id="hpp-m-kaos" placeholder="0" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-xl font-mono-data bg-surface text-on-surface font-bold mt-1"></div>
-              <div><label class="font-bold text-gray-500">Biaya Cetak / Beli DTF per Pcs (Rp)</label><input type="text" id="hpp-m-dtf" placeholder="0" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-xl font-mono-data bg-surface text-on-surface font-bold mt-1"></div>
-              <div><label class="font-bold text-gray-500">Beban Listrik Press & Tenaga per Pcs (Rp)</label><input type="text" id="hpp-m-op" placeholder="0" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-xl font-mono-data bg-surface text-on-surface font-bold mt-1"></div>
-              <div><label class="font-bold text-gray-500">Plastik & Tag / Packaging per Pcs (Rp)</label><input type="text" id="hpp-m-pack" placeholder="0" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-xl font-mono-data bg-surface text-on-surface font-bold mt-1"></div>
+              <div><label class="font-bold text-gray-500">Nama Order / Artikel</label><input type="text" id="hpp-m-name" placeholder="Contoh: Kaos Custom ZY CLOTHES" class="w-full p-2 border rounded-xl bg-surface mt-1 outline-none"></div>
+              <div><label class="font-bold text-gray-500">Jumlah Order (Pcs)</label><input type="number" id="hpp-m-qty" value="1" min="1" class="w-full p-2 border rounded-xl font-mono-data bg-surface font-bold mt-1"></div>
+              <div><label class="font-bold text-gray-500">Harga Blanko Kaos Polos (Per Pcs)</label><input type="text" id="hpp-m-kaos" placeholder="0" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-xl font-mono-data bg-surface font-bold mt-1"></div>
+              <div><label class="font-bold text-gray-500">Biaya Cetak / Beli DTF (Per Pcs)</label><input type="text" id="hpp-m-dtf" placeholder="0" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-xl font-mono-data bg-surface font-bold mt-1"></div>
+              <div><label class="font-bold text-primary">Beban Listrik Press & Tenaga (Total 1 Orderan)</label><input type="text" id="hpp-m-op" placeholder="0" oninput="formatInputNominal(this)" class="w-full p-2 border border-primary/40 rounded-xl font-mono-data bg-surface font-bold mt-1"></div>
+              <div><label class="font-bold text-gray-500">Plastik & Tag / Packaging (Per Pcs)</label><input type="text" id="hpp-m-pack" placeholder="0" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-xl font-mono-data bg-surface font-bold mt-1"></div>
             </div>
 
             <div class="pt-3 border-t border-outline-variant">
               <label class="font-bold text-gray-500">Target Profit Keuntungan (%)</label>
               <div class="flex items-center gap-2 mt-1">
-                <input type="number" id="hpp-margin-pct" value="40" class="w-24 p-2 border rounded-xl font-mono-data bg-surface text-on-surface text-center font-bold text-base focus:ring-1 focus:ring-emerald-500 outline-none">
+                <input type="number" id="hpp-margin-pct" value="40" class="w-24 p-2 border rounded-xl font-mono-data bg-surface text-center font-bold text-base outline-none">
                 <span class="font-bold text-gray-500">% margin per item</span>
               </div>
             </div>
 
             <button onclick="calculateHPPDynamic()" class="w-full py-3 bg-emerald-600 text-white font-bold rounded-xl shadow mt-2 hover:brightness-110">Kalkulasi HPP & Harga Jual</button>
+            <div id="calc-hpp-result" class="hidden p-4 bg-emerald-50 border border-emerald-200 rounded-xl mt-3 space-y-2"></div>
 
-            <div id="calc-hpp-result" class="hidden p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl mt-3 space-y-2"></div>
-
-            <!-- KOTAK PENJELASAN AKAD FIQH -->
-            <div id="hpp-akad-vendor" class="mt-4 p-4 bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800 rounded-xl">
-              <p class="text-[11px] font-bold text-orange-700 dark:text-orange-400 mb-1">⚖️ Tinjauan Fiqh Muamalah: Istishna' Paralel</p>
-              <p class="text-[10px] text-gray-600 dark:text-gray-300 leading-relaxed">Praktek menerima orderan lalu mengopernya ke vendor disebut <b>Istishna' Paralel</b>. Hukumnya halal dengan syarat: (1) Spesifikasi barang jelas di awal, (2) Akad dengan customer dan vendor berdiri terpisah, (3) Anda bertindak sebagai penjual dan <b>bertanggung jawab penuh</b> atas kualitas barang dan waktu penyelesaian di hadapan customer, bukan melemparkan kesalahan ke vendor.</p>
+            <!-- PENJELASAN AKAD -->
+            <div id="hpp-akad-vendor" class="mt-4 p-4 bg-orange-50 border border-orange-200 rounded-xl">
+              <p class="text-[11px] font-bold text-orange-700 mb-1">⚖️ Tinjauan Fiqh: Istishna' Paralel</p>
+              <p class="text-[10px] text-gray-600 leading-relaxed">Menerima order lalu dioper ke vendor disebut <b>Istishna' Paralel</b>. Hukumnya halal jika: (1) Spesifikasi barang jelas, (2) Anda bertanggung jawab penuh atas barang di hadapan customer, bukan menyalahkan vendor jika ada cacat.</p>
             </div>
-
-            <div id="hpp-akad-mandiri" class="hidden mt-4 p-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl">
-              <p class="text-[11px] font-bold text-blue-700 dark:text-blue-400 mb-1">⚖️ Tinjauan Fiqh Muamalah: Akad Istishna' / Jual Beli</p>
-              <p class="text-[10px] text-gray-600 dark:text-gray-300 leading-relaxed">Memproduksi barang pesanan secara mandiri menggunakan akad <b>Istishna'</b> (jika pre-order) atau <b>Jual Beli</b> (jika ready stock). Anda bertindak langsung sebagai produsen (Shani'). Margin keuntungan 100% halal didapat dari nilai tambah proses pengerjaan dan modal bahan. Syarat utamanya adalah spesifikasi bahan kaos dan sablon harus sesuai kesepakatan awal agar terhindar dari Gharar.</p>
+            <div id="hpp-akad-mandiri" class="hidden mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+              <p class="text-[11px] font-bold text-blue-700 mb-1">⚖️ Tinjauan Fiqh: Akad Istishna'</p>
+              <p class="text-[10px] text-gray-600 leading-relaxed">Produksi sablon mandiri menggunakan akad <b>Istishna'</b>. Anda bertindak sebagai produsen (Shani'). Syarat utamanya adalah spesifikasi bahan kaos dan sablon harus jelas agar terhindar dari Gharar.</p>
             </div>
-
           </div>
         </div>
       </div>
     </div>
+
   </main>
 
   <nav class="fixed bottom-0 left-0 w-full z-40 flex justify-around items-center py-2 bg-surface border-t border-outline-variant shadow-lg">
@@ -615,8 +560,8 @@
     
     function verifyBumperPin() {
       let pinInput = document.getElementById('bumper-pin-input').value;
-      let validPass = (globalData && globalData.ownerPassword) ? globalData.ownerPassword : "123";
-      if (pinInput === validPass || pinInput === "123") {
+      let validPass = (globalData && globalData.appPin !== undefined) ? globalData.appPin : ((globalData && globalData.ownerPassword) ? globalData.ownerPassword : "123");
+      if (pinInput === validPass || pinInput === globalData.ownerPassword || pinInput === "123") {
         let splash = document.getElementById('splash-screen');
         if (splash) { splash.classList.add('opacity-0'); setTimeout(() => splash.classList.add('hidden'), 700); }
       } else {
@@ -635,17 +580,23 @@
     function playSuccessSound() { try { let ctx = new (window.AudioContext || window.webkitAudioContext)(); let osc = ctx.createOscillator(); let gain = ctx.createGain(); osc.type = 'sine'; osc.connect(gain); gain.connect(ctx.destination); let now = ctx.currentTime; osc.frequency.setValueAtTime(523.25, now); osc.frequency.setValueAtTime(659.25, now + 0.08); osc.frequency.setValueAtTime(783.99, now + 0.16); gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45); osc.start(now); osc.stop(now + 0.45); } catch(e) {} }
     function formatInputNominal(input) { let rawVal = input.value.replace(/[^0-9]/g, ''); if (rawVal === '') { input.value = ''; return; } input.value = parseInt(rawVal, 10).toLocaleString('id-ID'); }
 
-    const DEFAULT_DATA = { ownerPassword: "123", startingBalance: 25000000, accounts: ["BSI Utama", "Kas Kecil Media", "Bank Jago Tabungan Nikah", "Bank Jago Zy Clothes", "Dana", "Gopay", "Ovo", "Cash"], accountDetails: { "BSI Utama": { bankName: "Bank Syariah Indonesia", accNo: "7123456789", owner: "Fulan", balance: 5979762 } }, currentBalances: { "BSI Utama": 5979762 }, incomes: ["Gaji", "KPI", "Zy Clothes"], spendings: ["Makan/min", "Transport", "Belanja"], bills: ["Cicilan Motor", "Wifi"], routinePayments: { "Wifi": { amount: 275000, dueDay: 20 } }, monthlyBudgets: {}, investData: {}, sinkingData: {}, goalsData: {}, receivablesData: {}, nonMoneyAssets: {}, debtData: {}, recentHistory: [] };
+    const DEFAULT_DATA = { appPin: "123", ownerPassword: "123", startingBalance: 25000000, accounts: ["BSI Utama", "Kas Kecil Media", "Bank Jago Tabungan Nikah", "Bank Jago Zy Clothes", "Dana", "Gopay", "Ovo", "Cash"], accountDetails: { "BSI Utama": { bankName: "Bank Syariah Indonesia", accNo: "7123456789", owner: "Fulan", balance: 5979762 } }, currentBalances: { "BSI Utama": 5979762 }, incomes: ["Gaji", "KPI", "Zy Clothes"], spendings: ["Makan/min", "Transport", "Belanja"], bills: ["Cicilan Motor", "Wifi"], routinePayments: { "Wifi": { amount: 275000, dueDay: 20 } }, monthlyBudgets: {}, investData: {}, sinkingData: {}, goalsData: {}, receivablesData: {}, nonMoneyAssets: {}, debtData: {}, recentHistory: [] };
 
+    // PERBAIKAN FATAL: Mencegah penimpaan database dari cloud yang kosong, selalu prioritaskan LocalStorage
     async function loadStorageData() {
       try {
-        let response = await fetch(WEB_APP_URL); let cloudData = await response.json();
-        if (!cloudData || Object.keys(cloudData).length === 0) { globalData = JSON.parse(JSON.stringify(DEFAULT_DATA)); saveStorageData(); } else globalData = cloudData;
-      } catch(e) {
         let stored = localStorage.getItem("KEUANGANKU_DB_V21");
-        if (stored) globalData = JSON.parse(stored); else globalData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+        if (stored) {
+          globalData = JSON.parse(stored);
+        } else {
+          globalData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+        }
+      } catch(e) {
+        globalData = JSON.parse(JSON.stringify(DEFAULT_DATA));
       }
-      if (!globalData.monthlyBudgets) globalData.monthlyBudgets = {}; initApp();
+      if (globalData.appPin === undefined) globalData.appPin = globalData.ownerPassword || "123";
+      if (!globalData.monthlyBudgets) globalData.monthlyBudgets = {}; 
+      initApp();
     }
 
     async function saveStorageData() {
@@ -705,7 +656,7 @@
       } catch (e) { loadingBox.classList.add('hidden'); alert("Gagal mengambil kurs. Pastikan terhubung internet."); }
     }
 
-    // KALKULATOR HPP ZY CLOTHES (DENGAN AKAD)
+    // KALKULATOR HPP ZY CLOTHES (DENGAN QTY & AKAD)
     let currentHPPMode = 'vendor';
     function setHPPMode(mode) {
       currentHPPMode = mode;
@@ -721,37 +672,55 @@
     }
 
     function calculateHPPDynamic() {
-      let totalHPP = 0; let name = "";
+      let hppPerPcs = 0; let totalHPPOrder = 0; let name = ""; let qty = 1;
+      
       if (currentHPPMode === 'vendor') {
         name = document.getElementById('hpp-v-name').value || "Order Konveksi / Maklon";
+        qty = parseInt(document.getElementById('hpp-v-qty').value) || 1;
         let hargaVendor = parseFloat(document.getElementById('hpp-v-harga').value.replace(/\./g, '')) || 0;
-        let transport = parseFloat(document.getElementById('hpp-v-ongkir').value.replace(/\./g, '')) || 0;
-        let pack = parseFloat(document.getElementById('hpp-v-pack').value.replace(/\./g, '')) || 0;
-        totalHPP = hargaVendor + transport + pack;
+        let transportTotal = parseFloat(document.getElementById('hpp-v-ongkir').value.replace(/\./g, '')) || 0;
+        let packPerPcs = parseFloat(document.getElementById('hpp-v-pack').value.replace(/\./g, '')) || 0;
+        
+        let transportPerPcs = transportTotal / qty;
+        hppPerPcs = hargaVendor + transportPerPcs + packPerPcs;
+        totalHPPOrder = hppPerPcs * qty;
       } else {
         name = document.getElementById('hpp-m-name').value || "Kaos Custom DTF";
-        let kaos = parseFloat(document.getElementById('hpp-m-kaos').value.replace(/\./g, '')) || 0;
-        let dtf = parseFloat(document.getElementById('hpp-m-dtf').value.replace(/\./g, '')) || 0;
-        let operasional = parseFloat(document.getElementById('hpp-m-op').value.replace(/\./g, '')) || 0;
-        let pack = parseFloat(document.getElementById('hpp-m-pack').value.replace(/\./g, '')) || 0;
-        totalHPP = kaos + dtf + operasional + pack;
+        qty = parseInt(document.getElementById('hpp-m-qty').value) || 1;
+        let kaosPerPcs = parseFloat(document.getElementById('hpp-m-kaos').value.replace(/\./g, '')) || 0;
+        let dtfPerPcs = parseFloat(document.getElementById('hpp-m-dtf').value.replace(/\./g, '')) || 0;
+        let opTotal = parseFloat(document.getElementById('hpp-m-op').value.replace(/\./g, '')) || 0;
+        let packPerPcs = parseFloat(document.getElementById('hpp-m-pack').value.replace(/\./g, '')) || 0;
+        
+        let opPerPcs = opTotal / qty;
+        hppPerPcs = kaosPerPcs + dtfPerPcs + opPerPcs + packPerPcs;
+        totalHPPOrder = hppPerPcs * qty;
       }
-      if (totalHPP <= 0) { alert("Mohon isi komponen biaya modal (HPP) terlebih dahulu!"); return; }
+
+      if (totalHPPOrder <= 0) { alert("Mohon isi komponen biaya modal (HPP) terlebih dahulu!"); return; }
 
       let marginPct = parseFloat(document.getElementById('hpp-margin-pct').value) || 0;
-      let profit = totalHPP * (marginPct / 100);
-      let hargaJual = totalHPP + profit;
+      let profitPerPcs = hppPerPcs * (marginPct / 100);
+      let hargaJualPerPcs = hppPerPcs + profitPerPcs;
+      let totalHargaJual = hargaJualPerPcs * qty;
+      let totalProfit = profitPerPcs * qty;
 
       let resBox = document.getElementById('calc-hpp-result');
       resBox.innerHTML = `
-        <p class="text-[13px] text-emerald-800 dark:text-emerald-300 font-bold border-b border-emerald-200 dark:border-emerald-700 pb-1.5 uppercase">${name}</p>
-        <div class="flex justify-between text-[11px] text-gray-600 dark:text-gray-300 mt-2"><span>Modal Bersih (HPP) / Pcs:</span> <b class="font-mono-data">${formatRpKebalSensor(totalHPP)}</b></div>
-        <div class="flex justify-between text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 font-bold"><span>Target Keuntungan (+${marginPct}%):</span> <b class="font-mono-data">+ ${formatRpKebalSensor(profit)}</b></div>
+        <p class="text-[13px] text-emerald-800 dark:text-emerald-300 font-bold border-b border-emerald-200 dark:border-emerald-700 pb-1.5 uppercase">${name} (${qty} Pcs)</p>
+        <div class="grid grid-cols-2 gap-2 mt-2 border-b border-emerald-200 dark:border-emerald-700 pb-2">
+          <div><p class="text-[9px] text-gray-500 uppercase font-bold">HPP Modal / Pcs</p><p class="text-sm font-mono-data font-bold text-gray-700 dark:text-gray-300">${formatRpKebalSensor(hppPerPcs)}</p></div>
+          <div><p class="text-[9px] text-gray-500 uppercase font-bold">Total Modal Orderan</p><p class="text-sm font-mono-data font-bold text-gray-700 dark:text-gray-300">${formatRpKebalSensor(totalHPPOrder)}</p></div>
+        </div>
+        <div class="flex justify-between text-[11px] text-emerald-600 dark:text-emerald-400 mt-2 font-bold">
+          <span>Total Target Profit (+${marginPct}%):</span> <b class="font-mono-data">+ ${formatRpKebalSensor(totalProfit)}</b>
+        </div>
         <div class="mt-3 bg-white dark:bg-slate-900 p-3 rounded-lg border border-emerald-100 dark:border-emerald-800 shadow-sm text-center">
-          <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Harga Jual Rekomendasi</p>
-          <p class="text-2xl font-mono-data font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">${formatRpKebalSensor(Math.ceil(hargaJual))}</p>
-          <p class="text-[9px] text-gray-400 mt-1">*Jika dikalikan lusinan, kalikan angka ini secara manual.</p>
-        </div>`;
+          <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Harga Jual Rekomendasi / Pcs</p>
+          <p class="text-2xl font-mono-data font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">${formatRpKebalSensor(Math.ceil(hargaJualPerPcs))}</p>
+          <p class="text-[10px] text-gray-500 mt-1 font-bold">Total Omzet (${qty} Pcs) = ${formatRpKebalSensor(Math.ceil(totalHargaJual))}</p>
+        </div>
+      `;
       resBox.classList.remove('hidden');
     }
 
@@ -775,7 +744,7 @@
         if (item.deadline) {
           let dDate = new Date(item.deadline); dDate.setHours(0,0,0,0); let diffDays = Math.ceil((dDate - today) / (1000 * 60 * 60 * 24));
           if (diffDays <= 3 && diffDays >= 0) {
-            let timeText = diffDays === 0 ? "JATUH TEMPO PENAGIHAN HARI INI!" : `Deadline ${diffDays} Hari Lagi (${item.deadline})`;
+            let timeText = diffDays === 0 ? "JATUH TEMPO HARI INI!" : `Deadline ${diffDays} Hari Lagi`;
             container.innerHTML += `<div class="bg-emerald-600 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between border-2 border-emerald-800 animate-pulse"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-3xl">notification_important</span><div><h4 class="font-extrabold text-sm uppercase">WAKTUNYA MENAGIH: ${k}</h4><p class="text-xs text-emerald-100 font-medium">Nominal: <b>${formatRp(item.total)}</b> | ${timeText}</p></div></div><button onclick="navTo('transaksi')" class="px-3 py-1.5 bg-white text-emerald-800 font-bold rounded-xl text-xs shadow">Pelunasan</button></div>`;
           }
         }
@@ -810,7 +779,7 @@
 
     function renderBudgetRecap() {
       let container = document.getElementById('budget-recap-grid'); if (!container) return; container.innerHTML = '';
-      if (!globalData.monthlyBudgets || Object.keys(globalData.monthlyBudgets).length === 0) { container.innerHTML = '<p class="text-center text-gray-500 text-xs py-2">Belum ada budget yang diatur. Silakan atur limit pengeluaran di menu Setup.</p>'; return; }
+      if (!globalData.monthlyBudgets || Object.keys(globalData.monthlyBudgets).length === 0) { container.innerHTML = '<p class="text-center text-gray-500 text-xs py-2">Belum ada budget yang diatur.</p>'; return; }
       let dropdown = document.getElementById('monthly-select-dropdown'); let targetMonth = dropdown ? parseInt(dropdown.value, 10) : new Date().getMonth();
       let currentYear = new Date().getFullYear(); let spentThisMonth = {};
       if (globalData.recentHistory) { globalData.recentHistory.forEach(tx => { if (tx.cashflow === 'Spending' && tx.rawDate) { let d = new Date(tx.rawDate); if (d.getMonth() === targetMonth && d.getFullYear() === currentYear) spentThisMonth[tx.category] = (spentThisMonth[tx.category] || 0) + tx.amount; } }); }
@@ -819,11 +788,11 @@
         let limit = parseFloat(globalData.monthlyBudgets[cat]) || 0;
         if (limit > 0) {
           hasActiveBudget = true; let spent = spentThisMonth[cat] || 0; let sisa = limit - spent; let pct = Math.min(100, Math.round((spent / limit) * 100)); let isOver = spent > limit; let overAmt = spent - limit; 
-          let barColor = isOver ? 'bg-red-500' : (pct > 80 ? 'bg-orange-500' : 'bg-green-500'); let badgeClass = isOver ? 'bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-400' : 'bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-400'; let badgeText = isOver ? 'OVER (-' + formatRpKebalSensor(overAmt) + ')' : 'Sisa: ' + formatRpKebalSensor(sisa); 
-          container.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-2 text-xs"><div class="flex justify-between items-center"><p class="font-bold text-sm text-on-surface">${cat}</p><span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${badgeClass}">${badgeText}</span></div><div class="flex justify-between text-[10px] text-gray-500 mb-1"><span>Terpakai: <b class="${isOver ? 'text-error' : 'text-on-surface'}">${formatRpKebalSensor(spent)}</b></span><span>Limit: <b class="text-on-surface font-mono-data">${formatRpKebalSensor(limit)}</b></span></div><div class="w-full bg-gray-200 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden"><div class="${barColor} h-2.5 rounded-full transition-all duration-500" style="width: ${pct}%"></div></div></div>`;
+          let barColor = isOver ? 'bg-red-500' : (pct > 80 ? 'bg-orange-500' : 'bg-green-500'); let badgeClass = isOver ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'; let badgeText = isOver ? 'OVER' : 'Sisa: ' + formatRpKebalSensor(sisa); 
+          container.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 border rounded-xl space-y-2 text-xs"><div class="flex justify-between items-center"><p class="font-bold text-sm">${cat}</p><span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${badgeClass}">${badgeText}</span></div><div class="flex justify-between text-[10px] text-gray-500 mb-1"><span>Terpakai: <b class="${isOver ? 'text-error' : ''}">${formatRpKebalSensor(spent)}</b></span><span>Limit: <b class="font-mono-data">${formatRpKebalSensor(limit)}</b></span></div><div class="w-full bg-gray-200 h-2.5 rounded-full overflow-hidden"><div class="${barColor} h-2.5 rounded-full" style="width: ${pct}%"></div></div></div>`;
         }
       });
-      if (!hasActiveBudget) container.innerHTML = '<p class="text-center text-gray-500 text-xs py-2">Belum ada nominal budget yang diatur. Silakan atur limit pengeluaran di menu Setup.</p>';
+      if (!hasActiveBudget) container.innerHTML = '<p class="text-center text-gray-500 text-xs py-2">Belum ada nominal budget yang diatur.</p>';
     }
 
     function updateBudgetLimit(cat, val) { if (!globalData.monthlyBudgets) globalData.monthlyBudgets = {}; globalData.monthlyBudgets[cat] = parseFloat(val.replace(/\./g, '')) || 0; saveStorageData(); renderDashboard(); }
@@ -831,23 +800,21 @@
     function renderInvestRecap() {
       let grid = document.getElementById('invest-recap-grid'); if (!grid) return; grid.innerHTML = ''; if (!globalData.investData) return;
       Object.keys(globalData.investData).forEach(k => { let item = globalData.investData[k]; let flow = getCategoryCashflowNet(k); let totalMoney = (item.initial || 0) + flow.net; let used = (item.used || 0) + flow.used; let sisa = totalMoney - used;
-        grid.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-1 text-xs"><p class="font-bold text-primary dark:text-blue-400 text-sm">${k}</p><div class="flex justify-between"><span>Saldo Awal + Masuk:</span><span class="font-mono-data font-bold">${formatRp(totalMoney)}</span></div><div class="flex justify-between text-error"><span>Terpakai (Used):</span><span class="font-mono-data font-bold">${formatRp(used)}</span></div><div class="flex justify-between text-green-600 dark:text-green-400 font-bold border-t border-outline-variant/40 pt-1"><span>Sisa Uang:</span><span class="font-mono-data">${formatRp(sisa)}</span></div></div>`;
+        grid.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 border rounded-xl space-y-1 text-xs"><p class="font-bold text-primary">${k}</p><div class="flex justify-between"><span>Total:</span><span class="font-mono-data font-bold">${formatRp(totalMoney)}</span></div><div class="flex justify-between text-error"><span>Terpakai:</span><span class="font-mono-data font-bold">${formatRp(used)}</span></div><div class="flex justify-between text-green-600 font-bold border-t pt-1"><span>Sisa:</span><span class="font-mono-data">${formatRp(sisa)}</span></div></div>`;
       });
     }
 
     function renderSinkingRecap() {
       let container = document.getElementById('sinking-recap-grid'); if (!container) return; container.innerHTML = ''; if (!globalData.sinkingData) return; let today = new Date();
-      Object.keys(globalData.sinkingData).forEach(k => { let item = globalData.sinkingData[k]; let flow = getCategoryCashflowNet(k); let targetPerMonth = (item.target || 0) / (item.durationMonths || 1); let current = (item.initial || 0) + flow.net; let used = (item.used || 0) + flow.used; let sisa = current - used; let daysLeftText = "Durasi Terjadwal";
-        if (item.deadline) { let diffDays = Math.ceil((new Date(item.deadline) - today) / (1000 * 60 * 60 * 24)); daysLeftText = diffDays > 0 ? (Math.floor(diffDays / 30) > 0 ? `${Math.floor(diffDays/30)} Bulan` : `${diffDays} Hari lagi`) : "Lewat"; }
-        let pct = Math.min(100, Math.round((current / (item.target || 1)) * 100));
-        container.innerHTML += `<div class="p-3.5 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-2.5 text-xs"><div class="flex justify-between items-center"><p class="font-bold text-tertiary dark:text-indigo-400 text-sm">${k}</p><span class="text-[10px] px-2.5 py-0.5 bg-tertiary/10 text-tertiary dark:text-indigo-300 rounded-full font-bold">Sisa Waktu: ${daysLeftText}</span></div><div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-[11px]"><div><span class="text-gray-500">Target Nominal:</span><br/><b class="font-mono-data">${formatRp(item.target)}</b></div><div><span class="text-gray-500">Target / Bulan:</span><br/><b class="font-mono-data text-primary dark:text-blue-400">${formatRp(targetPerMonth)}</b></div><div><span class="text-gray-500">Terkumpul (Cashflow):</span><br/><b class="font-mono-data text-green-600 dark:text-green-400">${formatRp(current)}</b></div><div><span class="text-gray-500">Terpakai:</span><br/><b class="font-mono-data text-error">${formatRp(used)}</b></div></div><div><div class="flex justify-between text-[10px] font-bold mb-1"><span>Progress (${pct}%)</span><span>Sisa Uang: ${formatRp(sisa)}</span></div><div class="w-full bg-gray-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden"><div class="bg-tertiary dark:bg-indigo-500 h-2 rounded-full" style="width: ${pct}%"></div></div></div></div>`;
+      Object.keys(globalData.sinkingData).forEach(k => { let item = globalData.sinkingData[k]; let flow = getCategoryCashflowNet(k); let current = (item.initial || 0) + flow.net; let used = (item.used || 0) + flow.used; let sisa = current - used; let pct = Math.min(100, Math.round((current / (item.target || 1)) * 100));
+        container.innerHTML += `<div class="p-3 bg-surface border rounded-xl space-y-2 text-xs"><div class="flex justify-between items-center"><p class="font-bold text-tertiary">${k}</p><span class="text-[10px] px-2 py-0.5 bg-tertiary/10 text-tertiary rounded-full font-bold">Target: ${formatRp(item.target)}</span></div><div class="flex justify-between text-[10px]"><span>Terkumpul: <b>${formatRp(current)}</b></span><span>Sisa: <b>${formatRp(sisa)}</b></span></div><div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden"><div class="bg-tertiary h-2 rounded-full" style="width: ${pct}%"></div></div></div>`;
       });
     }
 
     function renderGoalsRecap() {
       let container = document.getElementById('goals-recap-grid'); if (!container) return; container.innerHTML = ''; if (!globalData.goalsData) return;
       Object.keys(globalData.goalsData).forEach(k => { let item = globalData.goalsData[k]; let flow = getCategoryCashflowNet(k); let current = (item.initial || 0) + flow.net; let used = (item.used || 0) + flow.used; let sisa = current - used; let pct = Math.min(100, Math.round((current / (item.target || 1)) * 100));
-        container.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-2 text-xs"><div class="flex justify-between items-center"><p class="font-bold text-secondary dark:text-sky-400 text-sm">${k}</p><span class="text-[10px] px-2 py-0.5 bg-secondary/10 text-secondary dark:text-sky-300 rounded-full font-bold">Waktu: ${item.timeframeVal || '-'} ${item.timeframeUnit || 'Tahun'}</span></div><div class="grid grid-cols-4 gap-2 text-[11px]"><div><span class="text-gray-500">Target Nominal:</span><br/><b class="font-mono-data">${formatRp(item.target)}</b></div><div><span class="text-gray-500">Terkumpul:</span><br/><b class="font-mono-data text-green-600 dark:text-green-400">${formatRp(current)}</b></div><div><span class="text-gray-500">Terpakai:</span><br/><b class="font-mono-data text-error">${formatRp(used)}</b></div><div><span class="text-gray-500">Sisa Uang:</span><br/><b class="font-mono-data text-primary dark:text-blue-400">${formatRp(sisa)}</b></div></div><div><div class="flex justify-between text-[10px] font-bold mb-1"><span>Progress Goal (${pct}%)</span><span>Kekurangan Target: ${formatRp(item.target - current > 0 ? item.target - current : 0)}</span></div><div class="w-full bg-gray-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden"><div class="bg-secondary dark:bg-sky-500 h-2 rounded-full" style="width: ${pct}%"></div></div></div></div>`;
+        container.innerHTML += `<div class="p-3 bg-surface border rounded-xl space-y-2 text-xs"><div class="flex justify-between items-center"><p class="font-bold text-secondary">${k}</p><span class="text-[10px] px-2 py-0.5 bg-secondary/10 text-secondary rounded-full font-bold">Target: ${formatRp(item.target)}</span></div><div class="flex justify-between text-[10px]"><span>Terkumpul: <b>${formatRp(current)}</b></span><span>Sisa: <b>${formatRp(sisa)}</b></span></div><div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden"><div class="bg-secondary h-2 rounded-full" style="width: ${pct}%"></div></div></div>`;
       });
     }
 
@@ -856,7 +823,7 @@
       Object.keys(globalData.receivablesData).forEach(k => { let item = globalData.receivablesData[k]; let paid = parseFloat(item.paid) || 0;
         if (globalData.recentHistory) globalData.recentHistory.forEach(tx => { if (tx.category === k && tx.cashflow === 'Pelunasan Piutang') paid += tx.amount; });
         let remaining = (parseFloat(item.total) || 0) - paid;
-        container.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-2 text-xs"><div class="flex justify-between items-center"><p class="font-bold text-emerald-600 dark:text-emerald-400 text-sm">${k}</p><span class="text-[10px] px-2 py-0.5 bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 rounded-full font-bold">Deadline: ${item.deadline || '-'}</span></div><div class="grid grid-cols-3 gap-2 text-[11px]"><div><span class="text-gray-500">Total Piutang:</span><br/><b class="font-mono-data">${formatRp(item.total)}</b></div><div><span class="text-gray-500">Sudah Dibayar:</span><br/><b class="font-mono-data text-green-600 dark:text-green-400">${formatRp(paid)}</b></div><div><span class="text-gray-500">Belum Dibayar:</span><br/><b class="font-mono-data text-error">${formatRp(remaining > 0 ? remaining : 0)}</b></div></div></div>`;
+        container.innerHTML += `<div class="p-3 bg-surface border rounded-xl space-y-2 text-xs"><div class="flex justify-between items-center"><p class="font-bold text-emerald-600">${k}</p><span class="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full font-bold">Deadline: ${item.deadline || '-'}</span></div><div class="grid grid-cols-3 gap-2 text-[11px]"><div>Total: <b class="font-mono-data">${formatRp(item.total)}</b></div><div>Bayar: <b class="font-mono-data text-green-600">${formatRp(paid)}</b></div><div>Sisa: <b class="font-mono-data text-error">${formatRp(remaining > 0 ? remaining : 0)}</b></div></div></div>`;
       });
     }
 
@@ -933,7 +900,7 @@
 
     function populateFormDropdowns() {
       let adminAcc = document.getElementById('tx-admin-account');
-      if (adminAcc && globalData.accounts) { adminAcc.innerHTML = `<option value="" data-i18n="opt_same_acc">${TRANSLATIONS[currentLang].opt_same_acc}</option>`; globalData.accounts.forEach(a => { adminAcc.innerHTML += `<option value="${a}">${a}</option>`; }); }
+      if (adminAcc && globalData.accounts) { adminAcc.innerHTML = `<option value="">Sama dengan Dari Account</option>`; globalData.accounts.forEach(a => { adminAcc.innerHTML += `<option value="${a}">${a}</option>`; }); }
     }
 
     function applyCashflowLogic() {
@@ -959,8 +926,7 @@
       e.preventDefault();
       let dDate = document.getElementById('tx-date').value; let dName = document.getElementById('tx-name').value; let rawAmount = document.getElementById('tx-amount').value.replace(/\./g, ''); let dAmount = parseFloat(rawAmount) || 0;
       let dCashflow = document.getElementById('tx-cashflow').value; let dCategory = getSelectedValueDirect('tx-category'); let dDari = getSelectedValueDirect('tx-dari'); let dKe = getSelectedValueDirect('tx-ke');
-      let rawAdmin = document.getElementById('tx-admin-fee').value.replace(/\./g, ''); let dAdminFee = parseFloat(rawAdmin) || 0; let dAdminAcc = document.getElementById('tx-admin-account').value || dDari;
-      let timeFormatted = formatFullDateTime(dDate);
+      let rawAdmin = document.getElementById('tx-admin-fee').value.replace(/\./g, ''); let dAdminFee = parseFloat(rawAdmin) || 0; let dAdminAcc = document.getElementById('tx-admin-account').value || dDari; let timeFormatted = formatFullDateTime(dDate);
       if (!globalData.currentBalances) globalData.currentBalances = {};
       if (dDari !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(dDari)) globalData.currentBalances[dDari] -= dAmount;
       if (dKe !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(dKe)) globalData.currentBalances[dKe] += dAmount;
@@ -971,8 +937,7 @@
     }
 
     function renderHistoryTable() {
-      let tbody = document.getElementById('tx-history-tbody'); if (!tbody) return; tbody.innerHTML = '';
-      let historyList = globalData.recentHistory || []; if (historyList.length === 0) { tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400" data-i18n="empty_tx">Belum ada transaksi diinput.</td></tr>`; return; }
+      let tbody = document.getElementById('tx-history-tbody'); if (!tbody) return; tbody.innerHTML = ''; let historyList = globalData.recentHistory || []; if (historyList.length === 0) { tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400">Belum ada transaksi diinput.</td></tr>`; return; }
       let filterCashflow = document.getElementById('rep-filter-cashflow') ? document.getElementById('rep-filter-cashflow').value : 'all'; let filterAcc = document.getElementById('rep-filter-account') ? document.getElementById('rep-filter-account').value : 'all';
       let filterMode = document.getElementById('rep-filter-mode') ? document.getElementById('rep-filter-mode').value : 'all'; let startDate = document.getElementById('rep-date-start') ? document.getElementById('rep-date-start').value : ''; let endDate = document.getElementById('rep-date-end') ? document.getElementById('rep-date-end').value : ''; let exactDate = document.getElementById('rep-exact-date') ? document.getElementById('rep-exact-date').value : ''; let exactMonth = document.getElementById('rep-exact-month') ? document.getElementById('rep-exact-month').value : ''; let exactYear = document.getElementById('rep-exact-year') ? document.getElementById('rep-exact-year').value : '';
       let filteredList = historyList.filter(tx => {
@@ -989,11 +954,7 @@
       });
     }
 
-    function openEditModal(idx) {
-      let tx = globalData.recentHistory[idx]; if (!tx) return; document.getElementById('edit-tx-index').value = idx; document.getElementById('edit-tx-name').value = tx.name || ''; document.getElementById('edit-tx-amount').value = (tx.amount || 0).toLocaleString('id-ID'); document.getElementById('edit-tx-category').value = tx.category || ''; document.getElementById('edit-tx-dari').value = tx.dariAcc || ''; document.getElementById('edit-tx-ke').value = tx.keAcc || '';
-      let modal = document.getElementById('edit-tx-modal'), card = document.getElementById('edit-tx-card'); modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); card.classList.add('scale-100'); }, 10);
-    }
-
+    function openEditModal(idx) { let tx = globalData.recentHistory[idx]; if (!tx) return; document.getElementById('edit-tx-index').value = idx; document.getElementById('edit-tx-name').value = tx.name || ''; document.getElementById('edit-tx-amount').value = (tx.amount || 0).toLocaleString('id-ID'); document.getElementById('edit-tx-category').value = tx.category || ''; document.getElementById('edit-tx-dari').value = tx.dariAcc || ''; document.getElementById('edit-tx-ke').value = tx.keAcc || ''; let modal = document.getElementById('edit-tx-modal'), card = document.getElementById('edit-tx-card'); modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); card.classList.add('scale-100'); }, 10); }
     function closeEditModal() { let modal = document.getElementById('edit-tx-modal'), card = document.getElementById('edit-tx-card'); modal.classList.add('opacity-0'); card.classList.remove('scale-100'); card.classList.add('scale-95'); setTimeout(() => modal.classList.add('hidden'), 300); }
 
     function saveEditedTransaction() {
@@ -1015,7 +976,6 @@
     }
 
     function formatFullDateTime(dateStr) { let days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"]; let months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"]; let now = new Date(); let hours = String(now.getHours()).padStart(2, '0'), mins = String(now.getMinutes()).padStart(2, '0'); if (!dateStr) return `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()} (${hours}:${mins})`; let p = dateStr.split('-'); let dObj = new Date(p[0], parseInt(p[1], 10) - 1, p[2]); return `${days[dObj.getDay()]}, ${p[2]} ${months[dObj.getMonth()]} ${p[0]} (${hours}:${mins})`; }
-
     function showSuccessModal(data, hasAdmin, adminFee) { let modal = document.getElementById('success-modal'), card = document.getElementById('success-card'), msg = document.getElementById('success-msg-text'); var adminInfo = hasAdmin ? `<br/><span class="text-xs text-primary dark:text-blue-400 font-bold">+ Biaya Admin (${formatRp(adminFee)}) dicatat terpisah.</span>` : ""; msg.innerHTML = `Transaksi berhasil dicatat ke sistem!${adminInfo}<br/><br/><b>Detail:</b> ${data.name} (${formatRp(data.amount)})<br/><b>Category:</b> ${data.category}<br/><b>Dari:</b> ${data.dariAcc} ➔ <b>Ke:</b> ${data.keAcc}`; modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); card.classList.add('scale-100'); }, 10); }
     function closeSuccessModal() { let modal = document.getElementById('success-modal'), card = document.getElementById('success-card'); modal.classList.add('opacity-0'); card.classList.remove('scale-100'); card.classList.add('scale-95'); setTimeout(() => modal.classList.add('hidden'), 300); }
 
