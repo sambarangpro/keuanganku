@@ -306,7 +306,7 @@
             </div>
             <div id="admin-fields" class="hidden grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
               <div><label class="text-[10px] uppercase font-bold text-on-surface-variant">Nominal Admin (Rp)</label><input type="text" id="tx-admin-fee" placeholder="0" oninput="formatInputNominal(this)" class="w-full p-2 border border-outline rounded-lg text-sm font-mono-data bg-surface"></div>
-              <div><label class="text-[10px] uppercase font-bold text-on-surface-variant">Potong Dari Akun</label><select id="tx-admin-account" class="w-full p-2 border border-outline rounded-lg text-sm bg-white dark:bg-slate-900 text-on-surface font-medium"><option value="">Sama dengan Dari Account</option></select></div>
+              <div><label class="text-[10px] uppercase font-bold text-on-surface-variant">Potong Dari Akun</label><select id="tx-admin-account" class="w-full p-2 border border-outline rounded-lg text-sm bg-surface"><option value="">Sama dengan Dari Account</option></select></div>
             </div>
           </div>
 
@@ -341,7 +341,7 @@
         </div>
 
         <div id="report-printable-area" class="bg-white dark:bg-slate-800 rounded-2xl border p-4 shadow-sm space-y-3">
-          <div class="flex justify-between items-center border-b pb-2"><span class="text-xs font-extrabold text-primary uppercase tracking-wider">Tabel Data Rekam Transaksi</span><b class="text-[10px] text-gray-400">KEUANGANKU PLANNER</b></div>
+          <div class="flex justify-between items-center border-b pb-2"><span class="text-xs font-extrabold text-primary uppercase tracking-wider">Tabel Data Rekam Transaksi</span></div>
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse text-xs">
               <thead>
@@ -451,7 +451,6 @@
             </div>
           </button>
 
-          <!-- TAMBAHAN: TOMBOL KALKULATOR MURABAHAH -->
           <button onclick="openCalcSub('calc-sub-murabahah')" class="p-5 bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl shadow-sm hover:border-primary transition-all text-left flex items-start gap-4 group">
             <div class="p-3 bg-purple-100 dark:bg-purple-950 text-purple-600 rounded-xl group-hover:scale-110 transition-transform"><span class="material-symbols-outlined text-2xl">two_wheeler</span></div>
             <div>
@@ -581,30 +580,22 @@
           </div>
         </div>
 
-        <!-- TAMBAHAN: SUB KALKULATOR PEMBIAYAAN MURABAHAH -->
+        <!-- SUB: KALKULATOR PEMBIAYAAN MURABAHAH -->
         <div id="calc-sub-murabahah" class="calc-sub-item hidden bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-6 space-y-4 shadow-sm">
           <h3 class="font-bold text-base text-purple-600 flex items-center gap-2"><span class="material-symbols-outlined">two_wheeler</span> Kalkulator Pembiayaan (Murabahah)</h3>
           
           <div class="space-y-3 text-xs">
             <div>
               <label class="font-bold text-gray-500">Harga Barang Asli (Rp)</label>
-              <input type="text" id="mur-harga" placeholder="Contoh: 25.000.000" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-xl font-mono-data bg-surface text-on-surface mt-1 outline-none">
+              <input type="text" id="mur-harga" placeholder="Contoh: 25.000.000" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-xl font-mono-data bg-surface text-on-surface mt-1 outline-none font-bold focus:border-primary">
             </div>
             <div>
               <label class="font-bold text-gray-500">Uang Muka / DP (Rp)</label>
-              <input type="text" id="mur-dp" placeholder="0 (Kosongkan jika tanpa DP)" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-xl font-mono-data bg-surface text-on-surface mt-1 outline-none">
+              <input type="text" id="mur-dp" placeholder="0 (Kosongkan jika tanpa DP)" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-xl font-mono-data bg-surface text-on-surface mt-1 outline-none font-bold focus:border-primary">
             </div>
             <div>
               <label class="font-bold text-gray-500">Tenor / Durasi Cicilan (Bulan)</label>
-              <select id="mur-tenor" class="w-full p-2 border rounded-xl bg-surface text-on-surface mt-1 font-bold outline-none cursor-pointer">
-                <option value="6">6 Bulan</option>
-                <option value="12" selected>12 Bulan (1 Tahun)</option>
-                <option value="18">18 Bulan (1.5 Tahun)</option>
-                <option value="24">24 Bulan (2 Tahun)</option>
-                <option value="36">36 Bulan (3 Tahun)</option>
-                <option value="48">48 Bulan (4 Tahun)</option>
-                <option value="60">60 Bulan (5 Tahun)</option>
-              </select>
+              <input type="number" id="mur-tenor" value="12" min="1" placeholder="Berapa bulan?" class="w-full p-2 border rounded-xl font-mono-data bg-surface text-on-surface mt-1 outline-none font-bold focus:border-primary">
             </div>
             
             <div class="p-3 bg-surface-container dark:bg-slate-900 rounded-xl border border-outline-variant space-y-2 mt-2">
@@ -614,10 +605,10 @@
                 <option value="fix_pct">Margin Fix (%) dari Pokok di Awal</option>
                 <option value="annual_pct" selected>Margin Dinamis (% per Tahun)</option>
               </select>
-              <input type="text" id="mur-margin-val" placeholder="Masukkan Angka / Persentase..." oninput="formatInputNominal(this)" class="w-full p-2 border rounded-lg font-mono-data bg-white dark:bg-slate-800 text-on-surface mt-1 outline-none">
+              <input type="text" id="mur-margin-val" placeholder="Masukkan Angka / Persentase..." oninput="formatInputNominal(this)" class="w-full p-2 border rounded-lg font-mono-data bg-white dark:bg-slate-800 text-on-surface mt-1 outline-none font-bold">
             </div>
 
-            <!-- TOGGLE INFLASI CERDAS -->
+            <!-- TOGGLE INFLASI -->
             <div class="flex items-center gap-2 mt-2 pt-2 border-t border-outline-variant">
               <input type="checkbox" id="mur-inflasi-toggle" onchange="document.getElementById('mur-inflasi-box').classList.toggle('hidden', !this.checked)" class="rounded border-outline-variant text-purple-600 focus:ring-purple-500 w-4 h-4 cursor-pointer">
               <label for="mur-inflasi-toggle" class="font-bold text-gray-500 cursor-pointer">Pertimbangkan Inflasi & Risiko?</label>
@@ -632,9 +623,7 @@
             <button onclick="calculateMurabahah()" class="w-full py-3 bg-purple-600 text-white font-bold rounded-xl shadow mt-4 hover:brightness-110 transition-all">Kalkulasi Simulasi Akad</button>
 
             <!-- KOTAK HASIL -->
-            <div id="calc-mur-result" class="hidden p-4 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 rounded-xl mt-3 space-y-2">
-               <!-- Di-inject via JS -->
-            </div>
+            <div id="calc-mur-result" class="hidden p-4 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 rounded-xl mt-3 space-y-2"></div>
 
             <!-- PENJELASAN AKAD -->
             <div class="mt-4 p-4 bg-purple-100/50 border border-purple-200 rounded-xl">
@@ -746,7 +735,6 @@
     function formatRpKebalSensor(num) { return "Rp " + (parseFloat(num) || 0).toLocaleString('id-ID'); }
     function toggleDarkMode() { document.documentElement.classList.toggle('dark'); renderMonthlyChart(); if (typeof updateCategoryTrendChart === "function") updateCategoryTrendChart(); }
 
-    // --- FUNGSI SUB-MENU KALKULATOR ---
     function openCalcSub(subId) {
       document.getElementById('calc-menu-grid').classList.add('hidden'); document.getElementById('calc-sub-container').classList.remove('hidden');
       document.querySelectorAll('.calc-sub-item').forEach(el => el.classList.add('hidden')); document.getElementById(subId).classList.remove('hidden');
@@ -779,10 +767,8 @@
       currentHPPMode = mode;
       document.getElementById('btn-hpp-vendor').className = mode === 'vendor' ? "flex-1 py-1.5 bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 font-bold rounded shadow text-[10px] uppercase transition-all" : "flex-1 py-1.5 text-gray-500 font-bold rounded text-[10px] uppercase transition-all";
       document.getElementById('btn-hpp-mandiri').className = mode === 'mandiri' ? "flex-1 py-1.5 bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 font-bold rounded shadow text-[10px] uppercase transition-all" : "flex-1 py-1.5 text-gray-500 font-bold rounded text-[10px] uppercase transition-all";
-      
       document.getElementById('hpp-form-vendor').classList.toggle('hidden', mode !== 'vendor');
       document.getElementById('hpp-form-mandiri').classList.toggle('hidden', mode !== 'mandiri');
-      
       document.getElementById('hpp-akad-vendor').classList.toggle('hidden', mode !== 'vendor');
       document.getElementById('hpp-akad-mandiri').classList.toggle('hidden', mode !== 'mandiri');
       document.getElementById('calc-hpp-result').classList.add('hidden');
@@ -790,69 +776,45 @@
 
     function calculateHPPDynamic() {
       let hppPerPcs = 0; let totalHPPOrder = 0; let name = ""; let qty = 1;
-      
-      const getCostPerPcs = (inputId, typeId, quantity) => {
-        let val = parseFloat(document.getElementById(inputId).value.replace(/\./g, '')) || 0;
-        let type = document.getElementById(typeId).value;
-        return type === 'total' ? (val / quantity) : val;
-      };
+      const getCostPerPcs = (inputId, typeId, quantity) => { let val = parseFloat(document.getElementById(inputId).value.replace(/\./g, '')) || 0; let type = document.getElementById(typeId).value; return type === 'total' ? (val / quantity) : val; };
 
       if (currentHPPMode === 'vendor') {
         name = document.getElementById('hpp-v-name').value || "Order Konveksi / Maklon";
-        qty = parseInt(document.getElementById('hpp-v-qty').value) || 1;
-        if(qty < 1) qty = 1;
-        
+        qty = parseInt(document.getElementById('hpp-v-qty').value) || 1; if(qty < 1) qty = 1;
         let hargaVendor = getCostPerPcs('hpp-v-harga', 'hpp-v-harga-tipe', qty);
         let transport = getCostPerPcs('hpp-v-ongkir', 'hpp-v-ongkir-tipe', qty);
         let pack = getCostPerPcs('hpp-v-pack', 'hpp-v-pack-tipe', qty);
-        
-        hppPerPcs = hargaVendor + transport + pack;
-        totalHPPOrder = hppPerPcs * qty;
+        hppPerPcs = hargaVendor + transport + pack; totalHPPOrder = hppPerPcs * qty;
       } else {
         name = document.getElementById('hpp-m-name').value || "Kaos Custom Sablon";
-        qty = parseInt(document.getElementById('hpp-m-qty').value) || 1;
-        if(qty < 1) qty = 1;
-        
+        qty = parseInt(document.getElementById('hpp-m-qty').value) || 1; if(qty < 1) qty = 1;
         let kaos = getCostPerPcs('hpp-m-kaos', 'hpp-m-kaos-tipe', qty);
         let dtf = getCostPerPcs('hpp-m-dtf', 'hpp-m-dtf-tipe', qty);
         let op = getCostPerPcs('hpp-m-op', 'hpp-m-op-tipe', qty);
         let pack = getCostPerPcs('hpp-m-pack', 'hpp-m-pack-tipe', qty);
-        
-        hppPerPcs = kaos + dtf + op + pack;
-        totalHPPOrder = hppPerPcs * qty;
+        hppPerPcs = kaos + dtf + op + pack; totalHPPOrder = hppPerPcs * qty;
       }
 
       if (totalHPPOrder <= 0) { alert("Mohon isi komponen biaya modal (HPP) terlebih dahulu!"); return; }
 
       let marginPct = parseFloat(document.getElementById('hpp-margin-pct').value) || 0;
-      let profitPerPcs = hppPerPcs * (marginPct / 100);
-      let hargaJualPerPcs = hppPerPcs + profitPerPcs;
-      let totalHargaJual = hargaJualPerPcs * qty;
-      let totalProfit = profitPerPcs * qty;
+      let profitPerPcs = hppPerPcs * (marginPct / 100); let hargaJualPerPcs = hppPerPcs + profitPerPcs;
+      let totalHargaJual = hargaJualPerPcs * qty; let totalProfit = profitPerPcs * qty;
 
       let resBox = document.getElementById('calc-hpp-result');
-      resBox.innerHTML = `
-        <p class="text-[13px] text-emerald-800 dark:text-emerald-300 font-bold border-b border-emerald-200 dark:border-emerald-700 pb-1.5 uppercase">${name} (${qty} Pcs)</p>
-        <div class="grid grid-cols-2 gap-2 mt-2 border-b border-emerald-200 dark:border-emerald-700 pb-2">
-          <div><p class="text-[9px] text-gray-500 uppercase font-bold">HPP Modal / Pcs</p><p class="text-sm font-mono-data font-bold text-gray-700 dark:text-gray-300">${formatRpKebalSensor(hppPerPcs)}</p></div>
-          <div><p class="text-[9px] text-gray-500 uppercase font-bold">Total Modal Orderan</p><p class="text-sm font-mono-data font-bold text-gray-700 dark:text-gray-300">${formatRpKebalSensor(totalHPPOrder)}</p></div>
-        </div>
-        <div class="flex justify-between text-[11px] text-emerald-600 dark:text-emerald-400 mt-2 font-bold">
-          <span>Total Target Profit (+${marginPct}%):</span> <b class="font-mono-data">+ ${formatRpKebalSensor(totalProfit)}</b>
-        </div>
-        <div class="mt-3 bg-white dark:bg-slate-900 p-3 rounded-lg border border-emerald-100 dark:border-emerald-800 shadow-sm text-center">
-          <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Harga Jual Rekomendasi / Pcs</p>
-          <p class="text-2xl font-mono-data font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">${formatRpKebalSensor(Math.ceil(hargaJualPerPcs))}</p>
-          <p class="text-[10px] text-gray-500 mt-1 font-bold">Total Omzet Estimasi = ${formatRpKebalSensor(Math.ceil(totalHargaJual))}</p>
-        </div>`;
+      resBox.innerHTML = `<p class="text-[13px] text-emerald-800 dark:text-emerald-300 font-bold border-b border-emerald-200 dark:border-emerald-700 pb-1.5 uppercase">${name} (${qty} Pcs)</p><div class="grid grid-cols-2 gap-2 mt-2 border-b border-emerald-200 dark:border-emerald-700 pb-2"><div><p class="text-[9px] text-gray-500 uppercase font-bold">HPP Modal / Pcs</p><p class="text-sm font-mono-data font-bold text-gray-700 dark:text-gray-300">${formatRpKebalSensor(hppPerPcs)}</p></div><div><p class="text-[9px] text-gray-500 uppercase font-bold">Total Modal Orderan</p><p class="text-sm font-mono-data font-bold text-gray-700 dark:text-gray-300">${formatRpKebalSensor(totalHPPOrder)}</p></div></div><div class="flex justify-between text-[11px] text-emerald-600 dark:text-emerald-400 mt-2 font-bold"><span>Total Target Profit (+${marginPct}%):</span> <b class="font-mono-data">+ ${formatRpKebalSensor(totalProfit)}</b></div><div class="mt-3 bg-white dark:bg-slate-900 p-3 rounded-lg border border-emerald-100 dark:border-emerald-800 shadow-sm text-center"><p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Harga Jual Rekomendasi / Pcs</p><p class="text-2xl font-mono-data font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">${formatRpKebalSensor(Math.ceil(hargaJualPerPcs))}</p><p class="text-[10px] text-gray-500 mt-1 font-bold">Total Omzet Estimasi = ${formatRpKebalSensor(Math.ceil(totalHargaJual))}</p></div>`;
       resBox.classList.remove('hidden');
     }
 
-    // 3. KALKULATOR PEMBIAYAAN MURABAHAH (TAMBAHAN BARU)
+    // 3. KALKULATOR PEMBIAYAAN MURABAHAH (DENGAN TENOR FLEKSIBEL)
     function calculateMurabahah() {
       let hargaBarang = parseFloat(document.getElementById('mur-harga').value.replace(/\./g, '')) || 0;
       let dp = parseFloat(document.getElementById('mur-dp').value.replace(/\./g, '')) || 0;
+      
+      // Mengambil data dari input number bebas
       let tenorBulan = parseInt(document.getElementById('mur-tenor').value) || 12;
+      if(tenorBulan <= 0) tenorBulan = 1; // Mencegah error pembagian 0 jika user iseng ketik 0
+
       let marginType = document.getElementById('mur-margin-type').value;
       let marginValRaw = document.getElementById('mur-margin-val').value.replace(/\./g, '');
       let marginVal = parseFloat(marginValRaw) || 0;
@@ -931,7 +893,7 @@
         if (item.deadline) {
           let dDate = new Date(item.deadline); dDate.setHours(0,0,0,0); let diffDays = Math.ceil((dDate - today) / (1000 * 60 * 60 * 24));
           if (diffDays <= 3 && diffDays >= 0) {
-            let timeText = diffDays === 0 ? "JATUH TEMPO PENAGIHAN HARI INI!" : `Deadline ${diffDays} Hari Lagi (${item.deadline})`;
+            let timeText = diffDays === 0 ? "JATUH TEMPO HARI INI!" : `Deadline ${diffDays} Hari Lagi (${item.deadline})`;
             container.innerHTML += `<div class="bg-emerald-600 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between border-2 border-emerald-800 animate-pulse"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-3xl">notification_important</span><div><h4 class="font-extrabold text-sm uppercase">WAKTUNYA MENAGIH: ${k}</h4><p class="text-xs text-emerald-100 font-medium">Nominal: <b>${formatRp(item.total)}</b> | ${timeText}</p></div></div><button onclick="navTo('transaksi')" class="px-3 py-1.5 bg-white text-emerald-800 font-bold rounded-xl text-xs shadow">Pelunasan</button></div>`;
           }
         }
