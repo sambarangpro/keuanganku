@@ -383,7 +383,7 @@
                 <option value="3" data-i18n="m_apr">April</option>
                 <option value="4" data-i18n="m_mei">Mei</option>
                 <option value="5" data-i18n="m_jun">Juni</option>
-                <option value="6" selected data-i18n="m_jul">Juli</option>
+                <option value="6" data-i18n="m_jul">Juli</option>
                 <option value="7" data-i18n="m_agu">Agustus</option>
                 <option value="8" data-i18n="m_sep">September</option>
                 <option value="9" data-i18n="m_okt">Oktober</option>
@@ -644,7 +644,109 @@
       </footer>
     </div>
 
-    <!-- PAGE 3: SETUP -->
+    <!-- PAGE 3: LAMAN KHUSUS KALKULATOR (NEW FEATURE) -->
+    <div id="page-kalkulator" class="hidden space-y-6">
+      
+      <!-- MENU UTAMA KALKULATOR (GRID NAVIGATION) -->
+      <div id="calc-menu-grid" class="space-y-4">
+        <div>
+          <h2 class="font-headline-md font-bold text-on-surface text-xl">Kalkulator Finansial & Bisnis</h2>
+          <p class="text-xs text-gray-500">Pilih jenis kalkulator cerdas untuk membantu perencanaan Anda.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Tombol 1: Daily Budget Pacing -->
+          <button onclick="openCalcSub('calc-sub-pacing')" class="p-5 bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl shadow-sm hover:border-primary transition-all text-left flex items-start gap-4 group">
+            <div class="p-3 bg-blue-100 dark:bg-blue-950 text-primary rounded-xl group-hover:scale-110 transition-transform">
+              <span class="material-symbols-outlined text-2xl">today</span>
+            </div>
+            <div>
+              <h3 class="font-bold text-sm text-on-surface group-hover:text-primary">Daily Budget Pacing</h3>
+              <p class="text-[11px] text-gray-500 mt-1">Hitung batas aman pengeluaran harian Anda agar tidak kebablasan sebelum akhir bulan.</p>
+            </div>
+          </button>
+
+          <!-- Tombol 2: Kalkulator HPP & Margin -->
+          <button onclick="openCalcSub('calc-sub-hpp')" class="p-5 bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl shadow-sm hover:border-primary transition-all text-left flex items-start gap-4 group">
+            <div class="p-3 bg-emerald-100 dark:bg-emerald-950 text-emerald-600 rounded-xl group-hover:scale-110 transition-transform">
+              <span class="material-symbols-outlined text-2xl">inventory_2</span>
+            </div>
+            <div>
+              <h3 class="font-bold text-sm text-on-surface group-hover:text-primary">HPP & Profit Margin</h3>
+              <p class="text-[11px] text-gray-500 mt-1">Hitung Harga Pokok Penjualan produk/jasa, rekomendasi harga jual, & limit diskon.</p>
+            </div>
+          </button>
+
+          <!-- Tombol 3: Pembiayaan Motor / Murabahah -->
+          <button onclick="openCalcSub('calc-sub-murabahah')" class="p-5 bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl shadow-sm hover:border-primary transition-all text-left flex items-start gap-4 group">
+            <div class="p-3 bg-purple-100 dark:bg-purple-950 text-purple-600 rounded-xl group-hover:scale-110 transition-transform">
+              <span class="material-symbols-outlined text-2xl">two_wheeler</span>
+            </div>
+            <div>
+              <h3 class="font-bold text-sm text-on-surface group-hover:text-primary">Pembiayaan Motor (Murabahah)</h3>
+              <p class="text-[11px] text-gray-500 mt-1">Simulasi kredit mandiri (tanpa DP/dengan DP) memperhitungkan margin & inflasi.</p>
+            </div>
+          </button>
+
+          <!-- Tombol 4: Real Price & Worth-It Meter -->
+          <button onclick="openCalcSub('calc-sub-worthit')" class="p-5 bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl shadow-sm hover:border-primary transition-all text-left flex items-start gap-4 group">
+            <div class="p-3 bg-orange-100 dark:bg-orange-950 text-orange-600 rounded-xl group-hover:scale-110 transition-transform">
+              <span class="material-symbols-outlined text-2xl">psychology</span>
+            </div>
+            <div>
+              <h3 class="font-bold text-sm text-on-surface group-hover:text-primary">Real Price & Worth-It Meter</h3>
+              <p class="text-[11px] text-gray-500 mt-1">Ukur kelayakan membeli barang impian dibanding hari kerja & hitung harga net diskon.</p>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- TEMPAT TAMPILAN KALKULATOR TERPILIH (SUB-SCREENS) -->
+      <div id="calc-sub-container" class="hidden space-y-4">
+        <!-- Tombol Kembali ke Menu Utama Kalkulator -->
+        <button onclick="backToCalcMenu()" class="text-xs font-bold text-primary flex items-center gap-1 hover:underline">
+          <span class="material-symbols-outlined text-sm">arrow_back</span> Kembali ke Pilihan Kalkulator
+        </button>
+
+        <!-- SUB 1: KALKULATOR DAILY PACING -->
+        <div id="calc-sub-pacing" class="calc-sub-item hidden bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-6 space-y-4 shadow-sm">
+          <h3 class="font-bold text-base text-primary flex items-center gap-2"><span class="material-symbols-outlined">today</span> Daily Budget Pacing</h3>
+          <div class="space-y-3 text-xs">
+            <div>
+              <label class="font-bold text-gray-500">Sisa Budget Bulan Ini (Rp)</label>
+              <input type="text" id="calc-pacing-budget" placeholder="Misal: 1.500.000" oninput="formatInputNominal(this)" class="w-full p-2.5 border rounded-xl font-mono-data font-bold mt-1 bg-surface text-on-surface">
+            </div>
+            <button onclick="calculateDailyPacing()" class="w-full py-2.5 bg-primary text-white font-bold rounded-xl shadow">Hitung Jatah Harian</button>
+            <div id="calc-pacing-result" class="hidden p-4 bg-blue-50 dark:bg-blue-950/50 border border-blue-200 rounded-xl text-center">
+              <p class="text-xs text-blue-800 dark:text-blue-300 font-bold">Jatah Pengeluaran Maksimal Anda:</p>
+              <p id="calc-pacing-val" class="text-2xl font-mono-data font-extrabold text-primary mt-1">Rp 0 / Hari</p>
+              <p id="calc-pacing-note" class="text-[10px] text-gray-500 mt-1"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUB 2: KALKULATOR HPP (STANDBY UNTUK BUILD) -->
+        <div id="calc-sub-hpp" class="calc-sub-item hidden bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-6 space-y-4 shadow-sm">
+          <h3 class="font-bold text-base text-emerald-600 flex items-center gap-2"><span class="material-symbols-outlined">inventory_2</span> Kalkulator HPP & Margin Profit</h3>
+          <p class="text-xs text-gray-500">Form kalkulator HPP sedang disiapkan untuk tahap berikutnya...</p>
+        </div>
+
+        <!-- SUB 3: KALKULATOR MURABAHAH (STANDBY UNTUK BUILD) -->
+        <div id="calc-sub-murabahah" class="calc-sub-item hidden bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-6 space-y-4 shadow-sm">
+          <h3 class="font-bold text-base text-purple-600 flex items-center gap-2"><span class="material-symbols-outlined">two_wheeler</span> Kalkulator Pembiayaan Motor (Murabahah)</h3>
+          <p class="text-xs text-gray-500">Form kalkulator Pembiayaan Motor & Inflasi sedang disiapkan untuk tahap berikutnya...</p>
+        </div>
+
+        <!-- SUB 4: KALKULATOR WORTH-IT (STANDBY UNTUK BUILD) -->
+        <div id="calc-sub-worthit" class="calc-sub-item hidden bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-6 space-y-4 shadow-sm">
+          <h3 class="font-bold text-base text-orange-600 flex items-center gap-2"><span class="material-symbols-outlined">psychology</span> Worth-It Meter & Real Price</h3>
+          <p class="text-xs text-gray-500">Form kalkulator Psikologi Belanja sedang disiapkan untuk tahap berikutnya...</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- PAGE 4: SETUP -->
     <div id="page-setup" class="hidden space-y-6">
       
       <!-- LOCK SCREEN UNTUK SETUP -->
@@ -926,17 +1028,22 @@
 
   </main>
 
-  <!-- BOTTOM NAVBAR -->
+  <!-- BOTTOM NAVBAR (DENGAN TAB KALKULATOR BARU) -->
   <nav class="fixed bottom-0 left-0 w-full z-40 flex justify-around items-center py-2 bg-surface border-t border-outline-variant shadow-lg">
-    <button onclick="navTo('dashboard')" id="nav-dash" class="flex flex-col items-center text-primary px-4 py-1 font-bold">
+    <button onclick="navTo('dashboard')" id="nav-dash" class="flex flex-col items-center text-primary px-3 py-1 font-bold">
       <span class="material-symbols-outlined">dashboard</span>
       <span class="font-label-caps text-[10px] mt-0.5" data-i18n="nav_dash">Dashboard</span>
     </button>
-    <button onclick="navTo('transaksi')" id="nav-tx" class="flex flex-col items-center text-on-surface-variant px-4 py-1 hover:text-primary">
+    <button onclick="navTo('transaksi')" id="nav-tx" class="flex flex-col items-center text-on-surface-variant px-3 py-1 hover:text-primary">
       <span class="material-symbols-outlined">receipt_long</span>
       <span class="font-label-caps text-[10px] mt-0.5" data-i18n="nav_tx">Transaksi</span>
     </button>
-    <button onclick="navTo('setup')" id="nav-setup" class="flex flex-col items-center text-on-surface-variant px-4 py-1 hover:text-primary">
+    <!-- TAB BARU: KALKULATOR -->
+    <button onclick="navTo('kalkulator')" id="nav-calc" class="flex flex-col items-center text-on-surface-variant px-3 py-1 hover:text-primary">
+      <span class="material-symbols-outlined">calculate</span>
+      <span class="font-label-caps text-[10px] mt-0.5">Kalkulator</span>
+    </button>
+    <button onclick="navTo('setup')" id="nav-setup" class="flex flex-col items-center text-on-surface-variant px-3 py-1 hover:text-primary">
       <span class="material-symbols-outlined">settings</span>
       <span class="font-label-caps text-[10px] mt-0.5" data-i18n="nav_setup">Setup</span>
     </button>
@@ -949,10 +1056,10 @@
     Chart.register(ChartDataLabels);
 
     const TRANSLATIONS = {
-      id: { /* Teks Diringkas */
+      id: {
         brand_title: "KEUANGANKU", badge_cash: "Hanya Uang Kas", lbl_total_asset: "TOTAL ASSET & SAVINGS", lbl_asset_note: "*Akumulasi simpanan uang kas dari Invest/Savings, Sinking Fund, & Financial Goals.", lbl_total_bank: "AKUMULASI SELURUH REKENING", lbl_total_bank_sub: "Total Nominal Saldo Bank & E-Wallet Terkini", title_acc_balance: "Saldo Per Akun", badge_db_acc: "DATABASE AKUN", title_recap_analysis: "Rekapitulasi & Analisis Finansial", desc_invest: "Total Uang, Terpakai, & Sisa Uang", desc_sinking: "Target, Deadline, Target/Bln, Sisa Waktu, Progress & Sisa", desc_goals: "Target Nominal, Jangka Waktu, %, Terpakai, & Sisa", title_receivables: "Piutang (Orang Berutang ke Saya)", desc_receivables: "Total Piutang, Deadline Penagihan, & Status Pelunasan", title_nonmoney: "Aset Selain Uang & Peringatan Nisab Zakat", desc_nonmoney: "Emas (Gram), Perak (Gram), Tanah & Status Zakat", title_debt: "Utang & Cicilan", desc_debt: "Total, Paid, Unpaid, & Sisa Bulan Pembayaran", title_monthly_summary: "Monthly Financial Summary & Diagram Analisis", desc_monthly_summary: "Pilih Bulan & Analisis Diagram Pengeluaran", lbl_select_month: "Pilih Bulan Laporan:", chart_flow_title: "Perbandingan Cashflow Bulanan", chart_spending_title: "Klasemen Kategori Spending", title_tx_record: "Pencatatan Transaksi", desc_tx_record: "Input otomatis memperbarui saldo akun di Dashboard & tercatat di riwayat", lbl_tx_date: "Waktu / Tanggal", lbl_tx_name: "Nama Transaksi", lbl_tx_amount: "Nominal (Rp)", lbl_tx_cashflow: "Tipe Cashflow", opt_select_cf: "-- Pilih Cashflow --", lbl_tx_cat: "Category", lbl_tx_from: "Dari Account (Sumber)", lbl_tx_to: "Ke Account (Tujuan)", lbl_admin_fee: "Biaya Admin / Transaksi (Terpisah)", lbl_admin_nominal: "Nominal Admin (Rp)", lbl_admin_acc: "Potong Dari Akun", opt_same_acc: "Sama dengan Dari Account", btn_save_tx: "Simpan Transaksi", btn_cancel: "Batal", title_history: "Riwayat & Rekapitulasi Transaksi", desc_history: "Pilih Tanggal, Bulan, Tahun, atau Rentang Tanggal sesuai kebutuhan", btn_print_pdf: "Cetak PDF", lbl_filter_mode: "Mode Filter Waktu", f_all: "Semua Waktu", f_date: "Tanggal Tertentu", f_month: "Bulan Tertentu", f_year: "Tahun Tertentu", f_range: "Rentang Tanggal (Dari-Sampai)", lbl_date_start: "Dari Tanggal", lbl_date_end: "Sampai Tanggal", lbl_filter_cf: "Cashflow / Kategori", f_all_cf: "Semua Cashflow", table_header_title: "Tabel Data Rekam Transaksi", th_date: "Hari, Tgl & Jam", th_name: "Nama Transaksi", th_cf: "Cashflow", th_cat: "Kategori", th_from: "Dari Akun", th_to: "Ke Akun", th_nominal: "Nominal", empty_tx: "Belum ada transaksi diinput.", setup_lock_title: "Menu Setup Terkunci", setup_lock_desc: "Masukkan password pemilik akun untuk mengakses database master.", btn_unlock: "Buka Akses Setup", setup_db_title: "Pusat Konfigurasi Database", setup_db_desc: "Perbarui nilai atau kategori, lalu klik simpan di bawah.", btn_save_changes: "SIMPAN PERUBAHAN", setup_pass_title: "Ubah Password Pemilik", btn_change_pass: "Ubah Password", setup_routine_title: "Jadwal Pembayaran Rutin Bulanan", setup_routine_desc: "Aplikasi akan memberi peringatan di Dashboard saat memasuki tanggal bayar.", btn_add_routine: "TAMBAHKAN JADWAL PEMBAYARAN RUTIN", setup_startbal_title: "Saldo Awal", setup_startbal_desc: "Nominal awal yang dapat digunakan sebelum adanya transaksi.", setup_startbal_label: "Saldo Awal (Yang Bisa Digunakan)", setup_acc_title: "1. Akun Bank & E-Wallet", setup_acc_desc: "Input Nama Akun, Bank/E-Wallet, Nomor Rekening, Atas Nama, & Saldo Awal.", btn_add_acc: "TAMBAHKAN ACCOUNT BANK / E-WALLET", def_income: "Pendapatan/penghasilan, baik yang tetap ataupun tidak tetap.", def_add_income: "TAMBAHKAN INCOME", def_bills: "Pengeluaran yang cenderung berulang setiap bulannya dengan jumlah yang cenderung sama (Cont: SPP/kos Bulanan, Subscribe Canva, dll).", def_add_bills: "TAMBAHKAN BILLS", def_spending: "Pengeluaran sehari-hari, dapat dibuat dalam beberapa kategori.", def_add_spending: "TAMBAHKAN SPENDING", def_invest_setup: "Uang yang akan disimpan untuk jangka pendek dan dapat digunakan sewaktu-waktu.", def_add_invest: "TAMBAHKAN INVEST / SAVINGS", def_sinking_setup: "Uang yang disisihkan secara berkala untuk membiayai pengeluaran besar yang sudah direncanakan sejak awal (Cont: Mudik, Pajak, Perawatan rumah, dll).", def_add_sinking: "TAMBAHKAN SINKING FUND", def_goals_setup: "Perencanaan finansial, uang/asset yang disimpan untuk kebutuhan/tujuan tertentu ataupun untuk mencapai jumlah tertentu dalam jangka waktu yang ditentukan (Cont: Dana Pensiun, Dana Pendidikan, Haji, dll).", def_add_goals: "TAMBAHKAN FINANCIAL GOALS", title_receivables_setup: "8. Piutang (Orang Berutang ke Saya)", desc_receivables_setup: "Catat nama peminjam, jumlah piutang, dan deadline tanggal penagihan.", btn_add_receivables: "TAMBAHKAN PIUTANG BARU", title_nonmoney_setup: "9. Aset Selain Uang & Peringatan Nisab Zakat", def_nonmoney_setup: "Input Emas, Perak, & Tanah beserta perhitungan nisab zakat.", btn_add_nonmoney: "TAMBAHKAN ASET NON-UANG", title_debt_setup: "10. Utang & Cicilan", def_debt_setup: "Input Total Utang & Cicilan per Bulan.", btn_add_debt: "TAMBAHKAN UTANG / CICILAN", danger_zone: "Zona Bahaya / Reset Data", danger_desc: "Hapus seluruh riwayat transaksi yang tersimpan.", btn_reset_history: "RESET RIWAYAT", btn_save_all_db: "SIMPAN SELURUH PERUBAHAN DATABASE", nav_dash: "Dashboard", nav_tx: "Transaksi", nav_setup: "Setup", m_jan: "Januari", m_feb: "Februari", m_mar: "Maret", m_apr: "April", m_mei: "Mei", m_jun: "Juni", m_jul: "Juli", m_agu: "Agustus", m_sep: "September", m_okt: "Oktober", m_nov: "November", m_des: "Desember"
       },
-      en: { /* Kosong, sama seperti sebelumnya */ }
+      en: { /* Terjemahan EN Standby */ }
     };
 
     let currentLang = 'id';
@@ -981,7 +1088,6 @@
         iconFab.textContent = isBalanceMasked ? "visibility_off" : "visibility";
       }
       renderDashboard();
-      renderHistoryTable(); // UPDATE: Sinkronisasi pembaruan ke tabel Riwayat
     }
 
     function changeLanguage(lang) {
@@ -1030,14 +1136,14 @@
 
     let globalData = {};
 
-        window.onload = function() {
+    window.onload = function() {
       loadStorageData();
       let dateInput = document.getElementById('tx-date');
       if (dateInput) dateInput.valueAsDate = new Date();
       requestNotificationPermission();
 
-      // KODE BARU: Otomatis memilih bulan saat ini di seluruh sistem pelaporan
-      let currentMonthIndex = new Date().getMonth(); // Akan membaca bulan 7 (Agustus)
+      // KODE BARU: Otomatis memilih bulan saat ini di dropdown Dashboard
+      let currentMonthIndex = new Date().getMonth();
       let monthDropdown = document.getElementById('monthly-select-dropdown');
       if (monthDropdown) {
         monthDropdown.value = currentMonthIndex;
@@ -1074,7 +1180,7 @@
       saveStorageData(); renderDashboard(); playSuccessSound();
       let modal = document.getElementById('success-modal'), card = document.getElementById('success-card');
       document.getElementById('success-modal-title').textContent = "Database Berhasil Diperbarui!";
-      document.getElementById('success-msg-text').innerHTML = "Seluruh saldo awal, budget bulanan, dan kategori pilihan telah tersimpan.";
+      document.getElementById('success-msg-text').innerHTML = "Seluruh saldo awal, budget bulanan, dan pengaturan telah tersimpan.";
       modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); card.classList.add('scale-100'); }, 10);
     }
 
@@ -1090,21 +1196,27 @@
       checkDueDateAlerts(); checkReceivableAlerts();
     }
 
+    // UPDATE: Navigasi ditambah 1 page (Kalkulator)
     function navTo(page) {
-      ['page-dashboard', 'page-transaksi', 'page-setup'].forEach(id => { let el = document.getElementById(id); if(el) el.classList.add('hidden'); });
-      ['nav-dash', 'nav-tx', 'nav-setup'].forEach(id => { let el = document.getElementById(id); if(el) el.className = "flex flex-col items-center text-on-surface-variant px-4 py-1 hover:text-primary"; });
+      ['page-dashboard', 'page-transaksi', 'page-kalkulator', 'page-setup'].forEach(id => { let el = document.getElementById(id); if(el) el.classList.add('hidden'); });
+      ['nav-dash', 'nav-tx', 'nav-calc', 'nav-setup'].forEach(id => { let el = document.getElementById(id); if(el) el.className = "flex flex-col items-center text-on-surface-variant px-3 py-1 hover:text-primary"; });
 
       let headerTitle = document.getElementById('header-brand-title'), langDict = TRANSLATIONS[currentLang] || TRANSLATIONS['id'];
+      
       if (page === 'dashboard') {
-        document.getElementById('page-dashboard').classList.remove('hidden'); document.getElementById('nav-dash').className = "flex flex-col items-center text-primary px-4 py-1 font-bold";
+        document.getElementById('page-dashboard').classList.remove('hidden'); document.getElementById('nav-dash').className = "flex flex-col items-center text-primary px-3 py-1 font-bold";
         if (headerTitle) headerTitle.textContent = langDict.brand_title; renderDashboard();
       } else if (page === 'transaksi') {
-        document.getElementById('page-transaksi').classList.remove('hidden'); document.getElementById('nav-tx').className = "flex flex-col items-center text-primary px-4 py-1 font-bold";
+        document.getElementById('page-transaksi').classList.remove('hidden'); document.getElementById('nav-tx').className = "flex flex-col items-center text-primary px-3 py-1 font-bold";
         if (headerTitle) headerTitle.textContent = langDict.title_tx_record;
         let dateInput = document.getElementById('tx-date'); if (dateInput) dateInput.valueAsDate = new Date();
         populateFormDropdowns(); populateReportFilterCategories(); applyCashflowLogic(); renderHistoryTable();
+      } else if (page === 'kalkulator') {
+        document.getElementById('page-kalkulator').classList.remove('hidden'); document.getElementById('nav-calc').className = "flex flex-col items-center text-primary px-3 py-1 font-bold";
+        if (headerTitle) headerTitle.textContent = "Kalkulator Finansial";
+        backToCalcMenu(); // Pastikan selalu membuka grid utama kalkulator saat tab ditekan
       } else if (page === 'setup') {
-        document.getElementById('page-setup').classList.remove('hidden'); document.getElementById('nav-setup').className = "flex flex-col items-center text-primary px-4 py-1 font-bold";
+        document.getElementById('page-setup').classList.remove('hidden'); document.getElementById('nav-setup').className = "flex flex-col items-center text-primary px-3 py-1 font-bold";
         if (headerTitle) headerTitle.textContent = langDict.nav_setup; renderSetupView();
       }
     }
@@ -1116,11 +1228,45 @@
       return "Rp " + (parseFloat(num) || 0).toLocaleString('id-ID');
     }
 
+    // FUNGSI KHUSUS KEBEBASAN SENSOR UNTUK TABEL RIWAYAT TRANSAKSI
+    function formatRpKebalSensor(num) {
+      return "Rp " + (parseFloat(num) || 0).toLocaleString('id-ID');
+    }
+
     function toggleDarkMode() {
       document.documentElement.classList.toggle('dark');
       renderMonthlyChart(); 
       if (typeof updateCategoryTrendChart === "function") updateCategoryTrendChart();
     }
+
+    // --- FUNGSI SUB-MENU KALKULATOR ---
+    function openCalcSub(subId) {
+      document.getElementById('calc-menu-grid').classList.add('hidden');
+      document.getElementById('calc-sub-container').classList.remove('hidden');
+      document.querySelectorAll('.calc-sub-item').forEach(el => el.classList.add('hidden'));
+      document.getElementById(subId).classList.remove('hidden');
+    }
+
+    function backToCalcMenu() {
+      document.getElementById('calc-sub-container').classList.add('hidden');
+      document.getElementById('calc-menu-grid').classList.remove('hidden');
+    }
+
+    function calculateDailyPacing() {
+      let rawVal = document.getElementById('calc-pacing-budget').value.replace(/\./g, '');
+      let budget = parseFloat(rawVal) || 0;
+      if (budget <= 0) { alert('Masukkan sisa budget bulanan!'); return; }
+
+      let today = new Date();
+      let lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+      let daysLeft = (lastDay - today.getDate()) + 1;
+
+      let dailyLimit = Math.floor(budget / daysLeft);
+      document.getElementById('calc-pacing-val').textContent = "Rp " + dailyLimit.toLocaleString('id-ID') + " / Hari";
+      document.getElementById('calc-pacing-note').textContent = `*Berdasarkan sisa ${daysLeft} hari lagi di bulan ini.`;
+      document.getElementById('calc-pacing-result').classList.remove('hidden');
+    }
+    // --- AKHIR FUNGSI SUB-MENU KALKULATOR ---
 
     function checkDueDateAlerts() {
       let container = document.getElementById('due-date-alert-container'); if (!container) return; container.innerHTML = ''; if (!globalData.routinePayments) return;
@@ -1193,7 +1339,7 @@
 
     function renderBudgetRecap() {
       let container = document.getElementById('budget-recap-grid'); if (!container) return; container.innerHTML = '';
-      if (!globalData.monthlyBudgets || Object.keys(globalData.monthlyBudgets).length === 0) { container.innerHTML = '<p class="text-center text-gray-500 text-xs py-2">Belum ada budget yang diatur. Silakan atur limit pengeluaran di menu Setup.</p>'; return; }
+      if (!globalData.monthlyBudgets || Object.keys(globalData.monthlyBudgets).length === 0) { container.innerHTML = '<p class="text-center text-gray-500 text-xs py-2">Belum ada budget yang diatur.</p>'; return; }
       let dropdown = document.getElementById('monthly-select-dropdown'); let targetMonth = dropdown ? parseInt(dropdown.value, 10) : new Date().getMonth();
       let currentYear = new Date().getFullYear(); let spentThisMonth = {};
       if (globalData.recentHistory) {
@@ -1203,25 +1349,16 @@
           }
         });
       }
-      let hasActiveBudget = false;
       Object.keys(globalData.monthlyBudgets).forEach(cat => {
         let limit = parseFloat(globalData.monthlyBudgets[cat]) || 0;
         if (limit > 0) {
-          hasActiveBudget = true; 
-          let spent = spentThisMonth[cat] || 0; 
-          let sisa = limit - spent; 
-          let pct = Math.min(100, Math.round((spent / limit) * 100)); 
-          let isOver = spent > limit;
-          let overAmt = spent - limit; 
-          
+          let spent = spentThisMonth[cat] || 0; let sisa = limit - spent; let pct = Math.min(100, Math.round((spent / limit) * 100)); let isOver = spent > limit;
           let barColor = isOver ? 'bg-red-500' : (pct > 80 ? 'bg-orange-500' : 'bg-green-500'); 
           let badgeClass = isOver ? 'bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-400' : 'bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-400';
-          let badgeText = isOver ? 'OVER (-' + formatRp(overAmt) + ')' : 'Sisa: ' + formatRp(sisa); 
-          
+          let badgeText = isOver ? 'OVER' : 'Sisa: ' + formatRp(sisa); 
           container.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-2 text-xs"><div class="flex justify-between items-center"><p class="font-bold text-sm text-on-surface">${cat}</p><span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${badgeClass}">${badgeText}</span></div><div class="flex justify-between text-[10px] text-gray-500 mb-1"><span>Terpakai: <b class="${isOver ? 'text-error' : 'text-on-surface'}">${formatRp(spent)}</b></span><span>Limit: <b class="text-on-surface font-mono-data">${formatRp(limit)}</b></span></div><div class="w-full bg-gray-200 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden"><div class="${barColor} h-2.5 rounded-full transition-all duration-500" style="width: ${pct}%"></div></div></div>`;
         }
       });
-      if (!hasActiveBudget) container.innerHTML = '<p class="text-center text-gray-500 text-xs py-2">Belum ada nominal budget yang diatur. Silakan atur limit pengeluaran di menu Setup.</p>';
     }
 
     function updateBudgetLimit(cat, val) {
@@ -1234,7 +1371,7 @@
       Object.keys(globalData.investData).forEach(k => {
         let item = globalData.investData[k]; let flow = getCategoryCashflowNet(k);
         let totalMoney = (item.initial || 0) + flow.net; let used = (item.used || 0) + flow.used; let sisa = totalMoney - used;
-        grid.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-1 text-xs"><p class="font-bold text-primary dark:text-blue-400 text-sm">${k}</p><div class="flex justify-between"><span>Saldo Awal + Masuk:</span><span class="font-mono-data font-bold">${formatRp(totalMoney)}</span></div><div class="flex justify-between text-error"><span>Terpakai (Used):</span><span class="font-mono-data font-bold">${formatRp(used)}</span></div><div class="flex justify-between text-green-600 dark:text-green-400 font-bold border-t border-outline-variant/40 pt-1"><span>Sisa Uang:</span><span class="font-mono-data">${formatRp(sisa)}</span></div></div>`;
+        grid.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-1 text-xs"><p class="font-bold text-primary dark:text-blue-400 text-sm">${k}</p><div class="flex justify-between"><span>Total Saldo:</span><span class="font-mono-data font-bold">${formatRp(totalMoney)}</span></div><div class="flex justify-between text-error"><span>Terpakai:</span><span class="font-mono-data font-bold">${formatRp(used)}</span></div><div class="flex justify-between text-green-600 dark:text-green-400 font-bold border-t border-outline-variant/40 pt-1"><span>Sisa:</span><span class="font-mono-data">${formatRp(sisa)}</span></div></div>`;
       });
     }
 
@@ -1248,7 +1385,7 @@
         let daysLeftText = "Durasi Terjadwal";
         if (item.deadline) { let diffDays = Math.ceil((new Date(item.deadline) - today) / (1000 * 60 * 60 * 24)); daysLeftText = diffDays > 0 ? (Math.floor(diffDays / 30) > 0 ? `${Math.floor(diffDays/30)} Bulan` : `${diffDays} Hari lagi`) : "Lewat"; }
         let pct = Math.min(100, Math.round((current / (item.target || 1)) * 100));
-        container.innerHTML += `<div class="p-3.5 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-2.5 text-xs"><div class="flex justify-between items-center"><p class="font-bold text-tertiary dark:text-indigo-400 text-sm">${k}</p><span class="text-[10px] px-2.5 py-0.5 bg-tertiary/10 text-tertiary dark:text-indigo-300 rounded-full font-bold">Sisa Waktu: ${daysLeftText}</span></div><div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-[11px]"><div><span class="text-gray-500">Target Nominal:</span><br/><b class="font-mono-data">${formatRp(item.target)}</b></div><div><span class="text-gray-500">Target / Bulan:</span><br/><b class="font-mono-data text-primary dark:text-blue-400">${formatRp(targetPerMonth)}</b></div><div><span class="text-gray-500">Terkumpul (Cashflow):</span><br/><b class="font-mono-data text-green-600 dark:text-green-400">${formatRp(current)}</b></div><div><span class="text-gray-500">Terpakai:</span><br/><b class="font-mono-data text-error">${formatRp(used)}</b></div></div><div><div class="flex justify-between text-[10px] font-bold mb-1"><span>Progress (${pct}%)</span><span>Sisa Uang: ${formatRp(sisa)}</span></div><div class="w-full bg-gray-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden"><div class="bg-tertiary dark:bg-indigo-500 h-2 rounded-full" style="width: ${pct}%"></div></div></div></div>`;
+        container.innerHTML += `<div class="p-3.5 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-2.5 text-xs"><div class="flex justify-between items-center"><p class="font-bold text-tertiary dark:text-indigo-400 text-sm">${k}</p><span class="text-[10px] px-2.5 py-0.5 bg-tertiary/10 text-tertiary dark:text-indigo-300 rounded-full font-bold">Waktu: ${daysLeftText}</span></div><div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-[11px]"><div><span class="text-gray-500">Target Nominal:</span><br/><b class="font-mono-data">${formatRp(item.target)}</b></div><div><span class="text-gray-500">Target/Bulan:</span><br/><b class="font-mono-data text-primary dark:text-blue-400">${formatRp(targetPerMonth)}</b></div><div><span class="text-gray-500">Terkumpul:</span><br/><b class="font-mono-data text-green-600 dark:text-green-400">${formatRp(current)}</b></div><div><span class="text-gray-500">Terpakai:</span><br/><b class="font-mono-data text-error">${formatRp(used)}</b></div></div><div><div class="flex justify-between text-[10px] font-bold mb-1"><span>Progress (${pct}%)</span><span>Sisa: ${formatRp(sisa)}</span></div><div class="w-full bg-gray-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden"><div class="bg-tertiary dark:bg-indigo-500 h-2 rounded-full" style="width: ${pct}%"></div></div></div></div>`;
       });
     }
 
@@ -1404,7 +1541,6 @@
           });
         }
 
-        renderBudgetRecap();
       }, 100);
     }
 
@@ -1555,13 +1691,13 @@
       applyCashflowLogic(); playSuccessSound(); showSuccessModal(mainTx, adminAdded, dAdminFee);
     }
 
-    // UPDATE: KEMBALIKAN KE formatRp() UNTUK SENSOR TRANSAKSI
+    // UPDATE: Gunakan formatRpKebalSensor di Riwayat Transaksi agar tidak jadi bintang-bintang
     function renderHistoryTable() {
       let tbody = document.getElementById('tx-history-tbody');
       if (!tbody) return;
       tbody.innerHTML = '';
       let historyList = globalData.recentHistory || [];
-      if (historyList.length === 0) { tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400">Belum ada transaksi diinput.</td></tr>`; return; }
+      if (historyList.length === 0) { tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400" data-i18n="empty_tx">Belum ada transaksi diinput.</td></tr>`; return; }
       
       let filterCashflow = document.getElementById('rep-filter-cashflow') ? document.getElementById('rep-filter-cashflow').value : 'all';
       let filterAcc = document.getElementById('rep-filter-account') ? document.getElementById('rep-filter-account').value : 'all';
@@ -1584,8 +1720,7 @@
             <td class="p-3 text-gray-500">${tx.keAcc}</td>
             <td class="p-3 text-right">
               <div class="flex items-center justify-end gap-2">
-                <!-- Gunakan kembali formatRp() di sini -->
-                <span class="font-mono-data font-extrabold text-primary dark:text-blue-400">${formatRp(tx.amount)}</span>
+                <span class="font-mono-data font-extrabold text-primary dark:text-blue-400">${formatRpKebalSensor(tx.amount)}</span>
                 <button onclick="openEditModal(${idx})" class="p-1 rounded hover:bg-surface-container text-gray-400 hover:text-primary transition-colors"><span class="material-symbols-outlined text-sm">edit</span></button>
                 <button onclick="deleteTransaction(${idx})" class="delete-action-btn p-1 rounded hover:bg-red-100 text-gray-300 hover:text-error transition-colors"><span class="material-symbols-outlined text-sm">delete</span></button>
               </div>
@@ -1713,7 +1848,7 @@
         if (!globalData.accountDetails) globalData.accountDetails = {};
         globalData.accounts.forEach((acc, idx) => {
           let bal = globalData.currentBalances[acc] || 0;
-          let dt = globalData.accountDetails[acc] || { bankName: acc, accNo: "", owner: "" };
+          let dt = (globalData.accountDetails && globalData.accountDetails[acc]) ? globalData.accountDetails[acc] : { bankName: acc, accNo: "", owner: "" };
           accContainer.innerHTML += `<div class="p-4 bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant space-y-3"><div class="flex justify-between items-center border-b border-outline-variant/40 pb-2"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary dark:text-blue-400">account_balance</span><b class="text-sm font-bold text-on-surface">${acc}</b></div><button onclick="removeAccountItem(${idx})" class="text-xs text-error font-bold flex items-center gap-0.5 hover:underline"><span class="material-symbols-outlined text-sm">close</span> Hapus Akun</button></div><div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs"><div><label class="text-[10px] text-gray-500 font-bold uppercase">Nama Bank / E-Wallet</label><input type="text" value="${dt.bankName||acc}" onchange="updateAccountDetail('${acc}', 'bankName', this.value)" class="w-full bg-white dark:bg-slate-800 text-on-surface border rounded-lg p-1.5 font-bold"></div><div><label class="text-[10px] text-gray-500 font-bold uppercase">Nomor Rekening</label><input type="text" value="${dt.accNo||''}" placeholder="Contoh: 712345..." onchange="updateAccountDetail('${acc}', 'accNo', this.value)" class="w-full bg-white dark:bg-slate-800 text-on-surface border rounded-lg p-1.5 font-mono-data"></div><div><label class="text-[10px] text-gray-500 font-bold uppercase">Atas Nama (a.n)</label><input type="text" value="${dt.owner||''}" placeholder="Pemilik" onchange="updateAccountDetail('${acc}', 'owner', this.value)" class="w-full bg-white dark:bg-slate-800 text-on-surface border rounded-lg p-1.5 font-bold"></div><div><label class="text-[10px] text-gray-500 font-bold uppercase">Saldo Awal (Rp)</label><input type="number" value="${bal}" onchange="updateAccountBalance('${acc}', this.value)" class="w-full bg-white dark:bg-slate-800 text-on-surface border border-primary/50 rounded-lg p-1.5 font-mono-data font-bold text-primary dark:text-blue-400"></div></div></div>`;
         });
       }
