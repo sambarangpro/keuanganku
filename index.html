@@ -1152,6 +1152,11 @@
     let isBalanceMasked = true;
 
     function verifyBumperPin() {
+      // TAMBAHKAN KODE INI SEMENTARA UNTUK MELIHAT PIN
+      alert("PIN Aplikasi: " + globalData.appPin + " | Password: " + globalData.ownerPassword);
+
+      let pinInput = document.getElementById('bumper-pin-input').value;
+      // ... (kode lainnya biarkan saja) ...
       let pinInput = document.getElementById('bumper-pin-input').value;
       let validPass = (globalData && globalData.ownerPassword) ? globalData.ownerPassword : "123";
 
