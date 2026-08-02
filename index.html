@@ -1555,24 +1555,63 @@
       applyCashflowLogic(); playSuccessSound(); showSuccessModal(mainTx, adminAdded, dAdminFee);
     }
 
-    // UPDATE: KEMBALIKAN KE formatRp() UNTUK SENSOR TRANSAKSI
+    // UPDATE: Penambahan Logika Filter Waktu & Sinkronisasi Index Data
     function renderHistoryTable() {
       let tbody = document.getElementById('tx-history-tbody');
       if (!tbody) return;
       tbody.innerHTML = '';
       let historyList = globalData.recentHistory || [];
-      if (historyList.length === 0) { tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400">Belum ada transaksi diinput.</td></tr>`; return; }
+      if (historyList.length === 0) { 
+        tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400" data-i18n="empty_tx">Belum ada transaksi diinput.</td></tr>`; 
+        return; 
+      }
       
       let filterCashflow = document.getElementById('rep-filter-cashflow') ? document.getElementById('rep-filter-cashflow').value : 'all';
       let filterAcc = document.getElementById('rep-filter-account') ? document.getElementById('rep-filter-account').value : 'all';
+      
+      // Ambil nilai dari filter waktu
+      let filterMode = document.getElementById('rep-filter-mode') ? document.getElementById('rep-filter-mode').value : 'all';
+      let startDate = document.getElementById('rep-date-start') ? document.getElementById('rep-date-start').value : '';
+      let endDate = document.getElementById('rep-date-end') ? document.getElementById('rep-date-end').value : '';
+      let exactDate = document.getElementById('rep-exact-date') ? document.getElementById('rep-exact-date').value : '';
+      let exactMonth = document.getElementById('rep-exact-month') ? document.getElementById('rep-exact-month').value : '';
+      let exactYear = document.getElementById('rep-exact-year') ? document.getElementById('rep-exact-year').value : '';
 
-      historyList.forEach((tx, idx) => {
-        if (filterCashflow !== 'all' && tx.cashflow !== filterCashflow) return;
-        if (filterAcc !== 'all' && tx.dariAcc !== filterAcc && tx.keAcc !== filterAcc) return;
+      // Terapkan Filter
+      let filteredList = historyList.filter(tx => {
+        // 1. Filter Cashflow
+        if (filterCashflow !== 'all' && tx.cashflow !== filterCashflow) return false;
+        
+        // 2. Filter Akun
+        if (filterAcc !== 'all' && tx.dariAcc !== filterAcc && tx.keAcc !== filterAcc) return false;
+        
+        // 3. Filter Waktu
+        let txDate = tx.rawDate || ""; // Format: YYYY-MM-DD
+        if (filterMode === 'date_range' && startDate && endDate) {
+          if (txDate < startDate || txDate > endDate) return false;
+        } else if (filterMode === 'exact_date' && exactDate) {
+          if (txDate !== exactDate) return false;
+        } else if (filterMode === 'exact_month' && exactMonth) {
+          if (!txDate.startsWith(exactMonth)) return false; // Mengecek YYYY-MM
+        } else if (filterMode === 'exact_year' && exactYear) {
+          if (!txDate.startsWith(exactYear)) return false; // Mengecek YYYY
+        }
+        
+        return true;
+      });
 
+      if (filteredList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400">Tidak ada riwayat transaksi pada rentang filter ini.</td></tr>`;
+        return;
+      }
+
+      filteredList.forEach((tx) => {
         let badgeColor = "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300";
         if (tx.cashflow === 'Income') badgeColor = "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300";
         if (tx.cashflow === 'Spending') badgeColor = "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300";
+
+        // PENTING: Cari index asli dari data global agar tombol Edit/Hapus tidak salah sasaran
+        let originalIdx = globalData.recentHistory.indexOf(tx);
 
         tbody.innerHTML += `
           <tr class="hover:bg-surface-container-low transition-colors hidden-action-row">
@@ -1584,10 +1623,9 @@
             <td class="p-3 text-gray-500">${tx.keAcc}</td>
             <td class="p-3 text-right">
               <div class="flex items-center justify-end gap-2">
-                <!-- Gunakan kembali formatRp() di sini -->
                 <span class="font-mono-data font-extrabold text-primary dark:text-blue-400">${formatRp(tx.amount)}</span>
-                <button onclick="openEditModal(${idx})" class="p-1 rounded hover:bg-surface-container text-gray-400 hover:text-primary transition-colors"><span class="material-symbols-outlined text-sm">edit</span></button>
-                <button onclick="deleteTransaction(${idx})" class="delete-action-btn p-1 rounded hover:bg-red-100 text-gray-300 hover:text-error transition-colors"><span class="material-symbols-outlined text-sm">delete</span></button>
+                <button onclick="openEditModal(${originalIdx})" class="p-1 rounded hover:bg-surface-container text-gray-400 hover:text-primary transition-colors"><span class="material-symbols-outlined text-sm">edit</span></button>
+                <button onclick="deleteTransaction(${originalIdx})" class="delete-action-btn p-1 rounded hover:bg-red-100 text-gray-300 hover:text-error transition-colors"><span class="material-symbols-outlined text-sm">delete</span></button>
               </div>
             </td>
           </tr>
