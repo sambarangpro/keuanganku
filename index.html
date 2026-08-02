@@ -312,7 +312,7 @@
 
           <div class="flex items-center gap-3 pt-3 border-t border-outline-variant">
             <button type="submit" id="btn-submit" class="flex-1 bg-primary hover:bg-primary-container text-white py-3 rounded-xl font-bold text-sm shadow">Simpan Transaksi</button>
-            <button type="reset" class="px-5 py-3 border border-outline-variant text-on-surface-variant rounded-xl text-sm">Batal</button>
+            <button type="reset" class="px-5 py-3 border border-outline-variant rounded-xl text-sm">Batal</button>
           </div>
         </form>
       </section>
@@ -346,7 +346,7 @@
             <table class="w-full text-left border-collapse text-xs">
               <thead>
                 <tr class="bg-surface-container-low border-b font-bold uppercase text-gray-500">
-                  <th class="p-3">Hari, Tgl & Jam</th><th class="p-3">Nama Transaksi</th><th class="p-3">Cashflow</th><th class="p-3">Kategori</th><th class="p-3">Dari Akun</th><th class="p-3">Ke Akun</th><th class="p-3 text-right">Aksi / Nominal</th>
+                  <th class="p-3">Waktu</th><th class="p-3">Nama Transaksi</th><th class="p-3">Cashflow</th><th class="p-3">Kategori</th><th class="p-3">Dari Akun</th><th class="p-3">Ke Akun</th><th class="p-3 text-right">Aksi / Nominal</th>
                 </tr>
               </thead>
               <tbody id="tx-history-tbody" class="divide-y divide-outline-variant"><tr><td colspan="7" class="p-4 text-center text-gray-400">Belum ada transaksi diinput.</td></tr></tbody>
@@ -368,8 +368,8 @@
 
       <div id="setup-unlocked-content" class="hidden space-y-6">
         <div class="bg-primary/10 border border-primary/30 rounded-2xl p-4 flex items-center justify-between shadow-sm">
-          <div><p class="font-bold text-primary dark:text-blue-400 text-sm">Pusat Konfigurasi Database</p><p class="text-[11px] text-gray-600 dark:text-gray-300">Perbarui nilai atau kategori, lalu klik simpan di bawah.</p></div>
-          <button onclick="manualSaveSetup()" class="px-5 py-2.5 bg-primary text-white font-bold rounded-xl hover:bg-primary-container transition-all text-xs shadow flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">save</span> SIMPAN PERUBAHAN</button>
+          <div><p class="font-bold text-primary text-sm">Pusat Konfigurasi Database</p><p class="text-[11px] text-gray-600">Perbarui nilai atau kategori, lalu klik simpan di bawah.</p></div>
+          <button onclick="manualSaveSetup()" class="px-5 py-2.5 bg-primary text-white font-bold rounded-xl text-xs shadow flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">save</span> SIMPAN PERUBAHAN</button>
         </div>
 
         <section class="bg-white dark:bg-slate-800 border rounded-2xl p-6 shadow-sm space-y-3">
@@ -450,6 +450,15 @@
               <p class="text-[11px] text-gray-500 mt-1">Hitung modal konveksi maklon atau produksi sablon DTF beserta margin idealnya.</p>
             </div>
           </button>
+
+          <!-- TAMBAHAN: TOMBOL KALKULATOR MURABAHAH -->
+          <button onclick="openCalcSub('calc-sub-murabahah')" class="p-5 bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl shadow-sm hover:border-primary transition-all text-left flex items-start gap-4 group">
+            <div class="p-3 bg-purple-100 dark:bg-purple-950 text-purple-600 rounded-xl group-hover:scale-110 transition-transform"><span class="material-symbols-outlined text-2xl">two_wheeler</span></div>
+            <div>
+              <h3 class="font-bold text-sm text-on-surface group-hover:text-primary">Pembiayaan (Murabahah)</h3>
+              <p class="text-[11px] text-gray-500 mt-1">Simulasi kredit syariah (dengan/tanpa DP) memperhitungkan margin.</p>
+            </div>
+          </button>
         </div>
       </div>
 
@@ -475,7 +484,7 @@
           </div>
         </div>
 
-        <!-- SUB: KALKULATOR HPP ZY CLOTHES (DENGAN TIPE PER PCS / TOTAL) -->
+        <!-- SUB: KALKULATOR HPP ZY CLOTHES -->
         <div id="calc-sub-hpp" class="calc-sub-item hidden bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-6 space-y-4 shadow-sm">
           <h3 class="font-bold text-base text-emerald-600 flex items-center gap-2"><span class="material-symbols-outlined">inventory_2</span> Kalkulator HPP ZY CLOTHES</h3>
           <div class="space-y-4 text-xs">
@@ -484,7 +493,6 @@
               <button id="btn-hpp-mandiri" onclick="setHPPMode('mandiri')" class="flex-1 py-1.5 text-gray-500 font-bold rounded text-[10px] uppercase">Produksi Mandiri</button>
             </div>
 
-            <!-- FORM VENDOR -->
             <div id="hpp-form-vendor" class="space-y-3">
               <div><label class="font-bold text-gray-500">Nama Order / Proyek</label><input type="text" id="hpp-v-name" placeholder="Contoh: PDH Mahasiswa" class="w-full p-2 border rounded-xl bg-surface mt-1 outline-none"></div>
               <div><label class="font-bold text-gray-500">Jumlah Order (Qty)</label><input type="number" id="hpp-v-qty" value="1" min="1" class="w-full p-2 border rounded-xl font-mono-data bg-surface font-bold mt-1"></div>
@@ -493,9 +501,7 @@
                 <label class="font-bold text-gray-500">Harga Modal Vendor</label>
                 <div class="flex gap-2 mt-1">
                   <input type="text" id="hpp-v-harga" placeholder="0" oninput="formatInputNominal(this)" class="flex-1 p-2 border rounded-xl font-mono-data bg-surface font-bold outline-none">
-                  <select id="hpp-v-harga-tipe" class="w-1/3 p-2 border rounded-xl text-xs bg-surface font-bold outline-none cursor-pointer">
-                    <option value="pcs">Per Pcs</option><option value="total">Total Order</option>
-                  </select>
+                  <select id="hpp-v-harga-tipe" class="w-1/3 p-2 border rounded-xl text-xs bg-surface font-bold outline-none cursor-pointer"><option value="pcs">Per Pcs</option><option value="total">Total Order</option></select>
                 </div>
               </div>
               
@@ -503,9 +509,7 @@
                 <label class="font-bold text-gray-500">Biaya Transport / Bensin</label>
                 <div class="flex gap-2 mt-1">
                   <input type="text" id="hpp-v-ongkir" placeholder="0" oninput="formatInputNominal(this)" class="flex-1 p-2 border rounded-xl font-mono-data bg-surface font-bold outline-none">
-                  <select id="hpp-v-ongkir-tipe" class="w-1/3 p-2 border rounded-xl text-xs bg-surface font-bold outline-none cursor-pointer">
-                    <option value="total">Total Order</option><option value="pcs">Per Pcs</option>
-                  </select>
+                  <select id="hpp-v-ongkir-tipe" class="w-1/3 p-2 border rounded-xl text-xs bg-surface font-bold outline-none cursor-pointer"><option value="total">Total Order</option><option value="pcs">Per Pcs</option></select>
                 </div>
               </div>
               
@@ -513,14 +517,11 @@
                 <label class="font-bold text-gray-500">Biaya Packaging</label>
                 <div class="flex gap-2 mt-1">
                   <input type="text" id="hpp-v-pack" placeholder="0" oninput="formatInputNominal(this)" class="flex-1 p-2 border rounded-xl font-mono-data bg-surface font-bold outline-none">
-                  <select id="hpp-v-pack-tipe" class="w-1/3 p-2 border rounded-xl text-xs bg-surface font-bold outline-none cursor-pointer">
-                    <option value="pcs">Per Pcs</option><option value="total">Total Order</option>
-                  </select>
+                  <select id="hpp-v-pack-tipe" class="w-1/3 p-2 border rounded-xl text-xs bg-surface font-bold outline-none cursor-pointer"><option value="pcs">Per Pcs</option><option value="total">Total Order</option></select>
                 </div>
               </div>
             </div>
 
-            <!-- FORM MANDIRI -->
             <div id="hpp-form-mandiri" class="space-y-3 hidden">
               <div><label class="font-bold text-gray-500">Nama Order / Artikel</label><input type="text" id="hpp-m-name" placeholder="Contoh: Kaos Custom ZY CLOTHES" class="w-full p-2 border rounded-xl bg-surface mt-1 outline-none"></div>
               <div><label class="font-bold text-gray-500">Jumlah Order (Qty)</label><input type="number" id="hpp-m-qty" value="1" min="1" class="w-full p-2 border rounded-xl font-mono-data bg-surface font-bold mt-1"></div>
@@ -529,9 +530,7 @@
                 <label class="font-bold text-gray-500">Harga Blanko Kaos Polos</label>
                 <div class="flex gap-2 mt-1">
                   <input type="text" id="hpp-m-kaos" placeholder="0" oninput="formatInputNominal(this)" class="flex-1 p-2 border rounded-xl font-mono-data bg-surface font-bold outline-none">
-                  <select id="hpp-m-kaos-tipe" class="w-1/3 p-2 border rounded-xl text-xs bg-surface font-bold outline-none cursor-pointer">
-                    <option value="pcs">Per Pcs</option><option value="total">Total Order</option>
-                  </select>
+                  <select id="hpp-m-kaos-tipe" class="w-1/3 p-2 border rounded-xl text-xs bg-surface font-bold outline-none cursor-pointer"><option value="pcs">Per Pcs</option><option value="total">Total Order</option></select>
                 </div>
               </div>
 
@@ -539,9 +538,7 @@
                 <label class="font-bold text-gray-500">Biaya Cetak / Beli Sablon DTF</label>
                 <div class="flex gap-2 mt-1">
                   <input type="text" id="hpp-m-dtf" placeholder="0" oninput="formatInputNominal(this)" class="flex-1 p-2 border rounded-xl font-mono-data bg-surface font-bold outline-none">
-                  <select id="hpp-m-dtf-tipe" class="w-1/3 p-2 border rounded-xl text-xs bg-surface font-bold outline-none cursor-pointer">
-                    <option value="pcs">Per Pcs</option><option value="total">Total Order</option>
-                  </select>
+                  <select id="hpp-m-dtf-tipe" class="w-1/3 p-2 border rounded-xl text-xs bg-surface font-bold outline-none cursor-pointer"><option value="pcs">Per Pcs</option><option value="total">Total Order</option></select>
                 </div>
               </div>
 
@@ -549,9 +546,7 @@
                 <label class="font-bold text-gray-500">Beban Listrik Press & Tenaga</label>
                 <div class="flex gap-2 mt-1">
                   <input type="text" id="hpp-m-op" placeholder="0" oninput="formatInputNominal(this)" class="flex-1 p-2 border rounded-xl font-mono-data bg-surface font-bold outline-none">
-                  <select id="hpp-m-op-tipe" class="w-1/3 p-2 border rounded-xl text-xs bg-surface font-bold outline-none cursor-pointer">
-                    <option value="total">Total Order</option><option value="pcs">Per Pcs</option>
-                  </select>
+                  <select id="hpp-m-op-tipe" class="w-1/3 p-2 border rounded-xl text-xs bg-surface font-bold outline-none cursor-pointer"><option value="total">Total Order</option><option value="pcs">Per Pcs</option></select>
                 </div>
               </div>
 
@@ -559,9 +554,7 @@
                 <label class="font-bold text-gray-500">Plastik & Tag / Packaging</label>
                 <div class="flex gap-2 mt-1">
                   <input type="text" id="hpp-m-pack" placeholder="0" oninput="formatInputNominal(this)" class="flex-1 p-2 border rounded-xl font-mono-data bg-surface font-bold outline-none">
-                  <select id="hpp-m-pack-tipe" class="w-1/3 p-2 border rounded-xl text-xs bg-surface font-bold outline-none cursor-pointer">
-                    <option value="pcs">Per Pcs</option><option value="total">Total Order</option>
-                  </select>
+                  <select id="hpp-m-pack-tipe" class="w-1/3 p-2 border rounded-xl text-xs bg-surface font-bold outline-none cursor-pointer"><option value="pcs">Per Pcs</option><option value="total">Total Order</option></select>
                 </div>
               </div>
             </div>
@@ -577,7 +570,6 @@
             <button onclick="calculateHPPDynamic()" class="w-full py-3 bg-emerald-600 text-white font-bold rounded-xl shadow mt-2 hover:brightness-110">Kalkulasi HPP & Harga Jual</button>
             <div id="calc-hpp-result" class="hidden p-4 bg-emerald-50 border border-emerald-200 rounded-xl mt-3 space-y-2"></div>
 
-            <!-- PENJELASAN AKAD -->
             <div id="hpp-akad-vendor" class="mt-4 p-4 bg-orange-50 border border-orange-200 rounded-xl">
               <p class="text-[11px] font-bold text-orange-700 mb-1">⚖️ Tinjauan Fiqh: Istishna' Paralel</p>
               <p class="text-[10px] text-gray-600 leading-relaxed">Menerima order lalu dioper ke vendor disebut <b>Istishna' Paralel</b>. Hukumnya halal jika: (1) Spesifikasi barang jelas, (2) Anda bertanggung jawab penuh atas barang di hadapan customer, bukan menyalahkan vendor jika ada cacat.</p>
@@ -585,6 +577,69 @@
             <div id="hpp-akad-mandiri" class="hidden mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
               <p class="text-[11px] font-bold text-blue-700 mb-1">⚖️ Tinjauan Fiqh: Akad Istishna'</p>
               <p class="text-[10px] text-gray-600 leading-relaxed">Produksi sablon mandiri menggunakan akad <b>Istishna'</b>. Anda bertindak sebagai produsen (Shani'). Syarat utamanya adalah spesifikasi bahan kaos dan sablon harus jelas agar terhindar dari Gharar.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAMBAHAN: SUB KALKULATOR PEMBIAYAAN MURABAHAH -->
+        <div id="calc-sub-murabahah" class="calc-sub-item hidden bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-6 space-y-4 shadow-sm">
+          <h3 class="font-bold text-base text-purple-600 flex items-center gap-2"><span class="material-symbols-outlined">two_wheeler</span> Kalkulator Pembiayaan (Murabahah)</h3>
+          
+          <div class="space-y-3 text-xs">
+            <div>
+              <label class="font-bold text-gray-500">Harga Barang Asli (Rp)</label>
+              <input type="text" id="mur-harga" placeholder="Contoh: 25.000.000" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-xl font-mono-data bg-surface text-on-surface mt-1 outline-none">
+            </div>
+            <div>
+              <label class="font-bold text-gray-500">Uang Muka / DP (Rp)</label>
+              <input type="text" id="mur-dp" placeholder="0 (Kosongkan jika tanpa DP)" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-xl font-mono-data bg-surface text-on-surface mt-1 outline-none">
+            </div>
+            <div>
+              <label class="font-bold text-gray-500">Tenor / Durasi Cicilan (Bulan)</label>
+              <select id="mur-tenor" class="w-full p-2 border rounded-xl bg-surface text-on-surface mt-1 font-bold outline-none cursor-pointer">
+                <option value="6">6 Bulan</option>
+                <option value="12" selected>12 Bulan (1 Tahun)</option>
+                <option value="18">18 Bulan (1.5 Tahun)</option>
+                <option value="24">24 Bulan (2 Tahun)</option>
+                <option value="36">36 Bulan (3 Tahun)</option>
+                <option value="48">48 Bulan (4 Tahun)</option>
+                <option value="60">60 Bulan (5 Tahun)</option>
+              </select>
+            </div>
+            
+            <div class="p-3 bg-surface-container dark:bg-slate-900 rounded-xl border border-outline-variant space-y-2 mt-2">
+              <label class="font-bold text-primary dark:text-blue-400">Pengaturan Profit / Margin</label>
+              <select id="mur-margin-type" class="w-full p-2 border rounded-lg bg-white dark:bg-slate-800 text-on-surface font-semibold text-[11px] outline-none cursor-pointer">
+                <option value="fix_nominal">Margin Fix (Nominal Rp) di Awal</option>
+                <option value="fix_pct">Margin Fix (%) dari Pokok di Awal</option>
+                <option value="annual_pct" selected>Margin Dinamis (% per Tahun)</option>
+              </select>
+              <input type="text" id="mur-margin-val" placeholder="Masukkan Angka / Persentase..." oninput="formatInputNominal(this)" class="w-full p-2 border rounded-lg font-mono-data bg-white dark:bg-slate-800 text-on-surface mt-1 outline-none">
+            </div>
+
+            <!-- TOGGLE INFLASI CERDAS -->
+            <div class="flex items-center gap-2 mt-2 pt-2 border-t border-outline-variant">
+              <input type="checkbox" id="mur-inflasi-toggle" onchange="document.getElementById('mur-inflasi-box').classList.toggle('hidden', !this.checked)" class="rounded border-outline-variant text-purple-600 focus:ring-purple-500 w-4 h-4 cursor-pointer">
+              <label for="mur-inflasi-toggle" class="font-bold text-gray-500 cursor-pointer">Pertimbangkan Inflasi & Risiko?</label>
+            </div>
+            <div id="mur-inflasi-box" class="hidden pl-6 pb-2">
+               <div class="flex items-center gap-2 mt-1">
+                 <input type="number" id="mur-inflasi-val" value="3.5" step="0.1" class="w-20 p-1.5 border rounded-lg font-mono-data bg-surface text-on-surface text-center outline-none">
+                 <span class="text-[10px] font-bold text-gray-500">% / Tahun (Default 3.5%)</span>
+               </div>
+            </div>
+
+            <button onclick="calculateMurabahah()" class="w-full py-3 bg-purple-600 text-white font-bold rounded-xl shadow mt-4 hover:brightness-110 transition-all">Kalkulasi Simulasi Akad</button>
+
+            <!-- KOTAK HASIL -->
+            <div id="calc-mur-result" class="hidden p-4 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 rounded-xl mt-3 space-y-2">
+               <!-- Di-inject via JS -->
+            </div>
+
+            <!-- PENJELASAN AKAD -->
+            <div class="mt-4 p-4 bg-purple-100/50 border border-purple-200 rounded-xl">
+              <p class="text-[11px] font-bold text-purple-800 mb-1">⚖️ Tinjauan Fiqh: Akad Murabahah</p>
+              <p class="text-[10px] text-gray-600 leading-relaxed"><b>Murabahah</b> adalah akad jual beli barang dengan menyatakan harga perolehan (modal pokok) dan keuntungan (margin) yang disepakati oleh kedua belah pihak. Syarat utamanya adalah barang harus menjadi hak milik penjual (Bank/Pemodal) terlebih dahulu sebelum dijual cicil kepada nasabah.</p>
             </div>
           </div>
         </div>
@@ -645,7 +700,6 @@
 
     const DEFAULT_DATA = { appPin: "123", ownerPassword: "123", startingBalance: 25000000, accounts: ["BSI Utama", "Kas Kecil Media", "Bank Jago Tabungan Nikah", "Bank Jago Zy Clothes", "Dana", "Gopay", "Ovo", "Cash"], accountDetails: { "BSI Utama": { bankName: "Bank Syariah Indonesia", accNo: "7123456789", owner: "Fulan", balance: 5979762 } }, currentBalances: { "BSI Utama": 5979762 }, incomes: ["Gaji", "KPI", "Zy Clothes"], spendings: ["Makan/min", "Transport", "Belanja"], bills: ["Cicilan Motor", "Wifi"], routinePayments: { "Wifi": { amount: 275000, dueDay: 20 } }, monthlyBudgets: {}, investData: {}, sinkingData: {}, goalsData: {}, receivablesData: {}, nonMoneyAssets: {}, debtData: {}, recentHistory: [] };
 
-    // PERBAIKAN FATAL: Mencegah penimpaan database dari cloud yang kosong
     async function loadStorageData() {
       try {
         let stored = localStorage.getItem("KEUANGANKU_DB_V21");
@@ -699,7 +753,7 @@
     }
     function backToCalcMenu() { document.getElementById('calc-sub-container').classList.add('hidden'); document.getElementById('calc-menu-grid').classList.remove('hidden'); }
 
-    // KALKULATOR MATA UANG
+    // 1. KALKULATOR MATA UANG
     async function calculateCurrency() {
       let rawVal = document.getElementById('calc-curr-amount').value.replace(/\./g, ''); let amount = parseFloat(rawVal) || 0;
       if (amount <= 0) { alert('Masukkan nominal yang akan dikonversi!'); return; }
@@ -719,7 +773,7 @@
       } catch (e) { loadingBox.classList.add('hidden'); alert("Gagal mengambil kurs. Pastikan terhubung internet."); }
     }
 
-    // KALKULATOR HPP ZY CLOTHES (DENGAN TIPE QTY & AKAD)
+    // 2. KALKULATOR HPP ZY CLOTHES
     let currentHPPMode = 'vendor';
     function setHPPMode(mode) {
       currentHPPMode = mode;
@@ -737,7 +791,6 @@
     function calculateHPPDynamic() {
       let hppPerPcs = 0; let totalHPPOrder = 0; let name = ""; let qty = 1;
       
-      // Helper function untuk mengambil nilai per-pcs berdasarkan opsi yang dipilih pengguna
       const getCostPerPcs = (inputId, typeId, quantity) => {
         let val = parseFloat(document.getElementById(inputId).value.replace(/\./g, '')) || 0;
         let type = document.getElementById(typeId).value;
@@ -795,6 +848,68 @@
       resBox.classList.remove('hidden');
     }
 
+    // 3. KALKULATOR PEMBIAYAAN MURABAHAH (TAMBAHAN BARU)
+    function calculateMurabahah() {
+      let hargaBarang = parseFloat(document.getElementById('mur-harga').value.replace(/\./g, '')) || 0;
+      let dp = parseFloat(document.getElementById('mur-dp').value.replace(/\./g, '')) || 0;
+      let tenorBulan = parseInt(document.getElementById('mur-tenor').value) || 12;
+      let marginType = document.getElementById('mur-margin-type').value;
+      let marginValRaw = document.getElementById('mur-margin-val').value.replace(/\./g, '');
+      let marginVal = parseFloat(marginValRaw) || 0;
+      
+      let isInflasi = document.getElementById('mur-inflasi-toggle').checked;
+      let inflasiRate = parseFloat(document.getElementById('mur-inflasi-val').value) || 0;
+
+      if (hargaBarang <= 0) { alert("Masukkan Harga Asli Barang/Motor terlebih dahulu!"); return; }
+      let pokokPembiayaan = hargaBarang - dp;
+      if (pokokPembiayaan <= 0) { alert("Nominal DP tidak boleh lebih besar atau sama dengan Harga Barang."); return; }
+
+      let totalMargin = 0;
+      let lamaTahun = tenorBulan / 12;
+
+      if (marginType === 'fix_nominal') {
+        totalMargin = marginVal; 
+      } else if (marginType === 'fix_pct') {
+        totalMargin = pokokPembiayaan * (marginVal / 100);
+      } else if (marginType === 'annual_pct') {
+        totalMargin = pokokPembiayaan * (marginVal / 100) * lamaTahun;
+      }
+
+      let nilaiInflasi = 0;
+      if (isInflasi) {
+        nilaiInflasi = pokokPembiayaan * (inflasiRate / 100) * lamaTahun;
+      }
+
+      let totalHargaAkad = pokokPembiayaan + totalMargin + nilaiInflasi;
+      let angsuranPerBulan = totalHargaAkad / tenorBulan;
+
+      let resultBox = document.getElementById('calc-mur-result');
+      resultBox.innerHTML = `
+        <div class="flex justify-between text-[11px] text-gray-600 dark:text-gray-300 mt-1">
+          <span>Sisa Pokok (Setelah DP):</span> <b class="font-mono-data">${formatRpKebalSensor(pokokPembiayaan)}</b>
+        </div>
+        <div class="flex justify-between text-[11px] text-gray-600 dark:text-gray-300 mt-1">
+          <span>Total Margin Profit:</span> <b class="text-green-600 dark:text-green-400 font-mono-data">+ ${formatRpKebalSensor(totalMargin)}</b>
+        </div>
+        ${isInflasi ? `
+        <div class="flex justify-between text-[11px] text-gray-600 dark:text-gray-300 mt-1 border-b border-purple-200 dark:border-purple-800 pb-2">
+          <span>Penyesuaian Inflasi (${inflasiRate}%/thn):</span> <b class="text-orange-500 font-mono-data">+ ${formatRpKebalSensor(nilaiInflasi)}</b>
+        </div>
+        ` : '<div class="border-b border-purple-200 dark:border-purple-800 pt-2"></div>'}
+        
+        <div class="flex justify-between text-[12px] font-bold text-purple-700 dark:text-purple-300 mt-2 uppercase tracking-wider">
+          <span>Total Harga Akad (Fix):</span> <b class="font-mono-data">${formatRpKebalSensor(totalHargaAkad)}</b>
+        </div>
+        
+        <div class="mt-4 bg-white dark:bg-slate-900 p-4 rounded-xl border border-purple-100 dark:border-purple-800 shadow-sm text-center">
+          <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Angsuran Flat per Bulan</p>
+          <p class="text-3xl font-mono-data font-extrabold text-purple-600 dark:text-purple-400 mt-1">${formatRpKebalSensor(Math.ceil(angsuranPerBulan))}</p>
+          <p class="text-[10px] text-gray-400 mt-2 font-medium">Selama <b>${tenorBulan} Bulan</b></p>
+        </div>
+      `;
+      resultBox.classList.remove('hidden');
+    }
+
     // FUNGSI LAINNYA
     function checkDueDateAlerts() {
       let container = document.getElementById('due-date-alert-container'); if (!container) return; container.innerHTML = ''; if (!globalData.routinePayments) return;
@@ -816,7 +931,7 @@
         if (item.deadline) {
           let dDate = new Date(item.deadline); dDate.setHours(0,0,0,0); let diffDays = Math.ceil((dDate - today) / (1000 * 60 * 60 * 24));
           if (diffDays <= 3 && diffDays >= 0) {
-            let timeText = diffDays === 0 ? "JATUH TEMPO HARI INI!" : `Deadline ${diffDays} Hari Lagi`;
+            let timeText = diffDays === 0 ? "JATUH TEMPO PENAGIHAN HARI INI!" : `Deadline ${diffDays} Hari Lagi (${item.deadline})`;
             container.innerHTML += `<div class="bg-emerald-600 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between border-2 border-emerald-800 animate-pulse"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-3xl">notification_important</span><div><h4 class="font-extrabold text-sm uppercase">WAKTUNYA MENAGIH: ${k}</h4><p class="text-xs text-emerald-100 font-medium">Nominal: <b>${formatRp(item.total)}</b> | ${timeText}</p></div></div><button onclick="navTo('transaksi')" class="px-3 py-1.5 bg-white text-emerald-800 font-bold rounded-xl text-xs shadow">Pelunasan</button></div>`;
           }
         }
@@ -851,7 +966,7 @@
 
     function renderBudgetRecap() {
       let container = document.getElementById('budget-recap-grid'); if (!container) return; container.innerHTML = '';
-      if (!globalData.monthlyBudgets || Object.keys(globalData.monthlyBudgets).length === 0) { container.innerHTML = '<p class="text-center text-gray-500 text-xs py-2">Belum ada budget yang diatur.</p>'; return; }
+      if (!globalData.monthlyBudgets || Object.keys(globalData.monthlyBudgets).length === 0) { container.innerHTML = '<p class="text-center text-gray-500 text-xs py-2">Belum ada budget yang diatur. Silakan atur limit pengeluaran di menu Setup.</p>'; return; }
       let dropdown = document.getElementById('monthly-select-dropdown'); let targetMonth = dropdown ? parseInt(dropdown.value, 10) : new Date().getMonth();
       let currentYear = new Date().getFullYear(); let spentThisMonth = {};
       if (globalData.recentHistory) { globalData.recentHistory.forEach(tx => { if (tx.cashflow === 'Spending' && tx.rawDate) { let d = new Date(tx.rawDate); if (d.getMonth() === targetMonth && d.getFullYear() === currentYear) spentThisMonth[tx.category] = (spentThisMonth[tx.category] || 0) + tx.amount; } }); }
@@ -860,11 +975,11 @@
         let limit = parseFloat(globalData.monthlyBudgets[cat]) || 0;
         if (limit > 0) {
           hasActiveBudget = true; let spent = spentThisMonth[cat] || 0; let sisa = limit - spent; let pct = Math.min(100, Math.round((spent / limit) * 100)); let isOver = spent > limit; let overAmt = spent - limit; 
-          let barColor = isOver ? 'bg-red-500' : (pct > 80 ? 'bg-orange-500' : 'bg-green-500'); let badgeClass = isOver ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'; let badgeText = isOver ? 'OVER' : 'Sisa: ' + formatRpKebalSensor(sisa); 
-          container.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 border rounded-xl space-y-2 text-xs"><div class="flex justify-between items-center"><p class="font-bold text-sm">${cat}</p><span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${badgeClass}">${badgeText}</span></div><div class="flex justify-between text-[10px] text-gray-500 mb-1"><span>Terpakai: <b class="${isOver ? 'text-error' : ''}">${formatRpKebalSensor(spent)}</b></span><span>Limit: <b class="font-mono-data">${formatRpKebalSensor(limit)}</b></span></div><div class="w-full bg-gray-200 h-2.5 rounded-full overflow-hidden"><div class="${barColor} h-2.5 rounded-full" style="width: ${pct}%"></div></div></div>`;
+          let barColor = isOver ? 'bg-red-500' : (pct > 80 ? 'bg-orange-500' : 'bg-green-500'); let badgeClass = isOver ? 'bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-400' : 'bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-400'; let badgeText = isOver ? 'OVER (-' + formatRpKebalSensor(overAmt) + ')' : 'Sisa: ' + formatRpKebalSensor(sisa); 
+          container.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-2 text-xs"><div class="flex justify-between items-center"><p class="font-bold text-sm text-on-surface">${cat}</p><span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${badgeClass}">${badgeText}</span></div><div class="flex justify-between text-[10px] text-gray-500 mb-1"><span>Terpakai: <b class="${isOver ? 'text-error' : 'text-on-surface'}">${formatRpKebalSensor(spent)}</b></span><span>Limit: <b class="text-on-surface font-mono-data">${formatRpKebalSensor(limit)}</b></span></div><div class="w-full bg-gray-200 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden"><div class="${barColor} h-2.5 rounded-full transition-all duration-500" style="width: ${pct}%"></div></div></div>`;
         }
       });
-      if (!hasActiveBudget) container.innerHTML = '<p class="text-center text-gray-500 text-xs py-2">Belum ada nominal budget yang diatur.</p>';
+      if (!hasActiveBudget) container.innerHTML = '<p class="text-center text-gray-500 text-xs py-2">Belum ada nominal budget yang diatur. Silakan atur limit pengeluaran di menu Setup.</p>';
     }
 
     function updateBudgetLimit(cat, val) { if (!globalData.monthlyBudgets) globalData.monthlyBudgets = {}; globalData.monthlyBudgets[cat] = parseFloat(val.replace(/\./g, '')) || 0; saveStorageData(); renderDashboard(); }
@@ -872,21 +987,23 @@
     function renderInvestRecap() {
       let grid = document.getElementById('invest-recap-grid'); if (!grid) return; grid.innerHTML = ''; if (!globalData.investData) return;
       Object.keys(globalData.investData).forEach(k => { let item = globalData.investData[k]; let flow = getCategoryCashflowNet(k); let totalMoney = (item.initial || 0) + flow.net; let used = (item.used || 0) + flow.used; let sisa = totalMoney - used;
-        grid.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 border rounded-xl space-y-1 text-xs"><p class="font-bold text-primary">${k}</p><div class="flex justify-between"><span>Total:</span><span class="font-mono-data font-bold">${formatRp(totalMoney)}</span></div><div class="flex justify-between text-error"><span>Terpakai:</span><span class="font-mono-data font-bold">${formatRp(used)}</span></div><div class="flex justify-between text-green-600 font-bold border-t pt-1"><span>Sisa:</span><span class="font-mono-data">${formatRp(sisa)}</span></div></div>`;
+        grid.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-1 text-xs"><p class="font-bold text-primary dark:text-blue-400 text-sm">${k}</p><div class="flex justify-between"><span>Saldo Awal + Masuk:</span><span class="font-mono-data font-bold">${formatRp(totalMoney)}</span></div><div class="flex justify-between text-error"><span>Terpakai (Used):</span><span class="font-mono-data font-bold">${formatRp(used)}</span></div><div class="flex justify-between text-green-600 dark:text-green-400 font-bold border-t border-outline-variant/40 pt-1"><span>Sisa Uang:</span><span class="font-mono-data">${formatRp(sisa)}</span></div></div>`;
       });
     }
 
     function renderSinkingRecap() {
       let container = document.getElementById('sinking-recap-grid'); if (!container) return; container.innerHTML = ''; if (!globalData.sinkingData) return; let today = new Date();
-      Object.keys(globalData.sinkingData).forEach(k => { let item = globalData.sinkingData[k]; let flow = getCategoryCashflowNet(k); let current = (item.initial || 0) + flow.net; let used = (item.used || 0) + flow.used; let sisa = current - used; let pct = Math.min(100, Math.round((current / (item.target || 1)) * 100));
-        container.innerHTML += `<div class="p-3 bg-surface border rounded-xl space-y-2 text-xs"><div class="flex justify-between items-center"><p class="font-bold text-tertiary">${k}</p><span class="text-[10px] px-2 py-0.5 bg-tertiary/10 text-tertiary rounded-full font-bold">Target: ${formatRp(item.target)}</span></div><div class="flex justify-between text-[10px]"><span>Terkumpul: <b>${formatRp(current)}</b></span><span>Sisa: <b>${formatRp(sisa)}</b></span></div><div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden"><div class="bg-tertiary h-2 rounded-full" style="width: ${pct}%"></div></div></div>`;
+      Object.keys(globalData.sinkingData).forEach(k => { let item = globalData.sinkingData[k]; let flow = getCategoryCashflowNet(k); let targetPerMonth = (item.target || 0) / (item.durationMonths || 1); let current = (item.initial || 0) + flow.net; let used = (item.used || 0) + flow.used; let sisa = current - used; let daysLeftText = "Durasi Terjadwal";
+        if (item.deadline) { let diffDays = Math.ceil((new Date(item.deadline) - today) / (1000 * 60 * 60 * 24)); daysLeftText = diffDays > 0 ? (Math.floor(diffDays / 30) > 0 ? `${Math.floor(diffDays/30)} Bulan` : `${diffDays} Hari lagi`) : "Lewat"; }
+        let pct = Math.min(100, Math.round((current / (item.target || 1)) * 100));
+        container.innerHTML += `<div class="p-3.5 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-2.5 text-xs"><div class="flex justify-between items-center"><p class="font-bold text-tertiary dark:text-indigo-400 text-sm">${k}</p><span class="text-[10px] px-2.5 py-0.5 bg-tertiary/10 text-tertiary dark:text-indigo-300 rounded-full font-bold">Sisa Waktu: ${daysLeftText}</span></div><div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-[11px]"><div><span class="text-gray-500">Target Nominal:</span><br/><b class="font-mono-data">${formatRp(item.target)}</b></div><div><span class="text-gray-500">Target / Bulan:</span><br/><b class="font-mono-data text-primary dark:text-blue-400">${formatRp(targetPerMonth)}</b></div><div><span class="text-gray-500">Terkumpul (Cashflow):</span><br/><b class="font-mono-data text-green-600 dark:text-green-400">${formatRp(current)}</b></div><div><span class="text-gray-500">Terpakai:</span><br/><b class="font-mono-data text-error">${formatRp(used)}</b></div></div><div><div class="flex justify-between text-[10px] font-bold mb-1"><span>Progress (${pct}%)</span><span>Sisa Uang: ${formatRp(sisa)}</span></div><div class="w-full bg-gray-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden"><div class="bg-tertiary dark:bg-indigo-500 h-2 rounded-full" style="width: ${pct}%"></div></div></div></div>`;
       });
     }
 
     function renderGoalsRecap() {
       let container = document.getElementById('goals-recap-grid'); if (!container) return; container.innerHTML = ''; if (!globalData.goalsData) return;
       Object.keys(globalData.goalsData).forEach(k => { let item = globalData.goalsData[k]; let flow = getCategoryCashflowNet(k); let current = (item.initial || 0) + flow.net; let used = (item.used || 0) + flow.used; let sisa = current - used; let pct = Math.min(100, Math.round((current / (item.target || 1)) * 100));
-        container.innerHTML += `<div class="p-3 bg-surface border rounded-xl space-y-2 text-xs"><div class="flex justify-between items-center"><p class="font-bold text-secondary">${k}</p><span class="text-[10px] px-2 py-0.5 bg-secondary/10 text-secondary rounded-full font-bold">Target: ${formatRp(item.target)}</span></div><div class="flex justify-between text-[10px]"><span>Terkumpul: <b>${formatRp(current)}</b></span><span>Sisa: <b>${formatRp(sisa)}</b></span></div><div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden"><div class="bg-secondary h-2 rounded-full" style="width: ${pct}%"></div></div></div>`;
+        container.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-2 text-xs"><div class="flex justify-between items-center"><p class="font-bold text-secondary dark:text-sky-400 text-sm">${k}</p><span class="text-[10px] px-2 py-0.5 bg-secondary/10 text-secondary dark:text-sky-300 rounded-full font-bold">Waktu: ${item.timeframeVal || '-'} ${item.timeframeUnit || 'Tahun'}</span></div><div class="grid grid-cols-4 gap-2 text-[11px]"><div><span class="text-gray-500">Target Nominal:</span><br/><b class="font-mono-data">${formatRp(item.target)}</b></div><div><span class="text-gray-500">Terkumpul:</span><br/><b class="font-mono-data text-green-600 dark:text-green-400">${formatRp(current)}</b></div><div><span class="text-gray-500">Terpakai:</span><br/><b class="font-mono-data text-error">${formatRp(used)}</b></div><div><span class="text-gray-500">Sisa Uang:</span><br/><b class="font-mono-data text-primary dark:text-blue-400">${formatRp(sisa)}</b></div></div><div><div class="flex justify-between text-[10px] font-bold mb-1"><span>Progress Goal (${pct}%)</span><span>Kekurangan Target: ${formatRp(item.target - current > 0 ? item.target - current : 0)}</span></div><div class="w-full bg-gray-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden"><div class="bg-secondary dark:bg-sky-500 h-2 rounded-full" style="width: ${pct}%"></div></div></div></div>`;
       });
     }
 
@@ -895,7 +1012,7 @@
       Object.keys(globalData.receivablesData).forEach(k => { let item = globalData.receivablesData[k]; let paid = parseFloat(item.paid) || 0;
         if (globalData.recentHistory) globalData.recentHistory.forEach(tx => { if (tx.category === k && tx.cashflow === 'Pelunasan Piutang') paid += tx.amount; });
         let remaining = (parseFloat(item.total) || 0) - paid;
-        container.innerHTML += `<div class="p-3 bg-surface border rounded-xl space-y-2 text-xs"><div class="flex justify-between items-center"><p class="font-bold text-emerald-600">${k}</p><span class="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full font-bold">Deadline: ${item.deadline || '-'}</span></div><div class="grid grid-cols-3 gap-2 text-[11px]"><div>Total: <b class="font-mono-data">${formatRp(item.total)}</b></div><div>Bayar: <b class="font-mono-data text-green-600">${formatRp(paid)}</b></div><div>Sisa: <b class="font-mono-data text-error">${formatRp(remaining > 0 ? remaining : 0)}</b></div></div></div>`;
+        container.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-2 text-xs"><div class="flex justify-between items-center"><p class="font-bold text-emerald-600 dark:text-emerald-400 text-sm">${k}</p><span class="text-[10px] px-2 py-0.5 bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 rounded-full font-bold">Deadline: ${item.deadline || '-'}</span></div><div class="grid grid-cols-3 gap-2 text-[11px]"><div><span class="text-gray-500">Total Piutang:</span><br/><b class="font-mono-data">${formatRp(item.total)}</b></div><div><span class="text-gray-500">Sudah Dibayar:</span><br/><b class="font-mono-data text-green-600 dark:text-green-400">${formatRp(paid)}</b></div><div><span class="text-gray-500">Belum Dibayar:</span><br/><b class="font-mono-data text-error">${formatRp(remaining > 0 ? remaining : 0)}</b></div></div></div>`;
       });
     }
 
