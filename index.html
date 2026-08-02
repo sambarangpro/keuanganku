@@ -129,7 +129,7 @@
     </div>
   </header>
 
-  <!-- TOMBOL SENSOR SALDO -->
+  <!-- TOMBOL MENGAMBANG -->
   <button onclick="toggleBalanceMask()" class="fixed bottom-24 right-6 z-50 bg-slate-800 dark:bg-slate-600 text-white p-3 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.2)] border border-slate-600 dark:border-slate-500 hover:scale-110 active:scale-95 transition-transform flex items-center justify-center group" title="Sembunyikan/Tampilkan Saldo">
     <span class="material-symbols-outlined" id="icon-mask-balance-fab" style="font-size: 26px;">visibility_off</span>
   </button>
@@ -238,7 +238,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 pt-2">
               <div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl h-64 flex flex-col"><p class="text-xs font-bold text-center mb-2">Perbandingan Cashflow</p><div class="flex-1 relative w-full h-full"><canvas id="monthlyFlowChart"></canvas></div></div>
               <div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl h-64 flex flex-col"><p class="text-xs font-bold text-center mb-2 text-error">Klasemen Kategori Spending</p><div class="flex-1 relative w-full h-full"><canvas id="spendingCategoryChart"></canvas></div></div>
-              <div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl h-64 flex flex-col"><p class="text-xs font-bold text-center mb-2 text-green-600">Klasemen Kategori Income</p><div class="flex-1 relative w-full h-full"><canvas id="incomeCategoryChart"></canvas></div></div>
+              <div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl h-64 flex flex-col"><p class="text-xs font-bold text-center mb-2 text-green-600 dark:text-green-400">Klasemen Kategori Income</p><div class="flex-1 relative w-full h-full"><canvas id="incomeCategoryChart"></canvas></div></div>
             </div>
           </div>
         </div>
@@ -272,19 +272,19 @@
 
         <form id="tx-form" onsubmit="submitTransaction(event)" class="bg-white dark:bg-slate-800 border border-outline-variant p-6 space-y-4 shadow-sm relative rounded-2xl">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="flex flex-col gap-1"><label class="text-xs font-bold uppercase text-gray-500">Waktu / Tanggal</label><input type="date" id="tx-date" required class="w-full px-3 py-2.5 border rounded-xl text-sm bg-surface"></div>
-            <div class="flex flex-col gap-1"><label class="text-xs font-bold uppercase text-gray-500">Nama Transaksi</label><input type="text" id="tx-name" placeholder="Contoh: Honor / Belanja ATK" required class="w-full px-3 py-2.5 border rounded-xl text-sm bg-surface"></div>
+            <div class="flex flex-col gap-1"><label class="text-xs font-bold uppercase text-gray-500">Waktu / Tanggal</label><input type="date" id="tx-date" required class="w-full px-3 py-2.5 border border-outline rounded-xl text-sm focus:ring-1 focus:ring-primary outline-none bg-surface"></div>
+            <div class="flex flex-col gap-1"><label class="text-xs font-bold uppercase text-gray-500">Nama Transaksi</label><input type="text" id="tx-name" placeholder="Contoh: Honor / Belanja ATK" required class="w-full px-3 py-2.5 border border-outline rounded-xl text-sm focus:ring-1 focus:ring-primary outline-none bg-surface"></div>
           </div>
           <div class="flex flex-col gap-1">
             <label class="text-xs font-bold uppercase text-gray-500">Nominal (Rp)</label>
             <div class="relative">
               <span class="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-primary text-sm">Rp</span>
-              <input type="text" id="tx-amount" placeholder="0" required oninput="formatInputNominal(this)" class="w-full pl-9 pr-3 py-2.5 border rounded-xl font-mono-data text-sm font-bold bg-surface">
+              <input type="text" id="tx-amount" placeholder="0" required oninput="formatInputNominal(this)" class="w-full pl-9 pr-3 py-2.5 border border-outline rounded-xl font-mono-data text-sm focus:ring-1 focus:ring-primary outline-none font-bold bg-surface">
             </div>
           </div>
           <div class="flex flex-col gap-1">
             <label class="text-xs font-bold uppercase text-gray-500">Tipe Cashflow</label>
-            <select id="tx-cashflow" onchange="applyCashflowLogic()" required class="w-full px-3 py-2.5 border rounded-xl text-sm bg-surface font-semibold">
+            <select id="tx-cashflow" onchange="applyCashflowLogic()" required class="w-full px-3 py-2.5 border border-outline rounded-xl text-sm bg-white dark:bg-slate-900 text-on-surface focus:ring-1 focus:ring-primary outline-none font-semibold">
               <option value="">-- Pilih Cashflow --</option>
               <option value="Income">Income (Pemasukan)</option><option value="Spending">Spending (Pengeluaran)</option>
               <option value="Invest / Savings">Invest / Savings</option><option value="Financial Goals">Financial Goals</option>
@@ -295,9 +295,9 @@
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2 border-t border-outline-variant">
-            <div id="box-category" class="flex flex-col gap-1"><label class="text-xs font-bold uppercase text-gray-500">Category</label><select id="tx-category" class="w-full px-3 py-2.5 border rounded-xl text-sm bg-surface"></select></div>
-            <div id="box-dari" class="flex flex-col gap-1"><label class="text-xs font-bold uppercase text-gray-500">Dari Account</label><select id="tx-dari" class="w-full px-3 py-2.5 border rounded-xl text-sm bg-surface"></select></div>
-            <div id="box-ke" class="flex flex-col gap-1"><label class="text-xs font-bold uppercase text-gray-500">Ke Account</label><select id="tx-ke" class="w-full px-3 py-2.5 border rounded-xl text-sm bg-surface"></select></div>
+            <div id="box-category" class="flex flex-col gap-1"><label class="text-xs font-bold uppercase text-on-surface-variant">Category</label><select id="tx-category" class="w-full px-3 py-2.5 border border-outline rounded-xl text-sm bg-white dark:bg-slate-900 text-on-surface disabled:bg-gray-100 font-medium"><option value="- not applicable -">- not applicable -</option></select></div>
+            <div id="box-dari" class="flex flex-col gap-1"><label class="text-xs font-bold uppercase text-on-surface-variant">Dari Account</label><select id="tx-dari" class="w-full px-3 py-2.5 border border-outline rounded-xl text-sm bg-white dark:bg-slate-900 text-on-surface disabled:bg-gray-100 font-medium"><option value="- not applicable -">- not applicable -</option></select></div>
+            <div id="box-ke" class="flex flex-col gap-1"><label class="text-xs font-bold uppercase text-on-surface-variant">Ke Account</label><select id="tx-ke" class="w-full px-3 py-2.5 border border-outline rounded-xl text-sm bg-white dark:bg-slate-900 text-on-surface disabled:bg-gray-100 font-medium"><option value="- not applicable -">- not applicable -</option></select></div>
           </div>
 
           <div class="p-3 bg-surface-container dark:bg-slate-900 rounded-xl border border-outline-variant">
@@ -305,48 +305,48 @@
               <span class="text-xs font-bold text-primary flex items-center gap-1"><span class="material-symbols-outlined text-sm">add_circle</span> Biaya Admin / Transaksi</span><span class="material-symbols-outlined text-sm">expand_more</span>
             </div>
             <div id="admin-fields" class="hidden grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-              <div><label class="text-[10px] uppercase font-bold text-gray-500">Nominal Admin (Rp)</label><input type="text" id="tx-admin-fee" placeholder="0" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-lg text-sm font-mono-data bg-surface"></div>
-              <div><label class="text-[10px] uppercase font-bold text-gray-500">Potong Dari Akun</label><select id="tx-admin-account" class="w-full p-2 border rounded-lg text-sm bg-surface"><option value="">Sama dengan Dari Account</option></select></div>
+              <div><label class="text-[10px] uppercase font-bold text-on-surface-variant">Nominal Admin (Rp)</label><input type="text" id="tx-admin-fee" placeholder="0" oninput="formatInputNominal(this)" class="w-full p-2 border border-outline rounded-lg text-sm font-mono-data bg-surface"></div>
+              <div><label class="text-[10px] uppercase font-bold text-on-surface-variant">Potong Dari Akun</label><select id="tx-admin-account" class="w-full p-2 border border-outline rounded-lg text-sm bg-white dark:bg-slate-900 text-on-surface font-medium"><option value="">Sama dengan Dari Account</option></select></div>
             </div>
           </div>
 
           <div class="flex items-center gap-3 pt-3 border-t border-outline-variant">
             <button type="submit" id="btn-submit" class="flex-1 bg-primary hover:bg-primary-container text-white py-3 rounded-xl font-bold text-sm shadow">Simpan Transaksi</button>
-            <button type="reset" class="px-5 py-3 border border-outline-variant rounded-xl text-sm">Batal</button>
+            <button type="reset" class="px-5 py-3 border border-outline-variant text-on-surface-variant rounded-xl text-sm">Batal</button>
           </div>
         </form>
       </section>
 
       <section class="space-y-4 pt-4 border-t border-outline-variant">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div><h2 class="font-headline-md font-bold text-on-surface">Riwayat & Rekapitulasi Transaksi</h2><p class="text-xs text-gray-500">Pilih Tanggal, Bulan, Tahun, atau Rentang Tanggal sesuai kebutuhan</p></div>
+          <div><h2 class="font-headline-md font-bold text-on-surface">Riwayat & Filter Transaksi</h2><p class="text-xs text-gray-500">Pilih Tanggal, Bulan, Tahun, atau Rentang Tanggal sesuai kebutuhan</p></div>
           <div class="flex gap-2">
             <button onclick="window.print()" class="px-3.5 py-2 bg-primary text-white font-bold rounded-xl text-xs flex items-center gap-1 shadow hover:brightness-110"><span class="material-symbols-outlined text-sm">picture_as_pdf</span> Cetak PDF</button>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 bg-white dark:bg-slate-800 p-4 rounded-2xl border border-outline-variant shadow-sm text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 bg-white dark:bg-slate-800 p-4 rounded-2xl border shadow-sm text-xs">
           <div>
             <label class="text-[10px] font-bold uppercase text-gray-500">Mode Filter Waktu</label>
-            <select id="rep-filter-mode" onchange="toggleFilterModeInputs()" class="w-full p-2 border rounded-xl font-bold bg-surface">
+            <select id="rep-filter-mode" onchange="toggleFilterModeInputs()" class="w-full p-2 border rounded-xl font-bold bg-surface text-on-surface outline-none cursor-pointer">
               <option value="all">Semua Waktu</option><option value="exact_date">Tanggal Tertentu</option><option value="exact_month">Bulan Tertentu</option><option value="exact_year">Tahun Tertentu</option><option value="date_range" selected>Rentang Tanggal</option>
             </select>
           </div>
           <div id="filter-input-container" class="md:col-span-2 grid grid-cols-2 gap-2">
-            <div><label class="text-[10px] font-bold uppercase text-gray-500">Dari Tanggal</label><input type="date" id="rep-date-start" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl bg-surface"></div>
-            <div><label class="text-[10px] font-bold uppercase text-gray-500">Sampai Tanggal</label><input type="date" id="rep-date-end" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl bg-surface"></div>
+            <div><label class="text-[10px] font-bold uppercase text-gray-500">Dari Tanggal</label><input type="date" id="rep-date-start" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-medium bg-surface text-on-surface"></div>
+            <div><label class="text-[10px] font-bold uppercase text-gray-500">Sampai Tanggal</label><input type="date" id="rep-date-end" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-medium bg-surface text-on-surface"></div>
           </div>
-          <div><label class="text-[10px] font-bold uppercase text-gray-500">Cashflow / Kategori</label><select id="rep-filter-cashflow" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-bold bg-surface"><option value="all">Semua Cashflow</option></select></div>
-          <div><label class="text-[10px] font-bold uppercase text-gray-500">Filter Akun</label><select id="rep-filter-account" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-bold bg-surface"><option value="all">Semua Akun</option></select></div>
+          <div><label class="text-[10px] font-bold uppercase text-gray-500">Filter Cashflow</label><select id="rep-filter-cashflow" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-bold bg-surface text-on-surface outline-none cursor-pointer"><option value="all">Semua Cashflow</option></select></div>
+          <div><label class="text-[10px] font-bold uppercase text-gray-500">Filter Akun</label><select id="rep-filter-account" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-bold bg-surface text-on-surface outline-none cursor-pointer"><option value="all">Semua Akun</option></select></div>
         </div>
 
-        <div id="report-printable-area" class="bg-white dark:bg-slate-800 rounded-2xl border border-outline-variant p-4 shadow-sm space-y-3">
-          <div class="flex justify-between items-center border-b pb-2"><span class="text-xs font-extrabold text-primary uppercase tracking-wider">Tabel Data Rekam Transaksi</span></div>
+        <div id="report-printable-area" class="bg-white dark:bg-slate-800 rounded-2xl border p-4 shadow-sm space-y-3">
+          <div class="flex justify-between items-center border-b pb-2"><span class="text-xs font-extrabold text-primary uppercase tracking-wider">Tabel Data Rekam Transaksi</span><b class="text-[10px] text-gray-400">KEUANGANKU PLANNER</b></div>
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse text-xs">
               <thead>
-                <tr class="bg-surface-container-low border-b border-outline-variant font-bold uppercase text-gray-500">
-                  <th class="p-3">Waktu</th><th class="p-3">Nama Transaksi</th><th class="p-3">Cashflow</th><th class="p-3">Kategori</th><th class="p-3">Dari Akun</th><th class="p-3">Ke Akun</th><th class="p-3 text-right">Aksi / Nominal</th>
+                <tr class="bg-surface-container-low border-b font-bold uppercase text-gray-500">
+                  <th class="p-3">Hari, Tgl & Jam</th><th class="p-3">Nama Transaksi</th><th class="p-3">Cashflow</th><th class="p-3">Kategori</th><th class="p-3">Dari Akun</th><th class="p-3">Ke Akun</th><th class="p-3 text-right">Aksi / Nominal</th>
                 </tr>
               </thead>
               <tbody id="tx-history-tbody" class="divide-y divide-outline-variant"><tr><td colspan="7" class="p-4 text-center text-gray-400">Belum ada transaksi diinput.</td></tr></tbody>
@@ -362,14 +362,14 @@
       <div id="setup-lock-card" class="bg-white dark:bg-slate-800 border rounded-2xl p-8 max-w-md mx-auto text-center space-y-4 shadow-sm">
         <div class="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto"><span class="material-symbols-outlined text-3xl">lock</span></div>
         <div><h3 class="font-headline-md font-bold text-on-surface">Menu Setup Terkunci</h3><p class="text-xs text-on-surface-variant mt-1">Masukkan password pemilik akun untuk mengakses database master.</p></div>
-        <input type="password" id="setup-pass-input" placeholder="Masukkan Password Pemilik" class="w-full p-3 border rounded-xl text-center font-mono-data text-sm bg-surface">
+        <input type="password" id="setup-pass-input" placeholder="Masukkan Password Pemilik" class="w-full p-3 border rounded-xl text-center font-mono-data text-sm outline-none focus:ring-1 focus:ring-primary bg-surface">
         <button onclick="verifySetupPassword()" class="w-full py-3 bg-primary text-white font-bold rounded-xl shadow">Buka Akses Setup</button>
       </div>
 
       <div id="setup-unlocked-content" class="hidden space-y-6">
         <div class="bg-primary/10 border border-primary/30 rounded-2xl p-4 flex items-center justify-between shadow-sm">
-          <div><p class="font-bold text-primary text-sm">Pusat Konfigurasi Database</p><p class="text-[11px] text-gray-600">Perbarui nilai atau kategori, lalu klik simpan di bawah.</p></div>
-          <button onclick="manualSaveSetup()" class="px-5 py-2.5 bg-primary text-white font-bold rounded-xl text-xs shadow flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">save</span> SIMPAN PERUBAHAN</button>
+          <div><p class="font-bold text-primary dark:text-blue-400 text-sm">Pusat Konfigurasi Database</p><p class="text-[11px] text-gray-600 dark:text-gray-300">Perbarui nilai atau kategori, lalu klik simpan di bawah.</p></div>
+          <button onclick="manualSaveSetup()" class="px-5 py-2.5 bg-primary text-white font-bold rounded-xl hover:bg-primary-container transition-all text-xs shadow flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">save</span> SIMPAN PERUBAHAN</button>
         </div>
 
         <section class="bg-white dark:bg-slate-800 border rounded-2xl p-6 shadow-sm space-y-3">
@@ -421,7 +421,7 @@
           <button onclick="resetTransactionHistory()" class="px-4 py-2.5 bg-error text-white font-bold rounded-xl text-xs shadow">RESET RIWAYAT</button>
         </section>
 
-        <button onclick="manualSaveSetup()" class="w-full py-4 bg-primary text-white font-extrabold text-sm rounded-2xl shadow-lg">SIMPAN SELURUH PERUBAHAN</button>
+        <button onclick="manualSaveSetup()" class="w-full py-4 bg-primary text-white font-extrabold text-sm rounded-2xl shadow-lg hover:brightness-110 flex items-center justify-center gap-2">SIMPAN SELURUH PERUBAHAN</button>
       </div>
       <footer class="pt-6 pb-2 text-center border-t border-outline-variant/50"><p class="text-[10px] text-gray-400 font-medium tracking-widest uppercase">By: Sambarang Production</p></footer>
     </div>
@@ -475,7 +475,7 @@
           </div>
         </div>
 
-        <!-- SUB: KALKULATOR HPP ZY CLOTHES -->
+        <!-- SUB: KALKULATOR HPP ZY CLOTHES (DENGAN TIPE PER PCS / TOTAL) -->
         <div id="calc-sub-hpp" class="calc-sub-item hidden bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-6 space-y-4 shadow-sm">
           <h3 class="font-bold text-base text-emerald-600 flex items-center gap-2"><span class="material-symbols-outlined">inventory_2</span> Kalkulator HPP ZY CLOTHES</h3>
           <div class="space-y-4 text-xs">
@@ -487,20 +487,83 @@
             <!-- FORM VENDOR -->
             <div id="hpp-form-vendor" class="space-y-3">
               <div><label class="font-bold text-gray-500">Nama Order / Proyek</label><input type="text" id="hpp-v-name" placeholder="Contoh: PDH Mahasiswa" class="w-full p-2 border rounded-xl bg-surface mt-1 outline-none"></div>
-              <div><label class="font-bold text-gray-500">Jumlah Order (Pcs)</label><input type="number" id="hpp-v-qty" value="1" min="1" class="w-full p-2 border rounded-xl font-mono-data bg-surface font-bold mt-1"></div>
-              <div><label class="font-bold text-gray-500">Harga Modal Vendor (Per Pcs)</label><input type="text" id="hpp-v-harga" placeholder="0" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-xl font-mono-data bg-surface font-bold mt-1"></div>
-              <div><label class="font-bold text-primary">Biaya Transport / Bensin (Total 1 Orderan)</label><input type="text" id="hpp-v-ongkir" placeholder="0" oninput="formatInputNominal(this)" class="w-full p-2 border border-primary/40 rounded-xl font-mono-data bg-surface font-bold mt-1"></div>
-              <div><label class="font-bold text-gray-500">Biaya Packaging (Per Pcs)</label><input type="text" id="hpp-v-pack" placeholder="0" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-xl font-mono-data bg-surface font-bold mt-1"></div>
+              <div><label class="font-bold text-gray-500">Jumlah Order (Qty)</label><input type="number" id="hpp-v-qty" value="1" min="1" class="w-full p-2 border rounded-xl font-mono-data bg-surface font-bold mt-1"></div>
+              
+              <div>
+                <label class="font-bold text-gray-500">Harga Modal Vendor</label>
+                <div class="flex gap-2 mt-1">
+                  <input type="text" id="hpp-v-harga" placeholder="0" oninput="formatInputNominal(this)" class="flex-1 p-2 border rounded-xl font-mono-data bg-surface font-bold outline-none">
+                  <select id="hpp-v-harga-tipe" class="w-1/3 p-2 border rounded-xl text-xs bg-surface font-bold outline-none cursor-pointer">
+                    <option value="pcs">Per Pcs</option><option value="total">Total Order</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div>
+                <label class="font-bold text-gray-500">Biaya Transport / Bensin</label>
+                <div class="flex gap-2 mt-1">
+                  <input type="text" id="hpp-v-ongkir" placeholder="0" oninput="formatInputNominal(this)" class="flex-1 p-2 border rounded-xl font-mono-data bg-surface font-bold outline-none">
+                  <select id="hpp-v-ongkir-tipe" class="w-1/3 p-2 border rounded-xl text-xs bg-surface font-bold outline-none cursor-pointer">
+                    <option value="total">Total Order</option><option value="pcs">Per Pcs</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div>
+                <label class="font-bold text-gray-500">Biaya Packaging</label>
+                <div class="flex gap-2 mt-1">
+                  <input type="text" id="hpp-v-pack" placeholder="0" oninput="formatInputNominal(this)" class="flex-1 p-2 border rounded-xl font-mono-data bg-surface font-bold outline-none">
+                  <select id="hpp-v-pack-tipe" class="w-1/3 p-2 border rounded-xl text-xs bg-surface font-bold outline-none cursor-pointer">
+                    <option value="pcs">Per Pcs</option><option value="total">Total Order</option>
+                  </select>
+                </div>
+              </div>
             </div>
 
             <!-- FORM MANDIRI -->
             <div id="hpp-form-mandiri" class="space-y-3 hidden">
               <div><label class="font-bold text-gray-500">Nama Order / Artikel</label><input type="text" id="hpp-m-name" placeholder="Contoh: Kaos Custom ZY CLOTHES" class="w-full p-2 border rounded-xl bg-surface mt-1 outline-none"></div>
-              <div><label class="font-bold text-gray-500">Jumlah Order (Pcs)</label><input type="number" id="hpp-m-qty" value="1" min="1" class="w-full p-2 border rounded-xl font-mono-data bg-surface font-bold mt-1"></div>
-              <div><label class="font-bold text-gray-500">Harga Blanko Kaos Polos (Per Pcs)</label><input type="text" id="hpp-m-kaos" placeholder="0" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-xl font-mono-data bg-surface font-bold mt-1"></div>
-              <div><label class="font-bold text-gray-500">Biaya Cetak / Beli DTF (Per Pcs)</label><input type="text" id="hpp-m-dtf" placeholder="0" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-xl font-mono-data bg-surface font-bold mt-1"></div>
-              <div><label class="font-bold text-primary">Beban Listrik Press & Tenaga (Total 1 Orderan)</label><input type="text" id="hpp-m-op" placeholder="0" oninput="formatInputNominal(this)" class="w-full p-2 border border-primary/40 rounded-xl font-mono-data bg-surface font-bold mt-1"></div>
-              <div><label class="font-bold text-gray-500">Plastik & Tag / Packaging (Per Pcs)</label><input type="text" id="hpp-m-pack" placeholder="0" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-xl font-mono-data bg-surface font-bold mt-1"></div>
+              <div><label class="font-bold text-gray-500">Jumlah Order (Qty)</label><input type="number" id="hpp-m-qty" value="1" min="1" class="w-full p-2 border rounded-xl font-mono-data bg-surface font-bold mt-1"></div>
+              
+              <div>
+                <label class="font-bold text-gray-500">Harga Blanko Kaos Polos</label>
+                <div class="flex gap-2 mt-1">
+                  <input type="text" id="hpp-m-kaos" placeholder="0" oninput="formatInputNominal(this)" class="flex-1 p-2 border rounded-xl font-mono-data bg-surface font-bold outline-none">
+                  <select id="hpp-m-kaos-tipe" class="w-1/3 p-2 border rounded-xl text-xs bg-surface font-bold outline-none cursor-pointer">
+                    <option value="pcs">Per Pcs</option><option value="total">Total Order</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label class="font-bold text-gray-500">Biaya Cetak / Beli Sablon DTF</label>
+                <div class="flex gap-2 mt-1">
+                  <input type="text" id="hpp-m-dtf" placeholder="0" oninput="formatInputNominal(this)" class="flex-1 p-2 border rounded-xl font-mono-data bg-surface font-bold outline-none">
+                  <select id="hpp-m-dtf-tipe" class="w-1/3 p-2 border rounded-xl text-xs bg-surface font-bold outline-none cursor-pointer">
+                    <option value="pcs">Per Pcs</option><option value="total">Total Order</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label class="font-bold text-gray-500">Beban Listrik Press & Tenaga</label>
+                <div class="flex gap-2 mt-1">
+                  <input type="text" id="hpp-m-op" placeholder="0" oninput="formatInputNominal(this)" class="flex-1 p-2 border rounded-xl font-mono-data bg-surface font-bold outline-none">
+                  <select id="hpp-m-op-tipe" class="w-1/3 p-2 border rounded-xl text-xs bg-surface font-bold outline-none cursor-pointer">
+                    <option value="total">Total Order</option><option value="pcs">Per Pcs</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label class="font-bold text-gray-500">Plastik & Tag / Packaging</label>
+                <div class="flex gap-2 mt-1">
+                  <input type="text" id="hpp-m-pack" placeholder="0" oninput="formatInputNominal(this)" class="flex-1 p-2 border rounded-xl font-mono-data bg-surface font-bold outline-none">
+                  <select id="hpp-m-pack-tipe" class="w-1/3 p-2 border rounded-xl text-xs bg-surface font-bold outline-none cursor-pointer">
+                    <option value="pcs">Per Pcs</option><option value="total">Total Order</option>
+                  </select>
+                </div>
+              </div>
             </div>
 
             <div class="pt-3 border-t border-outline-variant">
@@ -582,7 +645,7 @@
 
     const DEFAULT_DATA = { appPin: "123", ownerPassword: "123", startingBalance: 25000000, accounts: ["BSI Utama", "Kas Kecil Media", "Bank Jago Tabungan Nikah", "Bank Jago Zy Clothes", "Dana", "Gopay", "Ovo", "Cash"], accountDetails: { "BSI Utama": { bankName: "Bank Syariah Indonesia", accNo: "7123456789", owner: "Fulan", balance: 5979762 } }, currentBalances: { "BSI Utama": 5979762 }, incomes: ["Gaji", "KPI", "Zy Clothes"], spendings: ["Makan/min", "Transport", "Belanja"], bills: ["Cicilan Motor", "Wifi"], routinePayments: { "Wifi": { amount: 275000, dueDay: 20 } }, monthlyBudgets: {}, investData: {}, sinkingData: {}, goalsData: {}, receivablesData: {}, nonMoneyAssets: {}, debtData: {}, recentHistory: [] };
 
-    // PERBAIKAN FATAL: Mencegah penimpaan database dari cloud yang kosong, selalu prioritaskan LocalStorage
+    // PERBAIKAN FATAL: Mencegah penimpaan database dari cloud yang kosong
     async function loadStorageData() {
       try {
         let stored = localStorage.getItem("KEUANGANKU_DB_V21");
@@ -656,7 +719,7 @@
       } catch (e) { loadingBox.classList.add('hidden'); alert("Gagal mengambil kurs. Pastikan terhubung internet."); }
     }
 
-    // KALKULATOR HPP ZY CLOTHES (DENGAN QTY & AKAD)
+    // KALKULATOR HPP ZY CLOTHES (DENGAN TIPE QTY & AKAD)
     let currentHPPMode = 'vendor';
     function setHPPMode(mode) {
       currentHPPMode = mode;
@@ -674,26 +737,35 @@
     function calculateHPPDynamic() {
       let hppPerPcs = 0; let totalHPPOrder = 0; let name = ""; let qty = 1;
       
+      // Helper function untuk mengambil nilai per-pcs berdasarkan opsi yang dipilih pengguna
+      const getCostPerPcs = (inputId, typeId, quantity) => {
+        let val = parseFloat(document.getElementById(inputId).value.replace(/\./g, '')) || 0;
+        let type = document.getElementById(typeId).value;
+        return type === 'total' ? (val / quantity) : val;
+      };
+
       if (currentHPPMode === 'vendor') {
         name = document.getElementById('hpp-v-name').value || "Order Konveksi / Maklon";
         qty = parseInt(document.getElementById('hpp-v-qty').value) || 1;
-        let hargaVendor = parseFloat(document.getElementById('hpp-v-harga').value.replace(/\./g, '')) || 0;
-        let transportTotal = parseFloat(document.getElementById('hpp-v-ongkir').value.replace(/\./g, '')) || 0;
-        let packPerPcs = parseFloat(document.getElementById('hpp-v-pack').value.replace(/\./g, '')) || 0;
+        if(qty < 1) qty = 1;
         
-        let transportPerPcs = transportTotal / qty;
-        hppPerPcs = hargaVendor + transportPerPcs + packPerPcs;
+        let hargaVendor = getCostPerPcs('hpp-v-harga', 'hpp-v-harga-tipe', qty);
+        let transport = getCostPerPcs('hpp-v-ongkir', 'hpp-v-ongkir-tipe', qty);
+        let pack = getCostPerPcs('hpp-v-pack', 'hpp-v-pack-tipe', qty);
+        
+        hppPerPcs = hargaVendor + transport + pack;
         totalHPPOrder = hppPerPcs * qty;
       } else {
-        name = document.getElementById('hpp-m-name').value || "Kaos Custom DTF";
+        name = document.getElementById('hpp-m-name').value || "Kaos Custom Sablon";
         qty = parseInt(document.getElementById('hpp-m-qty').value) || 1;
-        let kaosPerPcs = parseFloat(document.getElementById('hpp-m-kaos').value.replace(/\./g, '')) || 0;
-        let dtfPerPcs = parseFloat(document.getElementById('hpp-m-dtf').value.replace(/\./g, '')) || 0;
-        let opTotal = parseFloat(document.getElementById('hpp-m-op').value.replace(/\./g, '')) || 0;
-        let packPerPcs = parseFloat(document.getElementById('hpp-m-pack').value.replace(/\./g, '')) || 0;
+        if(qty < 1) qty = 1;
         
-        let opPerPcs = opTotal / qty;
-        hppPerPcs = kaosPerPcs + dtfPerPcs + opPerPcs + packPerPcs;
+        let kaos = getCostPerPcs('hpp-m-kaos', 'hpp-m-kaos-tipe', qty);
+        let dtf = getCostPerPcs('hpp-m-dtf', 'hpp-m-dtf-tipe', qty);
+        let op = getCostPerPcs('hpp-m-op', 'hpp-m-op-tipe', qty);
+        let pack = getCostPerPcs('hpp-m-pack', 'hpp-m-pack-tipe', qty);
+        
+        hppPerPcs = kaos + dtf + op + pack;
         totalHPPOrder = hppPerPcs * qty;
       }
 
@@ -718,12 +790,12 @@
         <div class="mt-3 bg-white dark:bg-slate-900 p-3 rounded-lg border border-emerald-100 dark:border-emerald-800 shadow-sm text-center">
           <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Harga Jual Rekomendasi / Pcs</p>
           <p class="text-2xl font-mono-data font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">${formatRpKebalSensor(Math.ceil(hargaJualPerPcs))}</p>
-          <p class="text-[10px] text-gray-500 mt-1 font-bold">Total Omzet (${qty} Pcs) = ${formatRpKebalSensor(Math.ceil(totalHargaJual))}</p>
-        </div>
-      `;
+          <p class="text-[10px] text-gray-500 mt-1 font-bold">Total Omzet Estimasi = ${formatRpKebalSensor(Math.ceil(totalHargaJual))}</p>
+        </div>`;
       resBox.classList.remove('hidden');
     }
 
+    // FUNGSI LAINNYA
     function checkDueDateAlerts() {
       let container = document.getElementById('due-date-alert-container'); if (!container) return; container.innerHTML = ''; if (!globalData.routinePayments) return;
       let currentDay = new Date().getDate();
@@ -837,7 +909,12 @@
     function renderDebtRecap() {
       let container = document.getElementById('debt-recap-grid'); if (!container) return; container.innerHTML = ''; if (!globalData.debtData) return;
       Object.keys(globalData.debtData).forEach(k => { let item = globalData.debtData[k]; let total = parseFloat(item.total) || 0, paid = parseFloat(item.paid) || 0;
-        if (globalData.recentHistory) globalData.recentHistory.forEach(tx => { if (tx.category === k) { if (tx.cashflow === 'Cicilan / Utang Baru') total += tx.amount; if (tx.cashflow === 'Bayar Cicilan / Utang') paid += tx.amount; } });
+        if (globalData.recentHistory) globalData.recentHistory.forEach(tx => {
+          if (tx.category === k) {
+            if (tx.cashflow === 'Cicilan / Utang Baru') total += tx.amount;
+            if (tx.cashflow === 'Bayar Cicilan / Utang') paid += tx.amount;
+          }
+        });
         let unpaid = total - paid;
         container.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-2 text-xs"><div class="flex justify-between items-center"><div class="flex items-center gap-2"><p class="font-bold text-error text-sm">${k}</p><span class="text-[9px] px-2 py-0.5 bg-primary/10 text-primary dark:text-blue-400 rounded-full font-bold">${item.category || 'Utang'}</span></div><span class="text-[10px] px-2 py-0.5 bg-red-100 dark:bg-red-950 text-error rounded-full font-bold">Bayar: ${item.period || 'Bulanan'} | Sisa: ${Math.ceil((unpaid > 0 ? unpaid : 0) / (item.monthlyPay || 1))} Sesi</span></div><div class="grid grid-cols-4 gap-2 text-[11px]"><div><span class="text-gray-500">Total Utang:</span><br/><b class="font-mono-data">${formatRp(total)}</b></div><div><span class="text-gray-500">Nominal Bayar:</span><br/><b class="font-mono-data text-primary dark:text-blue-400">${formatRp(item.monthlyPay)}</b></div><div><span class="text-gray-500">Paid (Dibayar):</span><br/><b class="font-mono-data text-green-600 dark:text-green-400">${formatRp(paid)}</b></div><div><span class="text-gray-500">Unpaid (Sisa):</span><br/><b class="font-mono-data text-error">${formatRp(unpaid > 0 ? unpaid : 0)}</b></div></div></div>`;
       });
@@ -937,20 +1014,71 @@
     }
 
     function renderHistoryTable() {
-      let tbody = document.getElementById('tx-history-tbody'); if (!tbody) return; tbody.innerHTML = ''; let historyList = globalData.recentHistory || []; if (historyList.length === 0) { tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400">Belum ada transaksi diinput.</td></tr>`; return; }
-      let filterCashflow = document.getElementById('rep-filter-cashflow') ? document.getElementById('rep-filter-cashflow').value : 'all'; let filterAcc = document.getElementById('rep-filter-account') ? document.getElementById('rep-filter-account').value : 'all';
-      let filterMode = document.getElementById('rep-filter-mode') ? document.getElementById('rep-filter-mode').value : 'all'; let startDate = document.getElementById('rep-date-start') ? document.getElementById('rep-date-start').value : ''; let endDate = document.getElementById('rep-date-end') ? document.getElementById('rep-date-end').value : ''; let exactDate = document.getElementById('rep-exact-date') ? document.getElementById('rep-exact-date').value : ''; let exactMonth = document.getElementById('rep-exact-month') ? document.getElementById('rep-exact-month').value : ''; let exactYear = document.getElementById('rep-exact-year') ? document.getElementById('rep-exact-year').value : '';
+      let tbody = document.getElementById('tx-history-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      let historyList = globalData.recentHistory || [];
+      if (historyList.length === 0) { 
+        tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400">Belum ada transaksi diinput.</td></tr>`; 
+        return; 
+      }
+      
+      let filterCashflow = document.getElementById('rep-filter-cashflow') ? document.getElementById('rep-filter-cashflow').value : 'all';
+      let filterAcc = document.getElementById('rep-filter-account') ? document.getElementById('rep-filter-account').value : 'all';
+      
+      let filterMode = document.getElementById('rep-filter-mode') ? document.getElementById('rep-filter-mode').value : 'all';
+      let startDate = document.getElementById('rep-date-start') ? document.getElementById('rep-date-start').value : '';
+      let endDate = document.getElementById('rep-date-end') ? document.getElementById('rep-date-end').value : '';
+      let exactDate = document.getElementById('rep-exact-date') ? document.getElementById('rep-exact-date').value : '';
+      let exactMonth = document.getElementById('rep-exact-month') ? document.getElementById('rep-exact-month').value : '';
+      let exactYear = document.getElementById('rep-exact-year') ? document.getElementById('rep-exact-year').value : '';
+
       let filteredList = historyList.filter(tx => {
-        if (filterCashflow !== 'all' && tx.cashflow !== filterCashflow) return false; if (filterAcc !== 'all' && tx.dariAcc !== filterAcc && tx.keAcc !== filterAcc) return false;
+        if (filterCashflow !== 'all' && tx.cashflow !== filterCashflow) return false;
+        if (filterAcc !== 'all' && tx.dariAcc !== filterAcc && tx.keAcc !== filterAcc) return false;
+        
         let txDate = tx.rawDate || ""; 
-        if (filterMode === 'date_range' && startDate && endDate) { if (txDate < startDate || txDate > endDate) return false; } else if (filterMode === 'exact_date' && exactDate) { if (txDate !== exactDate) return false; } else if (filterMode === 'exact_month' && exactMonth) { if (!txDate.startsWith(exactMonth)) return false; } else if (filterMode === 'exact_year' && exactYear) { if (!txDate.startsWith(exactYear)) return false; }
+        if (filterMode === 'date_range' && startDate && endDate) {
+          if (txDate < startDate || txDate > endDate) return false;
+        } else if (filterMode === 'exact_date' && exactDate) {
+          if (txDate !== exactDate) return false;
+        } else if (filterMode === 'exact_month' && exactMonth) {
+          if (!txDate.startsWith(exactMonth)) return false; 
+        } else if (filterMode === 'exact_year' && exactYear) {
+          if (!txDate.startsWith(exactYear)) return false; 
+        }
         return true;
       });
-      if (filteredList.length === 0) { tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400">Tidak ada riwayat transaksi pada rentang filter ini.</td></tr>`; return; }
+
+      if (filteredList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400">Tidak ada riwayat transaksi pada rentang filter ini.</td></tr>`;
+        return;
+      }
+
       filteredList.forEach((tx) => {
-        let badgeColor = "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300"; if (tx.cashflow === 'Income') badgeColor = "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300"; if (tx.cashflow === 'Spending') badgeColor = "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300";
+        let badgeColor = "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300";
+        if (tx.cashflow === 'Income') badgeColor = "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300";
+        if (tx.cashflow === 'Spending') badgeColor = "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300";
+
         let originalIdx = globalData.recentHistory.indexOf(tx);
-        tbody.innerHTML += `<tr class="hover:bg-surface-container-low transition-colors hidden-action-row"><td class="p-3 font-mono-data text-[11px] text-gray-500">${tx.dateTime || '-'}</td><td class="p-3 font-bold text-on-surface">${tx.name}</td><td class="p-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${badgeColor}">${tx.cashflow}</span></td><td class="p-3 text-on-surface-variant">${tx.category}</td><td class="p-3 text-gray-500">${tx.dariAcc}</td><td class="p-3 text-gray-500">${tx.keAcc}</td><td class="p-3 text-right"><div class="flex items-center justify-end gap-2"><span class="font-mono-data font-extrabold text-primary dark:text-blue-400">${formatRpKebalSensor(tx.amount)}</span><button onclick="openEditModal(${originalIdx})" class="p-1 rounded hover:bg-surface-container text-gray-400 hover:text-primary transition-colors"><span class="material-symbols-outlined text-sm">edit</span></button><button onclick="deleteTransaction(${originalIdx})" class="delete-action-btn p-1 rounded hover:bg-red-100 text-gray-300 hover:text-error transition-colors"><span class="material-symbols-outlined text-sm">delete</span></button></div></td></tr>`;
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-surface-container-low transition-colors hidden-action-row">
+            <td class="p-3 font-mono-data text-[11px] text-gray-500">${tx.dateTime || '-'}</td>
+            <td class="p-3 font-bold text-on-surface">${tx.name}</td>
+            <td class="p-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${badgeColor}">${tx.cashflow}</span></td>
+            <td class="p-3 text-on-surface-variant">${tx.category}</td>
+            <td class="p-3 text-gray-500">${tx.dariAcc}</td>
+            <td class="p-3 text-gray-500">${tx.keAcc}</td>
+            <td class="p-3 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <span class="font-mono-data font-extrabold text-primary dark:text-blue-400">${formatRpKebalSensor(tx.amount)}</span>
+                <button onclick="openEditModal(${originalIdx})" class="p-1 rounded hover:bg-surface-container text-gray-400 hover:text-primary transition-colors"><span class="material-symbols-outlined text-sm">edit</span></button>
+                <button onclick="deleteTransaction(${originalIdx})" class="delete-action-btn p-1 rounded hover:bg-red-100 text-gray-300 hover:text-error transition-colors"><span class="material-symbols-outlined text-sm">delete</span></button>
+              </div>
+            </td>
+          </tr>
+        `;
       });
     }
 
