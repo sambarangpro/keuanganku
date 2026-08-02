@@ -677,16 +677,61 @@
             </div>
           </button>
 
-          <!-- Tombol 3: Pembiayaan Motor / Murabahah -->
-          <button onclick="openCalcSub('calc-sub-murabahah')" class="p-5 bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl shadow-sm hover:border-primary transition-all text-left flex items-start gap-4 group">
-            <div class="p-3 bg-purple-100 dark:bg-purple-950 text-purple-600 rounded-xl group-hover:scale-110 transition-transform">
-              <span class="material-symbols-outlined text-2xl">two_wheeler</span>
+         <!-- SUB 3: KALKULATOR PEMBIAYAAN MOTOR (MURABAHAH) -->
+        <div id="calc-sub-murabahah" class="calc-sub-item hidden bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-6 space-y-4 shadow-sm">
+          <h3 class="font-bold text-base text-purple-600 flex items-center gap-2"><span class="material-symbols-outlined">two_wheeler</span> Kalkulator Pembiayaan (Murabahah)</h3>
+          
+          <div class="space-y-3 text-xs">
+            <div>
+              <label class="font-bold text-gray-500">Harga Barang / Motor Asli (Rp)</label>
+              <input type="text" id="mur-harga" placeholder="Contoh: 25.000.000" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-xl font-mono-data bg-surface text-on-surface mt-1">
             </div>
             <div>
-              <h3 class="font-bold text-sm text-on-surface group-hover:text-primary">Pembiayaan Motor (Murabahah)</h3>
-              <p class="text-[11px] text-gray-500 mt-1">Simulasi kredit mandiri (tanpa DP/dengan DP) memperhitungkan margin & inflasi.</p>
+              <label class="font-bold text-gray-500">Uang Muka / DP (Rp)</label>
+              <input type="text" id="mur-dp" placeholder="0 (Kosongkan jika tanpa DP)" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-xl font-mono-data bg-surface text-on-surface mt-1">
             </div>
-          </button>
+            <div>
+              <label class="font-bold text-gray-500">Tenor / Durasi Cicilan (Bulan)</label>
+              <select id="mur-tenor" class="w-full p-2 border rounded-xl bg-surface text-on-surface mt-1 font-bold">
+                <option value="6">6 Bulan</option>
+                <option value="12" selected>12 Bulan (1 Tahun)</option>
+                <option value="18">18 Bulan (1.5 Tahun)</option>
+                <option value="24">24 Bulan (2 Tahun)</option>
+                <option value="36">36 Bulan (3 Tahun)</option>
+                <option value="48">48 Bulan (4 Tahun)</option>
+              </select>
+            </div>
+            
+            <div class="p-3 bg-surface-container dark:bg-slate-900 rounded-xl border border-outline-variant space-y-2 mt-2">
+              <label class="font-bold text-primary dark:text-blue-400">Pengaturan Profit / Margin</label>
+              <select id="mur-margin-type" class="w-full p-2 border rounded-lg bg-white dark:bg-slate-800 text-on-surface font-semibold text-[11px]">
+                <option value="fix_nominal">Margin Fix (Nominal Rp) di Awal</option>
+                <option value="fix_pct">Margin Fix (%) dari Pokok di Awal</option>
+                <option value="annual_pct" selected>Margin Dinamis (% per Tahun)</option>
+              </select>
+              <input type="text" id="mur-margin-val" placeholder="Masukkan Angka / Persentase..." oninput="formatInputNominal(this)" class="w-full p-2 border rounded-lg font-mono-data bg-white dark:bg-slate-800 text-on-surface mt-1">
+            </div>
+
+            <!-- TOGGLE INFLASI CERDAS -->
+            <div class="flex items-center gap-2 mt-2 pt-2 border-t border-outline-variant">
+              <input type="checkbox" id="mur-inflasi-toggle" onchange="document.getElementById('mur-inflasi-box').classList.toggle('hidden', !this.checked)" class="rounded border-outline-variant text-purple-600 focus:ring-purple-500 w-4 h-4 cursor-pointer">
+              <label for="mur-inflasi-toggle" class="font-bold text-gray-500 cursor-pointer">Pertimbangkan Inflasi & Risiko?</label>
+            </div>
+            <div id="mur-inflasi-box" class="hidden pl-6 pb-2">
+               <div class="flex items-center gap-2 mt-1">
+                 <input type="number" id="mur-inflasi-val" value="3.5" step="0.1" class="w-20 p-1.5 border rounded-lg font-mono-data bg-surface text-on-surface text-center">
+                 <span class="text-[10px] font-bold text-gray-500">% / Tahun (Default 3.5%)</span>
+               </div>
+            </div>
+
+            <button onclick="calculateMurabahah()" class="w-full py-3 bg-purple-600 text-white font-bold rounded-xl shadow mt-4 hover:brightness-110 transition-all">Kalkulasi Simulasi Akad</button>
+
+            <!-- KOTAK HASIL -->
+            <div id="calc-mur-result" class="hidden p-4 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 rounded-xl mt-3 space-y-2">
+               <!-- Di-inject via JS -->
+            </div>
+          </div>
+        </div>
 
           <!-- Tombol 4: Real Price & Worth-It Meter -->
           <button onclick="openCalcSub('calc-sub-worthit')" class="p-5 bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl shadow-sm hover:border-primary transition-all text-left flex items-start gap-4 group">
@@ -2181,6 +2226,134 @@
           <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Harga Jual Minimum</p>
           <p class="text-2xl font-mono-data font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">${formatRp(hargaJual)}</p>
           <p class="text-[9px] text-gray-400 mt-1">Jual di bawah harga ini = target profit tidak tercapai.</p>
+        </div>
+      `;
+      resultBox.classList.remove('hidden');
+    }// --- FUNGSI KALKULATOR MURABAHAH (PEMBIAYAAN BARANG) ---
+    function calculateMurabahah() {
+      let hargaBarang = parseFloat(document.getElementById('mur-harga').value.replace(/\./g, '')) || 0;
+      let dp = parseFloat(document.getElementById('mur-dp').value.replace(/\./g, '')) || 0;
+      let tenorBulan = parseInt(document.getElementById('mur-tenor').value) || 12;
+      let marginType = document.getElementById('mur-margin-type').value;
+      let marginValRaw = document.getElementById('mur-margin-val').value.replace(/\./g, '');
+      let marginVal = parseFloat(marginValRaw) || 0;
+      
+      let isInflasi = document.getElementById('mur-inflasi-toggle').checked;
+      let inflasiRate = parseFloat(document.getElementById('mur-inflasi-val').value) || 0;
+
+      // Validasi Dasar
+      if (hargaBarang <= 0) { alert("Masukkan Harga Asli Barang/Motor terlebih dahulu!"); return; }
+      let pokokPembiayaan = hargaBarang - dp;
+      if (pokokPembiayaan <= 0) { alert("Nominal DP tidak boleh lebih besar atau sama dengan Harga Barang."); return; }
+
+      let totalMargin = 0;
+      let lamaTahun = tenorBulan / 12;
+
+      // 1. Hitung Margin sesuai tipe yang dipilih
+      if (marginType === 'fix_nominal') {
+        totalMargin = marginVal; // Sesuai angka yang diinput (Rp)
+      } else if (marginType === 'fix_pct') {
+        totalMargin = pokokPembiayaan * (marginVal / 100); // % Fix dari total pokok
+      } else if (marginType === 'annual_pct') {
+        totalMargin = pokokPembiayaan * (marginVal / 100) * lamaTahun; // % per Tahun dikali durasi cicilan
+      }
+
+      // 2. Hitung Penyesuaian Inflasi (Jika Aktif)
+      let nilaiInflasi = 0;
+      if (isInflasi) {
+        nilaiInflasi = pokokPembiayaan * (inflasiRate / 100) * lamaTahun;
+      }
+
+      // 3. Kalkulasi Akhir
+      let totalHargaAkad = pokokPembiayaan + totalMargin + nilaiInflasi;
+      let angsuranPerBulan = totalHargaAkad / tenorBulan;
+
+      let resultBox = document.getElementById('calc-mur-result');
+      resultBox.innerHTML = `
+        <div class="flex justify-between text-[11px] text-gray-600 dark:text-gray-300 mt-1">
+          <span>Sisa Pokok (Setelah DP):</span> <b class="font-mono-data">${formatRp(pokokPembiayaan)}</b>
+        </div>
+        <div class="flex justify-between text-[11px] text-gray-600 dark:text-gray-300 mt-1">
+          <span>Total Margin Profit:</span> <b class="text-green-600 dark:text-green-400 font-mono-data">+ ${formatRp(totalMargin)}</b>
+        </div>
+        ${isInflasi ? `
+        <div class="flex justify-between text-[11px] text-gray-600 dark:text-gray-300 mt-1 border-b border-purple-200 dark:border-purple-800 pb-2">
+          <span>Penyesuaian Inflasi & Risiko (${inflasiRate}%/thn):</span> <b class="text-orange-500 font-mono-data">+ ${formatRp(nilaiInflasi)}</b>
+        </div>
+        ` : '<div class="border-b border-purple-200 dark:border-purple-800 pt-2"></div>'}
+        
+        <div class="flex justify-between text-[12px] font-bold text-purple-700 dark:text-purple-300 mt-2 uppercase tracking-wider">
+          <span>Total Harga Akad (Fix):</span> <b class="font-mono-data">${formatRp(totalHargaAkad)}</b>
+        </div>
+        
+        <div class="mt-4 bg-white dark:bg-slate-900 p-4 rounded-xl border border-purple-100 dark:border-purple-800 shadow-sm text-center">
+          <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Angsuran Flat per Bulan</p>
+          <p class="text-3xl font-mono-data font-extrabold text-purple-600 dark:text-purple-400 mt-1">${formatRp(Math.ceil(angsuranPerBulan))}</p>
+          <p class="text-[10px] text-gray-400 mt-2 font-medium">Selama <b>${tenorBulan} Bulan</b> | Profit Riil: <b>${formatRp(totalMargin)}</b></p>
+        </div>
+      `;
+      resultBox.classList.remove('hidden');
+    // --- FUNGSI KALKULATOR MURABAHAH (PEMBIAYAAN BARANG) ---
+    function calculateMurabahah() {
+      let hargaBarang = parseFloat(document.getElementById('mur-harga').value.replace(/\./g, '')) || 0;
+      let dp = parseFloat(document.getElementById('mur-dp').value.replace(/\./g, '')) || 0;
+      let tenorBulan = parseInt(document.getElementById('mur-tenor').value) || 12;
+      let marginType = document.getElementById('mur-margin-type').value;
+      let marginValRaw = document.getElementById('mur-margin-val').value.replace(/\./g, '');
+      let marginVal = parseFloat(marginValRaw) || 0;
+      
+      let isInflasi = document.getElementById('mur-inflasi-toggle').checked;
+      let inflasiRate = parseFloat(document.getElementById('mur-inflasi-val').value) || 0;
+
+      // Validasi Dasar
+      if (hargaBarang <= 0) { alert("Masukkan Harga Asli Barang/Motor terlebih dahulu!"); return; }
+      let pokokPembiayaan = hargaBarang - dp;
+      if (pokokPembiayaan <= 0) { alert("Nominal DP tidak boleh lebih besar atau sama dengan Harga Barang."); return; }
+
+      let totalMargin = 0;
+      let lamaTahun = tenorBulan / 12;
+
+      // 1. Hitung Margin sesuai tipe yang dipilih
+      if (marginType === 'fix_nominal') {
+        totalMargin = marginVal; // Sesuai angka yang diinput (Rp)
+      } else if (marginType === 'fix_pct') {
+        totalMargin = pokokPembiayaan * (marginVal / 100); // % Fix dari total pokok
+      } else if (marginType === 'annual_pct') {
+        totalMargin = pokokPembiayaan * (marginVal / 100) * lamaTahun; // % per Tahun dikali durasi cicilan
+      }
+
+      // 2. Hitung Penyesuaian Inflasi (Jika Aktif)
+      let nilaiInflasi = 0;
+      if (isInflasi) {
+        nilaiInflasi = pokokPembiayaan * (inflasiRate / 100) * lamaTahun;
+      }
+
+      // 3. Kalkulasi Akhir
+      let totalHargaAkad = pokokPembiayaan + totalMargin + nilaiInflasi;
+      let angsuranPerBulan = totalHargaAkad / tenorBulan;
+
+      let resultBox = document.getElementById('calc-mur-result');
+      resultBox.innerHTML = `
+        <div class="flex justify-between text-[11px] text-gray-600 dark:text-gray-300 mt-1">
+          <span>Sisa Pokok (Setelah DP):</span> <b class="font-mono-data">${formatRp(pokokPembiayaan)}</b>
+        </div>
+        <div class="flex justify-between text-[11px] text-gray-600 dark:text-gray-300 mt-1">
+          <span>Total Margin Profit:</span> <b class="text-green-600 dark:text-green-400 font-mono-data">+ ${formatRp(totalMargin)}</b>
+        </div>
+        ${isInflasi ? `
+        <div class="flex justify-between text-[11px] text-gray-600 dark:text-gray-300 mt-1 border-b border-purple-200 dark:border-purple-800 pb-2">
+          <span>Penyesuaian Inflasi & Risiko (${inflasiRate}%/thn):</span> <b class="text-orange-500 font-mono-data">+ ${formatRp(nilaiInflasi)}</b>
+        </div>
+        ` : '<div class="border-b border-purple-200 dark:border-purple-800 pt-2"></div>'}
+        
+        <div class="flex justify-between text-[12px] font-bold text-purple-700 dark:text-purple-300 mt-2 uppercase tracking-wider">
+          <span>Total Harga Akad (Fix):</span> <b class="font-mono-data">${formatRp(totalHargaAkad)}</b>
+        </div>
+        
+        <div class="mt-4 bg-white dark:bg-slate-900 p-4 rounded-xl border border-purple-100 dark:border-purple-800 shadow-sm text-center">
+          <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Angsuran Flat per Bulan</p>
+          <p class="text-3xl font-mono-data font-extrabold text-purple-600 dark:text-purple-400 mt-1">${formatRp(Math.ceil(angsuranPerBulan))}</p>
+          <p class="text-[10px] text-gray-400 mt-2 font-medium">Selama <b>${tenorBulan} Bulan</b> | Profit Riil: <b>${formatRp(totalMargin)}</b></p>
         </div>
       `;
       resultBox.classList.remove('hidden');
