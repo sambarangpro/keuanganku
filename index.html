@@ -2106,6 +2106,84 @@
         document.getElementById('setup-unlocked-content').classList.remove('hidden');
         renderSetupView();
       } else alert('Password salah!');
+    }// --- FUNGSI KALKULATOR HPP & MARGIN ---
+    let currentHPPType = 'fisik';
+    
+    function setHPPType(type) {
+      currentHPPType = type;
+      let btnFisik = document.getElementById('btn-hpp-fisik');
+      let btnJasa = document.getElementById('btn-hpp-jasa');
+      let formFisik = document.getElementById('hpp-form-fisik');
+      let formJasa = document.getElementById('hpp-form-jasa');
+
+      if(type === 'fisik') {
+        btnFisik.className = "flex-1 py-1.5 bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 font-bold rounded shadow text-[10px] uppercase transition-all";
+        btnJasa.className = "flex-1 py-1.5 text-gray-500 font-bold rounded text-[10px] uppercase transition-all";
+        formFisik.classList.remove('hidden');
+        formJasa.classList.add('hidden');
+      } else {
+        btnJasa.className = "flex-1 py-1.5 bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 font-bold rounded shadow text-[10px] uppercase transition-all";
+        btnFisik.className = "flex-1 py-1.5 text-gray-500 font-bold rounded text-[10px] uppercase transition-all";
+        formJasa.classList.remove('hidden');
+        formFisik.classList.add('hidden');
+      }
+    }
+
+    function calculateHPP() {
+      let totalModal = 0;
+      let unitQty = 1;
+      let name = "Produk/Jasa";
+      
+      if(currentHPPType === 'fisik') {
+        name = document.getElementById('hpp-f-name').value || "Produk Fisik";
+        let bahan = parseFloat(document.getElementById('hpp-f-bahan').value.replace(/\./g, '')) || 0;
+        let kerja = parseFloat(document.getElementById('hpp-f-kerja').value.replace(/\./g, '')) || 0;
+        let overhead = parseFloat(document.getElementById('hpp-f-overhead').value.replace(/\./g, '')) || 0;
+        unitQty = parseFloat(document.getElementById('hpp-f-qty').value) || 1;
+        totalModal = bahan + kerja + overhead;
+      } else {
+        name = document.getElementById('hpp-j-name').value || "Layanan Jasa";
+        let honor = parseFloat(document.getElementById('hpp-j-honor').value.replace(/\./g, '')) || 0;
+        let alat = parseFloat(document.getElementById('hpp-j-alat').value.replace(/\./g, '')) || 0;
+        let op = parseFloat(document.getElementById('hpp-j-operasional').value.replace(/\./g, '')) || 0;
+        totalModal = honor + alat + op;
+      }
+
+      // Validasi
+      if (unitQty <= 0) unitQty = 1;
+
+      // Perhitungan Harga Pokok Penjualan (HPP)
+      let hppPerUnit = totalModal / unitQty;
+      let marginPct = parseFloat(document.getElementById('hpp-margin-pct').value) || 0;
+      
+      // Markup Keuntungan
+      let profitNominal = hppPerUnit * (marginPct / 100);
+      let hargaJual = hppPerUnit + profitNominal;
+
+      let resultBox = document.getElementById('calc-hpp-result');
+      resultBox.innerHTML = `
+        <p class="text-[13px] text-emerald-800 dark:text-emerald-300 font-bold border-b border-emerald-200 dark:border-emerald-700 pb-1.5 uppercase">${name}</p>
+        
+        <div class="flex justify-between text-[11px] text-gray-600 dark:text-gray-300 mt-2">
+          <span>Total Modal Awal:</span> <b>${formatRp(totalModal)}</b>
+        </div>
+        
+        ${currentHPPType === 'fisik' ? `
+        <div class="flex justify-between text-[11px] text-gray-600 dark:text-gray-300 mt-1">
+          <span>HPP per Unit (${unitQty} Pcs):</span> <b>${formatRp(hppPerUnit)}</b>
+        </div>` : ''}
+        
+        <div class="flex justify-between text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 font-bold">
+          <span>Target Profit (+${marginPct}%):</span> <b>+ ${formatRp(profitNominal)}</b>
+        </div>
+        
+        <div class="mt-3 bg-white dark:bg-slate-900 p-3 rounded-lg border border-emerald-100 dark:border-emerald-800 shadow-sm text-center">
+          <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Harga Jual Minimum</p>
+          <p class="text-2xl font-mono-data font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">${formatRp(hargaJual)}</p>
+          <p class="text-[9px] text-gray-400 mt-1">Jual di bawah harga ini = target profit tidak tercapai.</p>
+        </div>
+      `;
+      resultBox.classList.remove('hidden');
     }
   </script>
 </body>
