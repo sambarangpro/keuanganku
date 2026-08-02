@@ -5,10 +5,7 @@
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
   <title>KEUANGANKU - Financial Planner Pro</title>
   
-  <!-- Favicon standar -->
   <link rel="icon" type="image/png" href="logo.png"/>
-  
-  <!-- Tambahan tag khusus untuk perangkat Apple / iOS -->
   <link rel="apple-touch-icon" href="logo.png"/>
   <link rel="apple-touch-icon" sizes="152x152" href="logo.png"/>
   <link rel="apple-touch-icon" sizes="180x180" href="logo.png"/>
@@ -16,7 +13,6 @@
 
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Plugin Chart.js untuk menampilkan Label Data Nominal di atas diagram -->
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet"/>
@@ -71,7 +67,6 @@
     html.dark input, html.dark select { background-color: #090d16 !important; color: #ffffff !important; border-color: #475569 !important; }
     html.dark .text-gray-500, html.dark .text-gray-600 { color: #94a3b8 !important; }
 
-    /* Tombol Hapus tersembunyi di riwayat, muncul saat baris di-hover */
     .hidden-action-row .delete-action-btn { opacity: 0; transition: opacity 0.2s ease-in-out; }
     .hidden-action-row:hover .delete-action-btn { opacity: 1; }
 
@@ -194,7 +189,7 @@
     </div>
   </header>
 
-  <!-- TOMBOL MENGAMBANG (FLOATING ACTION BUTTON) UNTUK SENSOR SALDO -->
+  <!-- TOMBOL MENGAMBANG -->
   <button onclick="toggleBalanceMask()" class="fixed bottom-24 right-6 z-50 bg-slate-800 dark:bg-slate-600 text-white p-3 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.2)] border border-slate-600 dark:border-slate-500 hover:scale-110 active:scale-95 transition-transform flex items-center justify-center group" title="Sembunyikan/Tampilkan Saldo">
     <span class="material-symbols-outlined" id="icon-mask-balance-fab" style="font-size: 26px;">visibility_off</span>
   </button>
@@ -206,7 +201,6 @@
       <div id="due-date-alert-container"></div>
       <div id="receivable-alert-container"></div>
 
-      <!-- GRADASI BIRU MENARIK -->
       <section class="bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-600 text-white p-6 rounded-2xl flex flex-col justify-between relative overflow-hidden shadow-xl shadow-blue-500/20">
         <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
         <div>
@@ -383,7 +377,7 @@
                 <option value="3" data-i18n="m_apr">April</option>
                 <option value="4" data-i18n="m_mei">Mei</option>
                 <option value="5" data-i18n="m_jun">Juni</option>
-                <option value="6" selected data-i18n="m_jul">Juli</option>
+                <option value="6" data-i18n="m_jul">Juli</option>
                 <option value="7" data-i18n="m_agu">Agustus</option>
                 <option value="8" data-i18n="m_sep">September</option>
                 <option value="9" data-i18n="m_okt">Oktober</option>
@@ -448,7 +442,6 @@
 
       </section>
 
-      <!-- HAK CIPTA FOOTER -->
       <footer class="pt-6 pb-2 text-center border-t border-outline-variant/50">
         <p class="text-[10px] text-gray-400 font-medium tracking-widest uppercase">By: Sambarang Production</p>
       </footer>
@@ -638,7 +631,6 @@
         </div>
       </section>
 
-      <!-- HAK CIPTA FOOTER -->
       <footer class="pt-6 pb-2 text-center border-t border-outline-variant/50">
         <p class="text-[10px] text-gray-400 font-medium tracking-widest uppercase">By: Sambarang Production</p>
       </footer>
@@ -924,9 +916,94 @@
       </footer>
     </div>
 
+    <!-- PAGE 4: KALKULATOR FINANSIAL (BARU) -->
+    <div id="page-kalkulator" class="hidden space-y-6">
+      
+      <!-- MENU UTAMA KALKULATOR -->
+      <div id="calc-menu-grid" class="space-y-4">
+        <div>
+          <h2 class="font-headline-md font-bold text-on-surface text-xl">Kalkulator Finansial</h2>
+          <p class="text-xs text-gray-500">Pilih alat bantu perhitungan keuangan Anda.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Tombol 1: Konversi Mata Uang -->
+          <button onclick="openCalcSub('calc-sub-currency')" class="p-5 bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl shadow-sm hover:border-primary transition-all text-left flex items-start gap-4 group">
+            <div class="p-3 bg-blue-100 dark:bg-blue-950 text-primary rounded-xl group-hover:scale-110 transition-transform">
+              <span class="material-symbols-outlined text-2xl">currency_exchange</span>
+            </div>
+            <div>
+              <h3 class="font-bold text-sm text-on-surface group-hover:text-primary">Konversi Mata Uang</h3>
+              <p class="text-[11px] text-gray-500 mt-1">Konversi nilai uang antar negara dengan kurs pasar terbaru secara real-time.</p>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- TEMPAT TAMPILAN KALKULATOR TERPILIH (SUB-SCREENS) -->
+      <div id="calc-sub-container" class="hidden space-y-4">
+        <button onclick="backToCalcMenu()" class="text-xs font-bold text-primary flex items-center gap-1 hover:underline">
+          <span class="material-symbols-outlined text-sm">arrow_back</span> Kembali ke Menu Kalkulator
+        </button>
+
+        <!-- SUB 1: KALKULATOR KONVERSI MATA UANG -->
+        <div id="calc-sub-currency" class="calc-sub-item hidden bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-6 space-y-4 shadow-sm">
+          <h3 class="font-bold text-base text-primary flex items-center gap-2">
+            <span class="material-symbols-outlined">currency_exchange</span> Konversi Mata Uang (Real-time)
+          </h3>
+          <div class="space-y-3 text-xs">
+            <div>
+              <label class="font-bold text-gray-500">Nominal yang ingin dikonversi</label>
+              <input type="text" id="calc-curr-amount" placeholder="Contoh: 1.000.000" oninput="formatInputNominal(this)" class="w-full p-2.5 border rounded-xl font-mono-data font-bold mt-1 bg-surface text-on-surface focus:border-primary outline-none">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="font-bold text-gray-500">Dari Kurs Asal</label>
+                <select id="calc-curr-from" class="w-full p-2.5 border rounded-xl font-bold mt-1 bg-surface text-on-surface outline-none cursor-pointer">
+                  <option value="IDR" selected>IDR - Rupiah</option>
+                  <option value="USD">USD - Dolar AS</option>
+                  <option value="EUR">EUR - Euro</option>
+                  <option value="SAR">SAR - Riyal Arab</option>
+                  <option value="MYR">MYR - Ringgit</option>
+                  <option value="SGD">SGD - Dolar Singapur</option>
+                  <option value="JPY">JPY - Yen Jepang</option>
+                  <option value="KRW">KRW - Won Korea</option>
+                </select>
+              </div>
+              <div>
+                <label class="font-bold text-gray-500">Ke Kurs Tujuan</label>
+                <select id="calc-curr-to" class="w-full p-2.5 border rounded-xl font-bold mt-1 bg-surface text-on-surface outline-none cursor-pointer">
+                  <option value="USD" selected>USD - Dolar AS</option>
+                  <option value="IDR">IDR - Rupiah</option>
+                  <option value="EUR">EUR - Euro</option>
+                  <option value="SAR">SAR - Riyal Arab</option>
+                  <option value="MYR">MYR - Ringgit</option>
+                  <option value="SGD">SGD - Dolar Singapur</option>
+                  <option value="JPY">JPY - Yen Jepang</option>
+                  <option value="KRW">KRW - Won Korea</option>
+                </select>
+              </div>
+            </div>
+            <button onclick="calculateCurrency()" class="w-full py-3 bg-primary text-white font-bold rounded-xl shadow mt-2 hover:brightness-110 flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined text-sm">sync</span> Konversi Sekarang
+            </button>
+            
+            <div id="calc-curr-loading" class="hidden text-center py-4 text-primary font-bold text-[11px] animate-pulse">Mengambil data kurs pasar saat ini...</div>
+            
+            <div id="calc-curr-result" class="hidden p-4 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-xl text-center mt-3">
+              <p class="text-[10px] text-gray-500 font-bold uppercase" id="calc-curr-label-from"></p>
+              <p class="text-2xl font-mono-data font-extrabold text-primary dark:text-blue-400 mt-1" id="calc-curr-val-to"></p>
+              <p class="text-[9px] text-gray-400 mt-2 italic" id="calc-curr-rate-info"></p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </main>
 
-  <!-- BOTTOM NAVBAR -->
+  <!-- BOTTOM NAVBAR DENGAN TAMBAHAN TAB KALKULATOR -->
   <nav class="fixed bottom-0 left-0 w-full z-40 flex justify-around items-center py-2 bg-surface border-t border-outline-variant shadow-lg">
     <button onclick="navTo('dashboard')" id="nav-dash" class="flex flex-col items-center text-primary px-4 py-1 font-bold">
       <span class="material-symbols-outlined">dashboard</span>
@@ -935,6 +1012,11 @@
     <button onclick="navTo('transaksi')" id="nav-tx" class="flex flex-col items-center text-on-surface-variant px-4 py-1 hover:text-primary">
       <span class="material-symbols-outlined">receipt_long</span>
       <span class="font-label-caps text-[10px] mt-0.5" data-i18n="nav_tx">Transaksi</span>
+    </button>
+    <!-- TOMBOL KALKULATOR BARU -->
+    <button onclick="navTo('kalkulator')" id="nav-calc" class="flex flex-col items-center text-on-surface-variant px-4 py-1 hover:text-primary">
+      <span class="material-symbols-outlined">calculate</span>
+      <span class="font-label-caps text-[10px] mt-0.5">Kalkulator</span>
     </button>
     <button onclick="navTo('setup')" id="nav-setup" class="flex flex-col items-center text-on-surface-variant px-4 py-1 hover:text-primary">
       <span class="material-symbols-outlined">settings</span>
@@ -981,7 +1063,7 @@
         iconFab.textContent = isBalanceMasked ? "visibility_off" : "visibility";
       }
       renderDashboard();
-      renderHistoryTable(); // UPDATE: Sinkronisasi pembaruan ke tabel Riwayat
+      renderHistoryTable();
     }
 
     function changeLanguage(lang) {
@@ -1030,14 +1112,13 @@
 
     let globalData = {};
 
-        window.onload = function() {
+    window.onload = function() {
       loadStorageData();
       let dateInput = document.getElementById('tx-date');
       if (dateInput) dateInput.valueAsDate = new Date();
       requestNotificationPermission();
 
-      // KODE BARU: Otomatis memilih bulan saat ini di seluruh sistem pelaporan
-      let currentMonthIndex = new Date().getMonth(); // Akan membaca bulan 7 (Agustus)
+      let currentMonthIndex = new Date().getMonth();
       let monthDropdown = document.getElementById('monthly-select-dropdown');
       if (monthDropdown) {
         monthDropdown.value = currentMonthIndex;
@@ -1090,9 +1171,10 @@
       checkDueDateAlerts(); checkReceivableAlerts();
     }
 
+    // UPDATE: Navigasi ditambah 1 page (Kalkulator)
     function navTo(page) {
-      ['page-dashboard', 'page-transaksi', 'page-setup'].forEach(id => { let el = document.getElementById(id); if(el) el.classList.add('hidden'); });
-      ['nav-dash', 'nav-tx', 'nav-setup'].forEach(id => { let el = document.getElementById(id); if(el) el.className = "flex flex-col items-center text-on-surface-variant px-4 py-1 hover:text-primary"; });
+      ['page-dashboard', 'page-transaksi', 'page-setup', 'page-kalkulator'].forEach(id => { let el = document.getElementById(id); if(el) el.classList.add('hidden'); });
+      ['nav-dash', 'nav-tx', 'nav-setup', 'nav-calc'].forEach(id => { let el = document.getElementById(id); if(el) el.className = "flex flex-col items-center text-on-surface-variant px-4 py-1 hover:text-primary"; });
 
       let headerTitle = document.getElementById('header-brand-title'), langDict = TRANSLATIONS[currentLang] || TRANSLATIONS['id'];
       if (page === 'dashboard') {
@@ -1106,6 +1188,12 @@
       } else if (page === 'setup') {
         document.getElementById('page-setup').classList.remove('hidden'); document.getElementById('nav-setup').className = "flex flex-col items-center text-primary px-4 py-1 font-bold";
         if (headerTitle) headerTitle.textContent = langDict.nav_setup; renderSetupView();
+      } else if (page === 'kalkulator') {
+        document.getElementById('page-kalkulator').classList.remove('hidden'); 
+        let navCalc = document.getElementById('nav-calc');
+        if (navCalc) navCalc.className = "flex flex-col items-center text-primary px-4 py-1 font-bold";
+        if (headerTitle) headerTitle.textContent = "Kalkulator Finansial";
+        backToCalcMenu(); 
       }
     }
 
@@ -1121,6 +1209,60 @@
       renderMonthlyChart(); 
       if (typeof updateCategoryTrendChart === "function") updateCategoryTrendChart();
     }
+
+    // --- FUNGSI SUB-MENU KALKULATOR (KONVERSI MATA UANG) ---
+    function openCalcSub(subId) {
+      document.getElementById('calc-menu-grid').classList.add('hidden');
+      document.getElementById('calc-sub-container').classList.remove('hidden');
+      document.querySelectorAll('.calc-sub-item').forEach(el => el.classList.add('hidden'));
+      document.getElementById(subId).classList.remove('hidden');
+    }
+
+    function backToCalcMenu() {
+      document.getElementById('calc-sub-container').classList.add('hidden');
+      document.getElementById('calc-menu-grid').classList.remove('hidden');
+    }
+
+    async function calculateCurrency() {
+      let rawVal = document.getElementById('calc-curr-amount').value.replace(/\./g, '');
+      let amount = parseFloat(rawVal) || 0;
+      if (amount <= 0) { alert('Masukkan nominal yang akan dikonversi!'); return; }
+
+      let fromCur = document.getElementById('calc-curr-from').value;
+      let toCur = document.getElementById('calc-curr-to').value;
+      
+      let resultBox = document.getElementById('calc-curr-result');
+      let loadingBox = document.getElementById('calc-curr-loading');
+      
+      resultBox.classList.add('hidden');
+      loadingBox.classList.remove('hidden');
+
+      try {
+        let response = await fetch(`https://open.er-api.com/v6/latest/${fromCur}`);
+        let data = await response.json();
+        
+        if (data && data.rates && data.rates[toCur]) {
+          let rate = data.rates[toCur];
+          let converted = amount * rate;
+          
+          document.getElementById('calc-curr-label-from').textContent = `${amount.toLocaleString('id-ID')} ${fromCur} SAMA DENGAN:`;
+          
+          let finalString = converted.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+          document.getElementById('calc-curr-val-to').textContent = `${finalString} ${toCur}`;
+          
+          document.getElementById('calc-curr-rate-info').textContent = `*Kurs Real-time (1 ${fromCur} = ${rate.toLocaleString('id-ID')} ${toCur}) diperbarui: ${new Date(data.time_last_update_utc).toLocaleString('id-ID')}`;
+          
+          loadingBox.classList.add('hidden');
+          resultBox.classList.remove('hidden');
+        } else {
+          throw new Error("Gagal mengambil data kurs.");
+        }
+      } catch (e) {
+        loadingBox.classList.add('hidden');
+        alert("Terjadi kesalahan saat mengambil kurs real-time. Pastikan Anda terhubung ke internet.");
+      }
+    }
+    // --- AKHIR FUNGSI SUB-MENU KALKULATOR ---
 
     function checkDueDateAlerts() {
       let container = document.getElementById('due-date-alert-container'); if (!container) return; container.innerHTML = ''; if (!globalData.routinePayments) return;
@@ -1404,7 +1546,6 @@
           });
         }
 
-        renderBudgetRecap();
       }, 100);
     }
 
@@ -1623,7 +1764,7 @@
             <td class="p-3 text-gray-500">${tx.keAcc}</td>
             <td class="p-3 text-right">
               <div class="flex items-center justify-end gap-2">
-                <span class="font-mono-data font-extrabold text-primary dark:text-blue-400">${formatRp(tx.amount)}</span>
+                <span class="font-mono-data font-extrabold text-primary dark:text-blue-400">${formatRpKebalSensor(tx.amount)}</span>
                 <button onclick="openEditModal(${originalIdx})" class="p-1 rounded hover:bg-surface-container text-gray-400 hover:text-primary transition-colors"><span class="material-symbols-outlined text-sm">edit</span></button>
                 <button onclick="deleteTransaction(${originalIdx})" class="delete-action-btn p-1 rounded hover:bg-red-100 text-gray-300 hover:text-error transition-colors"><span class="material-symbols-outlined text-sm">delete</span></button>
               </div>
