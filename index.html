@@ -15,6 +15,9 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- LIBRARY TAMBAHAN UNTUK DOWNLOAD PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
   
@@ -320,8 +323,14 @@
       <section class="space-y-4 pt-4 border-t border-outline-variant">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div><h2 class="font-headline-md font-bold text-on-surface">Riwayat & Filter Transaksi</h2><p class="text-xs text-gray-500">Pilih Tanggal, Bulan, Tahun, atau Rentang Tanggal sesuai kebutuhan</p></div>
+          <!-- PERBAIKAN: Tombol Download PDF Ditambahkan -->
           <div class="flex gap-2">
-            <button onclick="window.print()" class="px-3.5 py-2 bg-primary text-white font-bold rounded-xl text-xs flex items-center gap-1 shadow hover:brightness-110"><span class="material-symbols-outlined text-sm">picture_as_pdf</span> Cetak PDF</button>
+            <button onclick="downloadHistoryPDF()" class="px-3.5 py-2 bg-secondary text-white font-bold rounded-xl text-xs flex items-center gap-1 shadow hover:brightness-110">
+              <span class="material-symbols-outlined text-sm">download</span> Download PDF
+            </button>
+            <button onclick="window.print()" class="px-3.5 py-2 bg-primary text-white font-bold rounded-xl text-xs flex items-center gap-1 shadow hover:brightness-110">
+              <span class="material-symbols-outlined text-sm">print</span> Cetak Data
+            </button>
           </div>
         </div>
 
@@ -558,7 +567,7 @@
               </div>
             </div>
 
-            <!-- Pengaturan Mode Kalkulasi HPP -->
+            <!-- Mode Kalkulasi HPP -->
             <div class="pt-3 border-t border-outline-variant">
               <label class="font-bold text-gray-500">Mode Perhitungan</label>
               <select id="hpp-calc-mode" onchange="toggleHPPCalcMode()" class="w-full p-2 border rounded-xl font-bold bg-surface mt-1 outline-none cursor-pointer text-emerald-600">
@@ -576,14 +585,13 @@
             </div>
 
             <div id="hpp-input-harga" class="mt-2 hidden">
-              <label class="font-bold text-emerald-600 dark:text-emerald-400">Harga Jual Ditetapkan (Per Pcs)</label>
+              <label class="font-bold text-emerald-600">Harga Jual Ditetapkan (Per Pcs)</label>
               <input type="text" id="hpp-target-harga" placeholder="Contoh: 150.000" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-xl font-mono-data font-bold mt-1 bg-surface outline-none">
             </div>
 
             <button onclick="calculateHPPDynamic()" class="w-full py-3 bg-emerald-600 text-white font-bold rounded-xl shadow mt-2 hover:brightness-110">Kalkulasi HPP & Hasil</button>
             <div id="calc-hpp-result" class="hidden p-4 bg-emerald-50 border border-emerald-200 rounded-xl mt-3 space-y-2"></div>
 
-            <!-- PENJELASAN AKAD -->
             <div id="hpp-akad-vendor" class="mt-4 p-4 bg-orange-50 border border-orange-200 rounded-xl">
               <p class="text-[11px] font-bold text-orange-700 mb-1">⚖️ Tinjauan Fiqh: Istishna' Paralel</p>
               <p class="text-[10px] text-gray-600 leading-relaxed">Menerima order lalu dioper ke vendor disebut <b>Istishna' Paralel</b>. Hukumnya halal jika: (1) Spesifikasi barang jelas, (2) Anda bertanggung jawab penuh atas barang di hadapan customer, bukan menyalahkan vendor jika ada cacat.</p>
@@ -595,7 +603,7 @@
           </div>
         </div>
 
-        <!-- SUB: KALKULATOR PEMBIAYAAN MURABAHAH -->
+        <!-- SUB: KALKULATOR MURABAHAH -->
         <div id="calc-sub-murabahah" class="calc-sub-item hidden bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-6 space-y-4 shadow-sm">
           <h3 class="font-bold text-base text-purple-600 flex items-center gap-2"><span class="material-symbols-outlined">two_wheeler</span> Kalkulator Pembiayaan (Murabahah)</h3>
           
@@ -613,7 +621,7 @@
               <input type="number" id="mur-tenor" value="12" min="1" placeholder="Berapa bulan?" class="w-full p-2 border rounded-xl font-mono-data bg-surface text-on-surface mt-1 outline-none font-bold focus:border-primary">
             </div>
 
-            <!-- Pengaturan Mode Kalkulasi Murabahah -->
+            <!-- Mode Kalkulasi Murabahah -->
             <div class="pt-3 border-t border-outline-variant mt-2">
               <label class="font-bold text-gray-500">Mode Perhitungan Simulasi</label>
               <select id="mur-calc-mode" onchange="toggleMurCalcMode()" class="w-full p-2 border rounded-xl font-bold bg-surface mt-1 outline-none cursor-pointer text-purple-600">
@@ -622,39 +630,35 @@
               </select>
             </div>
             
-            <div id="mur-input-margin" class="p-3 bg-surface-container dark:bg-slate-900 rounded-xl border border-outline-variant space-y-2 mt-2">
-              <label class="font-bold text-primary dark:text-blue-400">Pengaturan Profit / Margin</label>
-              <select id="mur-margin-type" class="w-full p-2 border rounded-lg bg-white dark:bg-slate-800 text-on-surface font-semibold text-[11px] outline-none cursor-pointer">
+            <div id="mur-input-margin" class="p-3 bg-surface-container rounded-xl border border-outline-variant space-y-2 mt-2">
+              <label class="font-bold text-primary">Pengaturan Profit / Margin</label>
+              <select id="mur-margin-type" class="w-full p-2 border rounded-lg bg-white text-on-surface font-semibold text-[11px] outline-none cursor-pointer">
                 <option value="fix_nominal">Margin Fix (Nominal Rp) di Awal</option>
                 <option value="fix_pct">Margin Fix (%) dari Pokok di Awal</option>
                 <option value="annual_pct" selected>Margin Dinamis (% per Tahun)</option>
               </select>
-              <input type="text" id="mur-margin-val" placeholder="Masukkan Angka / Persentase..." oninput="formatInputNominal(this)" class="w-full p-2 border rounded-lg font-mono-data bg-white dark:bg-slate-800 text-on-surface mt-1 outline-none font-bold">
+              <input type="text" id="mur-margin-val" placeholder="Masukkan Angka / Persentase..." oninput="formatInputNominal(this)" class="w-full p-2 border rounded-lg font-mono-data bg-white text-on-surface mt-1 outline-none font-bold">
             </div>
 
-            <div id="mur-input-angsuran" class="p-3 bg-surface-container dark:bg-slate-900 rounded-xl border border-outline-variant space-y-2 mt-2 hidden">
-              <label class="font-bold text-purple-600 dark:text-purple-400">Target Angsuran Flat per Bulan (Rp)</label>
-              <input type="text" id="mur-target-angsuran" placeholder="Contoh: 1.500.000" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-lg font-mono-data bg-white dark:bg-slate-800 text-on-surface mt-1 outline-none font-bold">
+            <div id="mur-input-angsuran" class="p-3 bg-surface-container rounded-xl border border-outline-variant space-y-2 mt-2 hidden">
+              <label class="font-bold text-purple-600">Target Angsuran Flat per Bulan (Rp)</label>
+              <input type="text" id="mur-target-angsuran" placeholder="Contoh: 1.500.000" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-lg font-mono-data bg-white text-on-surface mt-1 outline-none font-bold">
             </div>
 
-            <!-- TOGGLE INFLASI -->
             <div class="flex items-center gap-2 mt-2 pt-2 border-t border-outline-variant">
               <input type="checkbox" id="mur-inflasi-toggle" onchange="document.getElementById('mur-inflasi-box').classList.toggle('hidden', !this.checked)" class="rounded border-outline-variant text-purple-600 focus:ring-purple-500 w-4 h-4 cursor-pointer">
               <label for="mur-inflasi-toggle" class="font-bold text-gray-500 cursor-pointer">Pertimbangkan Inflasi & Risiko?</label>
             </div>
             <div id="mur-inflasi-box" class="hidden pl-6 pb-2">
                <div class="flex items-center gap-2 mt-1">
-                 <input type="number" id="mur-inflasi-val" value="3.5" step="0.1" class="w-20 p-1.5 border rounded-lg font-mono-data bg-surface text-on-surface text-center outline-none">
+                 <input type="number" id="mur-inflasi-val" value="3.5" step="0.1" class="w-20 p-1.5 border rounded-lg font-mono-data bg-surface text-center outline-none">
                  <span class="text-[10px] font-bold text-gray-500">% / Tahun (Default 3.5%)</span>
                </div>
             </div>
 
             <button onclick="calculateMurabahah()" class="w-full py-3 bg-purple-600 text-white font-bold rounded-xl shadow mt-4 hover:brightness-110 transition-all">Kalkulasi Simulasi Akad</button>
+            <div id="calc-mur-result" class="hidden p-4 bg-purple-50 border border-purple-200 rounded-xl mt-3 space-y-2"></div>
 
-            <!-- KOTAK HASIL -->
-            <div id="calc-mur-result" class="hidden p-4 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 rounded-xl mt-3 space-y-2"></div>
-
-            <!-- PENJELASAN AKAD -->
             <div class="mt-4 p-4 bg-purple-100/50 border border-purple-200 rounded-xl">
               <p class="text-[11px] font-bold text-purple-800 mb-1">⚖️ Tinjauan Fiqh: Akad Murabahah</p>
               <p class="text-[10px] text-gray-600 leading-relaxed"><b>Murabahah</b> adalah akad jual beli barang dengan menyatakan harga perolehan (modal pokok) dan keuntungan (margin) yang disepakati oleh kedua belah pihak. Syarat utamanya adalah barang harus menjadi hak milik penjual (Bank/Pemodal) terlebih dahulu sebelum dijual cicil kepada nasabah.</p>
@@ -712,24 +716,16 @@
       renderDashboard(); renderHistoryTable();
     }
 
-    function changeLanguage(lang) { /* Placeholder */ }
     function playSuccessSound() { try { let ctx = new (window.AudioContext || window.webkitAudioContext)(); let osc = ctx.createOscillator(); let gain = ctx.createGain(); osc.type = 'sine'; osc.connect(gain); gain.connect(ctx.destination); let now = ctx.currentTime; osc.frequency.setValueAtTime(523.25, now); osc.frequency.setValueAtTime(659.25, now + 0.08); osc.frequency.setValueAtTime(783.99, now + 0.16); gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45); osc.start(now); osc.stop(now + 0.45); } catch(e) {} }
     function formatInputNominal(input) { let rawVal = input.value.replace(/[^0-9]/g, ''); if (rawVal === '') { input.value = ''; return; } input.value = parseInt(rawVal, 10).toLocaleString('id-ID'); }
 
     const DEFAULT_DATA = { appPin: "123", ownerPassword: "123", startingBalance: 25000000, accounts: ["BSI Utama", "Kas Kecil Media", "Bank Jago Tabungan Nikah", "Bank Jago Zy Clothes", "Dana", "Gopay", "Ovo", "Cash"], accountDetails: { "BSI Utama": { bankName: "Bank Syariah Indonesia", accNo: "7123456789", owner: "Fulan", balance: 5979762 } }, currentBalances: { "BSI Utama": 5979762 }, incomes: ["Gaji", "KPI", "Zy Clothes"], spendings: ["Makan/min", "Transport", "Belanja"], bills: ["Cicilan Motor", "Wifi"], routinePayments: { "Wifi": { amount: 275000, dueDay: 20 } }, monthlyBudgets: {}, investData: {}, sinkingData: {}, goalsData: {}, receivablesData: {}, nonMoneyAssets: {}, debtData: {}, recentHistory: [] };
 
-    // PERBAIKAN FATAL: Mencegah penimpaan database dari cloud yang kosong
     async function loadStorageData() {
       try {
         let stored = localStorage.getItem("KEUANGANKU_DB_V21");
-        if (stored) {
-          globalData = JSON.parse(stored);
-        } else {
-          globalData = JSON.parse(JSON.stringify(DEFAULT_DATA));
-        }
-      } catch(e) {
-        globalData = JSON.parse(JSON.stringify(DEFAULT_DATA));
-      }
+        if (stored) { globalData = JSON.parse(stored); } else { globalData = JSON.parse(JSON.stringify(DEFAULT_DATA)); }
+      } catch(e) { globalData = JSON.parse(JSON.stringify(DEFAULT_DATA)); }
       if (globalData.appPin === undefined) globalData.appPin = globalData.ownerPassword || "123";
       if (!globalData.monthlyBudgets) globalData.monthlyBudgets = {}; 
       initApp();
@@ -748,7 +744,6 @@
     }
 
     function resetTransactionHistory() { if (confirm("Apakah Anda yakin ingin mereset seluruh riwayat transaksi? Data rekam transaksi akan dikosongkan.")) { globalData.recentHistory = []; saveStorageData(); renderDashboard(); renderHistoryTable(); alert("Riwayat transaksi berhasil direset kosong!"); } }
-
     function initApp() { renderDashboard(); populateFormDropdowns(); populateReportFilterCategories(); renderHistoryTable(); renderSetupView(); checkDueDateAlerts(); checkReceivableAlerts(); }
 
     function navTo(page) {
@@ -765,14 +760,13 @@
     function formatRpKebalSensor(num) { return "Rp " + (parseFloat(num) || 0).toLocaleString('id-ID'); }
     function toggleDarkMode() { document.documentElement.classList.toggle('dark'); renderMonthlyChart(); if (typeof updateCategoryTrendChart === "function") updateCategoryTrendChart(); }
 
-    // --- FUNGSI SUB-MENU KALKULATOR ---
     function openCalcSub(subId) {
       document.getElementById('calc-menu-grid').classList.add('hidden'); document.getElementById('calc-sub-container').classList.remove('hidden');
       document.querySelectorAll('.calc-sub-item').forEach(el => el.classList.add('hidden')); document.getElementById(subId).classList.remove('hidden');
     }
     function backToCalcMenu() { document.getElementById('calc-sub-container').classList.add('hidden'); document.getElementById('calc-menu-grid').classList.remove('hidden'); }
 
-    // 1. KALKULATOR MATA UANG
+    // KALKULATOR MATA UANG
     async function calculateCurrency() {
       let rawVal = document.getElementById('calc-curr-amount').value.replace(/\./g, ''); let amount = parseFloat(rawVal) || 0;
       if (amount <= 0) { alert('Masukkan nominal yang akan dikonversi!'); return; }
@@ -792,16 +786,14 @@
       } catch (e) { loadingBox.classList.add('hidden'); alert("Gagal mengambil kurs. Pastikan terhubung internet."); }
     }
 
-    // 2. KALKULATOR HPP ZY CLOTHES
+    // KALKULATOR HPP ZY CLOTHES
     let currentHPPMode = 'vendor';
     function setHPPMode(mode) {
       currentHPPMode = mode;
-      document.getElementById('btn-hpp-vendor').className = mode === 'vendor' ? "flex-1 py-1.5 bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 font-bold rounded shadow text-[10px] uppercase transition-all" : "flex-1 py-1.5 text-gray-500 font-bold rounded text-[10px] uppercase transition-all";
-      document.getElementById('btn-hpp-mandiri').className = mode === 'mandiri' ? "flex-1 py-1.5 bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 font-bold rounded shadow text-[10px] uppercase transition-all" : "flex-1 py-1.5 text-gray-500 font-bold rounded text-[10px] uppercase transition-all";
-      document.getElementById('hpp-form-vendor').classList.toggle('hidden', mode !== 'vendor');
-      document.getElementById('hpp-form-mandiri').classList.toggle('hidden', mode !== 'mandiri');
-      document.getElementById('hpp-akad-vendor').classList.toggle('hidden', mode !== 'vendor');
-      document.getElementById('hpp-akad-mandiri').classList.toggle('hidden', mode !== 'mandiri');
+      document.getElementById('btn-hpp-vendor').className = mode === 'vendor' ? "flex-1 py-1.5 bg-white text-emerald-600 font-bold rounded shadow text-[10px] uppercase transition-all" : "flex-1 py-1.5 text-gray-500 font-bold rounded text-[10px] uppercase transition-all";
+      document.getElementById('btn-hpp-mandiri').className = mode === 'mandiri' ? "flex-1 py-1.5 bg-white text-emerald-600 font-bold rounded shadow text-[10px] uppercase transition-all" : "flex-1 py-1.5 text-gray-500 font-bold rounded text-[10px] uppercase transition-all";
+      document.getElementById('hpp-form-vendor').classList.toggle('hidden', mode !== 'vendor'); document.getElementById('hpp-form-mandiri').classList.toggle('hidden', mode !== 'mandiri');
+      document.getElementById('hpp-akad-vendor').classList.toggle('hidden', mode !== 'vendor'); document.getElementById('hpp-akad-mandiri').classList.toggle('hidden', mode !== 'mandiri');
       document.getElementById('calc-hpp-result').classList.add('hidden');
     }
 
@@ -812,79 +804,34 @@
     }
 
     function calculateHPPDynamic() {
-      let hppPerPcs = 0; let totalHPPOrder = 0; let name = ""; let qty = 1;
-      let calcMode = document.getElementById('hpp-calc-mode').value;
-      
+      let hppPerPcs = 0; let totalHPPOrder = 0; let name = ""; let qty = 1; let calcMode = document.getElementById('hpp-calc-mode').value;
       const getCostPerPcs = (inputId, typeId, quantity) => { let val = parseFloat(document.getElementById(inputId).value.replace(/\./g, '')) || 0; let type = document.getElementById(typeId).value; return type === 'total' ? (val / quantity) : val; };
-
       if (currentHPPMode === 'vendor') {
         name = document.getElementById('hpp-v-name').value || "Order Konveksi / Maklon";
         qty = parseInt(document.getElementById('hpp-v-qty').value) || 1; if(qty < 1) qty = 1;
-        let hargaVendor = getCostPerPcs('hpp-v-harga', 'hpp-v-harga-tipe', qty);
-        let transport = getCostPerPcs('hpp-v-ongkir', 'hpp-v-ongkir-tipe', qty);
-        let pack = getCostPerPcs('hpp-v-pack', 'hpp-v-pack-tipe', qty);
+        let hargaVendor = getCostPerPcs('hpp-v-harga', 'hpp-v-harga-tipe', qty); let transport = getCostPerPcs('hpp-v-ongkir', 'hpp-v-ongkir-tipe', qty); let pack = getCostPerPcs('hpp-v-pack', 'hpp-v-pack-tipe', qty);
         hppPerPcs = hargaVendor + transport + pack; totalHPPOrder = hppPerPcs * qty;
       } else {
         name = document.getElementById('hpp-m-name').value || "Kaos Custom Sablon";
         qty = parseInt(document.getElementById('hpp-m-qty').value) || 1; if(qty < 1) qty = 1;
-        let kaos = getCostPerPcs('hpp-m-kaos', 'hpp-m-kaos-tipe', qty);
-        let dtf = getCostPerPcs('hpp-m-dtf', 'hpp-m-dtf-tipe', qty);
-        let op = getCostPerPcs('hpp-m-op', 'hpp-m-op-tipe', qty);
-        let pack = getCostPerPcs('hpp-m-pack', 'hpp-m-pack-tipe', qty);
+        let kaos = getCostPerPcs('hpp-m-kaos', 'hpp-m-kaos-tipe', qty); let dtf = getCostPerPcs('hpp-m-dtf', 'hpp-m-dtf-tipe', qty); let op = getCostPerPcs('hpp-m-op', 'hpp-m-op-tipe', qty); let pack = getCostPerPcs('hpp-m-pack', 'hpp-m-pack-tipe', qty);
         hppPerPcs = kaos + dtf + op + pack; totalHPPOrder = hppPerPcs * qty;
       }
-
       if (totalHPPOrder <= 0) { alert("Mohon isi komponen biaya modal (HPP) terlebih dahulu!"); return; }
 
       let resBox = document.getElementById('calc-hpp-result');
-
       if (calcMode === 'cari_harga') {
-        let marginPct = parseFloat(document.getElementById('hpp-margin-pct').value) || 0;
-        let profitPerPcs = hppPerPcs * (marginPct / 100); let hargaJualPerPcs = hppPerPcs + profitPerPcs;
-        let totalHargaJual = hargaJualPerPcs * qty; let totalProfit = profitPerPcs * qty;
-
-        resBox.innerHTML = `
-          <p class="text-[13px] text-emerald-800 dark:text-emerald-300 font-bold border-b border-emerald-200 dark:border-emerald-700 pb-1.5 uppercase">${name} (${qty} Pcs)</p>
-          <div class="grid grid-cols-2 gap-2 mt-2 border-b border-emerald-200 dark:border-emerald-700 pb-2">
-            <div><p class="text-[9px] text-gray-500 uppercase font-bold">HPP Modal / Pcs</p><p class="text-sm font-mono-data font-bold text-gray-700 dark:text-gray-300">${formatRpKebalSensor(hppPerPcs)}</p></div>
-            <div><p class="text-[9px] text-gray-500 uppercase font-bold">Total Modal Orderan</p><p class="text-sm font-mono-data font-bold text-gray-700 dark:text-gray-300">${formatRpKebalSensor(totalHPPOrder)}</p></div>
-          </div>
-          <div class="flex justify-between text-[11px] text-emerald-600 dark:text-emerald-400 mt-2 font-bold">
-            <span>Total Target Profit (+${marginPct}%):</span> <b class="font-mono-data">+ ${formatRpKebalSensor(totalProfit)}</b>
-          </div>
-          <div class="mt-3 bg-white dark:bg-slate-900 p-3 rounded-lg border border-emerald-100 dark:border-emerald-800 shadow-sm text-center">
-            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Harga Jual Rekomendasi / Pcs</p>
-            <p class="text-2xl font-mono-data font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">${formatRpKebalSensor(Math.ceil(hargaJualPerPcs))}</p>
-            <p class="text-[10px] text-gray-500 mt-1 font-bold">Total Omzet Estimasi = ${formatRpKebalSensor(Math.ceil(totalHargaJual))}</p>
-          </div>`;
+        let marginPct = parseFloat(document.getElementById('hpp-margin-pct').value) || 0; let profitPerPcs = hppPerPcs * (marginPct / 100); let hargaJualPerPcs = hppPerPcs + profitPerPcs; let totalHargaJual = hargaJualPerPcs * qty; let totalProfit = profitPerPcs * qty;
+        resBox.innerHTML = `<p class="text-[13px] text-emerald-800 font-bold border-b border-emerald-200 pb-1.5 uppercase">${name} (${qty} Pcs)</p><div class="grid grid-cols-2 gap-2 mt-2 border-b border-emerald-200 pb-2"><div><p class="text-[9px] text-gray-500 uppercase font-bold">HPP Modal / Pcs</p><p class="text-sm font-mono-data font-bold text-gray-700">${formatRpKebalSensor(hppPerPcs)}</p></div><div><p class="text-[9px] text-gray-500 uppercase font-bold">Total Modal Orderan</p><p class="text-sm font-mono-data font-bold text-gray-700">${formatRpKebalSensor(totalHPPOrder)}</p></div></div><div class="flex justify-between text-[11px] text-emerald-600 mt-2 font-bold"><span>Total Target Profit (+${marginPct}%):</span> <b class="font-mono-data">+ ${formatRpKebalSensor(totalProfit)}</b></div><div class="mt-3 bg-white p-3 rounded-lg border border-emerald-100 shadow-sm text-center"><p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Harga Jual Rekomendasi / Pcs</p><p class="text-2xl font-mono-data font-extrabold text-emerald-600 mt-0.5">${formatRpKebalSensor(Math.ceil(hargaJualPerPcs))}</p><p class="text-[10px] text-gray-500 mt-1 font-bold">Total Omzet Estimasi = ${formatRpKebalSensor(Math.ceil(totalHargaJual))}</p></div>`;
       } else {
-        let hargaJualPatokan = parseFloat(document.getElementById('hpp-target-harga').value.replace(/\./g, '')) || 0;
-        let profitPerPcs = hargaJualPatokan - hppPerPcs;
-        let marginPct = hppPerPcs > 0 ? (profitPerPcs / hppPerPcs) * 100 : 0;
-        let totalHargaJual = hargaJualPatokan * qty; let totalProfit = profitPerPcs * qty;
-        
-        let profitStatus = profitPerPcs < 0 ? '<span class="text-red-500 font-bold">RUGI</span>' : `<span class="text-emerald-600 dark:text-emerald-400 font-bold">+ ${marginPct.toFixed(2)}%</span>`;
-        let profitColor = profitPerPcs < 0 ? 'text-red-500' : 'text-emerald-600 dark:text-emerald-400';
-
-        resBox.innerHTML = `
-          <p class="text-[13px] text-emerald-800 dark:text-emerald-300 font-bold border-b border-emerald-200 dark:border-emerald-700 pb-1.5 uppercase">${name} (${qty} Pcs)</p>
-          <div class="grid grid-cols-2 gap-2 mt-2 border-b border-emerald-200 dark:border-emerald-700 pb-2">
-            <div><p class="text-[9px] text-gray-500 uppercase font-bold">HPP Modal / Pcs</p><p class="text-sm font-mono-data font-bold text-gray-700 dark:text-gray-300">${formatRpKebalSensor(hppPerPcs)}</p></div>
-            <div><p class="text-[9px] text-gray-500 uppercase font-bold">Harga Patokan / Pcs</p><p class="text-sm font-mono-data font-bold text-gray-700 dark:text-gray-300">${formatRpKebalSensor(hargaJualPatokan)}</p></div>
-          </div>
-          <div class="flex justify-between text-[11px] mt-2 font-bold">
-            <span class="text-gray-600 dark:text-gray-300">Margin Didapat:</span> <b>${profitStatus}</b>
-          </div>
-          <div class="mt-3 bg-white dark:bg-slate-900 p-3 rounded-lg border border-emerald-100 dark:border-emerald-800 shadow-sm text-center">
-            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Total Untung Bersih (Total Order)</p>
-            <p class="text-2xl font-mono-data font-extrabold ${profitColor} mt-0.5">${formatRpKebalSensor(totalProfit)}</p>
-            <p class="text-[10px] text-gray-500 mt-1 font-bold">Total Omzet Estimasi = ${formatRpKebalSensor(totalHargaJual)}</p>
-          </div>`;
+        let hargaJualPatokan = parseFloat(document.getElementById('hpp-target-harga').value.replace(/\./g, '')) || 0; let profitPerPcs = hargaJualPatokan - hppPerPcs; let marginPct = hppPerPcs > 0 ? (profitPerPcs / hppPerPcs) * 100 : 0; let totalHargaJual = hargaJualPatokan * qty; let totalProfit = profitPerPcs * qty;
+        let profitStatus = profitPerPcs < 0 ? '<span class="text-red-500 font-bold">RUGI</span>' : `<span class="text-emerald-600 font-bold">+ ${marginPct.toFixed(2)}%</span>`; let profitColor = profitPerPcs < 0 ? 'text-red-500' : 'text-emerald-600';
+        resBox.innerHTML = `<p class="text-[13px] text-emerald-800 font-bold border-b border-emerald-200 pb-1.5 uppercase">${name} (${qty} Pcs)</p><div class="grid grid-cols-2 gap-2 mt-2 border-b border-emerald-200 pb-2"><div><p class="text-[9px] text-gray-500 uppercase font-bold">HPP Modal / Pcs</p><p class="text-sm font-mono-data font-bold text-gray-700">${formatRpKebalSensor(hppPerPcs)}</p></div><div><p class="text-[9px] text-gray-500 uppercase font-bold">Harga Patokan / Pcs</p><p class="text-sm font-mono-data font-bold text-gray-700">${formatRpKebalSensor(hargaJualPatokan)}</p></div></div><div class="flex justify-between text-[11px] mt-2 font-bold"><span class="text-gray-600">Margin Didapat:</span> <b>${profitStatus}</b></div><div class="mt-3 bg-white p-3 rounded-lg border border-emerald-100 shadow-sm text-center"><p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Total Untung Bersih (Total Order)</p><p class="text-2xl font-mono-data font-extrabold ${profitColor} mt-0.5">${formatRpKebalSensor(totalProfit)}</p><p class="text-[10px] text-gray-500 mt-1 font-bold">Total Omzet Estimasi = ${formatRpKebalSensor(totalHargaJual)}</p></div>`;
       }
       resBox.classList.remove('hidden');
     }
 
-    // 3. KALKULATOR PEMBIAYAAN MURABAHAH
+    // KALKULATOR PEMBIAYAAN MURABAHAH
     function toggleMurCalcMode() {
       let mode = document.getElementById('mur-calc-mode').value;
       document.getElementById('mur-input-margin').classList.toggle('hidden', mode !== 'cari_angsuran');
@@ -894,12 +841,9 @@
     function calculateMurabahah() {
       let hargaBarang = parseFloat(document.getElementById('mur-harga').value.replace(/\./g, '')) || 0;
       let dp = parseFloat(document.getElementById('mur-dp').value.replace(/\./g, '')) || 0;
-      let tenorBulan = parseInt(document.getElementById('mur-tenor').value) || 12;
-      if(tenorBulan <= 0) tenorBulan = 1; 
-
+      let tenorBulan = parseInt(document.getElementById('mur-tenor').value) || 12; if(tenorBulan <= 0) tenorBulan = 1; 
       let calcMode = document.getElementById('mur-calc-mode').value;
-      let isInflasi = document.getElementById('mur-inflasi-toggle').checked;
-      let inflasiRate = parseFloat(document.getElementById('mur-inflasi-val').value) || 0;
+      let isInflasi = document.getElementById('mur-inflasi-toggle').checked; let inflasiRate = parseFloat(document.getElementById('mur-inflasi-val').value) || 0;
 
       if (hargaBarang <= 0) { alert("Masukkan Harga Asli Barang/Motor terlebih dahulu!"); return; }
       let pokokPembiayaan = hargaBarang - dp;
@@ -913,48 +857,36 @@
         let marginType = document.getElementById('mur-margin-type').value;
         let marginVal = parseFloat(document.getElementById('mur-margin-val').value.replace(/\./g, '')) || 0;
         let totalMargin = 0;
-
         if (marginType === 'fix_nominal') totalMargin = marginVal; 
         else if (marginType === 'fix_pct') totalMargin = pokokPembiayaan * (marginVal / 100);
         else if (marginType === 'annual_pct') totalMargin = pokokPembiayaan * (marginVal / 100) * lamaTahun;
-
-        let totalHargaAkad = pokokPembiayaan + totalMargin + nilaiInflasi;
-        let angsuranPerBulan = totalHargaAkad / tenorBulan;
-
-        resultBox.innerHTML = `
-          <div class="flex justify-between text-[11px] text-gray-600 dark:text-gray-300 mt-1"><span>Sisa Pokok (Setelah DP):</span> <b class="font-mono-data">${formatRpKebalSensor(pokokPembiayaan)}</b></div>
-          <div class="flex justify-between text-[11px] text-gray-600 dark:text-gray-300 mt-1"><span>Total Margin Profit:</span> <b class="text-green-600 dark:text-green-400 font-mono-data">+ ${formatRpKebalSensor(totalMargin)}</b></div>
-          ${isInflasi ? `<div class="flex justify-between text-[11px] text-gray-600 dark:text-gray-300 mt-1 border-b border-purple-200 dark:border-purple-800 pb-2"><span>Penyesuaian Inflasi (${inflasiRate}%/thn):</span> <b class="text-orange-500 font-mono-data">+ ${formatRpKebalSensor(nilaiInflasi)}</b></div>` : '<div class="border-b border-purple-200 dark:border-purple-800 pt-2"></div>'}
-          <div class="flex justify-between text-[12px] font-bold text-purple-700 dark:text-purple-300 mt-2 uppercase tracking-wider"><span>Total Harga Akad (Fix):</span> <b class="font-mono-data">${formatRpKebalSensor(totalHargaAkad)}</b></div>
-          <div class="mt-4 bg-white dark:bg-slate-900 p-4 rounded-xl border border-purple-100 dark:border-purple-800 shadow-sm text-center">
-            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Angsuran Flat per Bulan</p>
-            <p class="text-3xl font-mono-data font-extrabold text-purple-600 dark:text-purple-400 mt-1">${formatRpKebalSensor(Math.ceil(angsuranPerBulan))}</p>
-            <p class="text-[10px] text-gray-400 mt-2 font-medium">Selama <b>${tenorBulan} Bulan</b></p>
-          </div>
-        `;
+        let totalHargaAkad = pokokPembiayaan + totalMargin + nilaiInflasi; let angsuranPerBulan = totalHargaAkad / tenorBulan;
+        resultBox.innerHTML = `<div class="flex justify-between text-[11px] text-gray-600 mt-1"><span>Sisa Pokok (Setelah DP):</span> <b class="font-mono-data">${formatRpKebalSensor(pokokPembiayaan)}</b></div><div class="flex justify-between text-[11px] text-gray-600 mt-1"><span>Total Margin Profit:</span> <b class="text-green-600 font-mono-data">+ ${formatRpKebalSensor(totalMargin)}</b></div>${isInflasi ? `<div class="flex justify-between text-[11px] text-gray-600 mt-1 border-b border-purple-200 pb-2"><span>Penyesuaian Inflasi (${inflasiRate}%/thn):</span> <b class="text-orange-500 font-mono-data">+ ${formatRpKebalSensor(nilaiInflasi)}</b></div>` : '<div class="border-b border-purple-200 pt-2"></div>'}<div class="flex justify-between text-[12px] font-bold text-purple-700 mt-2 uppercase tracking-wider"><span>Total Harga Akad (Fix):</span> <b class="font-mono-data">${formatRpKebalSensor(totalHargaAkad)}</b></div><div class="mt-4 bg-white p-4 rounded-xl border border-purple-100 shadow-sm text-center"><p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Angsuran Flat per Bulan</p><p class="text-3xl font-mono-data font-extrabold text-purple-600 mt-1">${formatRpKebalSensor(Math.ceil(angsuranPerBulan))}</p><p class="text-[10px] text-gray-400 mt-2 font-medium">Selama <b>${tenorBulan} Bulan</b></p></div>`;
       } else {
         let targetAngsuran = parseFloat(document.getElementById('mur-target-angsuran').value.replace(/\./g, '')) || 0;
         let totalHargaAkad = targetAngsuran * tenorBulan;
         let totalMargin = totalHargaAkad - pokokPembiayaan - nilaiInflasi;
         let equivMargin = lamaTahun > 0 && pokokPembiayaan > 0 ? (totalMargin / pokokPembiayaan / lamaTahun) * 100 : 0;
-        let isRugi = totalMargin < 0; let marginColor = isRugi ? 'text-red-500' : 'text-green-600 dark:text-green-400';
-
-        resultBox.innerHTML = `
-          <div class="flex justify-between text-[11px] text-gray-600 dark:text-gray-300 mt-1"><span>Sisa Pokok (Setelah DP):</span> <b class="font-mono-data">${formatRpKebalSensor(pokokPembiayaan)}</b></div>
-          <div class="flex justify-between text-[11px] text-gray-600 dark:text-gray-300 mt-1"><span>Angsuran Patokan:</span> <b class="font-mono-data text-purple-600">${formatRpKebalSensor(targetAngsuran)} / Bln</b></div>
-          ${isInflasi ? `<div class="flex justify-between text-[11px] text-gray-600 dark:text-gray-300 mt-1 border-b border-purple-200 dark:border-purple-800 pb-2"><span>Sisa Inflasi (${inflasiRate}%/thn):</span> <b class="text-orange-500 font-mono-data">- ${formatRpKebalSensor(nilaiInflasi)}</b></div>` : '<div class="border-b border-purple-200 dark:border-purple-800 pt-2"></div>'}
-          <div class="flex justify-between text-[12px] font-bold text-purple-700 dark:text-purple-300 mt-2 uppercase tracking-wider"><span>Total Harga Akad:</span> <b class="font-mono-data">${formatRpKebalSensor(totalHargaAkad)}</b></div>
-          <div class="mt-4 bg-white dark:bg-slate-900 p-4 rounded-xl border border-purple-100 dark:border-purple-800 shadow-sm text-center">
-            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Margin Profit Bersih</p>
-            <p class="text-3xl font-mono-data font-extrabold ${marginColor} mt-1">${isRugi ? 'RUGI' : formatRpKebalSensor(totalMargin)}</p>
-            <p class="text-[10px] text-gray-400 mt-2 font-medium">Setara Margin: <b>${isRugi ? '0' : equivMargin.toFixed(2)}% per Tahun</b></p>
-          </div>
-        `;
+        let isRugi = totalMargin < 0; let marginColor = isRugi ? 'text-red-500' : 'text-green-600';
+        resultBox.innerHTML = `<div class="flex justify-between text-[11px] text-gray-600 mt-1"><span>Sisa Pokok (Setelah DP):</span> <b class="font-mono-data">${formatRpKebalSensor(pokokPembiayaan)}</b></div><div class="flex justify-between text-[11px] text-gray-600 mt-1"><span>Angsuran Patokan:</span> <b class="font-mono-data text-purple-600">${formatRpKebalSensor(targetAngsuran)} / Bln</b></div>${isInflasi ? `<div class="flex justify-between text-[11px] text-gray-600 mt-1 border-b border-purple-200 pb-2"><span>Sisa Inflasi (${inflasiRate}%/thn):</span> <b class="text-orange-500 font-mono-data">- ${formatRpKebalSensor(nilaiInflasi)}</b></div>` : '<div class="border-b border-purple-200 pt-2"></div>'}<div class="flex justify-between text-[12px] font-bold text-purple-700 mt-2 uppercase tracking-wider"><span>Total Harga Akad:</span> <b class="font-mono-data">${formatRpKebalSensor(totalHargaAkad)}</b></div><div class="mt-4 bg-white p-4 rounded-xl border border-purple-100 shadow-sm text-center"><p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Margin Profit Bersih</p><p class="text-3xl font-mono-data font-extrabold ${marginColor} mt-1">${isRugi ? 'RUGI' : formatRpKebalSensor(totalMargin)}</p><p class="text-[10px] text-gray-400 mt-2 font-medium">Setara Margin: <b>${isRugi ? '0' : equivMargin.toFixed(2)}% per Tahun</b></p></div>`;
       }
       resultBox.classList.remove('hidden');
     }
 
     // FUNGSI LAINNYA
+    // Fungsi Baru: Download PDF
+    function downloadHistoryPDF() {
+      let element = document.getElementById('report-printable-area');
+      let opt = {
+        margin:       10,
+        filename:     'Riwayat_Transaksi_KEUANGANKU.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+      };
+      html2pdf().set(opt).from(element).save();
+    }
+
     function checkDueDateAlerts() { let container = document.getElementById('due-date-alert-container'); if (!container) return; container.innerHTML = ''; if (!globalData.routinePayments) return; let currentDay = new Date().getDate(); Object.keys(globalData.routinePayments).forEach(itemKey => { let item = globalData.routinePayments[itemKey]; let diff = item.dueDay - currentDay; if (diff >= 0 && diff <= 3) { let warningText = diff === 0 ? "JATUH TEMPO HARI INI!" : `Sisa ${diff} Hari Lagi (Tgl ${item.dueDay})`; container.innerHTML += `<div class="bg-red-500 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between border-2 border-red-700 animate-pulse"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-3xl">warning</span><div><h4 class="font-extrabold text-sm uppercase">WAKTUNYA BAYAR: ${itemKey}</h4><p class="text-xs text-red-100 font-medium">Nominal: <b>${formatRp(item.amount)}</b> | ${warningText}</p></div></div><button onclick="navTo('transaksi')" class="px-3 py-1.5 bg-white text-red-700 font-bold rounded-xl text-xs shadow">Bayar Sekarang</button></div>`; } }); }
     function checkReceivableAlerts() { let container = document.getElementById('receivable-alert-container'); if (!container) return; container.innerHTML = ''; if (!globalData.receivablesData) return; let today = new Date(); today.setHours(0,0,0,0); Object.keys(globalData.receivablesData).forEach(k => { let item = globalData.receivablesData[k]; if (item.deadline) { let dDate = new Date(item.deadline); dDate.setHours(0,0,0,0); let diffDays = Math.ceil((dDate - today) / (1000 * 60 * 60 * 24)); if (diffDays <= 3 && diffDays >= 0) { let timeText = diffDays === 0 ? "JATUH TEMPO PENAGIHAN HARI INI!" : `Deadline ${diffDays} Hari Lagi (${item.deadline})`; container.innerHTML += `<div class="bg-emerald-600 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between border-2 border-emerald-800 animate-pulse"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-3xl">notification_important</span><div><h4 class="font-extrabold text-sm uppercase">WAKTUNYA MENAGIH: ${k}</h4><p class="text-xs text-emerald-100 font-medium">Nominal: <b>${formatRp(item.total)}</b> | ${timeText}</p></div></div><button onclick="navTo('transaksi')" class="px-3 py-1.5 bg-white text-emerald-800 font-bold rounded-xl text-xs shadow">Pelunasan</button></div>`; } } }); }
     function getCategoryCashflowNet(categoryName) { let net = 0, used = 0; if (!globalData.recentHistory) return { net, used }; globalData.recentHistory.forEach(tx => { if (tx.category === categoryName) { if (['Invest / Savings', 'Financial Goals', 'Income', 'Dari Asset / Saving'].includes(tx.cashflow)) net += tx.amount; if (tx.cashflow === 'Spending') used += tx.amount; } }); return { net, used }; }
@@ -978,7 +910,10 @@
     function fillOptions(selectElem, arr) { if (!arr || arr.length === 0) return; selectElem.innerHTML = ''; arr.forEach(item => { selectElem.innerHTML += `<option value="${item}">${item}</option>`; }); }
     function getSelectedValueDirect(elementId) { let el = document.getElementById(elementId); if (!el) return "- not applicable -"; if (el.options && el.options.length > 0) { let idx = el.selectedIndex >= 0 ? el.selectedIndex : 0; let selectedOpt = el.options[idx]; if (selectedOpt && selectedOpt.value && selectedOpt.value.trim() !== "") return selectedOpt.value.trim(); } return "- not applicable -"; }
     function submitTransaction(e) { e.preventDefault(); let dDate = document.getElementById('tx-date').value; let dName = document.getElementById('tx-name').value; let rawAmount = document.getElementById('tx-amount').value.replace(/\./g, ''); let dAmount = parseFloat(rawAmount) || 0; let dCashflow = document.getElementById('tx-cashflow').value; let dCategory = getSelectedValueDirect('tx-category'); let dDari = getSelectedValueDirect('tx-dari'); let dKe = getSelectedValueDirect('tx-ke'); let rawAdmin = document.getElementById('tx-admin-fee').value.replace(/\./g, ''); let dAdminFee = parseFloat(rawAdmin) || 0; let dAdminAcc = document.getElementById('tx-admin-account').value || dDari; let timeFormatted = formatFullDateTime(dDate); if (!globalData.currentBalances) globalData.currentBalances = {}; if (dDari !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(dDari)) globalData.currentBalances[dDari] -= dAmount; if (dKe !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(dKe)) globalData.currentBalances[dKe] += dAmount; let mainTx = { dateTime: timeFormatted, rawDate: dDate, name: dName, amount: dAmount, cashflow: dCashflow, category: dCategory, dariAcc: dDari, keAcc: dKe }; if (!globalData.recentHistory) globalData.recentHistory = []; let adminAdded = false; if (dAdminFee > 0 && dAdminAcc !== '- not applicable -') { adminAdded = true; if (globalData.currentBalances.hasOwnProperty(dAdminAcc)) globalData.currentBalances[dAdminAcc] -= dAdminFee; let adminTx = { dateTime: timeFormatted, rawDate: dDate, name: "Biaya Admin - " + dName, amount: dAdminFee, cashflow: "Spending", category: "Biaya Transaksi / Admin", dariAcc: dAdminAcc, keAcc: "- not applicable -" }; globalData.recentHistory.unshift(mainTx); globalData.recentHistory.unshift(adminTx); } else { globalData.recentHistory.unshift(mainTx); } saveStorageData(); renderDashboard(); renderHistoryTable(); document.getElementById('tx-form').reset(); let dateInput = document.getElementById('tx-date'); if (dateInput) dateInput.valueAsDate = new Date(); applyCashflowLogic(); playSuccessSound(); showSuccessModal(mainTx, adminAdded, dAdminFee); }
-    function renderHistoryTable() { let tbody = document.getElementById('tx-history-tbody'); if (!tbody) return; tbody.innerHTML = ''; let historyList = globalData.recentHistory || []; if (historyList.length === 0) { tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400">Belum ada transaksi diinput.</td></tr>`; return; } let filterCashflow = document.getElementById('rep-filter-cashflow') ? document.getElementById('rep-filter-cashflow').value : 'all'; let filterAcc = document.getElementById('rep-filter-account') ? document.getElementById('rep-filter-account').value : 'all'; let filterMode = document.getElementById('rep-filter-mode') ? document.getElementById('rep-filter-mode').value : 'all'; let startDate = document.getElementById('rep-date-start') ? document.getElementById('rep-date-start').value : ''; let endDate = document.getElementById('rep-date-end') ? document.getElementById('rep-date-end').value : ''; let exactDate = document.getElementById('rep-exact-date') ? document.getElementById('rep-exact-date').value : ''; let exactMonth = document.getElementById('rep-exact-month') ? document.getElementById('rep-exact-month').value : ''; let exactYear = document.getElementById('rep-exact-year') ? document.getElementById('rep-exact-year').value : ''; let filteredList = historyList.filter(tx => { if (filterCashflow !== 'all' && tx.cashflow !== filterCashflow) return false; if (filterAcc !== 'all' && tx.dariAcc !== filterAcc && tx.keAcc !== filterAcc) return false; let txDate = tx.rawDate || ""; if (filterMode === 'date_range' && startDate && endDate) { if (txDate < startDate || txDate > endDate) return false; } else if (filterMode === 'exact_date' && exactDate) { if (txDate !== exactDate) return false; } else if (filterMode === 'exact_month' && exactMonth) { if (!txDate.startsWith(exactMonth)) return false; } else if (filterMode === 'exact_year' && exactYear) { if (!txDate.startsWith(exactYear)) return false; } return true; }); if (filteredList.length === 0) { tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400">Tidak ada riwayat transaksi pada rentang filter ini.</td></tr>`; return; } filteredList.forEach((tx) => { let badgeColor = "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300"; if (tx.cashflow === 'Income') badgeColor = "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300"; if (tx.cashflow === 'Spending') badgeColor = "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300"; let originalIdx = globalData.recentHistory.indexOf(tx); tbody.innerHTML += `<tr class="hover:bg-surface-container-low transition-colors hidden-action-row"><td class="p-3 font-mono-data text-[11px] text-gray-500">${tx.dateTime || '-'}</td><td class="p-3 font-bold text-on-surface">${tx.name}</td><td class="p-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${badgeColor}">${tx.cashflow}</span></td><td class="p-3 text-on-surface-variant">${tx.category}</td><td class="p-3 text-gray-500">${tx.dariAcc}</td><td class="p-3 text-gray-500">${tx.keAcc}</td><td class="p-3 text-right"><div class="flex items-center justify-end gap-2"><span class="font-mono-data font-extrabold text-primary dark:text-blue-400">${formatRpKebalSensor(tx.amount)}</span><button onclick="openEditModal(${originalIdx})" class="p-1 rounded hover:bg-surface-container text-gray-400 hover:text-primary transition-colors"><span class="material-symbols-outlined text-sm">edit</span></button><button onclick="deleteTransaction(${originalIdx})" class="delete-action-btn p-1 rounded hover:bg-red-100 text-gray-300 hover:text-error transition-colors"><span class="material-symbols-outlined text-sm">delete</span></button></div></td></tr>`; }); }
+    
+    // Perbaikan: nominal riwayat mengikuti tombol mata (sensor saldo)
+    function renderHistoryTable() { let tbody = document.getElementById('tx-history-tbody'); if (!tbody) return; tbody.innerHTML = ''; let historyList = globalData.recentHistory || []; if (historyList.length === 0) { tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400">Belum ada transaksi diinput.</td></tr>`; return; } let filterCashflow = document.getElementById('rep-filter-cashflow') ? document.getElementById('rep-filter-cashflow').value : 'all'; let filterAcc = document.getElementById('rep-filter-account') ? document.getElementById('rep-filter-account').value : 'all'; let filterMode = document.getElementById('rep-filter-mode') ? document.getElementById('rep-filter-mode').value : 'all'; let startDate = document.getElementById('rep-date-start') ? document.getElementById('rep-date-start').value : ''; let endDate = document.getElementById('rep-date-end') ? document.getElementById('rep-date-end').value : ''; let exactDate = document.getElementById('rep-exact-date') ? document.getElementById('rep-exact-date').value : ''; let exactMonth = document.getElementById('rep-exact-month') ? document.getElementById('rep-exact-month').value : ''; let exactYear = document.getElementById('rep-exact-year') ? document.getElementById('rep-exact-year').value : ''; let filteredList = historyList.filter(tx => { if (filterCashflow !== 'all' && tx.cashflow !== filterCashflow) return false; if (filterAcc !== 'all' && tx.dariAcc !== filterAcc && tx.keAcc !== filterAcc) return false; let txDate = tx.rawDate || ""; if (filterMode === 'date_range' && startDate && endDate) { if (txDate < startDate || txDate > endDate) return false; } else if (filterMode === 'exact_date' && exactDate) { if (txDate !== exactDate) return false; } else if (filterMode === 'exact_month' && exactMonth) { if (!txDate.startsWith(exactMonth)) return false; } else if (filterMode === 'exact_year' && exactYear) { if (!txDate.startsWith(exactYear)) return false; } return true; }); if (filteredList.length === 0) { tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400">Tidak ada riwayat transaksi pada rentang filter ini.</td></tr>`; return; } filteredList.forEach((tx) => { let badgeColor = "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300"; if (tx.cashflow === 'Income') badgeColor = "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300"; if (tx.cashflow === 'Spending') badgeColor = "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300"; let originalIdx = globalData.recentHistory.indexOf(tx); tbody.innerHTML += `<tr class="hover:bg-surface-container-low transition-colors hidden-action-row"><td class="p-3 font-mono-data text-[11px] text-gray-500">${tx.dateTime || '-'}</td><td class="p-3 font-bold text-on-surface">${tx.name}</td><td class="p-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${badgeColor}">${tx.cashflow}</span></td><td class="p-3 text-on-surface-variant">${tx.category}</td><td class="p-3 text-gray-500">${tx.dariAcc}</td><td class="p-3 text-gray-500">${tx.keAcc}</td><td class="p-3 text-right"><div class="flex items-center justify-end gap-2"><span class="font-mono-data font-extrabold text-primary dark:text-blue-400">${formatRp(tx.amount)}</span><button onclick="openEditModal(${originalIdx})" class="p-1 rounded hover:bg-surface-container text-gray-400 hover:text-primary transition-colors"><span class="material-symbols-outlined text-sm">edit</span></button><button onclick="deleteTransaction(${originalIdx})" class="delete-action-btn p-1 rounded hover:bg-red-100 text-gray-300 hover:text-error transition-colors"><span class="material-symbols-outlined text-sm">delete</span></button></div></td></tr>`; }); }
+    
     function openEditModal(idx) { let tx = globalData.recentHistory[idx]; if (!tx) return; document.getElementById('edit-tx-index').value = idx; document.getElementById('edit-tx-name').value = tx.name || ''; document.getElementById('edit-tx-amount').value = (tx.amount || 0).toLocaleString('id-ID'); document.getElementById('edit-tx-category').value = tx.category || ''; document.getElementById('edit-tx-dari').value = tx.dariAcc || ''; document.getElementById('edit-tx-ke').value = tx.keAcc || ''; let modal = document.getElementById('edit-tx-modal'), card = document.getElementById('edit-tx-card'); modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); card.classList.add('scale-100'); }, 10); }
     function closeEditModal() { let modal = document.getElementById('edit-tx-modal'), card = document.getElementById('edit-tx-card'); modal.classList.add('opacity-0'); card.classList.remove('scale-100'); card.classList.add('scale-95'); setTimeout(() => modal.classList.add('hidden'), 300); }
     function saveEditedTransaction() { let idx = parseInt(document.getElementById('edit-tx-index').value, 10); let tx = globalData.recentHistory[idx]; if (!tx) return; let newName = document.getElementById('edit-tx-name').value; let newAmount = parseFloat(document.getElementById('edit-tx-amount').value.replace(/\./g, '')) || 0; let newCat = document.getElementById('edit-tx-category').value; let oldAmt = tx.amount; if (tx.dariAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.dariAcc)) globalData.currentBalances[tx.dariAcc] += oldAmt; if (tx.keAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.keAcc)) globalData.currentBalances[tx.keAcc] -= oldAmt; if (tx.dariAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.dariAcc)) globalData.currentBalances[tx.dariAcc] -= newAmount; if (tx.keAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.keAcc)) globalData.currentBalances[tx.keAcc] += newAmount; tx.name = newName; tx.amount = newAmount; tx.category = newCat; saveStorageData(); renderDashboard(); renderHistoryTable(); closeEditModal(); playSuccessSound(); alert("Riwayat transaksi berhasil diperbarui & saldo akun disesuaikan!"); }
