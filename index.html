@@ -15,7 +15,6 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <!-- LIBRARY TAMBAHAN UNTUK DOWNLOAD PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet"/>
@@ -132,7 +131,7 @@
     </div>
   </header>
 
-  <!-- TOMBOL MENGAMBANG -->
+  <!-- TOMBOL MENGAMBANG SENSOR -->
   <button onclick="toggleBalanceMask()" class="fixed bottom-24 right-6 z-50 bg-slate-800 dark:bg-slate-600 text-white p-3 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.2)] border border-slate-600 dark:border-slate-500 hover:scale-110 active:scale-95 transition-transform flex items-center justify-center group" title="Sembunyikan/Tampilkan Saldo">
     <span class="material-symbols-outlined" id="icon-mask-balance-fab" style="font-size: 26px;">visibility_off</span>
   </button>
@@ -323,7 +322,6 @@
       <section class="space-y-4 pt-4 border-t border-outline-variant">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div><h2 class="font-headline-md font-bold text-on-surface">Riwayat & Filter Transaksi</h2><p class="text-xs text-gray-500">Pilih Tanggal, Bulan, Tahun, atau Rentang Tanggal sesuai kebutuhan</p></div>
-          <!-- PERBAIKAN: Tombol Download PDF Ditambahkan -->
           <div class="flex gap-2">
             <button onclick="downloadHistoryPDF()" class="px-3.5 py-2 bg-secondary text-white font-bold rounded-xl text-xs flex items-center gap-1 shadow hover:brightness-110">
               <span class="material-symbols-outlined text-sm">download</span> Download PDF
@@ -386,6 +384,20 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
             <input type="password" id="new-pass-input" placeholder="Masukkan Password Baru" class="p-2.5 border rounded-xl text-xs font-mono-data bg-surface">
             <button onclick="changeOwnerPassword()" class="py-2.5 bg-secondary text-white font-bold text-xs rounded-xl shadow">Ubah Password</button>
+          </div>
+        </section>
+
+        <!-- FITUR BARU: BACKUP & RESTORE -->
+        <section class="bg-blue-50 border border-blue-200 dark:bg-blue-900/30 dark:border-blue-800 rounded-2xl p-6 shadow-sm space-y-3">
+          <div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary">cloud_sync</span><h2 class="font-headline-md text-headline-md font-bold text-blue-900 dark:text-blue-100">Backup & Restore Database</h2></div>
+          <p class="text-xs text-blue-800 dark:text-blue-200">Gunakan fitur ini untuk memindahkan data dari aplikasi di iPad ke Web GitHub, atau sebaliknya.</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+            <button onclick="exportDatabase()" class="py-3 bg-primary hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined text-base">content_copy</span> 1. EXPORT / COPY DATABASE ASLI
+            </button>
+            <button onclick="importDatabase()" class="py-3 bg-secondary hover:bg-sky-600 text-white font-bold text-xs rounded-xl shadow flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined text-base">download</span> 2. IMPORT / RESTORE DATABASE
+            </button>
           </div>
         </section>
 
@@ -831,7 +843,7 @@
       resBox.classList.remove('hidden');
     }
 
-    // KALKULATOR PEMBIAYAAN MURABAHAH
+    // KALKULATOR MURABAHAH
     function toggleMurCalcMode() {
       let mode = document.getElementById('mur-calc-mode').value;
       document.getElementById('mur-input-margin').classList.toggle('hidden', mode !== 'cari_angsuran');
@@ -873,8 +885,7 @@
       resultBox.classList.remove('hidden');
     }
 
-    // FUNGSI LAINNYA
-    // Fungsi Baru: Download PDF
+    // FUNGSI BARU: DOWNLOAD PDF
     function downloadHistoryPDF() {
       let element = document.getElementById('report-printable-area');
       let opt = {
@@ -886,7 +897,38 @@
       };
       html2pdf().set(opt).from(element).save();
     }
+    
+    // FUNGSI BARU: EXPORT & IMPORT DATABASE
+    function exportDatabase() {
+      let dbCode = localStorage.getItem("KEUANGANKU_DB_V21");
+      if (!dbCode) { alert("Data kosong! Belum ada database yang tersimpan."); return; }
+      
+      navigator.clipboard.writeText(dbCode).then(() => {
+        alert("BERHASIL! \n\nKode Database Asli telah di-COPY. \n\nSilakan buka aplikasi/web versi baru, masuk ke Menu Setup, klik 'Import / Restore Database', lalu Paste kode yang sudah di-copy ini.");
+      }).catch(err => {
+        prompt("Browser tidak mengizinkan Auto-Copy. Silakan COPY manual semua teks di bawah ini secara penuh:", dbCode);
+      });
+    }
 
+    function importDatabase() {
+      let pastedCode = prompt("PASTE (Tempel) kode Database Asli Anda di sini:");
+      if (pastedCode && pastedCode.trim() !== "") {
+        try {
+          let testParse = JSON.parse(pastedCode);
+          if (testParse.accounts) {
+            localStorage.setItem("KEUANGANKU_DB_V21", pastedCode);
+            alert("DATABASE BERHASIL DI-RESTORE! \n\nAplikasi akan dimuat ulang (Refresh) untuk menampilkan data asli Anda.");
+            location.reload();
+          } else {
+            alert("GAGAL: Kode yang Anda Paste bukan format Database KEUANGANKU yang valid.");
+          }
+        } catch(e) {
+          alert("GAGAL: Kode rusak atau tidak tercopy seluruhnya. Pastikan Anda meng-copy semua teks dari ujung ke ujung.");
+        }
+      }
+    }
+
+    // FUNGSI LAINNYA
     function checkDueDateAlerts() { let container = document.getElementById('due-date-alert-container'); if (!container) return; container.innerHTML = ''; if (!globalData.routinePayments) return; let currentDay = new Date().getDate(); Object.keys(globalData.routinePayments).forEach(itemKey => { let item = globalData.routinePayments[itemKey]; let diff = item.dueDay - currentDay; if (diff >= 0 && diff <= 3) { let warningText = diff === 0 ? "JATUH TEMPO HARI INI!" : `Sisa ${diff} Hari Lagi (Tgl ${item.dueDay})`; container.innerHTML += `<div class="bg-red-500 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between border-2 border-red-700 animate-pulse"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-3xl">warning</span><div><h4 class="font-extrabold text-sm uppercase">WAKTUNYA BAYAR: ${itemKey}</h4><p class="text-xs text-red-100 font-medium">Nominal: <b>${formatRp(item.amount)}</b> | ${warningText}</p></div></div><button onclick="navTo('transaksi')" class="px-3 py-1.5 bg-white text-red-700 font-bold rounded-xl text-xs shadow">Bayar Sekarang</button></div>`; } }); }
     function checkReceivableAlerts() { let container = document.getElementById('receivable-alert-container'); if (!container) return; container.innerHTML = ''; if (!globalData.receivablesData) return; let today = new Date(); today.setHours(0,0,0,0); Object.keys(globalData.receivablesData).forEach(k => { let item = globalData.receivablesData[k]; if (item.deadline) { let dDate = new Date(item.deadline); dDate.setHours(0,0,0,0); let diffDays = Math.ceil((dDate - today) / (1000 * 60 * 60 * 24)); if (diffDays <= 3 && diffDays >= 0) { let timeText = diffDays === 0 ? "JATUH TEMPO PENAGIHAN HARI INI!" : `Deadline ${diffDays} Hari Lagi (${item.deadline})`; container.innerHTML += `<div class="bg-emerald-600 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between border-2 border-emerald-800 animate-pulse"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-3xl">notification_important</span><div><h4 class="font-extrabold text-sm uppercase">WAKTUNYA MENAGIH: ${k}</h4><p class="text-xs text-emerald-100 font-medium">Nominal: <b>${formatRp(item.total)}</b> | ${timeText}</p></div></div><button onclick="navTo('transaksi')" class="px-3 py-1.5 bg-white text-emerald-800 font-bold rounded-xl text-xs shadow">Pelunasan</button></div>`; } } }); }
     function getCategoryCashflowNet(categoryName) { let net = 0, used = 0; if (!globalData.recentHistory) return { net, used }; globalData.recentHistory.forEach(tx => { if (tx.category === categoryName) { if (['Invest / Savings', 'Financial Goals', 'Income', 'Dari Asset / Saving'].includes(tx.cashflow)) net += tx.amount; if (tx.cashflow === 'Spending') used += tx.amount; } }); return { net, used }; }
@@ -911,7 +953,6 @@
     function getSelectedValueDirect(elementId) { let el = document.getElementById(elementId); if (!el) return "- not applicable -"; if (el.options && el.options.length > 0) { let idx = el.selectedIndex >= 0 ? el.selectedIndex : 0; let selectedOpt = el.options[idx]; if (selectedOpt && selectedOpt.value && selectedOpt.value.trim() !== "") return selectedOpt.value.trim(); } return "- not applicable -"; }
     function submitTransaction(e) { e.preventDefault(); let dDate = document.getElementById('tx-date').value; let dName = document.getElementById('tx-name').value; let rawAmount = document.getElementById('tx-amount').value.replace(/\./g, ''); let dAmount = parseFloat(rawAmount) || 0; let dCashflow = document.getElementById('tx-cashflow').value; let dCategory = getSelectedValueDirect('tx-category'); let dDari = getSelectedValueDirect('tx-dari'); let dKe = getSelectedValueDirect('tx-ke'); let rawAdmin = document.getElementById('tx-admin-fee').value.replace(/\./g, ''); let dAdminFee = parseFloat(rawAdmin) || 0; let dAdminAcc = document.getElementById('tx-admin-account').value || dDari; let timeFormatted = formatFullDateTime(dDate); if (!globalData.currentBalances) globalData.currentBalances = {}; if (dDari !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(dDari)) globalData.currentBalances[dDari] -= dAmount; if (dKe !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(dKe)) globalData.currentBalances[dKe] += dAmount; let mainTx = { dateTime: timeFormatted, rawDate: dDate, name: dName, amount: dAmount, cashflow: dCashflow, category: dCategory, dariAcc: dDari, keAcc: dKe }; if (!globalData.recentHistory) globalData.recentHistory = []; let adminAdded = false; if (dAdminFee > 0 && dAdminAcc !== '- not applicable -') { adminAdded = true; if (globalData.currentBalances.hasOwnProperty(dAdminAcc)) globalData.currentBalances[dAdminAcc] -= dAdminFee; let adminTx = { dateTime: timeFormatted, rawDate: dDate, name: "Biaya Admin - " + dName, amount: dAdminFee, cashflow: "Spending", category: "Biaya Transaksi / Admin", dariAcc: dAdminAcc, keAcc: "- not applicable -" }; globalData.recentHistory.unshift(mainTx); globalData.recentHistory.unshift(adminTx); } else { globalData.recentHistory.unshift(mainTx); } saveStorageData(); renderDashboard(); renderHistoryTable(); document.getElementById('tx-form').reset(); let dateInput = document.getElementById('tx-date'); if (dateInput) dateInput.valueAsDate = new Date(); applyCashflowLogic(); playSuccessSound(); showSuccessModal(mainTx, adminAdded, dAdminFee); }
     
-    // Perbaikan: nominal riwayat mengikuti tombol mata (sensor saldo)
     function renderHistoryTable() { let tbody = document.getElementById('tx-history-tbody'); if (!tbody) return; tbody.innerHTML = ''; let historyList = globalData.recentHistory || []; if (historyList.length === 0) { tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400">Belum ada transaksi diinput.</td></tr>`; return; } let filterCashflow = document.getElementById('rep-filter-cashflow') ? document.getElementById('rep-filter-cashflow').value : 'all'; let filterAcc = document.getElementById('rep-filter-account') ? document.getElementById('rep-filter-account').value : 'all'; let filterMode = document.getElementById('rep-filter-mode') ? document.getElementById('rep-filter-mode').value : 'all'; let startDate = document.getElementById('rep-date-start') ? document.getElementById('rep-date-start').value : ''; let endDate = document.getElementById('rep-date-end') ? document.getElementById('rep-date-end').value : ''; let exactDate = document.getElementById('rep-exact-date') ? document.getElementById('rep-exact-date').value : ''; let exactMonth = document.getElementById('rep-exact-month') ? document.getElementById('rep-exact-month').value : ''; let exactYear = document.getElementById('rep-exact-year') ? document.getElementById('rep-exact-year').value : ''; let filteredList = historyList.filter(tx => { if (filterCashflow !== 'all' && tx.cashflow !== filterCashflow) return false; if (filterAcc !== 'all' && tx.dariAcc !== filterAcc && tx.keAcc !== filterAcc) return false; let txDate = tx.rawDate || ""; if (filterMode === 'date_range' && startDate && endDate) { if (txDate < startDate || txDate > endDate) return false; } else if (filterMode === 'exact_date' && exactDate) { if (txDate !== exactDate) return false; } else if (filterMode === 'exact_month' && exactMonth) { if (!txDate.startsWith(exactMonth)) return false; } else if (filterMode === 'exact_year' && exactYear) { if (!txDate.startsWith(exactYear)) return false; } return true; }); if (filteredList.length === 0) { tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400">Tidak ada riwayat transaksi pada rentang filter ini.</td></tr>`; return; } filteredList.forEach((tx) => { let badgeColor = "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300"; if (tx.cashflow === 'Income') badgeColor = "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300"; if (tx.cashflow === 'Spending') badgeColor = "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300"; let originalIdx = globalData.recentHistory.indexOf(tx); tbody.innerHTML += `<tr class="hover:bg-surface-container-low transition-colors hidden-action-row"><td class="p-3 font-mono-data text-[11px] text-gray-500">${tx.dateTime || '-'}</td><td class="p-3 font-bold text-on-surface">${tx.name}</td><td class="p-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${badgeColor}">${tx.cashflow}</span></td><td class="p-3 text-on-surface-variant">${tx.category}</td><td class="p-3 text-gray-500">${tx.dariAcc}</td><td class="p-3 text-gray-500">${tx.keAcc}</td><td class="p-3 text-right"><div class="flex items-center justify-end gap-2"><span class="font-mono-data font-extrabold text-primary dark:text-blue-400">${formatRp(tx.amount)}</span><button onclick="openEditModal(${originalIdx})" class="p-1 rounded hover:bg-surface-container text-gray-400 hover:text-primary transition-colors"><span class="material-symbols-outlined text-sm">edit</span></button><button onclick="deleteTransaction(${originalIdx})" class="delete-action-btn p-1 rounded hover:bg-red-100 text-gray-300 hover:text-error transition-colors"><span class="material-symbols-outlined text-sm">delete</span></button></div></td></tr>`; }); }
     
     function openEditModal(idx) { let tx = globalData.recentHistory[idx]; if (!tx) return; document.getElementById('edit-tx-index').value = idx; document.getElementById('edit-tx-name').value = tx.name || ''; document.getElementById('edit-tx-amount').value = (tx.amount || 0).toLocaleString('id-ID'); document.getElementById('edit-tx-category').value = tx.category || ''; document.getElementById('edit-tx-dari').value = tx.dariAcc || ''; document.getElementById('edit-tx-ke').value = tx.keAcc || ''; let modal = document.getElementById('edit-tx-modal'), card = document.getElementById('edit-tx-card'); modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); card.classList.add('scale-100'); }, 10); }
