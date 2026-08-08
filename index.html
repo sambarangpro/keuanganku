@@ -640,24 +640,31 @@
         <!-- SUB: KALKULATOR MODAL USAHA (GENERAL) -->
         <div id="calc-sub-modal-usaha" class="calc-sub-item hidden bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-6 space-y-4 shadow-sm">
           <h3 class="font-bold text-base text-orange-600 flex items-center gap-2"><span class="material-symbols-outlined">business_center</span> Kalkulator Modal & Proyeksi BEP Usaha</h3>
-          <p class="text-[11px] text-gray-500 leading-relaxed">Kosongkan baris yang tidak diperlukan. Masukkan rincian investasi awal dan operasional untuk mengukur target Balik Modal (BEP).</p>
+          <p class="text-[11px] text-gray-500 leading-relaxed">Masukkan rincian investasi awal dan operasional untuk mengukur target Balik Modal (BEP). Tambahkan baris sesuai kebutuhan.</p>
           
           <div class="space-y-4 text-xs">
-            <div class="space-y-3">
-              <h4 class="font-bold text-gray-700 dark:text-gray-300 border-b border-outline-variant/50 pb-1">1. Modal Investasi / Aset Tetap (CapEx)</h4>
-              <p class="text-[10px] text-gray-400 -mt-2">Contoh: Beli Mesin, Renovasi, Etalase, Laptop, Printer.</p>
-              <div class="flex gap-2"><input type="text" id="mu-aset-name-1" placeholder="Nama Aset 1" class="w-1/2 p-2 border rounded-xl text-xs bg-surface text-on-surface"><input type="text" id="mu-aset-val-1" placeholder="Rp 0" oninput="formatInputNominal(this)" class="w-1/2 p-2 border rounded-xl text-xs font-mono-data bg-surface text-on-surface"></div>
-              <div class="flex gap-2"><input type="text" id="mu-aset-name-2" placeholder="Nama Aset 2" class="w-1/2 p-2 border rounded-xl text-xs bg-surface text-on-surface"><input type="text" id="mu-aset-val-2" placeholder="Rp 0" oninput="formatInputNominal(this)" class="w-1/2 p-2 border rounded-xl text-xs font-mono-data bg-surface text-on-surface"></div>
-              <div class="flex gap-2"><input type="text" id="mu-aset-name-3" placeholder="Nama Aset 3" class="w-1/2 p-2 border rounded-xl text-xs bg-surface text-on-surface"><input type="text" id="mu-aset-val-3" placeholder="Rp 0" oninput="formatInputNominal(this)" class="w-1/2 p-2 border rounded-xl text-xs font-mono-data bg-surface text-on-surface"></div>
+            <div class="space-y-2">
+              <div class="flex justify-between items-center border-b border-outline-variant/50 pb-1">
+                <h4 class="font-bold text-gray-700 dark:text-gray-300">1. Modal Investasi / Aset Tetap (CapEx)</h4>
+                <button onclick="addCapExRow()" class="text-primary text-[10px] font-bold flex items-center gap-1 hover:underline"><span class="material-symbols-outlined text-sm">add_circle</span> Tambah Aset</button>
+              </div>
+              <p class="text-[10px] text-gray-400">Contoh: Beli Mesin, Renovasi, Etalase, Laptop, Printer.</p>
+              <div id="capex-container" class="space-y-2">
+                <div class="flex items-center gap-2 capex-row"><input type="text" placeholder="Nama Aset (Misal: Mesin Press)" class="w-1/2 p-2 border rounded-xl text-xs bg-surface text-on-surface"><input type="text" placeholder="Rp 0" oninput="formatInputNominal(this)" class="w-1/2 p-2 border rounded-xl text-xs font-mono-data bg-surface text-on-surface capex-val"><span onclick="this.parentElement.remove()" class="material-symbols-outlined text-error cursor-pointer text-sm hover:scale-110">close</span></div>
+                <div class="flex items-center gap-2 capex-row"><input type="text" placeholder="Nama Aset (Misal: Printer)" class="w-1/2 p-2 border rounded-xl text-xs bg-surface text-on-surface"><input type="text" placeholder="Rp 0" oninput="formatInputNominal(this)" class="w-1/2 p-2 border rounded-xl text-xs font-mono-data bg-surface text-on-surface capex-val"><span onclick="this.parentElement.remove()" class="material-symbols-outlined text-error cursor-pointer text-sm hover:scale-110">close</span></div>
+              </div>
             </div>
 
-            <div class="space-y-3">
-              <h4 class="font-bold text-gray-700 dark:text-gray-300 border-b border-outline-variant/50 pb-1">2. Modal Kerja / Operasional (OpEx) per Batch</h4>
-              <p class="text-[10px] text-gray-400 -mt-2">Contoh: Bahan Baku Sablon, Tinta, Gaji, Ads, Sewa Per Bulan.</p>
-              <div class="flex gap-2"><input type="text" id="mu-kerja-name-1" placeholder="Nama Bahan / Biaya 1" class="w-1/2 p-2 border rounded-xl text-xs bg-surface text-on-surface"><input type="text" id="mu-kerja-val-1" placeholder="Rp 0" oninput="formatInputNominal(this)" class="w-1/2 p-2 border rounded-xl text-xs font-mono-data bg-surface text-on-surface"></div>
-              <div class="flex gap-2"><input type="text" id="mu-kerja-name-2" placeholder="Nama Bahan / Biaya 2" class="w-1/2 p-2 border rounded-xl text-xs bg-surface text-on-surface"><input type="text" id="mu-kerja-val-2" placeholder="Rp 0" oninput="formatInputNominal(this)" class="w-1/2 p-2 border rounded-xl text-xs font-mono-data bg-surface text-on-surface"></div>
-              <div class="flex gap-2"><input type="text" id="mu-kerja-name-3" placeholder="Nama Bahan / Biaya 3" class="w-1/2 p-2 border rounded-xl text-xs bg-surface text-on-surface"><input type="text" id="mu-kerja-val-3" placeholder="Rp 0" oninput="formatInputNominal(this)" class="w-1/2 p-2 border rounded-xl text-xs font-mono-data bg-surface text-on-surface"></div>
-              <div class="flex gap-2"><input type="text" id="mu-kerja-name-4" placeholder="Nama Bahan / Biaya 4" class="w-1/2 p-2 border rounded-xl text-xs bg-surface text-on-surface"><input type="text" id="mu-kerja-val-4" placeholder="Rp 0" oninput="formatInputNominal(this)" class="w-1/2 p-2 border rounded-xl text-xs font-mono-data bg-surface text-on-surface"></div>
+            <div class="space-y-2">
+              <div class="flex justify-between items-center border-b border-outline-variant/50 pb-1">
+                <h4 class="font-bold text-gray-700 dark:text-gray-300">2. Modal Kerja / Operasional (OpEx)</h4>
+                <button onclick="addOpExRow()" class="text-primary text-[10px] font-bold flex items-center gap-1 hover:underline"><span class="material-symbols-outlined text-sm">add_circle</span> Tambah Biaya</button>
+              </div>
+              <p class="text-[10px] text-gray-400">Contoh: Bahan Baku Sablon, Tinta, Gaji, Sewa Per Bulan.</p>
+              <div id="opex-container" class="space-y-2">
+                <div class="flex items-center gap-2 opex-row"><input type="text" placeholder="Nama Bahan / Biaya" class="w-1/2 p-2 border rounded-xl text-xs bg-surface text-on-surface"><input type="text" placeholder="Rp 0" oninput="formatInputNominal(this)" class="w-1/2 p-2 border rounded-xl text-xs font-mono-data bg-surface text-on-surface opex-val"><span onclick="this.parentElement.remove()" class="material-symbols-outlined text-error cursor-pointer text-sm hover:scale-110">close</span></div>
+                <div class="flex items-center gap-2 opex-row"><input type="text" placeholder="Nama Bahan / Biaya" class="w-1/2 p-2 border rounded-xl text-xs bg-surface text-on-surface"><input type="text" placeholder="Rp 0" oninput="formatInputNominal(this)" class="w-1/2 p-2 border rounded-xl text-xs font-mono-data bg-surface text-on-surface opex-val"><span onclick="this.parentElement.remove()" class="material-symbols-outlined text-error cursor-pointer text-sm hover:scale-110">close</span></div>
+              </div>
             </div>
 
             <div class="space-y-3">
@@ -728,6 +735,11 @@
 
             <button onclick="calculateMurabahah()" class="w-full py-3 bg-purple-600 text-white font-bold rounded-xl shadow mt-4 hover:brightness-110 transition-all">Kalkulasi Simulasi Akad</button>
             <div id="calc-mur-result" class="hidden p-4 bg-purple-50 border border-purple-200 rounded-xl mt-3 space-y-2"></div>
+
+            <div class="mt-4 p-4 bg-purple-100/50 border border-purple-200 rounded-xl">
+              <p class="text-[11px] font-bold text-purple-800 mb-1">⚖️ Tinjauan Fiqh: Akad Murabahah</p>
+              <p class="text-[10px] text-gray-600 leading-relaxed"><b>Murabahah</b> adalah akad jual beli barang dengan menyatakan harga perolehan (modal pokok) dan keuntungan (margin) yang disepakati oleh kedua belah pihak. Syarat utamanya adalah barang harus menjadi hak milik penjual (Bank/Pemodal) terlebih dahulu sebelum dijual cicil kepada nasabah.</p>
+            </div>
           </div>
         </div>
       </div>
@@ -739,6 +751,7 @@
     <button onclick="navTo('dashboard')" id="nav-dash" class="flex flex-col items-center text-primary px-4 py-1 font-bold"><span class="material-symbols-outlined">dashboard</span><span class="font-label-caps text-[10px] mt-0.5">Dashboard</span></button>
     <button onclick="navTo('transaksi')" id="nav-tx" class="flex flex-col items-center text-on-surface-variant px-4 py-1 hover:text-primary"><span class="material-symbols-outlined">receipt_long</span><span class="font-label-caps text-[10px] mt-0.5">Transaksi</span></button>
     
+    <!-- TOMBOL KALKULATOR DISEMBUNYIKAN SECARA DEFAULT -->
     <button onclick="navTo('kalkulator')" id="nav-calc" style="display: none;" class="flex-col items-center text-on-surface-variant px-4 py-1 hover:text-primary"><span class="material-symbols-outlined">calculate</span><span class="font-label-caps text-[10px] mt-0.5">Kalkulator</span></button>
     
     <button onclick="navTo('setup')" id="nav-setup" class="flex flex-col items-center text-on-surface-variant px-4 py-1 hover:text-primary"><span class="material-symbols-outlined">settings</span><span class="font-label-caps text-[10px] mt-0.5">Setup</span></button>
@@ -913,6 +926,84 @@
     }
     function backToCalcMenu() { document.getElementById('calc-sub-container').classList.add('hidden'); document.getElementById('calc-menu-grid').classList.remove('hidden'); }
 
+    // FUNGSI TAMBAH BARIS DINAMIS KALKULATOR MODAL
+    function addCapExRow() {
+      let container = document.getElementById('capex-container');
+      let div = document.createElement('div');
+      div.className = 'flex items-center gap-2 capex-row';
+      div.innerHTML = `<input type="text" placeholder="Nama Aset" class="w-1/2 p-2 border rounded-xl text-xs bg-surface text-on-surface"><input type="text" placeholder="Rp 0" oninput="formatInputNominal(this)" class="w-1/2 p-2 border rounded-xl text-xs font-mono-data bg-surface text-on-surface capex-val"><span onclick="this.parentElement.remove()" class="material-symbols-outlined text-error cursor-pointer text-sm hover:scale-110">close</span>`;
+      container.appendChild(div);
+    }
+
+    function addOpExRow() {
+      let container = document.getElementById('opex-container');
+      let div = document.createElement('div');
+      div.className = 'flex items-center gap-2 opex-row';
+      div.innerHTML = `<input type="text" placeholder="Nama Bahan / Biaya" class="w-1/2 p-2 border rounded-xl text-xs bg-surface text-on-surface"><input type="text" placeholder="Rp 0" oninput="formatInputNominal(this)" class="w-1/2 p-2 border rounded-xl text-xs font-mono-data bg-surface text-on-surface opex-val"><span onclick="this.parentElement.remove()" class="material-symbols-outlined text-error cursor-pointer text-sm hover:scale-110">close</span>`;
+      container.appendChild(div);
+    }
+
+    // KALKULATOR MODAL USAHA (DINAMIS)
+    function calculateModalUsaha() {
+      let totalAset = 0;
+      document.querySelectorAll('.capex-val').forEach(input => {
+          totalAset += parseFloat(input.value.replace(/\./g, '')) || 0;
+      });
+
+      let totalKerja = 0;
+      document.querySelectorAll('.opex-val').forEach(input => {
+          totalKerja += parseFloat(input.value.replace(/\./g, '')) || 0;
+      });
+
+      let grandTotalModal = totalAset + totalKerja;
+      let qty = parseInt(document.getElementById('mu-qty').value) || 1;
+      let hargaJual = parseFloat(document.getElementById('mu-hargajual').value.replace(/\./g, '')) || 0;
+
+      if (grandTotalModal <= 0) {
+        alert("Silakan masukkan minimal satu nominal untuk Aset atau Modal Kerja!");
+        return;
+      }
+
+      let hppModalKerja = qty > 0 ? (totalKerja / qty) : 0;
+      let omzet = qty * hargaJual;
+      let profit = omzet - totalKerja;
+      
+      let marginPerPcs = hargaJual - hppModalKerja;
+      let bepPcs = marginPerPcs > 0 ? Math.ceil(grandTotalModal / marginPerPcs) : 0;
+
+      let resBox = document.getElementById('calc-mu-result');
+      resBox.innerHTML = `
+        <p class="text-[12px] font-bold text-orange-800 dark:text-orange-300 border-b border-orange-200 dark:border-orange-800 pb-1 uppercase">Ringkasan Kebutuhan Modal</p>
+        <div class="grid grid-cols-2 gap-2 mt-2 text-[11px]">
+          <div><span class="text-gray-500">1. Investasi (Aset Tetap):</span><br><b class="font-mono-data text-gray-700 dark:text-gray-300">${formatRpKebalSensor(totalAset)}</b></div>
+          <div><span class="text-gray-500">2. Modal Kerja (Bahan+Ops):</span><br><b class="font-mono-data text-gray-700 dark:text-gray-300">${formatRpKebalSensor(totalKerja)}</b></div>
+        </div>
+        <div class="mt-2 p-2 bg-white dark:bg-slate-900 rounded-lg text-center border border-orange-100 dark:border-orange-800">
+          <p class="text-[10px] text-gray-500 font-bold uppercase">Grand Total Modal Dibutuhkan</p>
+          <p class="text-xl font-mono-data font-extrabold text-orange-600 dark:text-orange-400 mt-0.5">${formatRpKebalSensor(grandTotalModal)}</p>
+        </div>
+        
+        <p class="text-[12px] font-bold text-orange-800 dark:text-orange-300 border-b border-orange-200 dark:border-orange-800 pb-1 mt-4 uppercase">Proyeksi Laba & BEP</p>
+        <div class="grid grid-cols-2 gap-2 mt-2 text-[11px]">
+          <div><span class="text-gray-500">Modal Kerja per Satuan:</span><br><b class="font-mono-data">${formatRpKebalSensor(hppModalKerja)}</b></div>
+          <div><span class="text-gray-500">Omzet Estimasi (${qty}):</span><br><b class="font-mono-data">${formatRpKebalSensor(omzet)}</b></div>
+        </div>
+        <div class="mt-2 p-3 bg-white dark:bg-slate-900 rounded-xl text-center border border-orange-100 dark:border-orange-800 shadow-sm">
+          <p class="text-[10px] text-gray-500 font-bold uppercase">Estimasi Laba Kotor per Siklus/Batch</p>
+          <p class="text-lg font-mono-data font-extrabold ${profit >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-500'} mt-0.5">${profit >= 0 ? '+ ' : ''}${formatRpKebalSensor(profit)}</p>
+          ${hargaJual > 0 && bepPcs > 0 
+            ? `<div class="mt-2 p-1.5 bg-orange-100 dark:bg-orange-900/50 rounded-lg border border-orange-200 dark:border-orange-700 text-[10px] text-orange-800 dark:text-orange-200 font-medium">
+                 Untuk balik modal <b>100%</b> (Investasi Aset + Kerja), Anda harus berhasil menjual total: <br><b class="text-sm font-bold text-orange-600 dark:text-orange-400 font-mono-data">${bepPcs} Pcs</b>
+               </div>` 
+            : `<div class="mt-2 p-1.5 bg-red-100 dark:bg-red-900/50 rounded-lg border border-red-200 dark:border-red-700 text-[10px] text-red-800 dark:text-red-200 font-medium">
+                 <b>RUGI / BEP TIDAK TERCAPAI:</b> Harga jual lebih rendah dari biaya modal kerja per satuan.
+               </div>`
+          }
+        </div>
+      `;
+      resBox.classList.remove('hidden');
+    }
+
     // KALKULATOR MATA UANG
     async function calculateCurrency() {
       let rawVal = document.getElementById('calc-curr-amount').value.replace(/\./g, ''); let amount = parseFloat(rawVal) || 0;
@@ -978,73 +1069,6 @@
       resBox.classList.remove('hidden');
     }
 
-    // KALKULATOR MODAL USAHA GENERAL (BARU)
-    function calculateModalUsaha() {
-      const getVal = (id) => parseFloat(document.getElementById(id).value.replace(/\./g, '')) || 0;
-      
-      // Ambil nilai dari Investasi (Aset Tetap)
-      let aset1 = getVal('mu-aset-val-1');
-      let aset2 = getVal('mu-aset-val-2');
-      let aset3 = getVal('mu-aset-val-3');
-      let totalAset = aset1 + aset2 + aset3;
-
-      // Ambil nilai dari Modal Kerja (Bahan/Operasional)
-      let kerja1 = getVal('mu-kerja-val-1');
-      let kerja2 = getVal('mu-kerja-val-2');
-      let kerja3 = getVal('mu-kerja-val-3');
-      let kerja4 = getVal('mu-kerja-val-4');
-      let totalKerja = kerja1 + kerja2 + kerja3 + kerja4;
-
-      let grandTotalModal = totalAset + totalKerja;
-      
-      let qty = parseInt(document.getElementById('mu-qty').value) || 1;
-      let hargaJual = getVal('mu-hargajual');
-
-      if (grandTotalModal <= 0) {
-        alert("Silakan masukkan minimal satu nominal untuk Aset atau Modal Kerja!");
-        return;
-      }
-
-      let hppModalKerja = qty > 0 ? (totalKerja / qty) : 0;
-      let omzet = qty * hargaJual;
-      let profit = omzet - totalKerja; // Laba kotor operasi (tanpa menghitung cicilan aset)
-      
-      let marginPerPcs = hargaJual - hppModalKerja;
-      let bepPcs = marginPerPcs > 0 ? Math.ceil(grandTotalModal / marginPerPcs) : 0;
-
-      let resBox = document.getElementById('calc-mu-result');
-      resBox.innerHTML = `
-        <p class="text-[12px] font-bold text-orange-800 dark:text-orange-300 border-b border-orange-200 dark:border-orange-800 pb-1 uppercase">Ringkasan Kebutuhan Modal</p>
-        <div class="grid grid-cols-2 gap-2 mt-2 text-[11px]">
-          <div><span class="text-gray-500">1. Investasi (Aset Tetap):</span><br><b class="font-mono-data text-gray-700 dark:text-gray-300">${formatRpKebalSensor(totalAset)}</b></div>
-          <div><span class="text-gray-500">2. Modal Kerja (Bahan+Ops):</span><br><b class="font-mono-data text-gray-700 dark:text-gray-300">${formatRpKebalSensor(totalKerja)}</b></div>
-        </div>
-        <div class="mt-2 p-2 bg-white dark:bg-slate-900 rounded-lg text-center border border-orange-100 dark:border-orange-800">
-          <p class="text-[10px] text-gray-500 font-bold uppercase">Grand Total Modal Dibutuhkan</p>
-          <p class="text-xl font-mono-data font-extrabold text-orange-600 dark:text-orange-400 mt-0.5">${formatRpKebalSensor(grandTotalModal)}</p>
-        </div>
-        
-        <p class="text-[12px] font-bold text-orange-800 dark:text-orange-300 border-b border-orange-200 dark:border-orange-800 pb-1 mt-4 uppercase">Proyeksi Laba & BEP</p>
-        <div class="grid grid-cols-2 gap-2 mt-2 text-[11px]">
-          <div><span class="text-gray-500">Modal Kerja per Satuan:</span><br><b class="font-mono-data">${formatRpKebalSensor(hppModalKerja)}</b></div>
-          <div><span class="text-gray-500">Omzet Estimasi (${qty}):</span><br><b class="font-mono-data">${formatRpKebalSensor(omzet)}</b></div>
-        </div>
-        <div class="mt-2 p-3 bg-white dark:bg-slate-900 rounded-xl text-center border border-orange-100 dark:border-orange-800 shadow-sm">
-          <p class="text-[10px] text-gray-500 font-bold uppercase">Estimasi Laba Kotor per Siklus/Batch</p>
-          <p class="text-lg font-mono-data font-extrabold ${profit >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-500'} mt-0.5">${profit >= 0 ? '+ ' : ''}${formatRpKebalSensor(profit)}</p>
-          ${hargaJual > 0 && bepPcs > 0 
-            ? `<div class="mt-2 p-1.5 bg-orange-100 dark:bg-orange-900/50 rounded-lg border border-orange-200 dark:border-orange-700 text-[10px] text-orange-800 dark:text-orange-200 font-medium">
-                 Untuk balik modal <b>100%</b> (Investasi Aset + Kerja), Anda harus berhasil menjual total: <b class="text-xs font-bold text-orange-600 dark:text-orange-400 font-mono-data">${bepPcs} Pcs</b>
-               </div>` 
-            : `<div class="mt-2 p-1.5 bg-red-100 dark:bg-red-900/50 rounded-lg border border-red-200 dark:border-red-700 text-[10px] text-red-800 dark:text-red-200 font-medium">
-                 <b>RUGI / BEP TIDAK TERCAPAI:</b> Harga jual lebih rendah dari biaya modal kerja per satuan.
-               </div>`
-          }
-        </div>
-      `;
-      resBox.classList.remove('hidden');
-    }
-
     // KALKULATOR MURABAHAH
     function toggleMurCalcMode() {
       let mode = document.getElementById('mur-calc-mode').value;
@@ -1084,7 +1108,7 @@
         let isRugi = totalMargin < 0; let marginColor = isRugi ? 'text-red-500' : 'text-green-600';
         resultBox.innerHTML = `<div class="flex justify-between text-[11px] text-gray-600 mt-1"><span>Sisa Pokok (Setelah DP):</span> <b class="font-mono-data">${formatRpKebalSensor(pokokPembiayaan)}</b></div><div class="flex justify-between text-[11px] text-gray-600 mt-1"><span>Angsuran Patokan:</span> <b class="font-mono-data text-purple-600">${formatRpKebalSensor(targetAngsuran)} / Bln</b></div>${isInflasi ? `<div class="flex justify-between text-[11px] text-gray-600 mt-1 border-b border-purple-200 pb-2"><span>Sisa Inflasi (${inflasiRate}%/thn):</span> <b class="text-orange-500 font-mono-data">- ${formatRpKebalSensor(nilaiInflasi)}</b></div>` : '<div class="border-b border-purple-200 pt-2"></div>'}<div class="flex justify-between text-[12px] font-bold text-purple-700 mt-2 uppercase tracking-wider"><span>Total Harga Akad:</span> <b class="font-mono-data">${formatRpKebalSensor(totalHargaAkad)}</b></div><div class="mt-4 bg-white p-4 rounded-xl border border-purple-100 shadow-sm text-center"><p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Margin Profit Bersih</p><p class="text-3xl font-mono-data font-extrabold ${marginColor} mt-1">${isRugi ? 'RUGI' : formatRpKebalSensor(totalMargin)}</p><p class="text-[10px] text-gray-400 mt-2 font-medium">Setara Margin: <b>${isRugi ? '0' : equivMargin.toFixed(2)}% per Tahun</b></p></div>`;
       }
-      resultBox.classList.remove('hidden');
+      resBox.classList.remove('hidden');
     }
 
     // FUNGSI LAINNYA
