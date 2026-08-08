@@ -387,28 +387,38 @@
           </div>
         </section>
 
-        <!-- FITUR SINKRONISASI CLOUD (GOOGLE SHEETS) -->
-        <section class="bg-emerald-50 border border-emerald-200 dark:bg-emerald-900/30 dark:border-emerald-800 rounded-2xl p-6 shadow-sm space-y-3">
-          <div class="flex items-center gap-2"><span class="material-symbols-outlined text-emerald-600">cloud_sync</span><h2 class="font-headline-md text-headline-md font-bold text-emerald-900 dark:text-emerald-100">Sinkronisasi Cloud Terpadu</h2></div>
-          <p class="text-[11px] text-emerald-800 dark:text-emerald-200 leading-relaxed">
-            <b>PENTING:</b> Gunakan fitur ini untuk menyamakan data antar perangkat. <br/>
-            - Di <b>iPad</b> (sumber data), klik <b class="text-primary">Upload</b> untuk menjadikan datanya sebagai Master.<br/>
-            - Di <b>HP/Laptop</b> (perangkat lain), klik <b class="text-error">Tarik</b> untuk menyalin Master data tersebut.
+        <!-- FITUR BARU: TOGGLE UNTUK MENAMPILKAN KALKULATOR -->
+        <section class="bg-indigo-50 border border-indigo-200 dark:bg-indigo-900/30 dark:border-indigo-800 rounded-2xl p-6 shadow-sm space-y-3">
+          <div class="flex items-center gap-2"><span class="material-symbols-outlined text-indigo-600">admin_panel_settings</span><h2 class="font-headline-md text-headline-md font-bold text-indigo-900 dark:text-indigo-100">Fitur Eksklusif Pemilik</h2></div>
+          <p class="text-[11px] text-indigo-800 dark:text-indigo-200 leading-relaxed">
+            Centang opsi di bawah ini untuk mengaktifkan Menu Kalkulator Bisnis & Usaha (Menu ini disembunyikan secara default untuk kerabat/pengguna lain).
           </p>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
-            <button id="btn-upload-cloud" onclick="forceUploadToCloud()" class="py-3.5 bg-primary hover:bg-blue-700 text-white font-bold text-[11px] uppercase rounded-xl shadow flex items-center justify-center gap-2 transition-all">
-              <span class="material-symbols-outlined text-base">cloud_upload</span> 1. UPLOAD MASTER KE CLOUD
+          <div class="flex items-center gap-3 pt-2 bg-white dark:bg-slate-800 p-3 rounded-xl border border-indigo-100 dark:border-indigo-900">
+            <input type="checkbox" id="setup-enable-calc" onchange="toggleCalculatorFeature(this.checked)" class="w-5 h-5 rounded text-indigo-600 border-outline-variant cursor-pointer focus:ring-indigo-500">
+            <label for="setup-enable-calc" class="text-xs font-bold text-gray-700 dark:text-gray-300 cursor-pointer">Tampilkan Menu Kalkulator Bisnis & Finansial</label>
+          </div>
+        </section>
+
+        <!-- FITUR CLOUD & SINKRONISASI -->
+        <section class="bg-blue-50 border border-blue-200 dark:bg-blue-900/30 dark:border-blue-800 rounded-2xl p-6 shadow-sm space-y-3">
+          <div class="flex items-center gap-2"><span class="material-symbols-outlined text-blue-600">cloud</span><h2 class="font-headline-md text-headline-md font-bold text-blue-900 dark:text-blue-100">Kunci Cloud & Sinkronisasi</h2></div>
+          <p class="text-[11px] text-blue-800 dark:text-blue-200 leading-relaxed">
+            Masukkan Link Web App Google Sheets Anda untuk mengaktifkan Sinkronisasi Lintas Perangkat. <b>Kosongkan</b> jika aplikasi ini dipakai oleh orang lain agar data Anda tidak tercampur.
+          </p>
+          <input type="text" id="setup-cloud-url" placeholder="https://script.google.com/macros/s/..." onchange="updateCloudUrl(this.value)" class="w-full p-2.5 border border-blue-300 rounded-xl text-xs font-mono-data bg-white dark:bg-slate-900 text-on-surface mt-1 outline-none focus:border-blue-500">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3 border-b border-blue-200/50 dark:border-blue-800/50 pb-4">
+            <button id="btn-upload-cloud" onclick="forceUploadToCloud()" class="py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] uppercase rounded-xl shadow flex items-center justify-center gap-2 transition-all">
+              <span class="material-symbols-outlined text-base">cloud_upload</span> UPLOAD KE CLOUD
             </button>
-            <button id="btn-download-cloud" onclick="forceDownloadFromCloud()" class="py-3.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-[11px] uppercase rounded-xl shadow flex items-center justify-center gap-2 transition-all">
-              <span class="material-symbols-outlined text-base">cloud_download</span> 2. TARIK (SYNC) DARI CLOUD
+            <button id="btn-download-cloud" onclick="forceDownloadFromCloud()" class="py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold text-[11px] uppercase rounded-xl shadow flex items-center justify-center gap-2 transition-all">
+              <span class="material-symbols-outlined text-base">cloud_download</span> TARIK DARI CLOUD
             </button>
           </div>
-          
-          <div class="pt-4 mt-2 border-t border-emerald-200/50 dark:border-emerald-800/50">
-            <p class="text-[10px] text-emerald-700 dark:text-emerald-300 font-bold mb-2">Backup Manual (Darurat jika Cloud Gagal):</p>
+          <div class="pt-2">
+            <p class="text-[10px] text-blue-700 dark:text-blue-300 font-bold mb-2">Atau Backup/Restore Manual (Offline):</p>
             <div class="flex gap-2">
-              <button onclick="exportDatabase()" class="flex-1 py-2 bg-white dark:bg-slate-800 border border-emerald-300 text-emerald-700 font-bold text-[10px] rounded-lg shadow-sm">COPY TEKS DB</button>
-              <button onclick="importDatabase()" class="flex-1 py-2 bg-white dark:bg-slate-800 border border-emerald-300 text-emerald-700 font-bold text-[10px] rounded-lg shadow-sm">PASTE TEKS DB</button>
+              <button onclick="exportDatabase()" class="flex-1 py-2 bg-white dark:bg-slate-800 border border-blue-300 text-blue-700 font-bold text-[10px] rounded-lg shadow-sm">COPY TEKS DB</button>
+              <button onclick="importDatabase()" class="flex-1 py-2 bg-white dark:bg-slate-800 border border-blue-300 text-blue-700 font-bold text-[10px] rounded-lg shadow-sm">PASTE TEKS DB</button>
             </div>
           </div>
         </section>
@@ -463,8 +473,8 @@
     <div id="page-kalkulator" class="hidden space-y-6">
       <div id="calc-menu-grid" class="space-y-4">
         <div>
-          <h2 class="font-headline-md font-bold text-on-surface text-xl">Kalkulator Finansial</h2>
-          <p class="text-xs text-gray-500">Pilih alat bantu perhitungan keuangan dan bisnis Anda.</p>
+          <h2 class="font-headline-md font-bold text-on-surface text-xl">Kalkulator Bisnis & Finansial</h2>
+          <p class="text-xs text-gray-500">Pilih alat bantu perhitungan untuk merencanakan usaha Anda.</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -479,8 +489,17 @@
           <button onclick="openCalcSub('calc-sub-hpp')" class="p-5 bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl shadow-sm hover:border-primary transition-all text-left flex items-start gap-4 group">
             <div class="p-3 bg-emerald-100 dark:bg-emerald-950 text-emerald-600 rounded-xl group-hover:scale-110 transition-transform"><span class="material-symbols-outlined text-2xl">inventory_2</span></div>
             <div>
-              <h3 class="font-bold text-sm text-on-surface group-hover:text-primary">Kalkulator HPP ZY CLOTHES</h3>
+              <h3 class="font-bold text-sm text-on-surface group-hover:text-primary">Kalkulator HPP Cetak/Sablon</h3>
               <p class="text-[11px] text-gray-500 mt-1">Hitung modal konveksi maklon atau produksi sablon DTF beserta margin idealnya.</p>
+            </div>
+          </button>
+
+          <!-- FITUR BARU: KALKULATOR MODAL USAHA UMUM -->
+          <button onclick="openCalcSub('calc-sub-modal-usaha')" class="p-5 bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl shadow-sm hover:border-primary transition-all text-left flex items-start gap-4 group">
+            <div class="p-3 bg-orange-100 dark:bg-orange-950 text-orange-600 rounded-xl group-hover:scale-110 transition-transform"><span class="material-symbols-outlined text-2xl">business_center</span></div>
+            <div>
+              <h3 class="font-bold text-sm text-on-surface group-hover:text-primary">Kalkulator Modal Usaha</h3>
+              <p class="text-[11px] text-gray-500 mt-1">Hitung kebutuhan investasi, biaya operasional, dan target BEP (Balik Modal).</p>
             </div>
           </button>
 
@@ -516,9 +535,9 @@
           </div>
         </div>
 
-        <!-- SUB: KALKULATOR HPP ZY CLOTHES -->
+        <!-- SUB: KALKULATOR HPP -->
         <div id="calc-sub-hpp" class="calc-sub-item hidden bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-6 space-y-4 shadow-sm">
-          <h3 class="font-bold text-base text-emerald-600 flex items-center gap-2"><span class="material-symbols-outlined">inventory_2</span> Kalkulator HPP ZY CLOTHES</h3>
+          <h3 class="font-bold text-base text-emerald-600 flex items-center gap-2"><span class="material-symbols-outlined">inventory_2</span> Kalkulator HPP Cetak / Sablon</h3>
           <div class="space-y-4 text-xs">
             <div class="flex gap-2 p-1 bg-surface-container rounded-lg">
               <button id="btn-hpp-vendor" onclick="setHPPMode('vendor')" class="flex-1 py-1.5 bg-white text-emerald-600 font-bold rounded shadow text-[10px] uppercase">Order Vendor</button>
@@ -615,15 +634,42 @@
 
             <button onclick="calculateHPPDynamic()" class="w-full py-3 bg-emerald-600 text-white font-bold rounded-xl shadow mt-2 hover:brightness-110">Kalkulasi HPP & Hasil</button>
             <div id="calc-hpp-result" class="hidden p-4 bg-emerald-50 border border-emerald-200 rounded-xl mt-3 space-y-2"></div>
+          </div>
+        </div>
 
-            <div id="hpp-akad-vendor" class="mt-4 p-4 bg-orange-50 border border-orange-200 rounded-xl">
-              <p class="text-[11px] font-bold text-orange-700 mb-1">⚖️ Tinjauan Fiqh: Istishna' Paralel</p>
-              <p class="text-[10px] text-gray-600 leading-relaxed">Menerima order lalu dioper ke vendor disebut <b>Istishna' Paralel</b>. Hukumnya halal jika: (1) Spesifikasi barang jelas, (2) Anda bertanggung jawab penuh atas barang di hadapan customer, bukan menyalahkan vendor jika ada cacat.</p>
+        <!-- SUB: KALKULATOR MODAL USAHA (GENERAL) -->
+        <div id="calc-sub-modal-usaha" class="calc-sub-item hidden bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-6 space-y-4 shadow-sm">
+          <h3 class="font-bold text-base text-orange-600 flex items-center gap-2"><span class="material-symbols-outlined">business_center</span> Kalkulator Modal & Proyeksi BEP Usaha</h3>
+          <p class="text-[11px] text-gray-500 leading-relaxed">Kosongkan baris yang tidak diperlukan. Masukkan rincian investasi awal dan operasional untuk mengukur target Balik Modal (BEP).</p>
+          
+          <div class="space-y-4 text-xs">
+            <div class="space-y-3">
+              <h4 class="font-bold text-gray-700 dark:text-gray-300 border-b border-outline-variant/50 pb-1">1. Modal Investasi / Aset Tetap (CapEx)</h4>
+              <p class="text-[10px] text-gray-400 -mt-2">Contoh: Beli Mesin, Renovasi, Etalase, Laptop, Printer.</p>
+              <div class="flex gap-2"><input type="text" id="mu-aset-name-1" placeholder="Nama Aset 1" class="w-1/2 p-2 border rounded-xl text-xs bg-surface text-on-surface"><input type="text" id="mu-aset-val-1" placeholder="Rp 0" oninput="formatInputNominal(this)" class="w-1/2 p-2 border rounded-xl text-xs font-mono-data bg-surface text-on-surface"></div>
+              <div class="flex gap-2"><input type="text" id="mu-aset-name-2" placeholder="Nama Aset 2" class="w-1/2 p-2 border rounded-xl text-xs bg-surface text-on-surface"><input type="text" id="mu-aset-val-2" placeholder="Rp 0" oninput="formatInputNominal(this)" class="w-1/2 p-2 border rounded-xl text-xs font-mono-data bg-surface text-on-surface"></div>
+              <div class="flex gap-2"><input type="text" id="mu-aset-name-3" placeholder="Nama Aset 3" class="w-1/2 p-2 border rounded-xl text-xs bg-surface text-on-surface"><input type="text" id="mu-aset-val-3" placeholder="Rp 0" oninput="formatInputNominal(this)" class="w-1/2 p-2 border rounded-xl text-xs font-mono-data bg-surface text-on-surface"></div>
             </div>
-            <div id="hpp-akad-mandiri" class="hidden mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-              <p class="text-[11px] font-bold text-blue-700 mb-1">⚖️ Tinjauan Fiqh: Akad Istishna'</p>
-              <p class="text-[10px] text-gray-600 leading-relaxed">Produksi sablon mandiri menggunakan akad <b>Istishna'</b>. Anda bertindak sebagai produsen (Shani'). Syarat utamanya adalah spesifikasi bahan kaos dan sablon harus jelas agar terhindar dari Gharar.</p>
+
+            <div class="space-y-3">
+              <h4 class="font-bold text-gray-700 dark:text-gray-300 border-b border-outline-variant/50 pb-1">2. Modal Kerja / Operasional (OpEx) per Batch</h4>
+              <p class="text-[10px] text-gray-400 -mt-2">Contoh: Bahan Baku Sablon, Tinta, Gaji, Ads, Sewa Per Bulan.</p>
+              <div class="flex gap-2"><input type="text" id="mu-kerja-name-1" placeholder="Nama Bahan / Biaya 1" class="w-1/2 p-2 border rounded-xl text-xs bg-surface text-on-surface"><input type="text" id="mu-kerja-val-1" placeholder="Rp 0" oninput="formatInputNominal(this)" class="w-1/2 p-2 border rounded-xl text-xs font-mono-data bg-surface text-on-surface"></div>
+              <div class="flex gap-2"><input type="text" id="mu-kerja-name-2" placeholder="Nama Bahan / Biaya 2" class="w-1/2 p-2 border rounded-xl text-xs bg-surface text-on-surface"><input type="text" id="mu-kerja-val-2" placeholder="Rp 0" oninput="formatInputNominal(this)" class="w-1/2 p-2 border rounded-xl text-xs font-mono-data bg-surface text-on-surface"></div>
+              <div class="flex gap-2"><input type="text" id="mu-kerja-name-3" placeholder="Nama Bahan / Biaya 3" class="w-1/2 p-2 border rounded-xl text-xs bg-surface text-on-surface"><input type="text" id="mu-kerja-val-3" placeholder="Rp 0" oninput="formatInputNominal(this)" class="w-1/2 p-2 border rounded-xl text-xs font-mono-data bg-surface text-on-surface"></div>
+              <div class="flex gap-2"><input type="text" id="mu-kerja-name-4" placeholder="Nama Bahan / Biaya 4" class="w-1/2 p-2 border rounded-xl text-xs bg-surface text-on-surface"><input type="text" id="mu-kerja-val-4" placeholder="Rp 0" oninput="formatInputNominal(this)" class="w-1/2 p-2 border rounded-xl text-xs font-mono-data bg-surface text-on-surface"></div>
             </div>
+
+            <div class="space-y-3">
+              <h4 class="font-bold text-gray-700 dark:text-gray-300 border-b border-outline-variant/50 pb-1">3. Target Penjualan</h4>
+              <div class="grid grid-cols-2 gap-2">
+                <div><label class="text-[10px] font-bold text-gray-500 uppercase">Target Qty (Pcs/Bulan)</label><input type="number" id="mu-qty" value="100" class="w-full p-2 border rounded-xl font-mono-data bg-surface text-on-surface mt-1 outline-none"></div>
+                <div><label class="text-[10px] font-bold text-gray-500 uppercase">Harga Jual per Pcs (Rp)</label><input type="text" id="mu-hargajual" placeholder="0" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-xl font-mono-data bg-surface text-on-surface mt-1 outline-none"></div>
+              </div>
+            </div>
+
+            <button onclick="calculateModalUsaha()" class="w-full py-3 bg-orange-600 text-white font-bold rounded-xl shadow mt-4 hover:brightness-110">Kalkulasi Modal & Target BEP</button>
+            <div id="calc-mu-result" class="hidden p-4 bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800 rounded-xl mt-3 space-y-2"></div>
           </div>
         </div>
 
@@ -682,11 +728,6 @@
 
             <button onclick="calculateMurabahah()" class="w-full py-3 bg-purple-600 text-white font-bold rounded-xl shadow mt-4 hover:brightness-110 transition-all">Kalkulasi Simulasi Akad</button>
             <div id="calc-mur-result" class="hidden p-4 bg-purple-50 border border-purple-200 rounded-xl mt-3 space-y-2"></div>
-
-            <div class="mt-4 p-4 bg-purple-100/50 border border-purple-200 rounded-xl">
-              <p class="text-[11px] font-bold text-purple-800 mb-1">⚖️ Tinjauan Fiqh: Akad Murabahah</p>
-              <p class="text-[10px] text-gray-600 leading-relaxed"><b>Murabahah</b> adalah akad jual beli barang dengan menyatakan harga perolehan (modal pokok) dan keuntungan (margin) yang disepakati oleh kedua belah pihak. Syarat utamanya adalah barang harus menjadi hak milik penjual (Bank/Pemodal) terlebih dahulu sebelum dijual cicil kepada nasabah.</p>
-            </div>
           </div>
         </div>
       </div>
@@ -697,12 +738,13 @@
   <nav class="fixed bottom-0 left-0 w-full z-40 flex justify-around items-center py-2 bg-surface border-t border-outline-variant shadow-lg">
     <button onclick="navTo('dashboard')" id="nav-dash" class="flex flex-col items-center text-primary px-4 py-1 font-bold"><span class="material-symbols-outlined">dashboard</span><span class="font-label-caps text-[10px] mt-0.5">Dashboard</span></button>
     <button onclick="navTo('transaksi')" id="nav-tx" class="flex flex-col items-center text-on-surface-variant px-4 py-1 hover:text-primary"><span class="material-symbols-outlined">receipt_long</span><span class="font-label-caps text-[10px] mt-0.5">Transaksi</span></button>
-    <button onclick="navTo('kalkulator')" id="nav-calc" class="flex flex-col items-center text-on-surface-variant px-4 py-1 hover:text-primary"><span class="material-symbols-outlined">calculate</span><span class="font-label-caps text-[10px] mt-0.5">Kalkulator</span></button>
+    
+    <button onclick="navTo('kalkulator')" id="nav-calc" style="display: none;" class="flex-col items-center text-on-surface-variant px-4 py-1 hover:text-primary"><span class="material-symbols-outlined">calculate</span><span class="font-label-caps text-[10px] mt-0.5">Kalkulator</span></button>
+    
     <button onclick="navTo('setup')" id="nav-setup" class="flex flex-col items-center text-on-surface-variant px-4 py-1 hover:text-primary"><span class="material-symbols-outlined">settings</span><span class="font-label-caps text-[10px] mt-0.5">Setup</span></button>
   </nav>
 
   <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzaFZWc0Nofs1uLELZJ8u2PHAdIkLROB1k6o0dwOAC5qk4QP48hyYa70nDwcQ4thznx-g/exec";
     Chart.register(ChartDataLabels);
 
     let currentLang = 'id';
@@ -743,7 +785,18 @@
     function playSuccessSound() { try { let ctx = new (window.AudioContext || window.webkitAudioContext)(); let osc = ctx.createOscillator(); let gain = ctx.createGain(); osc.type = 'sine'; osc.connect(gain); gain.connect(ctx.destination); let now = ctx.currentTime; osc.frequency.setValueAtTime(523.25, now); osc.frequency.setValueAtTime(659.25, now + 0.08); osc.frequency.setValueAtTime(783.99, now + 0.16); gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45); osc.start(now); osc.stop(now + 0.45); } catch(e) {} }
     function formatInputNominal(input) { let rawVal = input.value.replace(/[^0-9]/g, ''); if (rawVal === '') { input.value = ''; return; } input.value = parseInt(rawVal, 10).toLocaleString('id-ID'); }
 
-    const DEFAULT_DATA = { appPin: "123", ownerPassword: "123", startingBalance: 25000000, accounts: ["BSI Utama", "Kas Kecil Media", "Bank Jago Tabungan Nikah", "Bank Jago Zy Clothes", "Dana", "Gopay", "Ovo", "Cash"], accountDetails: { "BSI Utama": { bankName: "Bank Syariah Indonesia", accNo: "7123456789", owner: "Fulan", balance: 5979762 } }, currentBalances: { "BSI Utama": 5979762 }, incomes: ["Gaji", "KPI", "Zy Clothes"], spendings: ["Makan/min", "Transport", "Belanja"], bills: ["Cicilan Motor", "Wifi"], routinePayments: { "Wifi": { amount: 275000, dueDay: 20 } }, monthlyBudgets: {}, investData: {}, sinkingData: {}, goalsData: {}, receivablesData: {}, nonMoneyAssets: {}, debtData: {}, recentHistory: [] };
+    // DATABASE DEFAULT YANG SANGAT BERSIH & UMUM (UNTUK KERABAT)
+    const DEFAULT_DATA = { 
+      appPin: "123", ownerPassword: "123", cloudUrl: "", startingBalance: 0, 
+      enableCalculator: false, // <-- Kalkulator dimatikan secara default
+      accounts: ["Rekening Bank", "E-Wallet", "Uang Tunai (Cash)"], 
+      accountDetails: { "Rekening Bank": { bankName: "Bank", accNo: "-", owner: "-", balance: 0 } }, 
+      currentBalances: { "Rekening Bank": 0, "E-Wallet": 0, "Uang Tunai (Cash)": 0 }, 
+      incomes: ["Gaji", "Bonus / THR", "Hasil Usaha"], 
+      spendings: ["Makan & Minum", "Transportasi", "Belanja Bulanan", "Tagihan", "Lainnya"], 
+      bills: ["Cicilan", "Listrik / Air", "Internet"], 
+      routinePayments: {}, monthlyBudgets: {}, investData: {}, sinkingData: {}, goalsData: {}, receivablesData: {}, nonMoneyAssets: {}, debtData: {}, recentHistory: [] 
+    };
 
     async function loadStorageData() {
       try {
@@ -751,64 +804,77 @@
         if (stored) { globalData = JSON.parse(stored); } else { globalData = JSON.parse(JSON.stringify(DEFAULT_DATA)); }
       } catch(e) { globalData = JSON.parse(JSON.stringify(DEFAULT_DATA)); }
       if (globalData.appPin === undefined) globalData.appPin = globalData.ownerPassword || "123";
+      if (!globalData.cloudUrl) globalData.cloudUrl = "";
+      if (globalData.enableCalculator === undefined) globalData.enableCalculator = false;
       if (!globalData.monthlyBudgets) globalData.monthlyBudgets = {}; 
       initApp();
     }
 
-    // FUNGSI SINKRONISASI CLOUD AMAN
+    function updateCloudUrl(val) {
+      globalData.cloudUrl = val.trim();
+      localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData));
+      alert("Kunci Cloud berhasil disimpan!");
+    }
+    
+    function toggleCalculatorFeature(val) {
+      globalData.enableCalculator = val;
+      saveStorageData();
+      let navCalc = document.getElementById('nav-calc');
+      if (navCalc) navCalc.style.display = val ? 'flex' : 'none';
+      if (!val && !document.getElementById('page-kalkulator').classList.contains('hidden')) {
+          navTo('dashboard'); // Jika sedang buka halaman kalkulator lalu dimatikan, lempar ke dashboard
+      }
+    }
+
+    async function saveStorageData() {
+      localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData)); 
+      populateFormDropdowns(); populateReportFilterCategories();
+      if (globalData.cloudUrl && globalData.cloudUrl.startsWith("http")) {
+        try { fetch(globalData.cloudUrl, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(globalData) }); } catch(e) {}
+      }
+    }
+
     async function forceUploadToCloud() {
+      if (!globalData.cloudUrl || !globalData.cloudUrl.startsWith("http")) {
+        alert("GAGAL: Kunci Cloud kosong atau tidak valid!\nSilakan isi link Web App Google Sheets Anda di kolom yang tersedia terlebih dahulu.");
+        return;
+      }
       let btn = document.getElementById('btn-upload-cloud');
       let originalText = btn.innerHTML;
       btn.innerHTML = `<span class="material-symbols-outlined text-base animate-spin">sync</span> MENGUPLOAD...`;
-      
       try {
-        await fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(globalData) });
-        alert("BERHASIL! Data aplikasi ini telah di-upload ke Cloud dan menjadi Master Data.");
-      } catch(e) {
-        alert("Gagal mengupload data. Pastikan koneksi internet lancar.");
-      }
+        await fetch(globalData.cloudUrl, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(globalData) });
+        alert("BERHASIL! Data aplikasi ini telah di-upload ke Cloud pribadi Anda.");
+      } catch(e) { alert("Gagal mengupload data. Pastikan koneksi internet lancar dan link Anda benar."); }
       btn.innerHTML = originalText;
     }
 
     async function forceDownloadFromCloud() {
-      if (!confirm("PENTING: Menarik data dari Cloud akan MENIMPA (me-replace) semua data yang ada di aplikasi ini. Pastikan Anda sudah mengupload Master Data dari perangkat utama (iPad) sebelumnya. Lanjutkan?")) return;
-      
+      if (!globalData.cloudUrl || !globalData.cloudUrl.startsWith("http")) {
+        alert("GAGAL: Kunci Cloud kosong!\nSilakan isi link Web App Google Sheets Anda terlebih dahulu agar sistem tahu data mana yang harus ditarik.");
+        return;
+      }
+      if (!confirm("PENTING: Menarik data dari Cloud akan MENIMPA (me-replace) semua data yang ada di perangkat ini. Lanjutkan?")) return;
       let btn = document.getElementById('btn-download-cloud');
       let originalText = btn.innerHTML;
       btn.innerHTML = `<span class="material-symbols-outlined text-base animate-spin">sync</span> MENDOWNLOAD...`;
-      
       try {
-        let response = await fetch(WEB_APP_URL);
-        let data = await response.json();
-        if (data && data.accounts) {
-          localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(data));
-          alert("DATABASE BERHASIL DITARIK DARI CLOUD! \nAplikasi akan dimuat ulang (Refresh).");
-          location.reload();
-        } else {
-          alert("GAGAL: Data di Cloud kosong atau tidak valid.");
-        }
-      } catch(e) {
-        alert("GAGAL MENARIK DATA. Jika setingan Google Sheets Anda tidak mendukung fungsi Download, gunakan fitur Copy-Paste Text di bawah sebagai alternatif.");
-      }
+        let response = await fetch(globalData.cloudUrl); let data = await response.json();
+        if (data && data.accounts) { localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(data)); alert("DATABASE BERHASIL DITARIK DARI CLOUD! \nAplikasi akan dimuat ulang (Refresh)."); location.reload(); } else { alert("GAGAL: Data di Cloud kosong atau tidak valid."); }
+      } catch(e) { alert("GAGAL MENARIK DATA. Pastikan link Google Sheets Anda sudah di-deploy dengan benar (Anyone / Semua Orang)."); }
       btn.innerHTML = originalText;
-    }
-
-    async function saveStorageData() {
-      localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData)); populateFormDropdowns(); populateReportFilterCategories();
-      // Silently upload backup in background
-      try { fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(globalData) }); } catch(e) {}
     }
 
     function exportDatabase() {
       let dbCode = localStorage.getItem("KEUANGANKU_DB_V21");
-      if (!dbCode) { alert("Data kosong!"); return; }
-      navigator.clipboard.writeText(dbCode).then(() => { alert("Kode Database telah di-COPY!"); }).catch(err => { prompt("Silakan COPY teks di bawah ini:", dbCode); });
+      if (!dbCode) { alert("Data kosong! Belum ada database yang tersimpan."); return; }
+      navigator.clipboard.writeText(dbCode).then(() => { alert("BERHASIL! \n\nKode Database Asli telah di-COPY. \n\nSilakan buka aplikasi di perangkat lain, masuk ke Menu Setup, klik 'PASTE TEKS DATABASE', lalu Paste kode yang sudah di-copy ini."); }).catch(err => { prompt("Browser tidak mengizinkan Auto-Copy. Silakan COPY manual semua teks di bawah ini secara penuh:", dbCode); });
     }
 
     function importDatabase() {
       let pastedCode = prompt("PASTE (Tempel) kode Database Asli Anda di sini:");
       if (pastedCode && pastedCode.trim() !== "") {
-        try { let testParse = JSON.parse(pastedCode); if (testParse.accounts) { localStorage.setItem("KEUANGANKU_DB_V21", pastedCode); alert("RESTORE BERHASIL!"); location.reload(); } } catch(e) { alert("Kode rusak."); }
+        try { let testParse = JSON.parse(pastedCode); if (testParse.accounts) { localStorage.setItem("KEUANGANKU_DB_V21", pastedCode); alert("DATABASE BERHASIL DI-RESTORE! \n\nAplikasi akan dimuat ulang (Refresh) untuk menampilkan data asli Anda."); location.reload(); } else { alert("GAGAL: Kode yang Anda Paste bukan format Database KEUANGANKU yang valid."); } } catch(e) { alert("GAGAL: Kode rusak atau tidak tercopy seluruhnya."); }
       }
     }
 
@@ -820,11 +886,16 @@
     }
 
     function resetTransactionHistory() { if (confirm("Apakah Anda yakin ingin mereset seluruh riwayat transaksi? Data rekam transaksi akan dikosongkan.")) { globalData.recentHistory = []; saveStorageData(); renderDashboard(); renderHistoryTable(); alert("Riwayat transaksi berhasil direset kosong!"); } }
-    function initApp() { renderDashboard(); populateFormDropdowns(); populateReportFilterCategories(); renderHistoryTable(); renderSetupView(); checkDueDateAlerts(); checkReceivableAlerts(); }
+    
+    function initApp() { 
+      let navCalc = document.getElementById('nav-calc');
+      if (navCalc) navCalc.style.display = globalData.enableCalculator ? 'flex' : 'none';
+      renderDashboard(); populateFormDropdowns(); populateReportFilterCategories(); renderHistoryTable(); renderSetupView(); checkDueDateAlerts(); checkReceivableAlerts(); 
+    }
 
     function navTo(page) {
       ['page-dashboard', 'page-transaksi', 'page-setup', 'page-kalkulator'].forEach(id => { let el = document.getElementById(id); if(el) el.classList.add('hidden'); });
-      ['nav-dash', 'nav-tx', 'nav-setup', 'nav-calc'].forEach(id => { let el = document.getElementById(id); if(el) el.className = "flex flex-col items-center text-on-surface-variant px-4 py-1 hover:text-primary"; });
+      ['nav-dash', 'nav-tx', 'nav-setup', 'nav-calc'].forEach(id => { let el = document.getElementById(id); if(el && el.style.display !== 'none') el.className = "flex flex-col items-center text-on-surface-variant px-4 py-1 hover:text-primary"; });
       if (page === 'dashboard') { document.getElementById('page-dashboard').classList.remove('hidden'); document.getElementById('nav-dash').className = "flex flex-col items-center text-primary px-4 py-1 font-bold"; renderDashboard(); } 
       else if (page === 'transaksi') { document.getElementById('page-transaksi').classList.remove('hidden'); document.getElementById('nav-tx').className = "flex flex-col items-center text-primary px-4 py-1 font-bold"; let dateInput = document.getElementById('tx-date'); if (dateInput) dateInput.valueAsDate = new Date(); populateFormDropdowns(); populateReportFilterCategories(); applyCashflowLogic(); renderHistoryTable(); } 
       else if (page === 'setup') { document.getElementById('page-setup').classList.remove('hidden'); document.getElementById('nav-setup').className = "flex flex-col items-center text-primary px-4 py-1 font-bold"; renderSetupView(); } 
@@ -907,6 +978,73 @@
       resBox.classList.remove('hidden');
     }
 
+    // KALKULATOR MODAL USAHA GENERAL (BARU)
+    function calculateModalUsaha() {
+      const getVal = (id) => parseFloat(document.getElementById(id).value.replace(/\./g, '')) || 0;
+      
+      // Ambil nilai dari Investasi (Aset Tetap)
+      let aset1 = getVal('mu-aset-val-1');
+      let aset2 = getVal('mu-aset-val-2');
+      let aset3 = getVal('mu-aset-val-3');
+      let totalAset = aset1 + aset2 + aset3;
+
+      // Ambil nilai dari Modal Kerja (Bahan/Operasional)
+      let kerja1 = getVal('mu-kerja-val-1');
+      let kerja2 = getVal('mu-kerja-val-2');
+      let kerja3 = getVal('mu-kerja-val-3');
+      let kerja4 = getVal('mu-kerja-val-4');
+      let totalKerja = kerja1 + kerja2 + kerja3 + kerja4;
+
+      let grandTotalModal = totalAset + totalKerja;
+      
+      let qty = parseInt(document.getElementById('mu-qty').value) || 1;
+      let hargaJual = getVal('mu-hargajual');
+
+      if (grandTotalModal <= 0) {
+        alert("Silakan masukkan minimal satu nominal untuk Aset atau Modal Kerja!");
+        return;
+      }
+
+      let hppModalKerja = qty > 0 ? (totalKerja / qty) : 0;
+      let omzet = qty * hargaJual;
+      let profit = omzet - totalKerja; // Laba kotor operasi (tanpa menghitung cicilan aset)
+      
+      let marginPerPcs = hargaJual - hppModalKerja;
+      let bepPcs = marginPerPcs > 0 ? Math.ceil(grandTotalModal / marginPerPcs) : 0;
+
+      let resBox = document.getElementById('calc-mu-result');
+      resBox.innerHTML = `
+        <p class="text-[12px] font-bold text-orange-800 dark:text-orange-300 border-b border-orange-200 dark:border-orange-800 pb-1 uppercase">Ringkasan Kebutuhan Modal</p>
+        <div class="grid grid-cols-2 gap-2 mt-2 text-[11px]">
+          <div><span class="text-gray-500">1. Investasi (Aset Tetap):</span><br><b class="font-mono-data text-gray-700 dark:text-gray-300">${formatRpKebalSensor(totalAset)}</b></div>
+          <div><span class="text-gray-500">2. Modal Kerja (Bahan+Ops):</span><br><b class="font-mono-data text-gray-700 dark:text-gray-300">${formatRpKebalSensor(totalKerja)}</b></div>
+        </div>
+        <div class="mt-2 p-2 bg-white dark:bg-slate-900 rounded-lg text-center border border-orange-100 dark:border-orange-800">
+          <p class="text-[10px] text-gray-500 font-bold uppercase">Grand Total Modal Dibutuhkan</p>
+          <p class="text-xl font-mono-data font-extrabold text-orange-600 dark:text-orange-400 mt-0.5">${formatRpKebalSensor(grandTotalModal)}</p>
+        </div>
+        
+        <p class="text-[12px] font-bold text-orange-800 dark:text-orange-300 border-b border-orange-200 dark:border-orange-800 pb-1 mt-4 uppercase">Proyeksi Laba & BEP</p>
+        <div class="grid grid-cols-2 gap-2 mt-2 text-[11px]">
+          <div><span class="text-gray-500">Modal Kerja per Satuan:</span><br><b class="font-mono-data">${formatRpKebalSensor(hppModalKerja)}</b></div>
+          <div><span class="text-gray-500">Omzet Estimasi (${qty}):</span><br><b class="font-mono-data">${formatRpKebalSensor(omzet)}</b></div>
+        </div>
+        <div class="mt-2 p-3 bg-white dark:bg-slate-900 rounded-xl text-center border border-orange-100 dark:border-orange-800 shadow-sm">
+          <p class="text-[10px] text-gray-500 font-bold uppercase">Estimasi Laba Kotor per Siklus/Batch</p>
+          <p class="text-lg font-mono-data font-extrabold ${profit >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-500'} mt-0.5">${profit >= 0 ? '+ ' : ''}${formatRpKebalSensor(profit)}</p>
+          ${hargaJual > 0 && bepPcs > 0 
+            ? `<div class="mt-2 p-1.5 bg-orange-100 dark:bg-orange-900/50 rounded-lg border border-orange-200 dark:border-orange-700 text-[10px] text-orange-800 dark:text-orange-200 font-medium">
+                 Untuk balik modal <b>100%</b> (Investasi Aset + Kerja), Anda harus berhasil menjual total: <b class="text-xs font-bold text-orange-600 dark:text-orange-400 font-mono-data">${bepPcs} Pcs</b>
+               </div>` 
+            : `<div class="mt-2 p-1.5 bg-red-100 dark:bg-red-900/50 rounded-lg border border-red-200 dark:border-red-700 text-[10px] text-red-800 dark:text-red-200 font-medium">
+                 <b>RUGI / BEP TIDAK TERCAPAI:</b> Harga jual lebih rendah dari biaya modal kerja per satuan.
+               </div>`
+          }
+        </div>
+      `;
+      resBox.classList.remove('hidden');
+    }
+
     // KALKULATOR MURABAHAH
     function toggleMurCalcMode() {
       let mode = document.getElementById('mur-calc-mode').value;
@@ -950,6 +1088,12 @@
     }
 
     // FUNGSI LAINNYA
+    function downloadHistoryPDF() {
+      let element = document.getElementById('report-printable-area');
+      let opt = { margin: 10, filename: 'Riwayat_Transaksi.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } };
+      html2pdf().set(opt).from(element).save();
+    }
+    
     function checkDueDateAlerts() { let container = document.getElementById('due-date-alert-container'); if (!container) return; container.innerHTML = ''; if (!globalData.routinePayments) return; let currentDay = new Date().getDate(); Object.keys(globalData.routinePayments).forEach(itemKey => { let item = globalData.routinePayments[itemKey]; let diff = item.dueDay - currentDay; if (diff >= 0 && diff <= 3) { let warningText = diff === 0 ? "JATUH TEMPO HARI INI!" : `Sisa ${diff} Hari Lagi (Tgl ${item.dueDay})`; container.innerHTML += `<div class="bg-red-500 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between border-2 border-red-700 animate-pulse"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-3xl">warning</span><div><h4 class="font-extrabold text-sm uppercase">WAKTUNYA BAYAR: ${itemKey}</h4><p class="text-xs text-red-100 font-medium">Nominal: <b>${formatRp(item.amount)}</b> | ${warningText}</p></div></div><button onclick="navTo('transaksi')" class="px-3 py-1.5 bg-white text-red-700 font-bold rounded-xl text-xs shadow">Bayar Sekarang</button></div>`; } }); }
     function checkReceivableAlerts() { let container = document.getElementById('receivable-alert-container'); if (!container) return; container.innerHTML = ''; if (!globalData.receivablesData) return; let today = new Date(); today.setHours(0,0,0,0); Object.keys(globalData.receivablesData).forEach(k => { let item = globalData.receivablesData[k]; if (item.deadline) { let dDate = new Date(item.deadline); dDate.setHours(0,0,0,0); let diffDays = Math.ceil((dDate - today) / (1000 * 60 * 60 * 24)); if (diffDays <= 3 && diffDays >= 0) { let timeText = diffDays === 0 ? "JATUH TEMPO PENAGIHAN HARI INI!" : `Deadline ${diffDays} Hari Lagi (${item.deadline})`; container.innerHTML += `<div class="bg-emerald-600 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between border-2 border-emerald-800 animate-pulse"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-3xl">notification_important</span><div><h4 class="font-extrabold text-sm uppercase">WAKTUNYA MENAGIH: ${k}</h4><p class="text-xs text-emerald-100 font-medium">Nominal: <b>${formatRp(item.total)}</b> | ${timeText}</p></div></div><button onclick="navTo('transaksi')" class="px-3 py-1.5 bg-white text-emerald-800 font-bold rounded-xl text-xs shadow">Pelunasan</button></div>`; } } }); }
     function getCategoryCashflowNet(categoryName) { let net = 0, used = 0; if (!globalData.recentHistory) return { net, used }; globalData.recentHistory.forEach(tx => { if (tx.category === categoryName) { if (['Invest / Savings', 'Financial Goals', 'Income', 'Dari Asset / Saving'].includes(tx.cashflow)) net += tx.amount; if (tx.cashflow === 'Spending') used += tx.amount; } }); return { net, used }; }
@@ -984,7 +1128,17 @@
     function showSuccessModal(data, hasAdmin, adminFee) { let modal = document.getElementById('success-modal'), card = document.getElementById('success-card'), msg = document.getElementById('success-msg-text'); var adminInfo = hasAdmin ? `<br/><span class="text-xs text-primary dark:text-blue-400 font-bold">+ Biaya Admin (${formatRp(adminFee)}) dicatat terpisah.</span>` : ""; msg.innerHTML = `Transaksi berhasil dicatat ke sistem!${adminInfo}<br/><br/><b>Detail:</b> ${data.name} (${formatRp(data.amount)})<br/><b>Category:</b> ${data.category}<br/><b>Dari:</b> ${data.dariAcc} ➔ <b>Ke:</b> ${data.keAcc}`; modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); card.classList.add('scale-100'); }, 10); }
     function closeSuccessModal() { let modal = document.getElementById('success-modal'), card = document.getElementById('success-card'); modal.classList.add('opacity-0'); card.classList.remove('scale-100'); card.classList.add('scale-95'); setTimeout(() => modal.classList.add('hidden'), 300); }
     function toggleFilterModeInputs() { let mode = document.getElementById('rep-filter-mode').value; let container = document.getElementById('filter-input-container'); if (!container) return; if (mode === 'date_range') { container.className = "md:col-span-2 grid grid-cols-2 gap-2"; container.innerHTML = `<div><label class="text-[10px] font-bold uppercase text-gray-500">Dari Tanggal</label><input type="date" id="rep-date-start" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-medium bg-surface text-on-surface"></div><div><label class="text-[10px] font-bold uppercase text-gray-500">Sampai Tanggal</label><input type="date" id="rep-date-end" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-medium bg-surface text-on-surface"></div>`; } else if (mode === 'exact_date') { container.className = "md:col-span-2"; container.innerHTML = `<div><label class="text-[10px] font-bold uppercase text-gray-500">Pilih Tanggal</label><input type="date" id="rep-exact-date" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-medium bg-surface text-on-surface"></div>`; } else if (mode === 'exact_month') { container.className = "md:col-span-2"; container.innerHTML = `<div><label class="text-[10px] font-bold uppercase text-gray-500">Pilih Bulan & Tahun</label><input type="month" id="rep-exact-month" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-medium bg-surface text-on-surface"></div>`; } else if (mode === 'exact_year') { container.className = "md:col-span-2"; container.innerHTML = `<div><label class="text-[10px] font-bold uppercase text-gray-500">Pilih Tahun</label><input type="number" id="rep-exact-year" value="2026" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-medium bg-surface text-on-surface"></div>`; } else { container.className = "md:col-span-2 hidden"; container.innerHTML = ''; } renderHistoryTable(); }
-    function renderSetupView() { let sb = document.getElementById('setup-starting-balance'); if (sb) sb.value = globalData.startingBalance || 25000000; let rContainer = document.getElementById('setup-routine-list'); if (rContainer) { rContainer.innerHTML = ''; if (!globalData.routinePayments) globalData.routinePayments = {}; Object.keys(globalData.routinePayments).forEach(k => { let item = globalData.routinePayments[k]; rContainer.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant flex items-center justify-between gap-2 text-xs"><b class="font-bold text-primary dark:text-blue-400 w-1/3">${k}</b><div class="grid grid-cols-2 gap-2 w-2/3"><input type="number" value="${item.amount||0}" placeholder="Nominal" onchange="globalData.routinePayments['${k}'].amount=parseFloat(this.value)||0; saveStorageData();" class="p-1.5 border rounded-lg font-mono-data bg-surface text-on-surface"><div class="flex items-center gap-1"><input type="number" min="1" max="31" value="${item.dueDay||1}" placeholder="Tgl" onchange="globalData.routinePayments['${k}'].dueDay=parseInt(this.value,10)||1;" class="p-1.5 border rounded-lg font-mono-data w-16 bg-surface text-on-surface"><span onclick="removeRoutinePaymentItem('${k}')" class="material-symbols-outlined text-sm text-error cursor-pointer">close</span></div></div></div>`; }); } let accContainer = document.getElementById('setup-account-list'); if (accContainer && globalData.accounts) { accContainer.innerHTML = ''; if (!globalData.accountDetails) globalData.accountDetails = {}; globalData.accounts.forEach((acc, idx) => { let bal = globalData.currentBalances[acc] || 0; let dt = globalData.accountDetails[acc] || { bankName: acc, accNo: "", owner: "" }; accContainer.innerHTML += `<div class="p-4 bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant space-y-3"><div class="flex justify-between items-center border-b border-outline-variant/40 pb-2"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary dark:text-blue-400">account_balance</span><b class="text-sm font-bold text-on-surface">${acc}</b></div><button onclick="removeAccountItem(${idx})" class="text-xs text-error font-bold flex items-center gap-0.5 hover:underline"><span class="material-symbols-outlined text-sm">close</span> Hapus Akun</button></div><div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs"><div><label class="text-[10px] text-gray-500 font-bold uppercase">Nama Bank / E-Wallet</label><input type="text" value="${dt.bankName||acc}" onchange="updateAccountDetail('${acc}', 'bankName', this.value)" class="w-full bg-white dark:bg-slate-800 text-on-surface border rounded-lg p-1.5 font-bold"></div><div><label class="text-[10px] text-gray-500 font-bold uppercase">Nomor Rekening</label><input type="text" value="${dt.accNo||''}" placeholder="Contoh: 712345..." onchange="updateAccountDetail('${acc}', 'accNo', this.value)" class="w-full bg-white dark:bg-slate-800 text-on-surface border rounded-lg p-1.5 font-mono-data"></div><div><label class="text-[10px] text-gray-500 font-bold uppercase">Atas Nama (a.n)</label><input type="text" value="${dt.owner||''}" placeholder="Pemilik" onchange="updateAccountDetail('${acc}', 'owner', this.value)" class="w-full bg-white dark:bg-slate-800 text-on-surface border rounded-lg p-1.5 font-bold"></div><div><label class="text-[10px] text-gray-500 font-bold uppercase">Saldo Awal (Rp)</label><input type="number" value="${bal}" onchange="updateAccountBalance('${acc}', this.value)" class="w-full bg-white dark:bg-slate-800 text-on-surface border border-primary/50 rounded-lg p-1.5 font-mono-data font-bold text-primary dark:text-blue-400"></div></div></div>`; }); } renderSimpleCategoryTags('incomes', 'setup-income-tags'); renderSimpleCategoryTags('bills', 'setup-bills-list'); renderSimpleCategoryTags('spendings', 'setup-spending-tags'); renderValuedCategoryList('investData', 'setup-invest-list', ['initial']); renderValuedCategoryList('sinkingData', 'setup-sinking-list', ['initial', 'target', 'deadline', 'durationMonths']); renderValuedCategoryList('goalsData', 'setup-goals-list', ['initial', 'target', 'timeframeVal']); renderValuedCategoryList('receivablesData', 'setup-receivables-list', ['total', 'deadline', 'paid']); renderValuedCategoryList('nonMoneyAssets', 'setup-nonmoney-list', ['qty', 'estimatedPrice', 'type', 'unit']); renderDebtListSetup(); let budgetContainer = document.getElementById('setup-budget-list'); if (budgetContainer) { budgetContainer.innerHTML = ''; if (!globalData.monthlyBudgets) globalData.monthlyBudgets = {}; if (globalData.spendings && globalData.spendings.length > 0) { globalData.spendings.forEach(cat => { let limit = globalData.monthlyBudgets[cat] || 0; budgetContainer.innerHTML += `<div class="flex justify-between items-center bg-surface-container dark:bg-slate-900 p-2 rounded-lg border border-outline-variant/40 mb-2 text-xs"><span class="font-bold w-1/2">${cat}</span><div class="w-1/2 relative"><span class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-[10px]">Rp</span><input type="text" value="${limit.toLocaleString('id-ID')}" oninput="formatInputNominal(this)" onchange="updateBudgetLimit('${cat}', this.value)" placeholder="Limit Budget..." class="w-full pl-6 pr-2 py-1.5 border rounded-lg font-mono-data bg-white dark:bg-slate-800 text-on-surface font-bold text-right outline-none focus:border-primary"></div></div>`; }); } else { budgetContainer.innerHTML = '<p class="text-xs text-gray-500">Silakan tambahkan kategori Spending terlebih dahulu.</p>'; } } }
+    
+    function renderSetupView() { 
+      let sb = document.getElementById('setup-starting-balance'); if (sb) sb.value = globalData.startingBalance || 0; 
+      let rContainer = document.getElementById('setup-routine-list'); if (rContainer) { rContainer.innerHTML = ''; if (!globalData.routinePayments) globalData.routinePayments = {}; Object.keys(globalData.routinePayments).forEach(k => { let item = globalData.routinePayments[k]; rContainer.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant flex items-center justify-between gap-2 text-xs"><b class="font-bold text-primary dark:text-blue-400 w-1/3">${k}</b><div class="grid grid-cols-2 gap-2 w-2/3"><input type="number" value="${item.amount||0}" placeholder="Nominal" onchange="globalData.routinePayments['${k}'].amount=parseFloat(this.value)||0; saveStorageData();" class="p-1.5 border rounded-lg font-mono-data bg-surface text-on-surface"><div class="flex items-center gap-1"><input type="number" min="1" max="31" value="${item.dueDay||1}" placeholder="Tgl" onchange="globalData.routinePayments['${k}'].dueDay=parseInt(this.value,10)||1;" class="p-1.5 border rounded-lg font-mono-data w-16 bg-surface text-on-surface"><span onclick="removeRoutinePaymentItem('${k}')" class="material-symbols-outlined text-sm text-error cursor-pointer">close</span></div></div></div>`; }); } 
+      let accContainer = document.getElementById('setup-account-list'); if (accContainer && globalData.accounts) { accContainer.innerHTML = ''; if (!globalData.accountDetails) globalData.accountDetails = {}; globalData.accounts.forEach((acc, idx) => { let bal = globalData.currentBalances[acc] || 0; let dt = globalData.accountDetails[acc] || { bankName: acc, accNo: "", owner: "" }; accContainer.innerHTML += `<div class="p-4 bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant space-y-3"><div class="flex justify-between items-center border-b border-outline-variant/40 pb-2"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary dark:text-blue-400">account_balance</span><b class="text-sm font-bold text-on-surface">${acc}</b></div><button onclick="removeAccountItem(${idx})" class="text-xs text-error font-bold flex items-center gap-0.5 hover:underline"><span class="material-symbols-outlined text-sm">close</span> Hapus Akun</button></div><div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs"><div><label class="text-[10px] text-gray-500 font-bold uppercase">Nama Bank / E-Wallet</label><input type="text" value="${dt.bankName||acc}" onchange="updateAccountDetail('${acc}', 'bankName', this.value)" class="w-full bg-white dark:bg-slate-800 text-on-surface border rounded-lg p-1.5 font-bold"></div><div><label class="text-[10px] text-gray-500 font-bold uppercase">Nomor Rekening</label><input type="text" value="${dt.accNo||''}" placeholder="Contoh: 712345..." onchange="updateAccountDetail('${acc}', 'accNo', this.value)" class="w-full bg-white dark:bg-slate-800 text-on-surface border rounded-lg p-1.5 font-mono-data"></div><div><label class="text-[10px] text-gray-500 font-bold uppercase">Atas Nama (a.n)</label><input type="text" value="${dt.owner||''}" placeholder="Pemilik" onchange="updateAccountDetail('${acc}', 'owner', this.value)" class="w-full bg-white dark:bg-slate-800 text-on-surface border rounded-lg p-1.5 font-bold"></div><div><label class="text-[10px] text-gray-500 font-bold uppercase">Saldo Awal (Rp)</label><input type="number" value="${bal}" onchange="updateAccountBalance('${acc}', this.value)" class="w-full bg-white dark:bg-slate-800 text-on-surface border border-primary/50 rounded-lg p-1.5 font-mono-data font-bold text-primary dark:text-blue-400"></div></div></div>`; }); } 
+      renderSimpleCategoryTags('incomes', 'setup-income-tags'); renderSimpleCategoryTags('bills', 'setup-bills-list'); renderSimpleCategoryTags('spendings', 'setup-spending-tags'); renderValuedCategoryList('investData', 'setup-invest-list', ['initial']); renderValuedCategoryList('sinkingData', 'setup-sinking-list', ['initial', 'target', 'deadline', 'durationMonths']); renderValuedCategoryList('goalsData', 'setup-goals-list', ['initial', 'target', 'timeframeVal']); renderValuedCategoryList('receivablesData', 'setup-receivables-list', ['total', 'deadline', 'paid']); renderValuedCategoryList('nonMoneyAssets', 'setup-nonmoney-list', ['qty', 'estimatedPrice', 'type', 'unit']); renderDebtListSetup(); 
+      let cloudInput = document.getElementById('setup-cloud-url'); if (cloudInput) cloudInput.value = globalData.cloudUrl || ""; 
+      let calcToggle = document.getElementById('setup-enable-calc'); if (calcToggle) calcToggle.checked = !!globalData.enableCalculator;
+      let budgetContainer = document.getElementById('setup-budget-list'); if (budgetContainer) { budgetContainer.innerHTML = ''; if (!globalData.monthlyBudgets) globalData.monthlyBudgets = {}; if (globalData.spendings && globalData.spendings.length > 0) { globalData.spendings.forEach(cat => { let limit = globalData.monthlyBudgets[cat] || 0; budgetContainer.innerHTML += `<div class="flex justify-between items-center bg-surface-container dark:bg-slate-900 p-2 rounded-lg border border-outline-variant/40 mb-2 text-xs"><span class="font-bold w-1/2">${cat}</span><div class="w-1/2 relative"><span class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-[10px]">Rp</span><input type="text" value="${limit.toLocaleString('id-ID')}" oninput="formatInputNominal(this)" onchange="updateBudgetLimit('${cat}', this.value)" placeholder="Limit Budget..." class="w-full pl-6 pr-2 py-1.5 border rounded-lg font-mono-data bg-white dark:bg-slate-800 text-on-surface font-bold text-right outline-none focus:border-primary"></div></div>`; }); } else { budgetContainer.innerHTML = '<p class="text-xs text-gray-500">Silakan tambahkan kategori Spending terlebih dahulu.</p>'; } } 
+    }
+    
     function renderDebtListSetup() { let container = document.getElementById('setup-debt-list'); if (!container) return; container.innerHTML = ''; if (!globalData.debtData) globalData.debtData = {}; Object.keys(globalData.debtData).forEach(k => { let item = globalData.debtData[k]; let currentPeriod = item.period || 'Bulanan'; let isDateType = currentPeriod.startsWith('Setiap Tanggal'); let selectedBasePeriod = isDateType ? 'Setiap Tanggal' : currentPeriod; let selectedDateNum = isDateType ? currentPeriod.replace('Setiap Tanggal ', '') : '1'; container.innerHTML += `<div class="p-4 bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant space-y-3 text-xs"><div class="flex justify-between items-center border-b border-outline-variant/30 pb-2"><div class="flex items-center gap-2"><b class="text-sm font-bold text-primary dark:text-blue-400">${k}</b><span class="text-[10px] px-2 py-0.5 bg-primary/10 text-primary dark:text-blue-300 rounded-full font-bold">${item.category || 'Utang'}</span></div><span onclick="removeDebtItem('${k}')" class="material-symbols-outlined text-sm text-error cursor-pointer">close</span></div><div class="grid grid-cols-2 md:grid-cols-5 gap-2"><div><label class="text-[9px] uppercase font-bold text-gray-500">Kategori</label><select onchange="updateDebtField('${k}', 'category', this.value)" class="w-full p-1.5 border rounded-lg text-xs bg-surface text-on-surface"><option value="Utang" ${item.category === 'Utang' ? 'selected' : ''}>Utang</option><option value="Cicilan" ${item.category === 'Cicilan' ? 'selected' : ''}>Cicilan</option><option value="Remberg" ${item.category === 'Remberg' ? 'selected' : ''}>Remberg</option></select></div><div><label class="text-[9px] uppercase font-bold text-gray-500">Total Harus Bayar</label><input type="number" value="${item.total || 0}" onchange="updateDebtField('${k}', 'total', this.value)" class="w-full p-1.5 border rounded-lg text-xs font-mono-data bg-surface text-on-surface"></div><div><label class="text-[9px] uppercase font-bold text-gray-500">Sudah Bayar</label><input type="number" value="${item.paid || 0}" onchange="updateDebtField('${k}', 'paid', this.value)" class="w-full p-1.5 border rounded-lg text-xs font-mono-data bg-surface text-on-surface"></div><div><label class="text-[9px] uppercase font-bold text-gray-500">Nominal Pembayaran</label><input type="number" value="${item.monthlyPay || 0}" onchange="updateDebtField('${k}', 'monthlyPay', this.value)" class="w-full p-1.5 border rounded-lg text-xs font-mono-data bg-surface text-on-surface"></div><div><label class="text-[9px] uppercase font-bold text-gray-500">Bayar Setiap</label><select onchange="handleDebtPeriodChange('${k}', this.value)" class="w-full p-1.5 border rounded-lg text-xs bg-surface text-on-surface"><option value="Bulanan" ${selectedBasePeriod === 'Bulanan' ? 'selected' : ''}>Bulanan</option><option value="Mingguan" ${selectedBasePeriod === 'Mingguan' ? 'selected' : ''}>Mingguan</option><option value="Setiap Hari" ${selectedBasePeriod === 'Setiap Hari' ? 'selected' : ''}>Setiap Hari</option><option value="Tahunan" ${selectedBasePeriod === 'Tahunan' ? 'selected' : ''}>Tahunan</option><option value="Setiap Tanggal" ${selectedBasePeriod === 'Setiap Tanggal' ? 'selected' : ''}>Setiap Tanggal...</option></select></div></div><div id="debt-date-box-${k}" class="${isDateType ? '' : 'hidden'} pt-2 flex items-center gap-2"><span class="text-[10px] font-bold text-gray-500">Pilih Tanggal:</span><select onchange="updateDebtDateNum('${k}', this.value)" class="p-1 border rounded text-xs bg-surface text-on-surface">${Array.from({length: 31}, (_, i) => `<option value="${i+1}" ${selectedDateNum == (i+1) ? 'selected' : ''}>${i+1}</option>`).join('')}</select></div></div>`; }); }
     function handleDebtPeriodChange(key, val) { let dateBox = document.getElementById(`debt-date-box-${key}`); if (val === 'Setiap Tanggal') { if (dateBox) dateBox.classList.remove('hidden'); updateDebtField(key, 'period', 'Setiap Tanggal 1'); } else { if (dateBox) dateBox.classList.add('hidden'); updateDebtField(key, 'period', val); } }
     function updateDebtDateNum(key, dateNum) { updateDebtField(key, 'period', `Setiap Tanggal ${dateNum}`); }
