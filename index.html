@@ -321,7 +321,7 @@
 
       <section class="space-y-4 pt-4 border-t border-outline-variant">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div><h2 class="font-headline-md font-bold text-on-surface">Riwayat & Filter Transaksi</h2><p class="text-xs text-gray-500">Default menampilkan bulan berjalan. Ubah bulan atau filter untuk melihat riwayat sebelumnya.</p></div>
+          <div><h2 class="font-headline-md font-bold text-on-surface">Riwayat & Filter Transaksi</h2><p class="text-xs text-gray-500">Secara otomatis menampilkan bulan berjalan. Ubah bulan atau kategori sesuai kebutuhan.</p></div>
           <div class="flex gap-2">
             <button onclick="downloadHistoryPDF()" class="px-3.5 py-2 bg-secondary text-white font-bold rounded-xl text-xs flex items-center gap-1 shadow hover:brightness-110">
               <span class="material-symbols-outlined text-sm">download</span> Download PDF
@@ -332,32 +332,38 @@
           </div>
         </div>
 
-        <!-- FILTER BARU: Default Bulan Ini + Filter Kategori Spending/Income -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 bg-white dark:bg-slate-800 p-4 rounded-2xl border shadow-sm text-xs">
+        <!-- FILTER BAR DENGAN DEFAULT BULAN BERJALAN & FILTER KATEGORI -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 bg-white dark:bg-slate-800 p-4 rounded-2xl border shadow-sm text-xs">
           <div>
             <label class="text-[10px] font-bold uppercase text-gray-500">Mode Filter Waktu</label>
             <select id="rep-filter-mode" onchange="toggleFilterModeInputs()" class="w-full p-2 border rounded-xl font-bold bg-surface text-on-surface outline-none cursor-pointer">
-              <option value="exact_month" selected>Per Bulan (Default)</option>
+              <option value="exact_month" selected>Bulan Tertentu</option>
               <option value="date_range">Rentang Tanggal</option>
               <option value="exact_date">Tanggal Tertentu</option>
               <option value="exact_year">Tahun Tertentu</option>
               <option value="all">Semua Waktu</option>
             </select>
           </div>
-          <div id="filter-input-container" class="sm:col-span-1 md:col-span-2">
+          <div id="filter-input-container">
             <div><label class="text-[10px] font-bold uppercase text-gray-500">Pilih Bulan & Tahun</label><input type="month" id="rep-exact-month" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-medium bg-surface text-on-surface"></div>
           </div>
           <div>
             <label class="text-[10px] font-bold uppercase text-gray-500">Filter Cashflow</label>
-            <select id="rep-filter-cashflow" onchange="populateReportFilterCategories(); renderHistoryTable();" class="w-full p-2 border rounded-xl font-bold bg-surface text-on-surface outline-none cursor-pointer"><option value="all">Semua Cashflow</option></select>
+            <select id="rep-filter-cashflow" onchange="onFilterCashflowChange()" class="w-full p-2 border rounded-xl font-bold bg-surface text-on-surface outline-none cursor-pointer">
+              <option value="all">Semua Cashflow</option>
+            </select>
           </div>
           <div>
-            <label class="text-[10px] font-bold uppercase text-gray-500">Filter Kategori (Spending / Income)</label>
-            <select id="rep-filter-category" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-bold bg-surface text-on-surface outline-none cursor-pointer"><option value="all">Semua Kategori</option></select>
+            <label class="text-[10px] font-bold uppercase text-gray-500">Filter Kategori (Spending/Income)</label>
+            <select id="rep-filter-category" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-bold bg-surface text-on-surface outline-none cursor-pointer">
+              <option value="all">Semua Kategori</option>
+            </select>
           </div>
           <div>
             <label class="text-[10px] font-bold uppercase text-gray-500">Filter Akun</label>
-            <select id="rep-filter-account" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-bold bg-surface text-on-surface outline-none cursor-pointer"><option value="all">Semua Akun</option></select>
+            <select id="rep-filter-account" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-bold bg-surface text-on-surface outline-none cursor-pointer">
+              <option value="all">Semua Akun</option>
+            </select>
           </div>
         </div>
 
@@ -647,15 +653,6 @@
 
             <button onclick="calculateHPPDynamic()" class="w-full py-3 bg-emerald-600 text-white font-bold rounded-xl shadow mt-2 hover:brightness-110">Kalkulasi HPP & Hasil</button>
             <div id="calc-hpp-result" class="hidden p-4 bg-emerald-50 border border-emerald-200 rounded-xl mt-3 space-y-2"></div>
-
-            <div id="hpp-akad-vendor" class="mt-4 p-4 bg-orange-50 border border-orange-200 rounded-xl">
-              <p class="text-[11px] font-bold text-orange-700 mb-1">⚖️ Tinjauan Fiqh: Istishna' Paralel</p>
-              <p class="text-[10px] text-gray-600 leading-relaxed">Menerima order lalu dioper ke vendor disebut <b>Istishna' Paralel</b>. Hukumnya halal jika: (1) Spesifikasi barang jelas, (2) Anda bertanggung jawab penuh atas barang di hadapan customer, bukan menyalahkan vendor jika ada cacat.</p>
-            </div>
-            <div id="hpp-akad-mandiri" class="hidden mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-              <p class="text-[11px] font-bold text-blue-700 mb-1">⚖️ Tinjauan Fiqh: Akad Istishna'</p>
-              <p class="text-[10px] text-gray-600 leading-relaxed">Produksi sablon mandiri menggunakan akad <b>Istishna'</b>. Anda bertindak sebagai produsen (Shani'). Syarat utamanya adalah spesifikasi bahan kaos dan sablon harus jelas agar terhindar dari Gharar.</p>
-            </div>
           </div>
         </div>
 
@@ -709,4 +706,8 @@
           <div class="space-y-3 text-xs">
             <div>
               <label class="font-bold text-gray-500">Harga Barang Asli (Rp)</label>
-              <input type="text" id="mur-
+              <input type="text" id="mur-harga" placeholder="Contoh: 25.000.000" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-xl font-mono-data bg-surface text-on-surface mt-1 outline-none font-bold focus:border-primary">
+            </div>
+            <div>
+              <label class="font-bold text-gray-500">Uang Muka / DP (Rp)</label>
+              <input type="text" id="mur-dp" placeholder="0 (Kosongkan jika tanpa DP)" oninput="formatInputNominal(this)" class="w-full
