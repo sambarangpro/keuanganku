@@ -82,9 +82,8 @@
         <button onclick="verifyBumperPin()" class="w-full py-2.5 bg-white text-primary font-bold rounded-xl text-xs hover:bg-blue-50 shadow transition-all">MASUK APLIKASI</button>
         <p id="bumper-error-msg" class="text-[11px] text-red-200 font-semibold leading-relaxed hidden">PIN Salah! Coba lagi.</p>
         
-        <div class="pt-2 border-t border-white/15 space-y-1.5">
-          <p class="text-[10px] text-blue-200/90">Perangkat Baru? PIN bawaan: <button type="button" onclick="quickFillDefaultPin()" class="underline font-bold text-white hover:text-blue-100">123</button></p>
-          <button type="button" onclick="toggleBumperCloudModal(true)" class="text-[11px] text-white/90 hover:text-white underline font-semibold flex items-center justify-center gap-1 mx-auto py-1">
+        <div class="pt-2 border-t border-white/15">
+          <button type="button" onclick="toggleBumperCloudModal(true)" class="text-[11px] text-blue-200/90 hover:text-white underline font-medium flex items-center justify-center gap-1 mx-auto py-1">
             <span class="material-symbols-outlined text-xs">cloud_sync</span> Hubungkan ke Cloud
           </button>
         </div>
@@ -665,18 +664,32 @@
           </div>
         </section>
 
+        <!-- JADWAL PEMBAYARAN RUTIN -->
         <section class="space-y-3">
-          <div class="flex items-center gap-2"><span class="material-symbols-outlined text-tertiary">alarm</span><h2 class="font-headline-md text-headline-md font-bold">Jadwal Pembayaran Rutin Bulanan</h2></div>
+          <div>
+            <div class="flex items-center gap-2"><span class="material-symbols-outlined text-tertiary">alarm</span><h2 class="font-headline-md text-headline-md font-bold text-on-surface">Jadwal Pembayaran Rutin Bulanan</h2></div>
+            <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+              <b class="text-on-surface">Fungsi & Tujuan:</b> Mengatur tanggal jatuh tempo tagihan agar sistem menampilkan notifikasi pengingat di Dashboard saat mendekati tanggal bayar (H-3 s.d. hari H).<br>
+              <span class="text-gray-400 dark:text-gray-500"><b>Contoh:</b> Listrik PLN (tgl 5), Wi-Fi Indihome (tgl 15), BPJS Kesehatan (tgl 10), Sewa Tempat / Server (tgl 25).</span>
+            </p>
+          </div>
           <div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 space-y-3 shadow-sm">
             <div id="setup-routine-list" class="space-y-2"></div>
             <button onclick="addRoutinePaymentItem()" class="w-full py-3 bg-surface-container hover:bg-surface-container-high border rounded-xl text-primary font-bold text-xs flex items-center justify-center gap-1"><span class="material-symbols-outlined text-sm">add</span> TAMBAHKAN JADWAL RUTIN</button>
           </div>
         </section>
 
+        <!-- SALDO AWAL -->
         <section class="space-y-3">
-          <div class="flex items-center gap-2"><span class="material-symbols-outlined text-secondary">account_balance_wallet</span><h2 class="font-headline-md text-headline-md font-bold">Saldo Awal</h2></div>
+          <div>
+            <div class="flex items-center gap-2"><span class="material-symbols-outlined text-secondary">account_balance_wallet</span><h2 class="font-headline-md text-headline-md font-bold text-on-surface">Saldo Awal</h2></div>
+            <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+              <b class="text-on-surface">Fungsi & Tujuan:</b> Titik awal saldo kas fisik/bebas yang Anda miliki saat pertama kali mulai memakai aplikasi ini sebelum transaksi dicatat.<br>
+              <span class="text-gray-400 dark:text-gray-500"><b>Contoh:</b> Total uang tunai di dompet fisik atau modal kas awal yang siap digunakan.</span>
+            </p>
+          </div>
           <div class="bg-white dark:bg-slate-800 border rounded-2xl p-6 shadow-sm space-y-2">
-            <label class="block font-label-caps text-xs font-bold uppercase">Saldo Awal (Yang Bisa Digunakan)</label>
+            <label class="block font-label-caps text-xs font-bold uppercase text-gray-500">Saldo Awal (Yang Bisa Digunakan)</label>
             <div class="relative pt-2">
               <span class="absolute left-4 top-1/2 -translate-y-1/2 font-extrabold text-primary text-lg">Rp</span>
               <input type="number" id="setup-starting-balance" onchange="updateStartingBalance(this.value)" class="w-full bg-surface border rounded-xl py-3 pl-12 pr-4 font-mono-data font-bold text-xl outline-none">
@@ -684,22 +697,172 @@
           </div>
         </section>
 
-        <section class="space-y-3"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-secondary">credit_card</span><h2 class="font-headline-md text-headline-md font-bold">1. Akun Bank & E-Wallet</h2></div><div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 space-y-4 shadow-sm"><div id="setup-account-list" class="space-y-3"></div><button onclick="addAccountItem()" class="w-full py-3.5 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2"><span class="material-symbols-outlined text-sm">add</span> TAMBAHKAN ACCOUNT BANK</button></div></section>
+        <!-- 1. AKUN BANK & E-WALLET -->
+        <section class="space-y-3">
+          <div>
+            <div class="flex items-center gap-2"><span class="material-symbols-outlined text-secondary">credit_card</span><h2 class="font-headline-md text-headline-md font-bold text-on-surface">1. Akun Bank & E-Wallet</h2></div>
+            <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+              <b class="text-on-surface">Fungsi & Tujuan:</b> Kantong/wadah penyimpanan saldo aktif Anda. Setiap transaksi uang masuk, belanja, atau transfer akan menambah/memotong saldo pada akun yang dipilih di sini.<br>
+              <span class="text-gray-400 dark:text-gray-500"><b>Contoh:</b> Rekening BCA, BRI, Bank Mandiri, Bank Jago, SeaBank, Kas Tunai (Cash), GoPay, OVO, DANA.</span>
+            </p>
+          </div>
+          <div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 space-y-4 shadow-sm">
+            <div id="setup-account-list" class="space-y-3"></div>
+            <button onclick="addAccountItem()" class="w-full py-3.5 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2"><span class="material-symbols-outlined text-sm">add</span> TAMBAHKAN ACCOUNT BANK</button>
+          </div>
+        </section>
         
+        <!-- 2. INCOME & 3. BILLS (GRID 2 KOLOM) -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <section class="space-y-3"><h2 class="font-bold">2. Income</h2><div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm"><div id="setup-income-tags" class="flex flex-wrap gap-2 mb-6"></div><button onclick="addSimpleCategory('incomes', 'Income')" class="w-full py-3 border-2 border-dashed rounded-xl font-bold text-xs flex items-center justify-center gap-2"><span class="material-symbols-outlined text-sm">add_circle</span> TAMBAHKAN INCOME</button></div></section>
-          <section class="space-y-3"><h2 class="font-bold">3. Bills</h2><div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm"><div id="setup-bills-list" class="space-y-2 mb-6"></div><button onclick="addSimpleCategory('bills', 'Tagihan')" class="w-full py-3 border-2 border-dashed rounded-xl font-bold text-xs flex items-center justify-center gap-2"><span class="material-symbols-outlined text-sm">add_circle</span> TAMBAHKAN BILLS</button></div></section>
+          <!-- 2. INCOME -->
+          <section class="space-y-3">
+            <div>
+              <div class="flex items-center gap-2"><span class="material-symbols-outlined text-green-600">payments</span><h2 class="font-bold text-base text-on-surface">2. Income (Pemasukan)</h2></div>
+              <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+                <b class="text-on-surface">Fungsi & Tujuan:</b> Kategori sumber aliran dana masuk yang menambah saldo rekening Anda.<br>
+                <span class="text-gray-400 dark:text-gray-500"><b>Contoh:</b> Gaji Bulanan, Bonus Kinerja, THR, Hasil Penjualan/Usaha, Komisi, Hadiah/Hibah.</span>
+              </p>
+            </div>
+            <div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm">
+              <div id="setup-income-tags" class="flex flex-wrap gap-2 mb-6"></div>
+              <button onclick="addSimpleCategory('incomes', 'Income')" class="w-full py-3 border-2 border-dashed rounded-xl font-bold text-xs flex items-center justify-center gap-2"><span class="material-symbols-outlined text-sm">add_circle</span> TAMBAHKAN INCOME</button>
+            </div>
+          </section>
+
+          <!-- 3. BILLS -->
+          <section class="space-y-3">
+            <div>
+              <div class="flex items-center gap-2"><span class="material-symbols-outlined text-blue-600">receipt_long</span><h2 class="font-bold text-base text-on-surface">3. Bills (Tagihan Rutin Wajib)</h2></div>
+              <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+                <b class="text-on-surface">Fungsi & Tujuan:</b> Pos pengeluaran wajib yang jumlahnya relatif tetap setiap bulan untuk operasional/fasilitas hidup.<br>
+                <span class="text-gray-400 dark:text-gray-500"><b>Contoh:</b> Listrik PLN, Air PDAM, Wi-Fi Indihome, BPJS Kesehatan, Iuran IPL Lingkungan.</span>
+              </p>
+            </div>
+            <div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm">
+              <div id="setup-bills-list" class="space-y-2 mb-6"></div>
+              <button onclick="addSimpleCategory('bills', 'Tagihan')" class="w-full py-3 border-2 border-dashed rounded-xl font-bold text-xs flex items-center justify-center gap-2"><span class="material-symbols-outlined text-sm">add_circle</span> TAMBAHKAN BILLS</button>
+            </div>
+          </section>
         </div>
 
-        <section class="space-y-3"><h2 class="font-bold">4. Spending</h2><div class="bg-white dark:bg-slate-800 border rounded-2xl p-6 shadow-sm"><div id="setup-spending-tags" class="flex flex-wrap gap-2 mb-6"></div><button onclick="addSimpleCategory('spendings', 'Spending')" class="w-full py-3.5 bg-primary text-white rounded-xl font-bold text-xs shadow flex items-center justify-center gap-2"><span class="material-symbols-outlined text-sm">add</span> TAMBAHKAN SPENDING</button></div></section>
-        <section class="space-y-3"><h2 class="font-bold">5. Invest / Savings</h2><div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm"><div id="setup-invest-list" class="space-y-3"></div><button onclick="addValuedCategory('investData', 'Invest')" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2">TAMBAH INVEST</button></div></section>
-        <section class="space-y-3"><h2 class="font-bold">6. Sinking Fund</h2><div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm"><div id="setup-sinking-list" class="space-y-3"></div><button onclick="addValuedCategory('sinkingData', 'Sinking Fund')" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2">TAMBAH SINKING FUND</button></div></section>
-        <section class="space-y-3"><h2 class="font-bold">7. Financial Goals</h2><div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm"><div id="setup-goals-list" class="space-y-3"></div><button onclick="addValuedCategory('goalsData', 'Goals')" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2">TAMBAH GOALS</button></div></section>
-        <section class="space-y-3"><h2 class="font-bold">8. Piutang</h2><div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm"><div id="setup-receivables-list" class="space-y-3"></div><button onclick="addValuedCategory('receivablesData', 'Piutang')" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2">TAMBAH PIUTANG</button></div></section>
-        <section class="space-y-3"><h2 class="font-bold">9. Aset Non Uang & Nisab</h2><div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm"><div id="setup-nonmoney-list" class="space-y-3"></div><button onclick="addValuedCategory('nonMoneyAssets', 'Aset')" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2">TAMBAH ASET NON-UANG</button></div></section>
-        <section class="space-y-3"><h2 class="font-bold">10. Utang & Cicilan</h2><div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm"><div id="setup-debt-list" class="space-y-3"></div><button onclick="addDebtItemModal()" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2">TAMBAH UTANG</button></div></section>
+        <!-- 4. SPENDING -->
+        <section class="space-y-3">
+          <div>
+            <div class="flex items-center gap-2"><span class="material-symbols-outlined text-red-500">shopping_cart</span><h2 class="font-bold text-base text-on-surface">4. Spending (Pengeluaran Sehari-hari)</h2></div>
+            <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+              <b class="text-on-surface">Fungsi & Tujuan:</b> Pos belanja kebutuhan sehari-hari yang nominalnya dinamis/berubah-ubah. Kategori ini nantinya dihubungkan dengan batas maksimal pada menu <i>Budgeting Bulanan</i>.<br>
+              <span class="text-gray-400 dark:text-gray-500"><b>Contoh:</b> Makan & Minum, Belanja Dapur / Sembako, Bensin / Transportasi, Jajan / Nongkrong, Pakaian, Sedekah.</span>
+            </p>
+          </div>
+          <div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm">
+            <div id="setup-spending-tags" class="flex flex-wrap gap-2 mb-6"></div>
+            <button onclick="addSimpleCategory('spendings', 'Spending')" class="w-full py-3.5 bg-primary text-white rounded-xl font-bold text-xs shadow flex items-center justify-center gap-2"><span class="material-symbols-outlined text-sm">add</span> TAMBAHKAN SPENDING</button>
+          </div>
+        </section>
 
-        <section class="space-y-3"><h2 class="font-bold">11. Budgeting Bulanan</h2><div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm"><div id="setup-budget-list" class="space-y-2"></div></div></section>
+        <!-- 5. INVEST / SAVINGS -->
+        <section class="space-y-3">
+          <div>
+            <div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary">savings</span><h2 class="font-bold text-base text-on-surface">5. Invest / Savings (Simpanan & Investasi Kas)</h2></div>
+            <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+              <b class="text-on-surface">Fungsi & Tujuan:</b> Akumulasi simpanan kas yang disisihkan secara likuid untuk dana darurat, tabungan masa depan, atau instrumen pertumbuhan uang.<br>
+              <span class="text-gray-400 dark:text-gray-500"><b>Contoh:</b> Dana Darurat, Reksadana Pasar Uang, Deposito Bank Digital, Simpanan Modal Usaha, Tabungan Hari Tua.</span>
+            </p>
+          </div>
+          <div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm">
+            <div id="setup-invest-list" class="space-y-3"></div>
+            <button onclick="addValuedCategory('investData', 'Invest')" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2">TAMBAH INVEST</button>
+          </div>
+        </section>
+
+        <!-- 6. SINKING FUND -->
+        <section class="space-y-3">
+          <div>
+            <div class="flex items-center gap-2"><span class="material-symbols-outlined text-indigo-600">water_drop</span><h2 class="font-bold text-base text-on-surface">6. Sinking Fund (Dana Terencana Berkala)</h2></div>
+            <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+              <b class="text-on-surface">Fungsi & Tujuan:</b> Menabung berkala sedikit demi sedikit untuk pengeluaran besar terencana yang pasti datang di masa depan, agar arus kas bulanan tidak terbebani saat hari H.<br>
+              <span class="text-gray-400 dark:text-gray-500"><b>Contoh:</b> Pajak Kendaraan Tahunan, Servis Mobil/Motor, Kurban Idul Adha, Dana Mudik Lebaran, Biaya Masuk Sekolah Anak.</span>
+            </p>
+          </div>
+          <div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm">
+            <div id="setup-sinking-list" class="space-y-3"></div>
+            <button onclick="addValuedCategory('sinkingData', 'Sinking Fund')" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2">TAMBAH SINKING FUND</button>
+          </div>
+        </section>
+
+        <!-- 7. FINANCIAL GOALS -->
+        <section class="space-y-3">
+          <div>
+            <div class="flex items-center gap-2"><span class="material-symbols-outlined text-sky-600">track_changes</span><h2 class="font-bold text-base text-on-surface">7. Financial Goals (Target Impian Finansial)</h2></div>
+            <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+              <b class="text-on-surface">Fungsi & Tujuan:</b> Target impian bernilai besar dengan nominal target dan batas waktu tertentu (*deadline*) untuk mengukur progres pencapaian aset impian.<br>
+              <span class="text-gray-400 dark:text-gray-500"><b>Contoh:</b> Beli Rumah / DP KPR (Target Rp 100 Jt), Beli Mobil Baru, Biaya Pernikahan, Ibadah Umroh / Haji, Liburan Luar Negeri.</span>
+            </p>
+          </div>
+          <div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm">
+            <div id="setup-goals-list" class="space-y-3"></div>
+            <button onclick="addValuedCategory('goalsData', 'Goals')" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2">TAMBAH GOALS</button>
+          </div>
+        </section>
+
+        <!-- 8. PIUTANG -->
+        <section class="space-y-3">
+          <div>
+            <div class="flex items-center gap-2"><span class="material-symbols-outlined text-teal-600">request_quote</span><h2 class="font-bold text-base text-on-surface">8. Piutang (Receivables - Uang Anda di Orang Lain)</h2></div>
+            <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+              <b class="text-on-surface">Fungsi & Tujuan:</b> Mencatat uang Anda yang sedang dipinjam atau belum dibayar oleh orang lain/klien. Memantau siapa debiturnya, total piutang, tanggal jatuh tempo, dan yang sudah dibayar.<br>
+              <span class="text-gray-400 dark:text-gray-500"><b>Contoh:</b> Pinjaman Teman / Kerabat, Talangan Belanja Kantor, Invoice Penjualan Barang yang Belum Dilunasi Pembeli.</span>
+            </p>
+          </div>
+          <div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm">
+            <div id="setup-receivables-list" class="space-y-3"></div>
+            <button onclick="addValuedCategory('receivablesData', 'Piutang')" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2">TAMBAH PIUTANG</button>
+          </div>
+        </section>
+
+        <!-- 9. ASET NON-UANG & NISAB -->
+        <section class="space-y-3">
+          <div>
+            <div class="flex items-center gap-2"><span class="material-symbols-outlined text-amber-500">toll</span><h2 class="font-bold text-base text-on-surface">9. Aset Non Uang & Nisab (Harta Fisik / Barang)</h2></div>
+            <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+              <b class="text-on-surface">Fungsi & Tujuan:</b> Menginventarisasi aset fisik bernilai tinggi beserta taksiran harganya saat ini. Sistem secara cerdas menghitung apakah total harta Anda telah mencapai batas Nisab Zakat Mal (setara 85 gram emas).<br>
+              <span class="text-gray-400 dark:text-gray-500"><b>Contoh:</b> Logam Mulia / Emas Antam (Gram), Tanah / Bangunan Properti, Kendaraan (Mobil/Motor), Saham Usaha, Hewan Ternak.</span>
+            </p>
+          </div>
+          <div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm">
+            <div id="setup-nonmoney-list" class="space-y-3"></div>
+            <button onclick="addValuedCategory('nonMoneyAssets', 'Aset')" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2">TAMBAH ASET NON-UANG</button>
+          </div>
+        </section>
+
+        <!-- 10. UTANG & CICILAN -->
+        <section class="space-y-3">
+          <div>
+            <div class="flex items-center gap-2"><span class="material-symbols-outlined text-rose-600">money_off</span><h2 class="font-bold text-base text-on-surface">10. Utang & Cicilan (Kewajiban Finansial Anda)</h2></div>
+            <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+              <b class="text-on-surface">Fungsi & Tujuan:</b> Mencatat kewajiban utang atau cicilan yang wajib Anda bayar ke pihak lain. Memantau sisa pokok utang, nominal cicilan, serta siklus pembayarannya (Bulanan / Mingguan / Tanggal Tertentu).<br>
+              <span class="text-gray-400 dark:text-gray-500"><b>Contoh:</b> Cicilan KPR Rumah, Kredit Kendaraan (Leasing), Utang Kartu Kredit, Pinjaman Usaha / KUR, Paylater.</span>
+            </p>
+          </div>
+          <div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm">
+            <div id="setup-debt-list" class="space-y-3"></div>
+            <button onclick="addDebtItemModal()" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2">TAMBAH UTANG</button>
+          </div>
+        </section>
+
+        <!-- 11. BUDGETING BULANAN -->
+        <section class="space-y-3">
+          <div>
+            <div class="flex items-center gap-2"><span class="material-symbols-outlined text-orange-500">pie_chart</span><h2 class="font-bold text-base text-on-surface">11. Budgeting Bulanan (Batas Maksimal Pengeluaran)</h2></div>
+            <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+              <b class="text-on-surface">Fungsi & Tujuan:</b> Menetapkan batas maksimal (*ceiling limit*) belanja bulanan pada tiap pos <i>Spending</i>. Sistem akan memberikan indikator visual di Dashboard (*Aman, Waspada, Overbudget*) untuk mencegah pengeluaran bocor halus.<br>
+              <span class="text-gray-400 dark:text-gray-500"><b>Contoh:</b> Limit Makan & Minum (Maks Rp 2.000.000/bln), Limit Belanja Dapur (Maks Rp 1.500.000/bln), Limit Bensin (Maks Rp 500.000/bln).</span>
+            </p>
+          </div>
+          <div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm">
+            <div id="setup-budget-list" class="space-y-2"></div>
+          </div>
+        </section>
 
         <section class="bg-red-50 border border-red-200 rounded-2xl p-5 flex items-center justify-between shadow-sm mt-6">
           <div><p class="font-bold text-error text-sm">Zona Bahaya</p><p class="text-xs text-gray-600">Hapus seluruh riwayat transaksi.</p></div>
@@ -1046,12 +1209,12 @@
       syncWithCloud(false);
     });
 
-    // Auto-Sync berkala setiap 45 detik saat tab aktif
+    // Auto-Sync berkala setiap 7 detik saat tab aktif (real-time antar perangkat)
     setInterval(() => {
       if (document.visibilityState === 'visible') {
         syncWithCloud(false);
       }
-    }, 45000);
+    }, 7000);
 
     function requestNotificationPermission() { if ("Notification" in window && Notification.permission !== "granted") Notification.requestPermission(); }
     
@@ -1163,7 +1326,7 @@
       } else {
         let err = document.getElementById('bumper-error-msg'); 
         if (err) {
-          err.innerHTML = `PIN Salah!<br><span class="text-[10px] text-yellow-200">Jika ini perangkat baru, gunakan PIN bawaan: <b>123</b> atau hubungkan ke Cloud di bawah.</span>`;
+          err.textContent = "PIN Salah! Coba lagi.";
           err.classList.remove('hidden');
         }
       }
@@ -1254,8 +1417,8 @@
       if (isSyncing) return;
 
       let nowTime = Date.now();
-      // Debounce: jika auto-sync otomatis dipanggil dalam selang < 6 detik, abaikan (kecuali klik manual)
-      if (!isManualClick && (nowTime - lastSyncTimestamp < 6000)) return;
+      // Debounce: jika auto-sync otomatis dipanggil dalam selang < 3.5 detik, abaikan (kecuali klik manual)
+      if (!isManualClick && (nowTime - lastSyncTimestamp < 3500)) return;
 
       isSyncing = true;
       lastSyncTimestamp = nowTime;
@@ -1302,15 +1465,17 @@
           if (isCloudNewer) {
             let activeCloudUrl = globalData.cloudUrl;
             let currentPin = globalData.appPin;
+            let currentOwnerPass = globalData.ownerPassword;
             globalData = cloudData;
             if (!globalData.cloudUrl) globalData.cloudUrl = activeCloudUrl;
             if (!globalData.appPin && currentPin) globalData.appPin = currentPin;
+            if (!globalData.ownerPassword && currentOwnerPass) globalData.ownerPassword = currentOwnerPass;
 
             localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData));
             
             // Re-render seluruh data di aplikasi secara otomatis & hening
             initApp();
-            showSyncToast("✓ Data transaksi disinkronkan dari Cloud!");
+            showSyncToast("✓ Data transaksi otomatis disinkronkan!");
             setSyncStatus('synced', 'Tersinkron');
           } else if (localUpdated > cloudUpdated && localUpdated > 0 && cloudUpdated > 0) {
             // Data lokal lebih baru dari cloud, upload kembali ke cloud
@@ -1399,6 +1564,7 @@
 
     async function saveStorageData() {
       globalData.lastUpdated = Date.now();
+      lastSyncTimestamp = Date.now();
       localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData)); 
       populateFormDropdowns(); 
       populateReportFilterCategories();
