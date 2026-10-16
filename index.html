@@ -212,17 +212,29 @@
   </div>
 
   <!-- HEADER -->
-  <header class="bg-surface border-b border-outline-variant fixed top-0 w-full z-40 flex justify-between items-center px-4 md:px-8 h-16 shadow-sm">
-    <div class="flex items-center gap-3">
+  <header class="bg-surface border-b border-outline-variant fixed top-0 w-full z-40 flex justify-between items-center px-3 sm:px-4 md:px-8 h-16 shadow-sm">
+    <div class="flex items-center gap-2 sm:gap-3">
       <span class="material-symbols-outlined text-primary" style="font-size: 28px;">account_balance_wallet</span>
-      <h1 id="header-brand-title" class="font-headline-md text-headline-md font-bold text-primary">KEUANGANKU</h1>
+      <h1 id="header-brand-title" class="font-headline-md text-sm sm:text-base md:text-lg font-bold text-primary">KEUANGANKU</h1>
     </div>
-    <div class="flex items-center gap-3">
-      <button onclick="toggleDarkMode()" class="p-2 rounded-full hover:bg-surface-container transition-colors flex items-center gap-1 text-xs font-bold">
+    <div class="flex items-center gap-2">
+      <!-- TOMBOL & INDIKATOR SINKRONISASI OTOMATIS -->
+      <button id="header-sync-btn" onclick="syncWithCloud(true)" title="Status Sinkronisasi Cloud (Klik untuk sinkron sekarang)" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-surface-container dark:bg-slate-800 border border-outline-variant/60 hover:border-primary active:scale-95 transition-all shadow-sm">
+        <span id="header-sync-icon" class="material-symbols-outlined text-base text-green-500">cloud_done</span>
+        <span id="header-sync-text" class="text-[11px] font-medium hidden sm:inline text-on-surface-variant">Tersinkron</span>
+      </button>
+
+      <button onclick="toggleDarkMode()" class="p-2 rounded-full hover:bg-surface-container transition-colors flex items-center gap-1 text-xs font-bold" title="Ubah Tema Gelap/Terang">
         <span class="material-symbols-outlined text-on-surface-variant">dark_mode</span>
       </button>
     </div>
   </header>
+
+  <!-- TOAST NOTIFIKASI SINKRONISASI OTOMATIS -->
+  <div id="sync-toast" class="fixed top-18 right-4 z-50 bg-slate-900/90 dark:bg-slate-800/95 text-white text-xs px-3.5 py-2.5 rounded-xl shadow-2xl border border-white/10 flex items-center gap-2 transform -translate-y-4 opacity-0 pointer-events-none transition-all duration-300">
+    <span class="material-symbols-outlined text-green-400 text-sm">cloud_done</span>
+    <span id="sync-toast-text" class="font-medium text-[11px]">Data diperbarui dari Cloud</span>
+  </div>
 
   <!-- TOMBOL MENGAMBANG -->
   <button onclick="toggleBalanceMask()" class="fixed bottom-24 right-6 z-50 bg-slate-800 dark:bg-slate-600 text-white p-3 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.2)] border border-slate-600 dark:border-slate-500 hover:scale-110 active:scale-95 transition-transform flex items-center justify-center group" title="Sembunyikan/Tampilkan Saldo">
@@ -585,17 +597,26 @@
 
         <!-- FITUR CLOUD & SINKRONISASI -->
         <section class="bg-blue-50 border border-blue-200 dark:bg-blue-900/30 dark:border-blue-800 rounded-2xl p-6 shadow-sm space-y-3">
-          <div class="flex items-center gap-2"><span class="material-symbols-outlined text-blue-600">cloud</span><h2 class="font-headline-md text-headline-md font-bold text-blue-900 dark:text-blue-100">Kunci Cloud & Sinkronisasi</h2></div>
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-blue-600">cloud_sync</span>
+              <h2 class="font-headline-md text-headline-md font-bold text-blue-900 dark:text-blue-100">Koneksi Cloud & Auto-Sync</h2>
+            </div>
+            <span class="px-2.5 py-1 bg-green-100 dark:bg-green-950/80 text-green-700 dark:text-green-300 text-[10px] font-extrabold rounded-full flex items-center gap-1.5 border border-green-200 dark:border-green-800">
+              <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> AUTO-SYNC AKTIF
+            </span>
+          </div>
           <p class="text-[11px] text-blue-800 dark:text-blue-200 leading-relaxed">
-            Masukkan Link Web App Google Sheets Anda untuk mengaktifkan Sinkronisasi Lintas Perangkat. <b>Kosongkan</b> jika aplikasi ini dipakai oleh orang lain agar data Anda tidak tercampur.
+            Masukkan Link Web App Google Sheets Anda untuk mengaktifkan sinkronisasi otomatis multi-perangkat. 
+            <b>Data otomatis tersinkron</b> saat aplikasi dibuka, berpindah menu, beralih tab/layar HP, atau setelah menginput transaksi di perangkat lain. Anda juga bisa menekan tombol awan di Header kapan saja.
           </p>
           <input type="text" id="setup-cloud-url" placeholder="https://script.google.com/macros/s/..." onchange="updateCloudUrl(this.value)" class="w-full p-2.5 border border-blue-300 rounded-xl text-xs font-mono-data bg-white dark:bg-slate-900 text-on-surface mt-1 outline-none focus:border-blue-500">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3 border-b border-blue-200/50 dark:border-blue-800/50 pb-4">
             <button id="btn-upload-cloud" onclick="forceUploadToCloud()" class="py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] uppercase rounded-xl shadow flex items-center justify-center gap-2 transition-all">
-              <span class="material-symbols-outlined text-base">cloud_upload</span> UPLOAD KE CLOUD
+              <span class="material-symbols-outlined text-base">cloud_upload</span> PAKSA UPLOAD KE CLOUD
             </button>
             <button id="btn-download-cloud" onclick="forceDownloadFromCloud()" class="py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold text-[11px] uppercase rounded-xl shadow flex items-center justify-center gap-2 transition-all">
-              <span class="material-symbols-outlined text-base">cloud_download</span> TARIK DARI CLOUD
+              <span class="material-symbols-outlined text-base">cloud_download</span> PAKSA TARIK DARI CLOUD
             </button>
           </div>
           <div class="pt-2">
@@ -973,6 +994,28 @@
       if (monthDropdown) monthDropdown.value = currentMonthIndex;
     };
 
+    // Auto-Sync Otomatis saat beralih aplikasi / membuka kembali browser tab di HP/Laptop
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        syncWithCloud(false);
+      }
+    });
+
+    window.addEventListener('focus', () => {
+      syncWithCloud(false);
+    });
+
+    window.addEventListener('online', () => {
+      syncWithCloud(false);
+    });
+
+    // Auto-Sync berkala setiap 45 detik saat tab aktif
+    setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        syncWithCloud(false);
+      }
+    }, 45000);
+
     function requestNotificationPermission() { if ("Notification" in window && Notification.permission !== "granted") Notification.requestPermission(); }
     
     function verifyBumperPin() {
@@ -1009,22 +1052,192 @@
       routinePayments: {}, monthlyBudgets: {}, investData: {}, sinkingData: {}, goalsData: {}, receivablesData: {}, nonMoneyAssets: {}, debtData: {}, recentHistory: [] 
     };
 
+    let isSyncing = false;
+    let lastSyncTimestamp = 0;
+    let syncToastTimeout = null;
+
+    function showSyncToast(text) {
+      let toast = document.getElementById('sync-toast');
+      let toastText = document.getElementById('sync-toast-text');
+      if (!toast || !toastText) return;
+      toastText.textContent = text;
+      toast.classList.remove('opacity-0', '-translate-y-4', 'pointer-events-none');
+      toast.classList.add('opacity-100', 'translate-y-0');
+      if (syncToastTimeout) clearTimeout(syncToastTimeout);
+      syncToastTimeout = setTimeout(() => {
+        toast.classList.add('opacity-0', '-translate-y-4', 'pointer-events-none');
+        toast.classList.remove('opacity-100', 'translate-y-0');
+      }, 3000);
+    }
+
+    function setSyncStatus(status, text) {
+      let btn = document.getElementById('header-sync-btn');
+      let icon = document.getElementById('header-sync-icon');
+      let txt = document.getElementById('header-sync-text');
+      if (!icon || !txt) return;
+
+      icon.className = "material-symbols-outlined text-base transition-transform";
+      if (status === 'syncing') {
+        icon.classList.add('animate-spin', 'text-blue-500');
+        icon.textContent = 'sync';
+        txt.textContent = text || 'Sinkronisasi...';
+        if (btn) btn.title = "Sedang menyinkronkan data dengan Cloud...";
+      } else if (status === 'synced') {
+        icon.classList.add('text-green-500');
+        icon.textContent = 'cloud_done';
+        txt.textContent = text || 'Tersinkron';
+        let timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+        if (btn) btn.title = `Tersinkronisasi (${timeStr}). Klik untuk cek ulang sekarang.`;
+      } else if (status === 'offline') {
+        icon.classList.add('text-gray-400');
+        icon.textContent = 'cloud_off';
+        txt.textContent = text || 'Cloud Nonaktif';
+        if (btn) btn.title = "Kunci Cloud belum diisi. Klik untuk membuka Setup.";
+      } else if (status === 'error') {
+        icon.classList.add('text-amber-500');
+        icon.textContent = 'cloud_sync';
+        txt.textContent = text || 'Coba Lagi';
+        if (btn) btn.title = "Gagal terhubung ke Cloud. Klik untuk mencoba sinkronkan lagi.";
+      }
+    }
+
+    async function syncWithCloud(isManualClick = false) {
+      if (!globalData.cloudUrl || !globalData.cloudUrl.startsWith("http")) {
+        setSyncStatus('offline', 'Cloud Nonaktif');
+        if (isManualClick) {
+          alert("Kunci Cloud belum diatur.\nSilakan masukkan Link Web App Google Sheets Anda di menu Setup.");
+          navTo('setup');
+        }
+        return;
+      }
+
+      if (isSyncing) return;
+
+      let nowTime = Date.now();
+      // Debounce: jika auto-sync otomatis dipanggil dalam selang < 6 detik, abaikan (kecuali klik manual)
+      if (!isManualClick && (nowTime - lastSyncTimestamp < 6000)) return;
+
+      isSyncing = true;
+      lastSyncTimestamp = nowTime;
+      setSyncStatus('syncing', isManualClick ? 'Menyinkronkan...' : 'Cek Cloud...');
+
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+        // Parameter _t acak memaksa browser tidak mengambil cache lama
+        let fetchUrl = globalData.cloudUrl;
+        let sep = fetchUrl.includes('?') ? '&' : '?';
+        fetchUrl += `${sep}_t=${Date.now()}`;
+
+        let response = await fetch(fetchUrl, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        
+        let cloudData = await response.json();
+
+        if (cloudData && cloudData.accounts && Array.isArray(cloudData.accounts)) {
+          let localUpdated = Number(globalData.lastUpdated) || 0;
+          let cloudUpdated = Number(cloudData.lastUpdated) || 0;
+
+          let isCloudNewer = false;
+
+          if (cloudUpdated > localUpdated) {
+            isCloudNewer = true;
+          } else if (cloudUpdated === localUpdated || localUpdated === 0 || cloudUpdated === 0) {
+            let localTxCount = (globalData.recentHistory || []).length;
+            let cloudTxCount = (cloudData.recentHistory || []).length;
+            if (cloudTxCount !== localTxCount) {
+              isCloudNewer = true;
+            } else {
+              let localStr = JSON.stringify(globalData.recentHistory || []);
+              let cloudStr = JSON.stringify(cloudData.recentHistory || []);
+              let localBalStr = JSON.stringify(globalData.currentBalances || {});
+              let cloudBalStr = JSON.stringify(cloudData.currentBalances || {});
+              if (localStr !== cloudStr || localBalStr !== cloudBalStr) {
+                isCloudNewer = true;
+              }
+            }
+          }
+
+          if (isCloudNewer) {
+            let activeCloudUrl = globalData.cloudUrl;
+            let currentPin = globalData.appPin;
+            globalData = cloudData;
+            if (!globalData.cloudUrl) globalData.cloudUrl = activeCloudUrl;
+            if (!globalData.appPin && currentPin) globalData.appPin = currentPin;
+
+            localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData));
+            
+            // Re-render seluruh data di aplikasi secara otomatis & hening
+            initApp();
+            showSyncToast("✓ Data transaksi disinkronkan dari Cloud!");
+            setSyncStatus('synced', 'Tersinkron');
+          } else if (localUpdated > cloudUpdated && localUpdated > 0 && cloudUpdated > 0) {
+            // Data lokal lebih baru dari cloud, upload kembali ke cloud
+            try {
+              await fetch(globalData.cloudUrl, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(globalData)
+              });
+            } catch(e) {}
+            setSyncStatus('synced', 'Tersinkron');
+          } else {
+            setSyncStatus('synced', 'Tersinkron');
+            if (isManualClick) {
+              showSyncToast("Data Anda sudah paling mutakhir.");
+            }
+          }
+        } else {
+          setSyncStatus('error', 'Format Data Cloud Salah');
+        }
+      } catch(err) {
+        console.warn("Auto-sync background error:", err);
+        setSyncStatus('error', 'Koneksi Terganggu');
+      } finally {
+        isSyncing = false;
+      }
+    }
+
     async function loadStorageData() {
       try {
         let stored = localStorage.getItem("KEUANGANKU_DB_V21");
         if (stored) { globalData = JSON.parse(stored); } else { globalData = JSON.parse(JSON.stringify(DEFAULT_DATA)); }
       } catch(e) { globalData = JSON.parse(JSON.stringify(DEFAULT_DATA)); }
+      
+      let backupCloudUrl = localStorage.getItem("KEUANGANKU_CLOUD_URL");
+      if ((!globalData.cloudUrl || !globalData.cloudUrl.startsWith("http")) && backupCloudUrl) {
+        globalData.cloudUrl = backupCloudUrl;
+      }
+      if (globalData.cloudUrl) {
+        localStorage.setItem("KEUANGANKU_CLOUD_URL", globalData.cloudUrl);
+      }
+
       if (globalData.appPin === undefined) globalData.appPin = globalData.ownerPassword || "123";
       if (!globalData.cloudUrl) globalData.cloudUrl = "";
       if (globalData.enableCalculator === undefined) globalData.enableCalculator = false;
       if (!globalData.monthlyBudgets) globalData.monthlyBudgets = {}; 
+      if (!globalData.lastUpdated) globalData.lastUpdated = Date.now();
+      
       initApp();
+
+      // Pemicu Auto-Sync Otomatis saat aplikasi pertama kali dimuat
+      if (globalData.cloudUrl && globalData.cloudUrl.startsWith("http")) {
+        setSyncStatus('syncing', 'Menghubungkan...');
+        setTimeout(() => { syncWithCloud(false); }, 600);
+      } else {
+        setSyncStatus('offline', 'Cloud Nonaktif');
+      }
     }
 
     function updateCloudUrl(val) {
       globalData.cloudUrl = val.trim();
+      localStorage.setItem("KEUANGANKU_CLOUD_URL", globalData.cloudUrl);
+      globalData.lastUpdated = Date.now();
       localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData));
-      alert("Kunci Cloud berhasil disimpan!");
+      alert("Kunci Cloud berhasil disimpan! Sistem akan otomatis menyinkronkan data.");
+      syncWithCloud(true);
     }
     
     function toggleCalculatorFeature(val) {
@@ -1038,10 +1251,25 @@
     }
 
     async function saveStorageData() {
+      globalData.lastUpdated = Date.now();
       localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData)); 
-      populateFormDropdowns(); populateReportFilterCategories();
+      populateFormDropdowns(); 
+      populateReportFilterCategories();
+      
       if (globalData.cloudUrl && globalData.cloudUrl.startsWith("http")) {
-        try { fetch(globalData.cloudUrl, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(globalData) }); } catch(e) {}
+        setSyncStatus('syncing', 'Menyimpan...');
+        try { 
+          await fetch(globalData.cloudUrl, { 
+            method: "POST", 
+            mode: "no-cors", 
+            headers: { "Content-Type": "application/json" }, 
+            body: JSON.stringify(globalData) 
+          }); 
+          setSyncStatus('synced', 'Tersinkron');
+        } catch(e) {
+          console.warn("Gagal auto-upload ke Cloud:", e);
+          setSyncStatus('error', 'Gagal Simpan Cloud');
+        }
       }
     }
 
@@ -1054,7 +1282,10 @@
       let originalText = btn.innerHTML;
       btn.innerHTML = `<span class="material-symbols-outlined text-base animate-spin">sync</span> MENGUPLOAD...`;
       try {
+        globalData.lastUpdated = Date.now();
+        localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData));
         await fetch(globalData.cloudUrl, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(globalData) });
+        setSyncStatus('synced', 'Tersinkron');
         alert("BERHASIL! Data aplikasi ini telah di-upload ke Cloud pribadi Anda.");
       } catch(e) { alert("Gagal mengupload data. Pastikan koneksi internet lancar dan link Anda benar."); }
       btn.innerHTML = originalText;
@@ -1065,13 +1296,23 @@
         alert("GAGAL: Kunci Cloud kosong!\nSilakan isi link Web App Google Sheets Anda terlebih dahulu agar sistem tahu data mana yang harus ditarik.");
         return;
       }
-      if (!confirm("PENTING: Menarik data dari Cloud akan MENIMPA (me-replace) semua data yang ada di perangkat ini. Lanjutkan?")) return;
+      if (!confirm("PENTING: Menarik data dari Cloud akan MENIMPA semua data yang ada di perangkat ini dengan data Cloud. Lanjutkan?")) return;
       let btn = document.getElementById('btn-download-cloud');
       let originalText = btn.innerHTML;
       btn.innerHTML = `<span class="material-symbols-outlined text-base animate-spin">sync</span> MENDOWNLOAD...`;
       try {
-        let response = await fetch(globalData.cloudUrl); let data = await response.json();
-        if (data && data.accounts) { localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(data)); alert("DATABASE BERHASIL DITARIK DARI CLOUD! \nAplikasi akan dimuat ulang (Refresh)."); location.reload(); } else { alert("GAGAL: Data di Cloud kosong atau tidak valid."); }
+        let fetchUrl = globalData.cloudUrl + (globalData.cloudUrl.includes('?') ? '&' : '?') + `_t=${Date.now()}`;
+        let response = await fetch(fetchUrl); 
+        let data = await response.json();
+        if (data && data.accounts) { 
+          globalData = data;
+          localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(data)); 
+          initApp();
+          setSyncStatus('synced', 'Tersinkron');
+          alert("DATABASE BERHASIL DITARIK DARI CLOUD! \nData telah diperbarui secara otomatis."); 
+        } else { 
+          alert("GAGAL: Data di Cloud kosong atau tidak valid."); 
+        }
       } catch(e) { alert("GAGAL MENARIK DATA. Pastikan link Google Sheets Anda sudah di-deploy dengan benar (Anyone / Semua Orang)."); }
       btn.innerHTML = originalText;
     }
@@ -1105,6 +1346,7 @@
       populateFormDropdowns(); 
       populateReportFilterCategories(); 
       toggleFilterModeInputs();
+      renderHistoryTable();
       renderSetupView(); 
       checkDueDateAlerts(); 
       checkReceivableAlerts(); 
@@ -1113,10 +1355,34 @@
     function navTo(page) {
       ['page-dashboard', 'page-transaksi', 'page-setup', 'page-kalkulator'].forEach(id => { let el = document.getElementById(id); if(el) el.classList.add('hidden'); });
       ['nav-dash', 'nav-tx', 'nav-setup', 'nav-calc'].forEach(id => { let el = document.getElementById(id); if(el && el.style.display !== 'none') el.className = "flex flex-col items-center text-on-surface-variant px-4 py-1 hover:text-primary"; });
-      if (page === 'dashboard') { document.getElementById('page-dashboard').classList.remove('hidden'); document.getElementById('nav-dash').className = "flex flex-col items-center text-primary px-4 py-1 font-bold"; renderDashboard(); } 
-      else if (page === 'transaksi') { document.getElementById('page-transaksi').classList.remove('hidden'); document.getElementById('nav-tx').className = "flex flex-col items-center text-primary px-4 py-1 font-bold"; let dateInput = document.getElementById('tx-date'); if (dateInput) dateInput.valueAsDate = new Date(); populateFormDropdowns(); populateReportFilterCategories(); applyCashflowLogic(); renderHistoryTable(); } 
-      else if (page === 'setup') { document.getElementById('page-setup').classList.remove('hidden'); document.getElementById('nav-setup').className = "flex flex-col items-center text-primary px-4 py-1 font-bold"; renderSetupView(); } 
-      else if (page === 'kalkulator') { document.getElementById('page-kalkulator').classList.remove('hidden'); let navCalc = document.getElementById('nav-calc'); if (navCalc) navCalc.className = "flex flex-col items-center text-primary px-4 py-1 font-bold"; backToCalcMenu(); }
+      if (page === 'dashboard') { 
+        document.getElementById('page-dashboard').classList.remove('hidden'); 
+        document.getElementById('nav-dash').className = "flex flex-col items-center text-primary px-4 py-1 font-bold"; 
+        renderDashboard(); 
+        syncWithCloud(false); 
+      } 
+      else if (page === 'transaksi') { 
+        document.getElementById('page-transaksi').classList.remove('hidden'); 
+        document.getElementById('nav-tx').className = "flex flex-col items-center text-primary px-4 py-1 font-bold"; 
+        let dateInput = document.getElementById('tx-date'); 
+        if (dateInput) dateInput.valueAsDate = new Date(); 
+        populateFormDropdowns(); 
+        populateReportFilterCategories(); 
+        applyCashflowLogic(); 
+        renderHistoryTable(); 
+        syncWithCloud(false); 
+      } 
+      else if (page === 'setup') { 
+        document.getElementById('page-setup').classList.remove('hidden'); 
+        document.getElementById('nav-setup').className = "flex flex-col items-center text-primary px-4 py-1 font-bold"; 
+        renderSetupView(); 
+      } 
+      else if (page === 'kalkulator') { 
+        document.getElementById('page-kalkulator').classList.remove('hidden'); 
+        let navCalc = document.getElementById('nav-calc'); 
+        if (navCalc) navCalc.className = "flex flex-col items-center text-primary px-4 py-1 font-bold"; 
+        backToCalcMenu(); 
+      }
     }
 
     // KONFIGURASI DAN KONTROL POPUP MODAL REKAPITULASI (OPSI A)
