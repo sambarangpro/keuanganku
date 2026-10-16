@@ -16,6 +16,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
   
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -231,10 +232,67 @@
           <div><label class="font-bold uppercase text-gray-500">Dari Akun</label><input type="text" id="edit-tx-dari" readonly class="w-full p-2 border rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-500 mt-1"></div>
           <div><label class="font-bold uppercase text-gray-500">Ke Akun</label><input type="text" id="edit-tx-ke" readonly class="w-full p-2 border rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-500 mt-1"></div>
         </div>
+
+        <div class="pt-2 border-t border-outline-variant/50">
+          <div class="flex items-center justify-between">
+            <label class="font-bold uppercase text-gray-500 flex items-center gap-1">
+              <span class="material-symbols-outlined text-xs text-primary">receipt_long</span> Bukti Transaksi
+            </label>
+            <label for="edit-tx-files-input" class="text-primary font-bold text-[10px] flex items-center gap-0.5 cursor-pointer hover:underline">
+              <span class="material-symbols-outlined text-xs">add_photo_alternate</span> + Tambah File
+            </label>
+            <input type="file" id="edit-tx-files-input" multiple accept="image/*,.pdf,.heic,.heif" onchange="handleEditTxFilesSelected(this)" class="hidden">
+          </div>
+          <div id="edit-tx-files-loading" class="hidden py-1 text-center text-[10px] text-primary font-medium flex items-center justify-center gap-1">
+            <span class="material-symbols-outlined text-xs animate-spin">sync</span> Memproses lampiran...
+          </div>
+          <div id="edit-tx-files-preview" class="flex flex-wrap gap-2 mt-2 max-h-36 overflow-y-auto"></div>
+        </div>
       </div>
       <div class="flex gap-2 pt-3 border-t">
         <button onclick="saveEditedTransaction()" class="flex-1 py-2.5 bg-primary text-white font-bold rounded-xl hover:brightness-110 shadow">Simpan Perubahan</button>
         <button onclick="closeEditModal()" class="px-4 py-2.5 border rounded-xl text-on-surface-variant">Batal</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL VIEWER BUKTI TRANSAKSI -->
+  <div id="receipt-viewer-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300 p-3 sm:p-4">
+    <div id="receipt-viewer-card" class="bg-white dark:bg-slate-900 border border-outline-variant rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl transform scale-95 transition-transform duration-300 overflow-hidden">
+      <!-- Modal Header -->
+      <div class="p-4 border-b border-outline-variant flex items-center justify-between bg-surface dark:bg-slate-800">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950/80 text-blue-600 flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-xl">receipt_long</span>
+          </div>
+          <div class="min-w-0">
+            <h3 id="receipt-modal-title" class="font-bold text-sm sm:text-base text-on-surface truncate">Bukti Transaksi</h3>
+            <p id="receipt-modal-sub" class="text-[10px] text-gray-400 font-mono-data truncate"></p>
+          </div>
+        </div>
+        <button onclick="closeReceiptViewerModal()" class="p-1.5 rounded-full hover:bg-surface-container text-gray-400 hover:text-error transition-colors shrink-0">
+          <span class="material-symbols-outlined text-xl">close</span>
+        </button>
+      </div>
+
+      <!-- File Selector Tabs (jika lebih dari 1 file) -->
+      <div id="receipt-tabs-container" class="px-4 py-2 bg-surface-container/40 dark:bg-slate-800/40 border-b border-outline-variant/50 flex items-center gap-2 overflow-x-auto text-xs hidden">
+      </div>
+
+      <!-- Viewer Body -->
+      <div id="receipt-modal-body" class="p-3 sm:p-4 overflow-y-auto flex-1 flex flex-col items-center justify-center min-h-[300px] max-h-[60vh] bg-slate-100 dark:bg-slate-950/60">
+        <!-- Content inserted dynamically -->
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-3 border-t border-outline-variant flex items-center justify-between bg-surface dark:bg-slate-800 text-xs gap-2">
+        <span id="receipt-file-info" class="text-[10px] text-gray-400 font-medium truncate"></span>
+        <div class="flex items-center gap-2 shrink-0">
+          <a id="receipt-download-btn" href="#" download="bukti-transaksi" target="_blank" class="px-3.5 py-1.5 bg-primary text-white font-bold rounded-xl text-xs flex items-center gap-1 hover:brightness-110 shadow transition-all">
+            <span class="material-symbols-outlined text-sm">download</span> Download / Buka
+          </a>
+          <button onclick="closeReceiptViewerModal()" class="px-3 py-1.5 border border-outline-variant rounded-xl text-on-surface-variant hover:bg-surface-container transition-all">Tutup</button>
+        </div>
       </div>
     </div>
   </div>
@@ -502,6 +560,31 @@
               <div><label class="text-[10px] uppercase font-bold text-on-surface-variant">Nominal Admin (Rp)</label><input type="text" id="tx-admin-fee" placeholder="0" oninput="formatInputNominal(this)" class="w-full p-2 border border-outline rounded-lg text-sm font-mono-data bg-surface"></div>
               <div><label class="text-[10px] uppercase font-bold text-on-surface-variant">Potong Dari Akun</label><select id="tx-admin-account" class="w-full p-2 border border-outline rounded-lg text-sm bg-surface"><option value="">Sama dengan Dari Account</option></select></div>
             </div>
+          </div>
+
+          <!-- LAMPIRAN BUKTI TRANSAKSI / STRUK -->
+          <div class="p-4 bg-surface-container dark:bg-slate-900 rounded-xl border border-outline-variant space-y-2.5">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-base">receipt_long</span>
+                <div>
+                  <label class="text-xs font-bold text-on-surface">Lampirkan Bukti Transaksi / Nota (Opsional)</label>
+                  <p class="text-[10px] text-gray-400">JPG, PNG, HEIC, atau PDF (bisa lebih dari 1 file sekaligus)</p>
+                </div>
+              </div>
+              <label for="tx-files-input" class="inline-flex items-center justify-center gap-1 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary font-bold text-xs rounded-xl cursor-pointer active:scale-95 transition-all w-fit">
+                <span class="material-symbols-outlined text-sm">add_photo_alternate</span> + Pilih File / Foto
+              </label>
+              <input type="file" id="tx-files-input" multiple accept="image/*,.pdf,.heic,.heif" onchange="handleTxFilesSelected(this)" class="hidden">
+            </div>
+
+            <!-- Loading status indicator -->
+            <div id="tx-files-loading" class="hidden py-1.5 text-center text-xs text-primary font-medium flex items-center justify-center gap-1.5">
+              <span class="material-symbols-outlined text-sm animate-spin">sync</span> Mengompresi & menyiapkan lampiran...
+            </div>
+
+            <!-- Container preview file yang terpilih -->
+            <div id="tx-files-preview" class="hidden flex flex-wrap gap-2.5 pt-2 border-t border-outline-variant/40"></div>
           </div>
 
           <div class="flex items-center gap-3 pt-3 border-t border-outline-variant">
@@ -1192,6 +1275,16 @@
       let currentMonthIndex = new Date().getMonth();
       let monthDropdown = document.getElementById('monthly-select-dropdown');
       if (monthDropdown) monthDropdown.value = currentMonthIndex;
+
+      let txForm = document.getElementById('tx-form');
+      if (txForm) {
+        txForm.addEventListener('reset', () => {
+          setTimeout(() => {
+            pendingAttachments = [];
+            renderTxFilesPreview();
+          }, 10);
+        });
+      }
     };
 
     // Auto-Sync Otomatis saat beralih aplikasi / membuka kembali browser tab di HP/Laptop
@@ -2239,6 +2332,8 @@
           let badgeCls = isPay ? 'bg-green-100 dark:bg-green-950/80 text-green-700 dark:text-green-300' : 'bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300';
           let badgeLabel = isPay ? 'Pelunasan Diterima' : 'Piutang Baru';
           let iconName = isPay ? 'check_circle' : 'attach_money';
+          let origTxIdx = globalData.recentHistory.indexOf(tx);
+          let attBtn = (tx.attachments && tx.attachments.length > 0) ? `<button type="button" onclick="event.stopPropagation(); openReceiptViewerModal(${origTxIdx})" class="inline-flex items-center gap-0.5 text-[9px] px-1.5 py-0.5 bg-blue-50 dark:bg-blue-950/80 text-blue-600 dark:text-blue-300 border border-blue-200 dark:border-blue-800 rounded font-bold hover:bg-blue-100 transition-colors mt-0.5"><span class="material-symbols-outlined text-[10px]">receipt_long</span> Bukti</button>` : '';
           historyRows += `
             <div class="flex items-center justify-between p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-outline-variant/50 text-[11px]">
               <div class="space-y-0.5">
@@ -2249,8 +2344,9 @@
                 </div>
                 <p class="text-[9px] text-gray-400 font-mono-data">${tx.dateTime || tx.rawDate || '-'} • Masuk: <b>${tx.keAcc || '-'}</b></p>
               </div>
-              <div class="text-right">
+              <div class="text-right flex flex-col items-end">
                 <span class="font-mono-data font-bold ${colorCls}">${isPay ? '+' : '-'} ${formatRp(tx.amount)}</span>
+                ${attBtn}
               </div>
             </div>`;
         });
@@ -2342,6 +2438,8 @@
           let badgeCls = isPay ? 'bg-green-100 dark:bg-green-950/80 text-green-700 dark:text-green-300' : 'bg-red-100 dark:bg-red-950/80 text-red-700 dark:text-red-300';
           let badgeLabel = isPay ? 'Bayar Cicilan' : 'Utang Baru';
           let iconName = isPay ? 'check_circle' : 'add_circle';
+          let origTxIdx = globalData.recentHistory.indexOf(tx);
+          let attBtn = (tx.attachments && tx.attachments.length > 0) ? `<button type="button" onclick="event.stopPropagation(); openReceiptViewerModal(${origTxIdx})" class="inline-flex items-center gap-0.5 text-[9px] px-1.5 py-0.5 bg-blue-50 dark:bg-blue-950/80 text-blue-600 dark:text-blue-300 border border-blue-200 dark:border-blue-800 rounded font-bold hover:bg-blue-100 transition-colors mt-0.5"><span class="material-symbols-outlined text-[10px]">receipt_long</span> Bukti</button>` : '';
           historyRows += `
             <div class="flex items-center justify-between p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-outline-variant/50 text-[11px]">
               <div class="space-y-0.5">
@@ -2352,8 +2450,9 @@
                 </div>
                 <p class="text-[9px] text-gray-400 font-mono-data">${tx.dateTime || tx.rawDate || '-'} • Dari: <b>${tx.dariAcc || '-'}</b></p>
               </div>
-              <div class="text-right">
+              <div class="text-right flex flex-col items-end">
                 <span class="font-mono-data font-bold ${colorCls}">${isPay ? '+' : '-'} ${formatRp(tx.amount)}</span>
+                ${attBtn}
               </div>
             </div>`;
         });
@@ -2542,8 +2641,357 @@
     function populateFormDropdowns() { let adminAcc = document.getElementById('tx-admin-account'); if (adminAcc && globalData.accounts) { adminAcc.innerHTML = `<option value="">Sama dengan Dari Account</option>`; globalData.accounts.forEach(a => { adminAcc.innerHTML += `<option value="${a}">${a}</option>`; }); } }
     function applyCashflowLogic() { let cf = document.getElementById('tx-cashflow').value; let catSelect = document.getElementById('tx-category'); let dariSelect = document.getElementById('tx-dari'); let keSelect = document.getElementById('tx-ke'); catSelect.innerHTML = '<option value="- not applicable -" selected>- not applicable -</option>'; dariSelect.innerHTML = '<option value="- not applicable -" selected>- not applicable -</option>'; keSelect.innerHTML = '<option value="- not applicable -" selected>- not applicable -</option>'; catSelect.disabled = false; dariSelect.disabled = false; keSelect.disabled = false; if (cf === 'Income') { dariSelect.disabled = true; fillOptions(catSelect, globalData.incomes); fillOptions(keSelect, globalData.accounts); } else if (cf === 'Pelunasan Piutang') { dariSelect.disabled = true; fillOptions(catSelect, Object.keys(globalData.receivablesData || {})); fillOptions(keSelect, globalData.accounts); } else if (cf === 'Cicilan / Utang Baru') { dariSelect.disabled = true; let allPeople = Object.keys(globalData.receivablesData || {}).concat(Object.keys(globalData.debtData || {})); fillOptions(catSelect, [...new Set(allPeople)]); fillOptions(keSelect, globalData.accounts); } else if (cf === 'Spending') { keSelect.disabled = true; fillOptions(catSelect, globalData.spendings); fillOptions(dariSelect, globalData.accounts); } else if (cf === 'Bayar Cicilan / Utang') { keSelect.disabled = true; let debtKeys = Object.keys(globalData.debtData || {}).concat(globalData.bills || []); fillOptions(catSelect, debtKeys); fillOptions(dariSelect, globalData.accounts); } else if (cf === 'Piutang Baru') { keSelect.disabled = true; fillOptions(catSelect, Object.keys(globalData.receivablesData || {})); fillOptions(dariSelect, globalData.accounts); } else if (cf === 'Transfer') { catSelect.disabled = true; fillOptions(dariSelect, globalData.accounts); fillOptions(keSelect, globalData.accounts); } else if (cf === 'Invest / Savings') { fillOptions(catSelect, Object.keys(globalData.investData || {})); fillOptions(dariSelect, globalData.accounts); fillOptions(keSelect, globalData.accounts); } else if (cf === 'Financial Goals') { fillOptions(catSelect, Object.keys(globalData.goalsData || {})); fillOptions(dariSelect, globalData.accounts); fillOptions(keSelect, globalData.accounts); } else if (cf === 'Dari Asset / Saving') { let combined = Object.keys(globalData.sinkingData || {}).concat(Object.keys(globalData.investData || {})); fillOptions(catSelect, combined); fillOptions(dariSelect, globalData.accounts); fillOptions(keSelect, globalData.accounts); } }
     function fillOptions(selectElem, arr) { if (!arr || arr.length === 0) return; selectElem.innerHTML = ''; arr.forEach(item => { selectElem.innerHTML += `<option value="${item}">${item}</option>`; }); }
+    let pendingAttachments = [];
+    let editPendingAttachments = [];
+    let currentViewerTxIndex = null;
+    let currentViewerAttIndex = 0;
+
+    function formatBytes(bytes) {
+      if (!bytes || bytes === 0) return '0 B';
+      let k = 1024, dm = 1;
+      let sizes = ['B', 'KB', 'MB', 'GB'];
+      let i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+    }
+
+    async function processUploadedFile(file) {
+      let isHeic = file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif') || (file.type && (file.type.includes('heic') || file.type.includes('heif')));
+      let isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+      
+      if (isPdf) {
+        if (file.size > 2.5 * 1024 * 1024) {
+          alert(`File PDF "${file.name}" terlalu besar (${formatBytes(file.size)}). Maksimal ukuran file PDF adalah 2.5MB agar sinkronisasi Cloud tetap cepat.`);
+          return null;
+        }
+        return new Promise((resolve) => {
+          let reader = new FileReader();
+          reader.onload = (e) => {
+            resolve({
+              id: 'att_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+              name: file.name,
+              type: 'application/pdf',
+              data: e.target.result,
+              size: formatBytes(file.size)
+            });
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+
+      // Handle Image (JPG, PNG, HEIC, WebP)
+      let blobToProcess = file;
+      if (isHeic && window.heic2any) {
+        try {
+          let convertedBlob = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.75 });
+          blobToProcess = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+        } catch(err) {
+          console.warn("Gagal konversi HEIC dengan heic2any, fallback ke reader biasa:", err);
+        }
+      }
+
+      return new Promise((resolve) => {
+        let reader = new FileReader();
+        reader.onload = (e) => {
+          let dataUrl = e.target.result;
+          let img = new Image();
+          img.onload = () => {
+            let maxDim = 1100;
+            let w = img.width, h = img.height;
+            if (w > maxDim || h > maxDim) {
+              if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+              else { w = Math.round((w * maxDim) / h); h = maxDim; }
+            }
+            let canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            let ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            let compressedData = canvas.toDataURL('image/jpeg', 0.72);
+            resolve({
+              id: 'att_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+              name: file.name.replace(/\.(heic|heif)$/i, '.jpg'),
+              type: 'image/jpeg',
+              data: compressedData,
+              size: formatBytes(compressedData.length * 0.75)
+            });
+          };
+          img.onerror = () => {
+            resolve({
+              id: 'att_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+              name: file.name,
+              type: file.type || 'image/jpeg',
+              data: dataUrl,
+              size: formatBytes(file.size)
+            });
+          };
+          img.src = dataUrl;
+        };
+        reader.readAsDataURL(blobToProcess);
+      });
+    }
+
+    async function handleTxFilesSelected(input) {
+      if (!input.files || input.files.length === 0) return;
+      let loadingEl = document.getElementById('tx-files-loading');
+      if (loadingEl) loadingEl.classList.remove('hidden');
+
+      for (let i = 0; i < input.files.length; i++) {
+        let file = input.files[i];
+        try {
+          let processed = await processUploadedFile(file);
+          if (processed) pendingAttachments.push(processed);
+        } catch(e) {
+          console.warn("Gagal memproses file:", file.name, e);
+        }
+      }
+
+      if (loadingEl) loadingEl.classList.add('hidden');
+      renderTxFilesPreview();
+      input.value = '';
+    }
+
+    function removePendingAttachment(idx) {
+      pendingAttachments.splice(idx, 1);
+      renderTxFilesPreview();
+    }
+
+    function renderTxFilesPreview() {
+      let preview = document.getElementById('tx-files-preview');
+      if (!preview) return;
+      if (pendingAttachments.length === 0) {
+        preview.classList.add('hidden');
+        preview.innerHTML = '';
+        return;
+      }
+      preview.classList.remove('hidden');
+      preview.innerHTML = '';
+      pendingAttachments.forEach((att, idx) => {
+        let isPdf = att.type === 'application/pdf' || att.name.toLowerCase().endsWith('.pdf');
+        let thumbHtml = isPdf 
+          ? `<div class="w-12 h-12 rounded-lg bg-red-100 dark:bg-red-950/80 text-red-600 flex flex-col items-center justify-center shrink-0"><span class="material-symbols-outlined text-lg">picture_as_pdf</span><span class="text-[8px] font-bold">PDF</span></div>`
+          : `<img src="${att.data}" class="w-12 h-12 rounded-lg object-cover border border-outline-variant/60 shrink-0 shadow-2xs">`;
+        preview.innerHTML += `
+          <div class="relative flex items-center gap-2 p-1.5 bg-white dark:bg-slate-800 rounded-xl border border-outline-variant/60 shadow-2xs max-w-[210px]">
+            ${thumbHtml}
+            <div class="overflow-hidden min-w-0 flex-1">
+              <p class="text-[10px] font-bold text-on-surface truncate" title="${att.name}">${att.name}</p>
+              <p class="text-[9px] text-gray-400 font-mono-data">${att.size || ''}</p>
+            </div>
+            <button type="button" onclick="removePendingAttachment(${idx})" class="w-5 h-5 rounded-full bg-red-100 hover:bg-red-200 text-error flex items-center justify-center shrink-0 transition-colors" title="Hapus file ini">
+              <span class="material-symbols-outlined text-xs">close</span>
+            </button>
+          </div>`;
+      });
+    }
+
+    async function handleEditTxFilesSelected(input) {
+      if (!input.files || input.files.length === 0) return;
+      let loadingEl = document.getElementById('edit-tx-files-loading');
+      if (loadingEl) loadingEl.classList.remove('hidden');
+
+      for (let i = 0; i < input.files.length; i++) {
+        let file = input.files[i];
+        try {
+          let processed = await processUploadedFile(file);
+          if (processed) editPendingAttachments.push(processed);
+        } catch(e) {
+          console.warn("Gagal memproses file:", file.name, e);
+        }
+      }
+
+      if (loadingEl) loadingEl.classList.add('hidden');
+      renderEditTxFilesPreview();
+      input.value = '';
+    }
+
+    function removeEditPendingAttachment(idx) {
+      editPendingAttachments.splice(idx, 1);
+      renderEditTxFilesPreview();
+    }
+
+    function renderEditTxFilesPreview() {
+      let preview = document.getElementById('edit-tx-files-preview');
+      if (!preview) return;
+      if (editPendingAttachments.length === 0) {
+        preview.innerHTML = '<p class="text-[10px] text-gray-400 italic py-2 w-full text-center">Belum ada bukti transaksi terlampir.</p>';
+        return;
+      }
+      preview.innerHTML = '';
+      editPendingAttachments.forEach((att, idx) => {
+        let isPdf = att.type === 'application/pdf' || att.name.toLowerCase().endsWith('.pdf');
+        let thumbHtml = isPdf 
+          ? `<div class="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-950/80 text-red-600 flex flex-col items-center justify-center shrink-0"><span class="material-symbols-outlined text-sm">picture_as_pdf</span><span class="text-[7px] font-bold">PDF</span></div>`
+          : `<img src="${att.data}" class="w-10 h-10 rounded-lg object-cover border border-outline-variant/60 shrink-0">`;
+        preview.innerHTML += `
+          <div class="relative flex items-center gap-1.5 p-1 bg-white dark:bg-slate-900 rounded-lg border border-outline-variant/60 shadow-2xs text-[10px] max-w-[190px]">
+            ${thumbHtml}
+            <div class="overflow-hidden min-w-0 flex-1">
+              <p class="font-bold text-on-surface truncate" title="${att.name}">${att.name}</p>
+              <p class="text-[8px] text-gray-400 font-mono-data">${att.size || ''}</p>
+            </div>
+            <button type="button" onclick="removeEditPendingAttachment(${idx})" class="w-4 h-4 rounded-full bg-red-100 text-error flex items-center justify-center shrink-0 hover:scale-110">
+              <span class="material-symbols-outlined text-[10px]">close</span>
+            </button>
+          </div>`;
+      });
+    }
+
+    function openReceiptViewerModal(txIndex) {
+      let tx = globalData.recentHistory[txIndex];
+      if (!tx || !tx.attachments || tx.attachments.length === 0) return;
+
+      currentViewerTxIndex = txIndex;
+      currentViewerAttIndex = 0;
+
+      document.getElementById('receipt-modal-title').textContent = `Bukti: ${tx.name}`;
+      document.getElementById('receipt-modal-sub').textContent = `${formatRp(tx.amount)} • ${tx.dateTime || tx.rawDate}`;
+
+      renderReceiptViewerBody();
+
+      let modal = document.getElementById('receipt-viewer-modal');
+      let card = document.getElementById('receipt-viewer-card');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        card.classList.remove('scale-95');
+        card.classList.add('scale-100');
+      }, 10);
+    }
+
+    function closeReceiptViewerModal() {
+      let modal = document.getElementById('receipt-viewer-modal');
+      let card = document.getElementById('receipt-viewer-card');
+      modal.classList.add('opacity-0');
+      card.classList.remove('scale-100');
+      card.classList.add('scale-95');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+        document.getElementById('receipt-modal-body').innerHTML = '';
+      }, 300);
+    }
+
+    function renderReceiptViewerBody() {
+      let tx = globalData.recentHistory[currentViewerTxIndex];
+      if (!tx || !tx.attachments || tx.attachments.length === 0) return;
+
+      let atts = tx.attachments;
+      let tabsContainer = document.getElementById('receipt-tabs-container');
+      
+      if (atts.length > 1) {
+        tabsContainer.classList.remove('hidden');
+        tabsContainer.innerHTML = '';
+        atts.forEach((a, i) => {
+          let isAct = (i === currentViewerAttIndex);
+          let isPdf = a.type === 'application/pdf' || a.name.toLowerCase().endsWith('.pdf');
+          tabsContainer.innerHTML += `
+            <button type="button" onclick="switchReceiptTab(${i})" class="px-3 py-1 rounded-lg font-bold flex items-center gap-1.5 transition-all shrink-0 ${isAct ? 'bg-primary text-white shadow' : 'bg-surface dark:bg-slate-800 text-on-surface-variant hover:bg-surface-container'}">
+              <span class="material-symbols-outlined text-xs">${isPdf ? 'picture_as_pdf' : 'image'}</span>
+              <span>Bukti ${i + 1}</span>
+            </button>`;
+        });
+      } else {
+        tabsContainer.classList.add('hidden');
+      }
+
+      let activeAtt = atts[currentViewerAttIndex] || atts[0];
+      let body = document.getElementById('receipt-modal-body');
+      let infoEl = document.getElementById('receipt-file-info');
+      let dwnBtn = document.getElementById('receipt-download-btn');
+
+      if (infoEl) infoEl.textContent = `${activeAtt.name} (${activeAtt.size || ''})`;
+      if (dwnBtn) {
+        dwnBtn.href = activeAtt.data;
+        dwnBtn.download = activeAtt.name;
+      }
+
+      let isPdf = activeAtt.type === 'application/pdf' || activeAtt.name.toLowerCase().endsWith('.pdf');
+
+      if (isPdf) {
+        body.innerHTML = `
+          <div class="w-full h-full flex flex-col items-center justify-center space-y-3 py-6">
+            <div class="w-16 h-16 rounded-2xl bg-red-100 dark:bg-red-950/80 text-red-600 flex items-center justify-center shadow">
+              <span class="material-symbols-outlined text-3xl">picture_as_pdf</span>
+            </div>
+            <div class="text-center px-4">
+              <p class="font-bold text-sm text-on-surface break-all">${activeAtt.name}</p>
+              <p class="text-xs text-gray-400 font-mono-data">${activeAtt.size || 'Dokumen PDF'}</p>
+            </div>
+            <div class="flex gap-2 pt-2">
+              <a href="${activeAtt.data}" target="_blank" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow transition-all">
+                <span class="material-symbols-outlined text-sm">open_in_new</span> Buka di Tab Baru
+              </a>
+              <a href="${activeAtt.data}" download="${activeAtt.name}" class="px-4 py-2 bg-white dark:bg-slate-800 hover:bg-surface-container text-on-surface font-bold rounded-xl text-xs flex items-center gap-1.5 border border-outline-variant shadow-sm transition-all">
+                <span class="material-symbols-outlined text-sm">download</span> Unduh PDF
+              </a>
+            </div>
+          </div>`;
+      } else {
+        body.innerHTML = `
+          <div class="w-full flex items-center justify-center overflow-auto max-h-[55vh]">
+            <img src="${activeAtt.data}" alt="${activeAtt.name}" class="max-w-full max-h-[52vh] rounded-xl object-contain shadow border border-outline-variant/40 hover:scale-[1.01] transition-transform cursor-zoom-in" onclick="window.open('${activeAtt.data}', '_blank')" title="Klik untuk membuka ukuran penuh">
+          </div>`;
+      }
+    }
+
+    function switchReceiptTab(idx) {
+      currentViewerAttIndex = idx;
+      renderReceiptViewerBody();
+    }
+
     function getSelectedValueDirect(elementId) { let el = document.getElementById(elementId); if (!el) return "- not applicable -"; if (el.options && el.options.length > 0) { let idx = el.selectedIndex >= 0 ? el.selectedIndex : 0; let selectedOpt = el.options[idx]; if (selectedOpt && selectedOpt.value && selectedOpt.value.trim() !== "") return selectedOpt.value.trim(); } return "- not applicable -"; }
-    function submitTransaction(e) { e.preventDefault(); let dDate = document.getElementById('tx-date').value; let dName = document.getElementById('tx-name').value; let rawAmount = document.getElementById('tx-amount').value.replace(/\./g, ''); let dAmount = parseFloat(rawAmount) || 0; let dCashflow = document.getElementById('tx-cashflow').value; let dCategory = getSelectedValueDirect('tx-category'); let dDari = getSelectedValueDirect('tx-dari'); let dKe = getSelectedValueDirect('tx-ke'); let rawAdmin = document.getElementById('tx-admin-fee').value.replace(/\./g, ''); let dAdminFee = parseFloat(rawAdmin) || 0; let dAdminAcc = document.getElementById('tx-admin-account').value || dDari; let timeFormatted = formatFullDateTime(dDate); if (!globalData.currentBalances) globalData.currentBalances = {}; if (dDari !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(dDari)) globalData.currentBalances[dDari] -= dAmount; if (dKe !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(dKe)) globalData.currentBalances[dKe] += dAmount; let mainTx = { dateTime: timeFormatted, rawDate: dDate, name: dName, amount: dAmount, cashflow: dCashflow, category: dCategory, dariAcc: dDari, keAcc: dKe }; if (!globalData.recentHistory) globalData.recentHistory = []; let adminAdded = false; if (dAdminFee > 0 && dAdminAcc !== '- not applicable -') { adminAdded = true; if (globalData.currentBalances.hasOwnProperty(dAdminAcc)) globalData.currentBalances[dAdminAcc] -= dAdminFee; let adminTx = { dateTime: timeFormatted, rawDate: dDate, name: "Biaya Admin - " + dName, amount: dAdminFee, cashflow: "Spending", category: "Biaya Transaksi / Admin", dariAcc: dAdminAcc, keAcc: "- not applicable -" }; globalData.recentHistory.unshift(mainTx); globalData.recentHistory.unshift(adminTx); } else { globalData.recentHistory.unshift(mainTx); } saveStorageData(); renderDashboard(); renderHistoryTable(); document.getElementById('tx-form').reset(); let dateInput = document.getElementById('tx-date'); if (dateInput) dateInput.valueAsDate = new Date(); applyCashflowLogic(); playSuccessSound(); showSuccessModal(mainTx, adminAdded, dAdminFee); }
+    function submitTransaction(e) { 
+      e.preventDefault(); 
+      let dDate = document.getElementById('tx-date').value; 
+      let dName = document.getElementById('tx-name').value; 
+      let rawAmount = document.getElementById('tx-amount').value.replace(/\./g, ''); 
+      let dAmount = parseFloat(rawAmount) || 0; 
+      let dCashflow = document.getElementById('tx-cashflow').value; 
+      let dCategory = getSelectedValueDirect('tx-category'); 
+      let dDari = getSelectedValueDirect('tx-dari'); 
+      let dKe = getSelectedValueDirect('tx-ke'); 
+      let rawAdmin = document.getElementById('tx-admin-fee').value.replace(/\./g, ''); 
+      let dAdminFee = parseFloat(rawAdmin) || 0; 
+      let dAdminAcc = document.getElementById('tx-admin-account').value || dDari; 
+      let timeFormatted = formatFullDateTime(dDate); 
+      if (!globalData.currentBalances) globalData.currentBalances = {}; 
+      if (dDari !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(dDari)) globalData.currentBalances[dDari] -= dAmount; 
+      if (dKe !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(dKe)) globalData.currentBalances[dKe] += dAmount; 
+      
+      let mainTx = { 
+        dateTime: timeFormatted, 
+        rawDate: dDate, 
+        name: dName, 
+        amount: dAmount, 
+        cashflow: dCashflow, 
+        category: dCategory, 
+        dariAcc: dDari, 
+        keAcc: dKe,
+        attachments: [...pendingAttachments]
+      }; 
+      
+      if (!globalData.recentHistory) globalData.recentHistory = []; 
+      let adminAdded = false; 
+      if (dAdminFee > 0 && dAdminAcc !== '- not applicable -') { 
+        adminAdded = true; 
+        if (globalData.currentBalances.hasOwnProperty(dAdminAcc)) globalData.currentBalances[dAdminAcc] -= dAdminFee; 
+        let adminTx = { dateTime: timeFormatted, rawDate: dDate, name: "Biaya Admin - " + dName, amount: dAdminFee, cashflow: "Spending", category: "Biaya Transaksi / Admin", dariAcc: dAdminAcc, keAcc: "- not applicable -" }; 
+        globalData.recentHistory.unshift(mainTx); 
+        globalData.recentHistory.unshift(adminTx); 
+      } else { 
+        globalData.recentHistory.unshift(mainTx); 
+      } 
+      saveStorageData(); 
+      renderDashboard(); 
+      renderHistoryTable(); 
+      document.getElementById('tx-form').reset(); 
+      pendingAttachments = [];
+      renderTxFilesPreview();
+      let dateInput = document.getElementById('tx-date'); 
+      if (dateInput) dateInput.valueAsDate = new Date(); 
+      applyCashflowLogic(); 
+      playSuccessSound(); 
+      showSuccessModal(mainTx, adminAdded, dAdminFee); 
+    }
     
     function renderHistoryTable() { 
       let tbody = document.getElementById('tx-history-tbody'); 
@@ -2605,13 +3053,70 @@
         if (tx.cashflow === 'Income') badgeColor = "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300"; 
         if (tx.cashflow === 'Spending') badgeColor = "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300"; 
         let originalIdx = globalData.recentHistory.indexOf(tx); 
-        tbody.innerHTML += `<tr class="hover:bg-surface-container-low transition-colors hidden-action-row"><td class="p-3 font-mono-data text-[11px] text-gray-500">${tx.dateTime || '-'}</td><td class="p-3 font-bold text-on-surface">${tx.name}</td><td class="p-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${badgeColor}">${tx.cashflow}</span></td><td class="p-3 text-on-surface-variant font-medium">${tx.category}</td><td class="p-3 text-gray-500">${tx.dariAcc}</td><td class="p-3 text-gray-500">${tx.keAcc}</td><td class="p-3 text-right"><div class="flex items-center justify-end gap-2"><span class="font-mono-data font-extrabold text-primary dark:text-blue-400">${formatRp(tx.amount)}</span><button onclick="openEditModal(${originalIdx})" class="p-1 rounded hover:bg-surface-container text-gray-400 hover:text-primary transition-colors"><span class="material-symbols-outlined text-sm">edit</span></button><button onclick="deleteTransaction(${originalIdx})" class="delete-action-btn p-1 rounded hover:bg-red-100 text-gray-300 hover:text-error transition-colors"><span class="material-symbols-outlined text-sm">delete</span></button></div></td></tr>`; 
+        let attCount = (tx.attachments && Array.isArray(tx.attachments)) ? tx.attachments.length : 0;
+        let attBtn = attCount > 0 ? `<button type="button" onclick="openReceiptViewerModal(${originalIdx})" class="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 bg-blue-50 dark:bg-blue-950/80 text-blue-600 dark:text-blue-300 border border-blue-200 dark:border-blue-800 rounded-lg font-bold hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors shadow-2xs cursor-pointer mt-1"><span class="material-symbols-outlined text-xs">receipt_long</span> ${attCount} Bukti</button>` : '';
+        
+        tbody.innerHTML += `
+          <tr class="hover:bg-surface-container-low transition-colors hidden-action-row">
+            <td class="p-3 font-mono-data text-[11px] text-gray-500">${tx.dateTime || '-'}</td>
+            <td class="p-3">
+              <span class="font-bold text-on-surface">${tx.name}</span>
+              ${attBtn ? `<div>${attBtn}</div>` : ''}
+            </td>
+            <td class="p-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${badgeColor}">${tx.cashflow}</span></td>
+            <td class="p-3 text-on-surface-variant font-medium">${tx.category}</td>
+            <td class="p-3 text-gray-500">${tx.dariAcc}</td>
+            <td class="p-3 text-gray-500">${tx.keAcc}</td>
+            <td class="p-3 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <span class="font-mono-data font-extrabold text-primary dark:text-blue-400">${formatRp(tx.amount)}</span>
+                <button onclick="openEditModal(${originalIdx})" class="p-1 rounded hover:bg-surface-container text-gray-400 hover:text-primary transition-colors" title="Edit Transaksi"><span class="material-symbols-outlined text-sm">edit</span></button>
+                <button onclick="deleteTransaction(${originalIdx})" class="delete-action-btn p-1 rounded hover:bg-red-100 text-gray-300 hover:text-error transition-colors" title="Hapus Transaksi"><span class="material-symbols-outlined text-sm">delete</span></button>
+              </div>
+            </td>
+          </tr>`; 
       }); 
     }
     
-    function openEditModal(idx) { let tx = globalData.recentHistory[idx]; if (!tx) return; document.getElementById('edit-tx-index').value = idx; document.getElementById('edit-tx-name').value = tx.name || ''; document.getElementById('edit-tx-amount').value = (tx.amount || 0).toLocaleString('id-ID'); document.getElementById('edit-tx-category').value = tx.category || ''; document.getElementById('edit-tx-dari').value = tx.dariAcc || ''; document.getElementById('edit-tx-ke').value = tx.keAcc || ''; let modal = document.getElementById('edit-tx-modal'), card = document.getElementById('edit-tx-card'); modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); card.classList.add('scale-100'); }, 10); }
+    function openEditModal(idx) { 
+      let tx = globalData.recentHistory[idx]; 
+      if (!tx) return; 
+      document.getElementById('edit-tx-index').value = idx; 
+      document.getElementById('edit-tx-name').value = tx.name || ''; 
+      document.getElementById('edit-tx-amount').value = (tx.amount || 0).toLocaleString('id-ID'); 
+      document.getElementById('edit-tx-category').value = tx.category || ''; 
+      document.getElementById('edit-tx-dari').value = tx.dariAcc || ''; 
+      document.getElementById('edit-tx-ke').value = tx.keAcc || ''; 
+      editPendingAttachments = tx.attachments ? JSON.parse(JSON.stringify(tx.attachments)) : [];
+      renderEditTxFilesPreview();
+      let modal = document.getElementById('edit-tx-modal'), card = document.getElementById('edit-tx-card'); 
+      modal.classList.remove('hidden'); 
+      setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); card.classList.add('scale-100'); }, 10); 
+    }
     function closeEditModal() { let modal = document.getElementById('edit-tx-modal'), card = document.getElementById('edit-tx-card'); modal.classList.add('opacity-0'); card.classList.remove('scale-100'); card.classList.add('scale-95'); setTimeout(() => modal.classList.add('hidden'), 300); }
-    function saveEditedTransaction() { let idx = parseInt(document.getElementById('edit-tx-index').value, 10); let tx = globalData.recentHistory[idx]; if (!tx) return; let newName = document.getElementById('edit-tx-name').value; let newAmount = parseFloat(document.getElementById('edit-tx-amount').value.replace(/\./g, '')) || 0; let newCat = document.getElementById('edit-tx-category').value; let oldAmt = tx.amount; if (tx.dariAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.dariAcc)) globalData.currentBalances[tx.dariAcc] += oldAmt; if (tx.keAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.keAcc)) globalData.currentBalances[tx.keAcc] -= oldAmt; if (tx.dariAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.dariAcc)) globalData.currentBalances[tx.dariAcc] -= newAmount; if (tx.keAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.keAcc)) globalData.currentBalances[tx.keAcc] += newAmount; tx.name = newName; tx.amount = newAmount; tx.category = newCat; saveStorageData(); renderDashboard(); renderHistoryTable(); closeEditModal(); playSuccessSound(); alert("Riwayat transaksi berhasil diperbarui & saldo akun disesuaikan!"); }
+    function saveEditedTransaction() { 
+      let idx = parseInt(document.getElementById('edit-tx-index').value, 10); 
+      let tx = globalData.recentHistory[idx]; 
+      if (!tx) return; 
+      let newName = document.getElementById('edit-tx-name').value; 
+      let newAmount = parseFloat(document.getElementById('edit-tx-amount').value.replace(/\./g, '')) || 0; 
+      let newCat = document.getElementById('edit-tx-category').value; 
+      let oldAmt = tx.amount; 
+      if (tx.dariAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.dariAcc)) globalData.currentBalances[tx.dariAcc] += oldAmt; 
+      if (tx.keAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.keAcc)) globalData.currentBalances[tx.keAcc] -= oldAmt; 
+      if (tx.dariAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.dariAcc)) globalData.currentBalances[tx.dariAcc] -= newAmount; 
+      if (tx.keAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.keAcc)) globalData.currentBalances[tx.keAcc] += newAmount; 
+      tx.name = newName; 
+      tx.amount = newAmount; 
+      tx.category = newCat; 
+      tx.attachments = [...editPendingAttachments];
+      saveStorageData(); 
+      renderDashboard(); 
+      renderHistoryTable(); 
+      closeEditModal(); 
+      playSuccessSound(); 
+      alert("Riwayat transaksi berhasil diperbarui & saldo akun disesuaikan!"); 
+    }
     function deleteTransaction(idx) { let tx = globalData.recentHistory[idx]; if (!tx) return; if (confirm(`Hapus transaksi "${tx.name}" (${formatRp(tx.amount)})? Saldo akun akan dikembalikan secara otomatis.`)) { let amt = tx.amount; if (tx.dariAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.dariAcc)) globalData.currentBalances[tx.dariAcc] += amt; if (tx.keAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.keAcc)) globalData.currentBalances[tx.keAcc] -= amt; globalData.recentHistory.splice(idx, 1); saveStorageData(); renderDashboard(); renderHistoryTable(); alert("Transaksi berhasil dihapus!"); } }
     function formatFullDateTime(dateStr) { let days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"]; let months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"]; let now = new Date(); let hours = String(now.getHours()).padStart(2, '0'), mins = String(now.getMinutes()).padStart(2, '0'); if (!dateStr) return `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()} (${hours}:${mins})`; let p = dateStr.split('-'); let dObj = new Date(p[0], parseInt(p[1], 10) - 1, p[2]); return `${days[dObj.getDay()]}, ${p[2]} ${months[dObj.getMonth()]} ${p[0]} (${hours}:${mins})`; }
     function showSuccessModal(data, hasAdmin, adminFee) { let modal = document.getElementById('success-modal'), card = document.getElementById('success-card'), msg = document.getElementById('success-msg-text'); var adminInfo = hasAdmin ? `<br/><span class="text-xs text-primary dark:text-blue-400 font-bold">+ Biaya Admin (${formatRp(adminFee)}) dicatat terpisah.</span>` : ""; msg.innerHTML = `Transaksi berhasil dicatat ke sistem!${adminInfo}<br/><br/><b>Detail:</b> ${data.name} (${formatRp(data.amount)})<br/><b>Category:</b> ${data.category}<br/><b>Dari:</b> ${data.dariAcc} ➔ <b>Ke:</b> ${data.keAcc}`; modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); card.classList.add('scale-100'); }, 10); }
