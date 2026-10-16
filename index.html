@@ -1316,11 +1316,15 @@
 
     function verifyBumperPin() {
       let pinInput = (document.getElementById('bumper-pin-input').value || '').trim();
-      let validPin = String((globalData && globalData.appPin !== undefined) ? globalData.appPin : '').trim();
-      let validPass = String((globalData && globalData.ownerPassword !== undefined) ? globalData.ownerPassword : '').trim();
+      let validPin = String((globalData && globalData.appPin !== undefined && globalData.appPin !== '') ? globalData.appPin : '123').trim();
+      let validPass = String((globalData && globalData.ownerPassword !== undefined && globalData.ownerPassword !== '') ? globalData.ownerPassword : '').trim();
 
-      // Cocokkan dengan PIN yang tersimpan di data lokal, password, atau default '123'
-      if (pinInput === validPin || pinInput === validPass || pinInput === "123") {
+      // Hanya izinkan masuk jika PIN cocok, atau password pemilik cocok.
+      // PIN bawaan '123' hanya berlaku jika PIN belum pernah diubah dari default.
+      let isPinValid = (pinInput === validPin);
+      let isPassValid = (validPass !== "" && pinInput === validPass);
+
+      if (isPinValid || isPassValid) {
         let splash = document.getElementById('splash-screen');
         if (splash) { splash.classList.add('opacity-0'); setTimeout(() => splash.classList.add('hidden'), 700); }
       } else {
@@ -2184,9 +2188,267 @@
     function renderInvestRecap() { let grid = document.getElementById('invest-recap-grid'); if (!grid) return; grid.innerHTML = ''; if (!globalData.investData) return; Object.keys(globalData.investData).forEach(k => { let item = globalData.investData[k]; let flow = getCategoryCashflowNet(k); let totalMoney = (item.initial || 0) + flow.net; let used = (item.used || 0) + flow.used; let sisa = totalMoney - used; grid.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-1 text-xs"><p class="font-bold text-primary dark:text-blue-400 text-sm">${k}</p><div class="flex justify-between"><span>Saldo Awal + Masuk:</span><span class="font-mono-data font-bold">${formatRp(totalMoney)}</span></div><div class="flex justify-between text-error"><span>Terpakai (Used):</span><span class="font-mono-data font-bold">${formatRp(used)}</span></div><div class="flex justify-between text-green-600 dark:text-green-400 font-bold border-t border-outline-variant/40 pt-1"><span>Sisa Uang:</span><span class="font-mono-data">${formatRp(sisa)}</span></div></div>`; }); }
     function renderSinkingRecap() { let container = document.getElementById('sinking-recap-grid'); if (!container) return; container.innerHTML = ''; if (!globalData.sinkingData) return; let today = new Date(); Object.keys(globalData.sinkingData).forEach(k => { let item = globalData.sinkingData[k]; let flow = getCategoryCashflowNet(k); let targetPerMonth = (item.target || 0) / (item.durationMonths || 1); let current = (item.initial || 0) + flow.net; let used = (item.used || 0) + flow.used; let sisa = current - used; let daysLeftText = "Durasi Terjadwal"; if (item.deadline) { let diffDays = Math.ceil((new Date(item.deadline) - today) / (1000 * 60 * 60 * 24)); daysLeftText = diffDays > 0 ? (Math.floor(diffDays / 30) > 0 ? `${Math.floor(diffDays/30)} Bulan` : `${diffDays} Hari lagi`) : "Lewat"; } let pct = Math.min(100, Math.round((current / (item.target || 1)) * 100)); container.innerHTML += `<div class="p-3.5 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-2.5 text-xs"><div class="flex justify-between items-center"><p class="font-bold text-tertiary dark:text-indigo-400 text-sm">${k}</p><span class="text-[10px] px-2.5 py-0.5 bg-tertiary/10 text-tertiary dark:text-indigo-300 rounded-full font-bold">Sisa Waktu: ${daysLeftText}</span></div><div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-[11px]"><div><span class="text-gray-500">Target Nominal:</span><br/><b class="font-mono-data">${formatRp(item.target)}</b></div><div><span class="text-gray-500">Target / Bulan:</span><br/><b class="font-mono-data text-primary dark:text-blue-400">${formatRp(targetPerMonth)}</b></div><div><span class="text-gray-500">Terkumpul (Cashflow):</span><br/><b class="font-mono-data text-green-600 dark:text-green-400">${formatRp(current)}</b></div><div><span class="text-gray-500">Terpakai:</span><br/><b class="font-mono-data text-error">${formatRp(used)}</b></div></div><div><div class="flex justify-between text-[10px] font-bold mb-1"><span>Progress (${pct}%)</span><span>Sisa Uang: ${formatRp(sisa)}</span></div><div class="w-full bg-gray-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden"><div class="bg-tertiary dark:bg-indigo-500 h-2 rounded-full" style="width: ${pct}%"></div></div></div></div>`; }); }
     function renderGoalsRecap() { let container = document.getElementById('goals-recap-grid'); if (!container) return; container.innerHTML = ''; if (!globalData.goalsData) return; Object.keys(globalData.goalsData).forEach(k => { let item = globalData.goalsData[k]; let flow = getCategoryCashflowNet(k); let current = (item.initial || 0) + flow.net; let used = (item.used || 0) + flow.used; let sisa = current - used; let pct = Math.min(100, Math.round((current / (item.target || 1)) * 100)); container.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-2 text-xs"><div class="flex justify-between items-center"><p class="font-bold text-secondary dark:text-sky-400 text-sm">${k}</p><span class="text-[10px] px-2 py-0.5 bg-secondary/10 text-secondary dark:text-sky-300 rounded-full font-bold">Waktu: ${item.timeframeVal || '-'} ${item.timeframeUnit || 'Tahun'}</span></div><div class="grid grid-cols-4 gap-2 text-[11px]"><div><span class="text-gray-500">Target Nominal:</span><br/><b class="font-mono-data">${formatRp(item.target)}</b></div><div><span class="text-gray-500">Terkumpul:</span><br/><b class="font-mono-data text-green-600 dark:text-green-400">${formatRp(current)}</b></div><div><span class="text-gray-500">Terpakai:</span><br/><b class="font-mono-data text-error">${formatRp(used)}</b></div><div><span class="text-gray-500">Sisa Uang:</span><br/><b class="font-mono-data text-primary dark:text-blue-400">${formatRp(sisa)}</b></div></div><div><div class="flex justify-between text-[10px] font-bold mb-1"><span>Progress Goal (${pct}%)</span><span>Kekurangan Target: ${formatRp(item.target - current > 0 ? item.target - current : 0)}</span></div><div class="w-full bg-gray-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden"><div class="bg-secondary dark:bg-sky-500 h-2 rounded-full" style="width: ${pct}%"></div></div></div></div>`; }); }
-    function renderReceivablesRecap() { let container = document.getElementById('receivables-recap-grid'); if (!container) return; container.innerHTML = ''; if (!globalData.receivablesData) return; Object.keys(globalData.receivablesData).forEach(k => { let item = globalData.receivablesData[k]; let paid = parseFloat(item.paid) || 0; if (globalData.recentHistory) globalData.recentHistory.forEach(tx => { if (tx.category === k && tx.cashflow === 'Pelunasan Piutang') paid += tx.amount; }); let remaining = (parseFloat(item.total) || 0) - paid; container.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-2 text-xs"><div class="flex justify-between items-center"><p class="font-bold text-emerald-600 dark:text-emerald-400 text-sm">${k}</p><span class="text-[10px] px-2 py-0.5 bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 rounded-full font-bold">Deadline: ${item.deadline || '-'}</span></div><div class="grid grid-cols-3 gap-2 text-[11px]"><div><span class="text-gray-500">Total Piutang:</span><br/><b class="font-mono-data">${formatRp(item.total)}</b></div><div><span class="text-gray-500">Sudah Dibayar:</span><br/><b class="font-mono-data text-green-600 dark:text-green-400">${formatRp(paid)}</b></div><div><span class="text-gray-500">Belum Dibayar:</span><br/><b class="font-mono-data text-error">${formatRp(remaining > 0 ? remaining : 0)}</b></div></div></div>`; }); }
+    function escapeForAttr(str) { return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
+
+    function renderReceivablesRecap() { 
+      let container = document.getElementById('receivables-recap-grid'); 
+      if (!container) return; 
+      container.innerHTML = ''; 
+      if (!globalData.receivablesData || Object.keys(globalData.receivablesData).length === 0) {
+        container.innerHTML = '<p class="text-center text-gray-400 text-xs py-4">Belum ada daftar piutang yang diatur di Setup.</p>';
+        return;
+      }
+      Object.keys(globalData.receivablesData).forEach((k, idx) => { 
+        let item = globalData.receivablesData[k]; 
+        let paid = parseFloat(item.paid) || 0; 
+        let total = parseFloat(item.total) || 0;
+        let payments = [];
+        if (globalData.recentHistory) {
+          globalData.recentHistory.forEach(tx => { 
+            if (tx.category === k) {
+              if (tx.cashflow === 'Pelunasan Piutang') {
+                paid += tx.amount;
+                payments.push(tx);
+              }
+              if (tx.cashflow === 'Piutang Baru') {
+                total += tx.amount;
+                payments.push(tx);
+              }
+            }
+          }); 
+        }
+        let remaining = total - paid; 
+
+        let historyRows = '';
+        if (item.paid && parseFloat(item.paid) > 0) {
+          historyRows += `
+            <div class="flex items-center justify-between p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-outline-variant/50 text-[11px]">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm text-gray-400">flag</span>
+                <div>
+                  <p class="font-bold text-on-surface">Pembayaran Awal (Setup)</p>
+                  <p class="text-[9px] text-gray-400">Tercatat saat pengaturan awal</p>
+                </div>
+              </div>
+              <span class="font-mono-data font-bold text-green-600 dark:text-green-400">+ ${formatRp(item.paid)}</span>
+            </div>`;
+        }
+        payments.forEach(tx => {
+          let isPay = tx.cashflow === 'Pelunasan Piutang';
+          let colorCls = isPay ? 'text-green-600 dark:text-green-400' : 'text-primary dark:text-blue-400';
+          let badgeCls = isPay ? 'bg-green-100 dark:bg-green-950/80 text-green-700 dark:text-green-300' : 'bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300';
+          let badgeLabel = isPay ? 'Pelunasan Diterima' : 'Piutang Baru';
+          let iconName = isPay ? 'check_circle' : 'attach_money';
+          historyRows += `
+            <div class="flex items-center justify-between p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-outline-variant/50 text-[11px]">
+              <div class="space-y-0.5">
+                <div class="flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-xs ${isPay ? 'text-green-500' : 'text-blue-500'}">${iconName}</span>
+                  <p class="font-bold text-on-surface">${tx.name || '-'}</p>
+                  <span class="text-[9px] px-1.5 py-0.2 rounded font-bold ${badgeCls}">${badgeLabel}</span>
+                </div>
+                <p class="text-[9px] text-gray-400 font-mono-data">${tx.dateTime || tx.rawDate || '-'} • Masuk: <b>${tx.keAcc || '-'}</b></p>
+              </div>
+              <div class="text-right">
+                <span class="font-mono-data font-bold ${colorCls}">${isPay ? '+' : '-'} ${formatRp(tx.amount)}</span>
+              </div>
+            </div>`;
+        });
+
+        let historyHtml = `
+          <div id="receivable-history-box-${idx}" class="hidden pt-3 mt-3 border-t border-outline-variant/50 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-extrabold text-gray-500 uppercase flex items-center gap-1">
+                <span class="material-symbols-outlined text-xs text-emerald-600">history</span> Riwayat Penerimaan Pelunasan (${payments.length + (item.paid > 0 ? 1 : 0)})
+              </span>
+              <button type="button" onclick="event.stopPropagation(); quickPayEntry('${escapeForAttr(k)}', 'receivable')" class="text-[10px] font-bold text-emerald-600 hover:underline flex items-center gap-0.5">
+                <span class="material-symbols-outlined text-xs">add</span> Catat Pelunasan
+              </button>
+            </div>
+            ${historyRows ? `<div class="space-y-1.5 max-h-48 overflow-y-auto pr-1">${historyRows}</div>` : `<div class="p-3 bg-white dark:bg-slate-900 rounded-xl border border-outline-variant/50 text-center text-[10px] text-gray-400">Belum ada catatan penerimaan pelunasan piutang di riwayat untuk <b>${k}</b>.</div>`}
+          </div>`;
+
+        container.innerHTML += `
+          <div onclick="toggleReceivableHistoryBox(${idx})" class="p-3.5 bg-surface dark:bg-slate-900 border border-outline-variant hover:border-emerald-500/70 rounded-xl space-y-2.5 text-xs cursor-pointer hover:shadow-sm transition-all select-none group">
+            <div class="flex justify-between items-center">
+              <p class="font-bold text-emerald-600 dark:text-emerald-400 text-sm group-hover:underline flex items-center gap-1">
+                ${k}
+              </p>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[10px] px-2 py-0.5 bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 rounded-full font-bold">Deadline: ${item.deadline || '-'}</span>
+                <span id="rec-chevron-${idx}" class="material-symbols-outlined text-sm text-gray-400 group-hover:text-emerald-600 transition-transform duration-200">expand_more</span>
+              </div>
+            </div>
+            <div class="grid grid-cols-3 gap-2 text-[11px]">
+              <div><span class="text-gray-500">Total Piutang:</span><br/><b class="font-mono-data">${formatRp(total)}</b></div>
+              <div><span class="text-gray-500">Sudah Dibayar:</span><br/><b class="font-mono-data text-green-600 dark:text-green-400">${formatRp(paid)}</b></div>
+              <div><span class="text-gray-500">Belum Dibayar:</span><br/><b class="font-mono-data text-error">${formatRp(remaining > 0 ? remaining : 0)}</b></div>
+            </div>
+            <div class="flex items-center justify-center gap-1 text-[10px] text-gray-400 pt-1 border-t border-outline-variant/30 group-hover:text-emerald-600 transition-colors">
+              <span class="material-symbols-outlined text-xs">history</span> Tap untuk lihat rincian riwayat pelunasan
+            </div>
+            ${historyHtml}
+          </div>`; 
+      }); 
+    }
     function renderNonMoneyRecap() { let container = document.getElementById('nonmoney-recap-grid'); if (!container) return; container.innerHTML = ''; if (!globalData.nonMoneyAssets) return; Object.keys(globalData.nonMoneyAssets).forEach(k => { let item = globalData.nonMoneyAssets[k]; let totalVal = (parseFloat(item.qty) || 0) * (parseFloat(item.estimatedPrice) || 0); let isNisabReached = (item.type === 'Emas' && item.qty >= 85) || (item.type === 'Perak' && item.qty >= 595); let cardBg = isNisabReached ? "bg-red-50 dark:bg-red-950/40 border-2 border-red-500 shadow-md" : "bg-surface dark:bg-slate-900 border border-outline-variant"; container.innerHTML += `<div class="p-4 rounded-xl space-y-3 text-xs ${cardBg}"><div class="flex justify-between items-start"><div><p class="font-extrabold text-sm ${isNisabReached ? 'text-red-700 dark:text-red-400' : 'text-yellow-800 dark:text-yellow-400'}">${k} (${item.type})</p><p class="text-[10px] text-gray-500">Satuan: ${item.unit}</p></div>${isNisabReached ? `<div class="flex items-center gap-1 bg-red-600 text-white px-3 py-1 rounded-lg text-xs font-black animate-pulse shadow"><span class="material-symbols-outlined text-sm">warning</span><span>MASUK NISAB (2.5%)</span></div>` : `<span class="text-[10px] px-2 py-0.5 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 rounded-full font-bold">Belum Nisab</span>`}</div>${isNisabReached ? `<div class="p-2.5 bg-red-100 dark:bg-red-900/50 border border-red-300 dark:border-red-700 rounded-lg text-red-900 dark:text-red-200 font-bold text-xs flex items-center justify-between"><span class="flex items-center gap-1"><span class="material-symbols-outlined text-base text-red-600">error</span> PERINGATAN ZAKAT!</span><span>Wajib Zakat: <b class="font-mono-data text-red-700 dark:text-red-300">${formatRp(totalVal * 0.025)}</b></span></div>` : ''}<div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-[11px] pt-1"><div><span class="text-gray-500 font-bold">Total Kuantitas:</span><br/><b class="text-primary dark:text-blue-400 text-xs">${item.qty} ${item.unit}</b></div><div><span class="text-gray-500 font-bold">Estimasi / Satuan:</span><br/><b class="font-mono-data">${formatRp(item.estimatedPrice)}</b></div><div><span class="text-gray-500 font-bold">Total Nilai Aset:</span><br/><b class="font-mono-data text-green-600 dark:text-green-400 text-xs">${formatRp(totalVal)}</b></div><div><span class="text-gray-500 font-bold">Terpakai (Dijual):</span><br/><b class="text-error">${item.used || 0} ${item.unit}</b></div></div></div>`; }); }
-    function renderDebtRecap() { let container = document.getElementById('debt-recap-grid'); if (!container) return; container.innerHTML = ''; if (!globalData.debtData) return; Object.keys(globalData.debtData).forEach(k => { let item = globalData.debtData[k]; let total = parseFloat(item.total) || 0, paid = parseFloat(item.paid) || 0; if (globalData.recentHistory) globalData.recentHistory.forEach(tx => { if (tx.category === k) { if (tx.cashflow === 'Cicilan / Utang Baru') total += tx.amount; if (tx.cashflow === 'Bayar Cicilan / Utang') paid += tx.amount; } }); let unpaid = total - paid; container.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-2 text-xs"><div class="flex justify-between items-center"><div class="flex items-center gap-2"><p class="font-bold text-error text-sm">${k}</p><span class="text-[9px] px-2 py-0.5 bg-primary/10 text-primary dark:text-blue-400 rounded-full font-bold">${item.category || 'Utang'}</span></div><span class="text-[10px] px-2 py-0.5 bg-red-100 dark:bg-red-950 text-error rounded-full font-bold">Bayar: ${item.period || 'Bulanan'} | Sisa: ${Math.ceil((unpaid > 0 ? unpaid : 0) / (item.monthlyPay || 1))} Sesi</span></div><div class="grid grid-cols-4 gap-2 text-[11px]"><div><span class="text-gray-500">Total Utang:</span><br/><b class="font-mono-data">${formatRp(total)}</b></div><div><span class="text-gray-500">Nominal Bayar:</span><br/><b class="font-mono-data text-primary dark:text-blue-400">${formatRp(item.monthlyPay)}</b></div><div><span class="text-gray-500">Paid (Dibayar):</span><br/><b class="font-mono-data text-green-600 dark:text-green-400">${formatRp(paid)}</b></div><div><span class="text-gray-500">Unpaid (Sisa):</span><br/><b class="font-mono-data text-error">${formatRp(unpaid > 0 ? unpaid : 0)}</b></div></div></div>`; }); }
+    function renderDebtRecap() { 
+      let container = document.getElementById('debt-recap-grid'); 
+      if (!container) return; 
+      container.innerHTML = ''; 
+      if (!globalData.debtData || Object.keys(globalData.debtData).length === 0) {
+        container.innerHTML = '<p class="text-center text-gray-400 text-xs py-4">Belum ada daftar utang/cicilan yang diatur di Setup.</p>';
+        return;
+      }
+      Object.keys(globalData.debtData).forEach((k, idx) => { 
+        let item = globalData.debtData[k]; 
+        let total = parseFloat(item.total) || 0, paid = parseFloat(item.paid) || 0; 
+        let payments = [];
+        if (globalData.recentHistory) {
+          globalData.recentHistory.forEach(tx => { 
+            if (tx.category === k) { 
+              if (tx.cashflow === 'Cicilan / Utang Baru') {
+                total += tx.amount;
+                payments.push(tx);
+              }
+              if (tx.cashflow === 'Bayar Cicilan / Utang') {
+                paid += tx.amount;
+                payments.push(tx);
+              }
+            } 
+          }); 
+        }
+        let unpaid = total - paid; 
+        let monthlyPayVal = parseFloat(item.monthlyPay) || 0;
+        let sesiText = (monthlyPayVal > 0) ? ` | Sisa: ${Math.ceil((unpaid > 0 ? unpaid : 0) / monthlyPayVal)} Sesi` : '';
+
+        let historyRows = '';
+        if (item.paid && parseFloat(item.paid) > 0) {
+          historyRows += `
+            <div class="flex items-center justify-between p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-outline-variant/50 text-[11px]">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm text-gray-400">flag</span>
+                <div>
+                  <p class="font-bold text-on-surface">Pembayaran Awal (Setup)</p>
+                  <p class="text-[9px] text-gray-400">Tercatat saat pengaturan awal</p>
+                </div>
+              </div>
+              <span class="font-mono-data font-bold text-green-600 dark:text-green-400">+ ${formatRp(item.paid)}</span>
+            </div>`;
+        }
+        payments.forEach(tx => {
+          let isPay = tx.cashflow === 'Bayar Cicilan / Utang';
+          let colorCls = isPay ? 'text-green-600 dark:text-green-400' : 'text-error';
+          let badgeCls = isPay ? 'bg-green-100 dark:bg-green-950/80 text-green-700 dark:text-green-300' : 'bg-red-100 dark:bg-red-950/80 text-red-700 dark:text-red-300';
+          let badgeLabel = isPay ? 'Bayar Cicilan' : 'Utang Baru';
+          let iconName = isPay ? 'check_circle' : 'add_circle';
+          historyRows += `
+            <div class="flex items-center justify-between p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-outline-variant/50 text-[11px]">
+              <div class="space-y-0.5">
+                <div class="flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-xs ${isPay ? 'text-green-500' : 'text-red-500'}">${iconName}</span>
+                  <p class="font-bold text-on-surface">${tx.name || '-'}</p>
+                  <span class="text-[9px] px-1.5 py-0.2 rounded font-bold ${badgeCls}">${badgeLabel}</span>
+                </div>
+                <p class="text-[9px] text-gray-400 font-mono-data">${tx.dateTime || tx.rawDate || '-'} • Dari: <b>${tx.dariAcc || '-'}</b></p>
+              </div>
+              <div class="text-right">
+                <span class="font-mono-data font-bold ${colorCls}">${isPay ? '+' : '-'} ${formatRp(tx.amount)}</span>
+              </div>
+            </div>`;
+        });
+
+        let historyHtml = `
+          <div id="debt-history-box-${idx}" class="hidden pt-3 mt-3 border-t border-outline-variant/50 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-extrabold text-gray-500 uppercase flex items-center gap-1">
+                <span class="material-symbols-outlined text-xs text-error">history</span> Riwayat Pembayaran Tercatat (${payments.length + (item.paid > 0 ? 1 : 0)})
+              </span>
+              <button type="button" onclick="event.stopPropagation(); quickPayEntry('${escapeForAttr(k)}', 'debt')" class="text-[10px] font-bold text-primary hover:underline flex items-center gap-0.5">
+                <span class="material-symbols-outlined text-xs">add</span> Bayar Sekarang
+              </button>
+            </div>
+            ${historyRows ? `<div class="space-y-1.5 max-h-48 overflow-y-auto pr-1">${historyRows}</div>` : `<div class="p-3 bg-white dark:bg-slate-900 rounded-xl border border-outline-variant/50 text-center text-[10px] text-gray-400">Belum ada transaksi pembayaran yang tercatat di riwayat untuk <b>${k}</b>.</div>`}
+          </div>`;
+
+        container.innerHTML += `
+          <div onclick="toggleDebtHistoryBox(${idx})" class="p-3.5 bg-surface dark:bg-slate-900 border border-outline-variant hover:border-error/70 rounded-xl space-y-2.5 text-xs cursor-pointer hover:shadow-sm transition-all select-none group">
+            <div class="flex justify-between items-center">
+              <div class="flex items-center gap-2">
+                <p class="font-bold text-error text-sm group-hover:underline flex items-center gap-1">
+                  ${k}
+                </p>
+                <span class="text-[9px] px-2 py-0.5 bg-primary/10 text-primary dark:text-blue-400 rounded-full font-bold">${item.category || 'Utang'}</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[10px] px-2 py-0.5 bg-red-100 dark:bg-red-950 text-error rounded-full font-bold">Bayar: ${item.period || 'Bulanan'}${sesiText}</span>
+                <span id="debt-chevron-${idx}" class="material-symbols-outlined text-sm text-gray-400 group-hover:text-error transition-transform duration-200">expand_more</span>
+              </div>
+            </div>
+            <div class="grid grid-cols-4 gap-2 text-[11px]">
+              <div><span class="text-gray-500">Total Utang:</span><br/><b class="font-mono-data">${formatRp(total)}</b></div>
+              <div><span class="text-gray-500">Nominal Bayar:</span><br/><b class="font-mono-data text-primary dark:text-blue-400">${formatRp(item.monthlyPay)}</b></div>
+              <div><span class="text-gray-500">Paid (Dibayar):</span><br/><b class="font-mono-data text-green-600 dark:text-green-400">${formatRp(paid)}</b></div>
+              <div><span class="text-gray-500">Unpaid (Sisa):</span><br/><b class="font-mono-data text-error">${formatRp(unpaid > 0 ? unpaid : 0)}</b></div>
+            </div>
+            <div class="flex items-center justify-center gap-1 text-[10px] text-gray-400 pt-1 border-t border-outline-variant/30 group-hover:text-error transition-colors">
+              <span class="material-symbols-outlined text-xs">history</span> Tap untuk lihat rincian riwayat pembayaran
+            </div>
+            ${historyHtml}
+          </div>`; 
+      }); 
+    }
+
+    function toggleDebtHistoryBox(idx) {
+      let box = document.getElementById(`debt-history-box-${idx}`);
+      let chev = document.getElementById(`debt-chevron-${idx}`);
+      if (!box) return;
+      let isHidden = box.classList.contains('hidden');
+      box.classList.toggle('hidden', !isHidden);
+      if (chev) {
+        if (isHidden) chev.classList.add('rotate-180', 'text-error');
+        else chev.classList.remove('rotate-180', 'text-error');
+      }
+    }
+
+    function toggleReceivableHistoryBox(idx) {
+      let box = document.getElementById(`receivable-history-box-${idx}`);
+      let chev = document.getElementById(`rec-chevron-${idx}`);
+      if (!box) return;
+      let isHidden = box.classList.contains('hidden');
+      box.classList.toggle('hidden', !isHidden);
+      if (chev) {
+        if (isHidden) chev.classList.add('rotate-180', 'text-emerald-600');
+        else chev.classList.remove('rotate-180', 'text-emerald-600');
+      }
+    }
+
+    function quickPayEntry(name, type) {
+      closeRecapModal();
+      navTo('transaksi');
+      let cfSelect = document.getElementById('tx-cashflow');
+      if (cfSelect) {
+        cfSelect.value = (type === 'debt') ? 'Bayar Cicilan / Utang' : 'Pelunasan Piutang';
+        applyCashflowLogic();
+      }
+      let catSelect = document.getElementById('tx-category');
+      if (catSelect) {
+        catSelect.value = name;
+      }
+      let nameInput = document.getElementById('tx-name');
+      if (nameInput) {
+        nameInput.value = (type === 'debt') ? `Bayar Cicilan: ${name}` : `Pelunasan Piutang: ${name}`;
+      }
+      if (type === 'debt' && globalData.debtData && globalData.debtData[name]) {
+        let monthly = globalData.debtData[name].monthlyPay;
+        let amtInput = document.getElementById('tx-amount');
+        if (amtInput && monthly && monthly > 0) {
+          amtInput.value = monthly.toLocaleString('id-ID');
+        }
+      }
+      let amtEl = document.getElementById('tx-amount');
+      if (amtEl) amtEl.focus();
+    }
 
     let chart1 = null, chart2 = null, chart3 = null, trendChart = null;
     function renderMonthlyChart() { setTimeout(() => { let dropdown = document.getElementById('monthly-select-dropdown'); if (!dropdown) return; let selectedMonthIdx = parseInt(dropdown.value, 10); if (chart1) chart1.destroy(); if (chart2) chart2.destroy(); if (chart3) chart3.destroy(); let totalInc = 0, totalSpend = 0, totalBills = 0; let spendCatMap = {}; let incCatMap = {}; if (globalData.recentHistory) { globalData.recentHistory.forEach(h => { if (h.rawDate && new Date(h.rawDate).getMonth() === selectedMonthIdx) { if (h.cashflow === 'Income') { totalInc += h.amount; let cat = h.category || "Lainnya"; incCatMap[cat] = (incCatMap[cat] || 0) + h.amount; } if (h.cashflow === 'Spending') { totalSpend += h.amount; let cat = h.category || "Lainnya"; spendCatMap[cat] = (spendCatMap[cat] || 0) + h.amount; } if (h.cashflow === 'Bayar Cicilan / Utang') totalBills += h.amount; } }); } let mContainer = document.getElementById('monthly-summary-boxes'); if (mContainer) { mContainer.innerHTML = `<div class="p-2.5 bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 rounded-xl"><span>Total Income</span><br/><b class="font-mono-data text-green-600 dark:text-green-400">${formatRp(totalInc)}</b></div><div class="p-2.5 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-xl"><span>Total Spending</span><br/><b class="font-mono-data text-error">${formatRp(totalSpend)}</b></div><div class="p-2.5 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 rounded-xl"><span>Bills Paid</span><br/><b class="font-mono-data text-tertiary dark:text-indigo-400">${formatRp(totalBills)}</b></div><div class="p-2.5 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-xl"><span>Sisa Uang</span><br/><b class="font-mono-data text-primary dark:text-blue-400">${formatRp(totalInc - (totalSpend + totalBills))}</b></div>`; } let isDark = document.documentElement.classList.contains('dark'); let labelColor = isDark ? '#cbd5e1' : '#475569'; let ctx1 = document.getElementById('monthlyFlowChart'); if (ctx1) { chart1 = new Chart(ctx1.getContext('2d'), { type: 'doughnut', data: { labels: ['Income', 'Spending', 'Bills Paid'], datasets: [{ data: [totalInc, totalSpend, totalBills], backgroundColor: ['#22c55e', '#ef4444', '#6366f1'], borderWidth: 2, borderColor: isDark ? '#0f172a' : '#ffffff' }] }, options: { responsive: true, maintainAspectRatio: false, layout: { padding: { top: 10, bottom: 10 } }, plugins: { legend: { display: true, position: 'bottom', labels: { color: labelColor, font: {size: 10} } }, tooltip: { callbacks: { label: function(c) { return "Rp " + c.raw.toLocaleString('id-ID'); } } }, datalabels: { formatter: function(v) { if(v === 0) return ""; if (v >= 1000000) return (v/1000000).toFixed(1).replace('.0','') + 'Jt'; if (v >= 1000) return (v/1000).toFixed(0) + 'k'; return v.toLocaleString('id-ID'); }, font: { family: 'JetBrains Mono', size: 10, weight: 'bold' }, color: '#ffffff' } } } }); } let spendKeys = Object.keys(spendCatMap).sort((a, b) => spendCatMap[b] - spendCatMap[a]); let labelsSpend = spendKeys.length > 0 ? spendKeys : ["Belum Ada Data"]; let valuesSpend = spendKeys.length > 0 ? spendKeys.map(k => spendCatMap[k]) : [0]; let ctx2 = document.getElementById('spendingCategoryChart'); if (ctx2) { chart2 = new Chart(ctx2.getContext('2d'), { type: 'bar', data: { labels: labelsSpend, datasets: [{ data: valuesSpend, backgroundColor: '#ef4444', borderRadius: 4 }] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, layout: { padding: { right: 80 } }, scales: { x: { display: false, beginAtZero: true }, y: { grid: { display: false }, ticks: { font: { weight: 'bold' }, color: labelColor } } }, plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) { return "Rp " + c.raw.toLocaleString('id-ID'); } } }, datalabels: { anchor: 'end', align: 'right', formatter: function(v) { return v > 0 ? "Rp " + v.toLocaleString('id-ID') : ""; }, font: { family: 'JetBrains Mono', size: 10, weight: 'bold' }, color: labelColor } } } }); } let incKeys = Object.keys(incCatMap).sort((a, b) => incCatMap[b] - incCatMap[a]); let labelsInc = incKeys.length > 0 ? incKeys : ["Belum Ada Data"]; let valuesInc = incKeys.length > 0 ? incKeys.map(k => incCatMap[k]) : [0]; let ctx3 = document.getElementById('incomeCategoryChart'); if (ctx3) { chart3 = new Chart(ctx3.getContext('2d'), { type: 'bar', data: { labels: labelsInc, datasets: [{ data: valuesInc, backgroundColor: '#22c55e', borderRadius: 4 }] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, layout: { padding: { right: 80 } }, scales: { x: { display: false, beginAtZero: true }, y: { grid: { display: false }, ticks: { font: { weight: 'bold' }, color: labelColor } } }, plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) { return "Rp " + c.raw.toLocaleString('id-ID'); } } }, datalabels: { anchor: 'end', align: 'right', formatter: function(v) { return v > 0 ? "Rp " + v.toLocaleString('id-ID') : ""; }, font: { family: 'JetBrains Mono', size: 10, weight: 'bold' }, color: labelColor } } } }); } renderBudgetRecap(); }, 100); }
@@ -2468,8 +2730,10 @@
     function updateAccountBalance(accName, newBal) { globalData.currentBalances[accName] = parseFloat(newBal) || 0; saveStorageData(); renderDashboard(); }
     function verifySetupPassword() { 
       let p = (document.getElementById('setup-pass-input').value || '').trim(); 
-      let validPass = String(globalData.ownerPassword || globalData.appPin || "123").trim(); 
-      if (p === validPass || p === String(globalData.appPin || '').trim() || p === "123") { 
+      let validPass = String((globalData && globalData.ownerPassword !== undefined && globalData.ownerPassword !== '') ? globalData.ownerPassword : (globalData.appPin || "123")).trim(); 
+      let validPin = String((globalData && globalData.appPin !== undefined && globalData.appPin !== '') ? globalData.appPin : '').trim();
+      
+      if (p === validPass || (validPin !== "" && p === validPin)) { 
         document.getElementById('setup-lock-card').classList.add('hidden'); 
         document.getElementById('setup-unlocked-content').classList.remove('hidden'); 
         renderSetupView(); 
