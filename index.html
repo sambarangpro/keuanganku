@@ -61,21 +61,50 @@
 <body class="bg-background text-on-surface font-body-md min-h-screen pb-32">
 
   <!-- BUMPER SPLASH SCREEN -->
-  <div id="splash-screen" class="fixed inset-0 bg-gradient-to-br from-navy-dark via-primary to-tertiary z-50 flex flex-col items-center justify-center text-white transition-opacity duration-700">
-    <div class="text-center space-y-4 p-6 max-w-xs w-full">
-      <div class="w-20 h-20 bg-white/10 backdrop-blur-md rounded-3xl flex items-center justify-center mx-auto shadow-2xl border border-white/20 animate-pulse-logo">
-        <span class="material-symbols-outlined text-white" style="font-size: 48px;">account_balance_wallet</span>
+  <div id="splash-screen" class="fixed inset-0 bg-gradient-to-br from-navy-dark via-primary to-tertiary z-50 flex flex-col items-center justify-center text-white transition-opacity duration-700 p-4">
+    <div class="text-center space-y-4 p-6 max-w-xs w-full bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 shadow-2xl">
+      <div class="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto shadow-xl border border-white/20 animate-pulse-logo">
+        <span class="material-symbols-outlined text-white" style="font-size: 38px;">account_balance_wallet</span>
       </div>
       <div>
-        <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight text-white font-headline-md">KEUANGANKU</h1>
+        <h1 class="text-2xl font-extrabold tracking-tight text-white font-headline-md">KEUANGANKU</h1>
         <p class="text-[10px] text-blue-200 mt-0.5 font-semibold tracking-widest uppercase">Financial Planner Pro</p>
       </div>
-      <div class="pt-2 space-y-2">
-        <input type="password" id="bumper-pin-input" placeholder="Masukkan PIN Akses" maxlength="6" class="w-full py-2.5 px-3 bg-white/10 border border-white/30 rounded-xl text-center text-white placeholder-blue-200 text-sm font-mono-data outline-none tracking-widest focus:border-white">
+
+      <!-- FORM PIN UTAMA -->
+      <div id="bumper-pin-section" class="pt-2 space-y-2.5">
+        <div class="relative">
+          <input type="password" id="bumper-pin-input" placeholder="Masukkan PIN Akses" maxlength="30" onkeyup="if(event.key === 'Enter') verifyBumperPin()" class="w-full py-2.5 pl-3 pr-10 bg-white/10 border border-white/30 rounded-xl text-center text-white placeholder-blue-200 text-sm font-mono-data outline-none tracking-widest focus:border-white">
+          <button type="button" onclick="toggleBumperPinVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-blue-200 hover:text-white" title="Lihat PIN">
+            <span class="material-symbols-outlined text-lg" id="bumper-eye-icon">visibility</span>
+          </button>
+        </div>
         <button onclick="verifyBumperPin()" class="w-full py-2.5 bg-white text-primary font-bold rounded-xl text-xs hover:bg-blue-50 shadow transition-all">MASUK APLIKASI</button>
-        <p id="bumper-error-msg" class="text-[11px] text-red-200 font-semibold hidden">PIN Salah! Coba lagi.</p>
+        <p id="bumper-error-msg" class="text-[11px] text-red-200 font-semibold leading-relaxed hidden">PIN Salah! Coba lagi.</p>
+        
+        <div class="pt-2 border-t border-white/15 space-y-1.5">
+          <p class="text-[10px] text-blue-200/90">Perangkat Baru? PIN bawaan: <button type="button" onclick="quickFillDefaultPin()" class="underline font-bold text-white hover:text-blue-100">123</button></p>
+          <button type="button" onclick="toggleBumperCloudModal(true)" class="text-[11px] text-white/90 hover:text-white underline font-semibold flex items-center justify-center gap-1 mx-auto py-1">
+            <span class="material-symbols-outlined text-xs">cloud_sync</span> Hubungkan ke Cloud
+          </button>
+        </div>
       </div>
-      <div class="pt-4"><p class="text-[10px] text-gray-300 font-medium tracking-wider uppercase">By: <b class="text-white">Sambarang Production</b></p></div>
+
+      <!-- FORM HUBUNGKAN CLOUD PERANGKAT BARU -->
+      <div id="bumper-cloud-section" class="pt-2 space-y-2.5 hidden">
+        <div class="text-left">
+          <p class="text-xs font-bold text-white flex items-center gap-1"><span class="material-symbols-outlined text-sm">cloud_download</span> Hubungkan Perangkat Baru</p>
+          <p class="text-[10px] text-blue-200 mt-0.5 leading-relaxed">Tempel Link Web App Google Sheets Anda untuk langsung menarik database & PIN Anda ke perangkat ini:</p>
+        </div>
+        <input type="text" id="bumper-cloud-url-input" placeholder="https://script.google.com/macros/s/..." class="w-full p-2 bg-white/10 border border-white/30 rounded-xl text-[11px] text-white placeholder-blue-300 font-mono-data outline-none focus:border-white">
+        <button id="btn-bumper-connect-cloud" onclick="connectCloudFromBumper()" class="w-full py-2.5 bg-blue-500 hover:bg-blue-400 text-white font-bold rounded-xl text-xs shadow flex items-center justify-center gap-1 transition-all">
+          <span class="material-symbols-outlined text-sm">download</span> TARIK DATA & MASUK
+        </button>
+        <p id="bumper-cloud-error" class="text-[10px] text-red-200 font-semibold leading-relaxed hidden"></p>
+        <button type="button" onclick="toggleBumperCloudModal(false)" class="text-[10px] text-blue-200 hover:text-white underline">← Kembali ke Masuk PIN</button>
+      </div>
+
+      <div class="pt-3"><p class="text-[9px] text-gray-300 font-medium tracking-wider uppercase">By: <b class="text-white">Sambarang Production</b></p></div>
     </div>
   </div>
 
@@ -583,15 +612,23 @@
           </div>
         </section>
 
-        <!-- FITUR TOGGLE UNTUK MENAMPILKAN KALKULATOR -->
-        <section class="bg-indigo-50 border border-indigo-200 dark:bg-indigo-900/30 dark:border-indigo-800 rounded-2xl p-6 shadow-sm space-y-3">
-          <div class="flex items-center gap-2"><span class="material-symbols-outlined text-indigo-600">admin_panel_settings</span><h2 class="font-headline-md text-headline-md font-bold text-indigo-900 dark:text-indigo-100">Fitur Eksklusif Pemilik</h2></div>
+        <!-- FITUR EKSKLUSIF PEMILIK (HANYA MUNCUL JIKA TERHUBUNG KE CLOUD PRIBADI) -->
+        <section id="setup-owner-feature-section" class="bg-indigo-50 border border-indigo-200 dark:bg-indigo-900/30 dark:border-indigo-800 rounded-2xl p-6 shadow-sm space-y-3 hidden">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-indigo-600">admin_panel_settings</span>
+              <h2 class="font-headline-md text-headline-md font-bold text-indigo-900 dark:text-indigo-100">Fitur Eksklusif Pemilik</h2>
+            </div>
+            <span class="px-2.5 py-1 bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 text-[10px] font-extrabold rounded-full flex items-center gap-1 border border-indigo-200 dark:border-indigo-800">
+              👑 KHUSUS PEMILIK
+            </span>
+          </div>
           <p class="text-[11px] text-indigo-800 dark:text-indigo-200 leading-relaxed">
-            Centang opsi di bawah ini untuk mengaktifkan Menu Kalkulator Bisnis & Usaha (Menu ini disembunyikan secara default untuk kerabat/pengguna lain).
+            Menu Kalkulator Bisnis & Usaha (HPP Konveksi/Sablon, Modal Usaha, Murabahah). Menu ini <b>hanya muncul untuk Anda</b> dan disembunyikan total dari pengguna lain/kerabat.
           </p>
           <div class="flex items-center gap-3 pt-2 bg-white dark:bg-slate-800 p-3 rounded-xl border border-indigo-100 dark:border-indigo-900">
             <input type="checkbox" id="setup-enable-calc" onchange="toggleCalculatorFeature(this.checked)" class="w-5 h-5 rounded text-indigo-600 border-outline-variant cursor-pointer focus:ring-indigo-500">
-            <label for="setup-enable-calc" class="text-xs font-bold text-gray-700 dark:text-gray-300 cursor-pointer">Tampilkan Menu Kalkulator Bisnis & Finansial</label>
+            <label for="setup-enable-calc" class="text-xs font-bold text-gray-700 dark:text-gray-300 cursor-pointer">Aktifkan Menu Navigasi Kalkulator Bisnis & Finansial</label>
           </div>
         </section>
 
@@ -1018,14 +1055,117 @@
 
     function requestNotificationPermission() { if ("Notification" in window && Notification.permission !== "granted") Notification.requestPermission(); }
     
+    function toggleBumperPinVisibility() {
+      let inp = document.getElementById('bumper-pin-input');
+      let icon = document.getElementById('bumper-eye-icon');
+      if (!inp || !icon) return;
+      if (inp.type === 'password') {
+        inp.type = 'text';
+        icon.textContent = 'visibility_off';
+      } else {
+        inp.type = 'password';
+        icon.textContent = 'visibility';
+      }
+    }
+
+    function quickFillDefaultPin() {
+      let inp = document.getElementById('bumper-pin-input');
+      if (inp) {
+        inp.value = '123';
+        verifyBumperPin();
+      }
+    }
+
+    function toggleBumperCloudModal(showCloud) {
+      let pinSec = document.getElementById('bumper-pin-section');
+      let cloudSec = document.getElementById('bumper-cloud-section');
+      let errPin = document.getElementById('bumper-error-msg');
+      let errCloud = document.getElementById('bumper-cloud-error');
+      if (errPin) errPin.classList.add('hidden');
+      if (errCloud) errCloud.classList.add('hidden');
+
+      if (showCloud) {
+        if (pinSec) pinSec.classList.add('hidden');
+        if (cloudSec) cloudSec.classList.remove('hidden');
+        let inp = document.getElementById('bumper-cloud-url-input');
+        if (inp && globalData.cloudUrl) inp.value = globalData.cloudUrl;
+      } else {
+        if (cloudSec) cloudSec.classList.add('hidden');
+        if (pinSec) pinSec.classList.remove('hidden');
+      }
+    }
+
+    async function connectCloudFromBumper() {
+      let input = document.getElementById('bumper-cloud-url-input');
+      let errEl = document.getElementById('bumper-cloud-error');
+      let btn = document.getElementById('btn-bumper-connect-cloud');
+      if (!input) return;
+      let url = input.value.trim();
+
+      if (!url || !url.startsWith("http")) {
+        if (errEl) {
+          errEl.textContent = "Link Cloud tidak valid! Harap masukkan URL diawali https://";
+          errEl.classList.remove('hidden');
+        }
+        return;
+      }
+
+      let origText = btn.innerHTML;
+      btn.innerHTML = `<span class="material-symbols-outlined text-sm animate-spin">sync</span> MENARIK DATA...`;
+      btn.disabled = true;
+
+      try {
+        let fetchUrl = url + (url.includes('?') ? '&' : '?') + `_t=${Date.now()}`;
+        let resp = await fetch(fetchUrl);
+        let data = await resp.json();
+
+        if (data && data.accounts && Array.isArray(data.accounts)) {
+          globalData = data;
+          globalData.cloudUrl = url;
+          localStorage.setItem("KEUANGANKU_CLOUD_URL", url);
+          localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData));
+          
+          initApp();
+          showSyncToast("✓ Berhasil terhubung ke Cloud & data dimuat!");
+          setSyncStatus('synced', 'Tersinkron');
+
+          let splash = document.getElementById('splash-screen');
+          if (splash) {
+            splash.classList.add('opacity-0');
+            setTimeout(() => splash.classList.add('hidden'), 700);
+          }
+        } else {
+          if (errEl) {
+            errEl.textContent = "Data di Cloud tidak sesuai format atau masih kosong.";
+            errEl.classList.remove('hidden');
+          }
+        }
+      } catch(e) {
+        if (errEl) {
+          errEl.textContent = "Gagal menghubungkan. Pastikan link Google Apps Script sudah di-deploy sebagai 'Anyone' dan koneksi internet aktif.";
+          errEl.classList.remove('hidden');
+        }
+      } finally {
+        btn.innerHTML = origText;
+        btn.disabled = false;
+      }
+    }
+
     function verifyBumperPin() {
-      let pinInput = document.getElementById('bumper-pin-input').value;
-      let validPass = (globalData && globalData.appPin !== undefined) ? globalData.appPin : ((globalData && globalData.ownerPassword) ? globalData.ownerPassword : "123");
-      if (pinInput === validPass || pinInput === globalData.ownerPassword || pinInput === "123") {
+      let pinInput = (document.getElementById('bumper-pin-input').value || '').trim();
+      let validPin = String((globalData && globalData.appPin !== undefined) ? globalData.appPin : '').trim();
+      let validPass = String((globalData && globalData.ownerPassword !== undefined) ? globalData.ownerPassword : '').trim();
+
+      // Cocokkan dengan PIN yang tersimpan di data lokal, password, atau default '123'
+      if (pinInput === validPin || pinInput === validPass || pinInput === "123") {
         let splash = document.getElementById('splash-screen');
         if (splash) { splash.classList.add('opacity-0'); setTimeout(() => splash.classList.add('hidden'), 700); }
       } else {
-        let err = document.getElementById('bumper-error-msg'); if (err) err.classList.remove('hidden');
+        let err = document.getElementById('bumper-error-msg'); 
+        if (err) {
+          err.innerHTML = `PIN Salah!<br><span class="text-[10px] text-yellow-200">Jika ini perangkat baru, gunakan PIN bawaan: <b>123</b> atau hubungkan ke Cloud di bawah.</span>`;
+          err.classList.remove('hidden');
+        }
       }
     }
 
@@ -1240,13 +1380,20 @@
       syncWithCloud(true);
     }
     
+    function isOwnerDevice() {
+      return !!(globalData && globalData.cloudUrl && typeof globalData.cloudUrl === 'string' && globalData.cloudUrl.trim().startsWith("http"));
+    }
+    
     function toggleCalculatorFeature(val) {
+      if (!isOwnerDevice()) {
+        val = false;
+      }
       globalData.enableCalculator = val;
       saveStorageData();
       let navCalc = document.getElementById('nav-calc');
-      if (navCalc) navCalc.style.display = val ? 'flex' : 'none';
-      if (!val && !document.getElementById('page-kalkulator').classList.contains('hidden')) {
-          navTo('dashboard');
+      if (navCalc) navCalc.style.display = (isOwnerDevice() && val) ? 'flex' : 'none';
+      if ((!val || !isOwnerDevice()) && !document.getElementById('page-kalkulator').classList.contains('hidden')) {
+        navTo('dashboard');
       }
     }
 
@@ -1340,8 +1487,26 @@
     function resetTransactionHistory() { if (confirm("Apakah Anda yakin ingin mereset seluruh riwayat transaksi? Data rekam transaksi akan dikosongkan.")) { globalData.recentHistory = []; saveStorageData(); renderDashboard(); renderHistoryTable(); alert("Riwayat transaksi berhasil direset kosong!"); } }
     
     function initApp() { 
+      let isOwner = isOwnerDevice();
       let navCalc = document.getElementById('nav-calc');
-      if (navCalc) navCalc.style.display = globalData.enableCalculator ? 'flex' : 'none';
+      // Kalkulator HANYA BISA aktif jika ini adalah perangkat pemilik terverifikasi (terhubung ke Cloud pribadi)
+      if (navCalc) {
+        if (isOwner && globalData.enableCalculator !== false) {
+          navCalc.style.display = 'flex';
+        } else {
+          navCalc.style.display = 'none';
+        }
+      }
+
+      let ownerSection = document.getElementById('setup-owner-feature-section');
+      if (ownerSection) {
+        if (isOwner) {
+          ownerSection.classList.remove('hidden');
+        } else {
+          ownerSection.classList.add('hidden');
+        }
+      }
+
       renderDashboard(); 
       populateFormDropdowns(); 
       populateReportFilterCategories(); 
@@ -1378,6 +1543,11 @@
         renderSetupView(); 
       } 
       else if (page === 'kalkulator') { 
+        if (!isOwnerDevice()) {
+          // Jika bukan perangkat pemilik, arahkan ke dashboard
+          navTo('dashboard');
+          return;
+        }
         document.getElementById('page-kalkulator').classList.remove('hidden'); 
         let navCalc = document.getElementById('nav-calc'); 
         if (navCalc) navCalc.className = "flex flex-col items-center text-primary px-4 py-1 font-bold"; 
@@ -2088,7 +2258,14 @@
       let accContainer = document.getElementById('setup-account-list'); if (accContainer && globalData.accounts) { accContainer.innerHTML = ''; if (!globalData.accountDetails) globalData.accountDetails = {}; globalData.accounts.forEach((acc, idx) => { let bal = globalData.currentBalances[acc] || 0; let dt = globalData.accountDetails[acc] || { bankName: acc, accNo: "", owner: "" }; accContainer.innerHTML += `<div class="p-4 bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant space-y-3"><div class="flex justify-between items-center border-b border-outline-variant/40 pb-2"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary dark:text-blue-400">account_balance</span><b class="text-sm font-bold text-on-surface">${acc}</b></div><button onclick="removeAccountItem(${idx})" class="text-xs text-error font-bold flex items-center gap-0.5 hover:underline"><span class="material-symbols-outlined text-sm">close</span> Hapus Akun</button></div><div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs"><div><label class="text-[10px] text-gray-500 font-bold uppercase">Nama Bank / E-Wallet</label><input type="text" value="${dt.bankName||acc}" onchange="updateAccountDetail('${acc}', 'bankName', this.value)" class="w-full bg-white dark:bg-slate-800 text-on-surface border rounded-lg p-1.5 font-bold"></div><div><label class="text-[10px] text-gray-500 font-bold uppercase">Nomor Rekening</label><input type="text" value="${dt.accNo||''}" placeholder="Contoh: 712345..." onchange="updateAccountDetail('${acc}', 'accNo', this.value)" class="w-full bg-white dark:bg-slate-800 text-on-surface border rounded-lg p-1.5 font-mono-data"></div><div><label class="text-[10px] text-gray-500 font-bold uppercase">Atas Nama (a.n)</label><input type="text" value="${dt.owner||''}" placeholder="Pemilik" onchange="updateAccountDetail('${acc}', 'owner', this.value)" class="w-full bg-white dark:bg-slate-800 text-on-surface border rounded-lg p-1.5 font-bold"></div><div><label class="text-[10px] text-gray-500 font-bold uppercase">Saldo Awal (Rp)</label><input type="number" value="${bal}" onchange="updateAccountBalance('${acc}', this.value)" class="w-full bg-white dark:bg-slate-800 text-on-surface border border-primary/50 rounded-lg p-1.5 font-mono-data font-bold text-primary dark:text-blue-400"></div></div></div>`; }); } 
       renderSimpleCategoryTags('incomes', 'setup-income-tags'); renderSimpleCategoryTags('bills', 'setup-bills-list'); renderSimpleCategoryTags('spendings', 'setup-spending-tags'); renderValuedCategoryList('investData', 'setup-invest-list', ['initial']); renderValuedCategoryList('sinkingData', 'setup-sinking-list', ['initial', 'target', 'deadline', 'durationMonths']); renderValuedCategoryList('goalsData', 'setup-goals-list', ['initial', 'target', 'timeframeVal']); renderValuedCategoryList('receivablesData', 'setup-receivables-list', ['total', 'deadline', 'paid']); renderValuedCategoryList('nonMoneyAssets', 'setup-nonmoney-list', ['qty', 'estimatedPrice', 'type', 'unit']); renderDebtListSetup(); 
       let cloudInput = document.getElementById('setup-cloud-url'); if (cloudInput) cloudInput.value = globalData.cloudUrl || ""; 
-      let calcToggle = document.getElementById('setup-enable-calc'); if (calcToggle) calcToggle.checked = !!globalData.enableCalculator;
+      let isOwner = isOwnerDevice();
+      let ownerSection = document.getElementById('setup-owner-feature-section');
+      if (ownerSection) {
+        if (isOwner) ownerSection.classList.remove('hidden');
+        else ownerSection.classList.add('hidden');
+      }
+      let calcToggle = document.getElementById('setup-enable-calc'); 
+      if (calcToggle) calcToggle.checked = isOwner && (globalData.enableCalculator !== false);
       let budgetContainer = document.getElementById('setup-budget-list'); if (budgetContainer) { budgetContainer.innerHTML = ''; if (!globalData.monthlyBudgets) globalData.monthlyBudgets = {}; if (globalData.spendings && globalData.spendings.length > 0) { globalData.spendings.forEach(cat => { let limit = globalData.monthlyBudgets[cat] || 0; budgetContainer.innerHTML += `<div class="flex justify-between items-center bg-surface-container dark:bg-slate-900 p-2 rounded-lg border border-outline-variant/40 mb-2 text-xs"><span class="font-bold w-1/2">${cat}</span><div class="w-1/2 relative"><span class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-[10px]">Rp</span><input type="text" value="${limit.toLocaleString('id-ID')}" oninput="formatInputNominal(this)" onchange="updateBudgetLimit('${cat}', this.value)" placeholder="Limit Budget..." class="w-full pl-6 pr-2 py-1.5 border rounded-lg font-mono-data bg-white dark:bg-slate-800 text-on-surface font-bold text-right outline-none focus:border-primary"></div></div>`; }); } else { budgetContainer.innerHTML = '<p class="text-xs text-gray-500">Silakan tambahkan kategori Spending terlebih dahulu.</p>'; } } 
     }
     
@@ -2109,11 +2286,29 @@
     function updateValuedCategoryField(objKey, itemKey, field, val) { if (!globalData[objKey][itemKey]) return; if (['deadline', 'type', 'unit'].includes(field)) globalData[objKey][itemKey][field] = val; else globalData[objKey][itemKey][field] = parseFloat(val) || 0; saveStorageData(); }
     function addRoutinePaymentItem() { let name = prompt("Masukkan nama Pembayaran Rutin baru:"); if (name && name.trim() !== "") { let clean = name.trim(); if (!globalData.routinePayments) globalData.routinePayments = {}; globalData.routinePayments[clean] = { amount: 0, dueDay: 1 }; saveStorageData(); renderSetupView(); } }
     function removeRoutinePaymentItem(key) { delete globalData.routinePayments[key]; saveStorageData(); renderSetupView(); }
-    function changeOwnerPassword() { let np = document.getElementById('new-pass-input').value; if (np && np.trim() !== "") { globalData.ownerPassword = np.trim(); saveStorageData(); alert("Password berhasil diperbarui!"); document.getElementById('new-pass-input').value = ''; } }
+    function changeOwnerPassword() { 
+      let np = document.getElementById('new-pass-input').value; 
+      if (np && np.trim() !== "") { 
+        let cleanPass = np.trim();
+        globalData.ownerPassword = cleanPass; 
+        globalData.appPin = cleanPass;
+        saveStorageData(); 
+        alert("Password & PIN Akses berhasil diperbarui!"); 
+        document.getElementById('new-pass-input').value = ''; 
+      } 
+    }
     function updateAccountDetail(accName, field, value) { if (!globalData.accountDetails) globalData.accountDetails = {}; if (!globalData.accountDetails[accName]) globalData.accountDetails[accName] = {}; globalData.accountDetails[accName][field] = value; saveStorageData(); renderDashboard(); }
     function updateStartingBalance(val) { globalData.startingBalance = parseFloat(val) || 0; saveStorageData(); }
     function updateAccountBalance(accName, newBal) { globalData.currentBalances[accName] = parseFloat(newBal) || 0; saveStorageData(); renderDashboard(); }
-    function verifySetupPassword() { let p = document.getElementById('setup-pass-input').value; let validPass = globalData.ownerPassword || "123"; if (p === validPass || p === "123") { document.getElementById('setup-lock-card').classList.add('hidden'); document.getElementById('setup-unlocked-content').classList.remove('hidden'); renderSetupView(); } else alert('Password salah!'); }
+    function verifySetupPassword() { 
+      let p = (document.getElementById('setup-pass-input').value || '').trim(); 
+      let validPass = String(globalData.ownerPassword || globalData.appPin || "123").trim(); 
+      if (p === validPass || p === String(globalData.appPin || '').trim() || p === "123") { 
+        document.getElementById('setup-lock-card').classList.add('hidden'); 
+        document.getElementById('setup-unlocked-content').classList.remove('hidden'); 
+        renderSetupView(); 
+      } else alert('Password salah!'); 
+    }
   </script>
 </body>
 </html>
