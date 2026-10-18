@@ -49,6 +49,14 @@
   <style>
     .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
     
+    /* Hilangkan ikon mata hitam bawaan browser (Microsoft Edge) agar tidak dobel */
+    input[type="password"]::-ms-reveal,
+    input[type="password"]::-ms-clear {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+      pointer-events: none !important;
+    }
     html.dark body { background-color: #020617 !important; color: #f8fafc !important; }
     html.dark header, html.dark nav { background-color: #090d16 !important; border-color: #1e293b !important; }
     html.dark .bg-white, html.dark .bg-surface { background-color: #0f172a !important; color: #f1f5f9 !important; border-color: #334155 !important; }
@@ -68,6 +76,103 @@
 </head>
 <body class="bg-background text-on-surface font-body-md min-h-screen pb-32">
 
+
+  <!-- LICENSE GATE SCREEN (ANTI-SHARING & ACTIVATION LOCK) -->
+  <div id="license-gate-screen" class="hidden fixed inset-0 z-[60] bg-[#020617] flex flex-col items-center justify-center p-4 overflow-y-auto">
+    <div class="max-w-md w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 relative overflow-hidden">
+      <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-600 via-indigo-500 to-cyan-400"></div>
+
+      <!-- Brand & Icon -->
+      <div class="text-center space-y-2">
+        <div class="relative w-16 h-16 mx-auto mb-2">
+          <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-blue-500/25 border border-white/20">
+            <span class="material-symbols-outlined text-white text-3xl">account_balance_wallet</span>
+          </div>
+          <span class="absolute -bottom-1 -right-1 px-1.5 py-0.5 rounded-full text-[9px] font-extrabold bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 shadow border border-amber-300">PRO</span>
+        </div>
+        <h2 class="text-xl font-extrabold tracking-tight text-white">Aktivasi Keuanganku PRO</h2>
+        <p class="text-xs text-slate-400 leading-relaxed">
+          Aplikasi ini dilindungi lisensi resmi Sambarang Production. Masukkan kode lisensi yang Anda peroleh saat pembelian untuk mengaktifkan aplikasi di perangkat ini.
+        </p>
+      </div>
+
+      <!-- Form Input Token -->
+      <form onsubmit="handleClientLicenseSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center justify-between">
+            <span>Kode Lisensi:</span>
+            <span class="text-[10px] text-cyan-400 font-mono-data">Format: PRO-XXXX-XXXX-XXXX</span>
+          </label>
+          <div class="relative">
+            <input type="text" id="license-input-token" required placeholder="PRO-8A2F-9D41-B73C"
+              class="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-center text-sm font-bold font-mono-data text-cyan-300 tracking-wider uppercase focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all">
+          </div>
+        </div>
+
+        <!-- INPUT PIN PRIBADI (MUNCUL OTOMATIS JIKA TOKEN HANGUS / PIN SUDAH DIBUAT DI PERANGKAT 1) -->
+        <div id="gate-personal-pin-container" class="hidden space-y-1.5 text-left">
+          <label class="block text-xs font-semibold text-amber-300 flex items-center justify-between">
+            <span>PIN Pribadi Pemilik:</span>
+            <span class="text-[10px] text-amber-400 font-bold flex items-center gap-1">
+              <span class="material-symbols-outlined text-xs">local_fire_department</span> Token Telah Hangus
+            </span>
+          </label>
+          <div class="relative">
+            <input type="password" id="license-input-personal-pin" placeholder="Masukkan PIN Pribadi Anda"
+              class="w-full px-4 py-3 bg-slate-950 border border-amber-500/60 rounded-xl text-center text-sm font-bold font-mono-data text-amber-300 tracking-widest focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all">
+          </div>
+          <p class="text-[10px] text-slate-400 leading-relaxed">
+            Token bawaan sudah hangus karena lisensi ini telah dipersonalisasi di perangkat pertama. Masukkan <b>PIN Pribadi</b> Anda untuk mengotorisasi perangkat tambahan ini.
+          </p>
+        </div>
+
+        <!-- Info Device Terdeteksi -->
+        <div class="p-3 bg-slate-950/70 border border-slate-800 rounded-xl flex items-center gap-2.5 text-[11px] text-slate-400">
+          <span class="material-symbols-outlined text-cyan-400 text-base shrink-0">devices</span>
+          <div class="min-w-0">
+            <p class="text-white font-semibold truncate" id="gate-device-name">Perangkat Terdeteksi...</p>
+            <p class="text-[9px] text-slate-500 font-mono-data truncate" id="gate-device-id">ID: ...</p>
+          </div>
+        </div>
+
+        <!-- Error Msg -->
+        <div id="gate-error-box" class="hidden p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-start gap-2">
+          <span class="material-symbols-outlined text-base shrink-0 mt-0.5">error</span>
+          <span id="gate-error-text" class="leading-relaxed"></span>
+        </div>
+
+        <!-- Tombol Aktivasi -->
+        <button type="submit" id="btn-gate-activate" class="w-full py-3 bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-blue-500/25 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer">
+          <span class="material-symbols-outlined text-base">verified</span>
+          <span>AKTIVASI SEKARANG</span>
+        </button>
+      </form>
+
+      <!-- Tombol Beli & Bantuan -->
+      <div class="pt-3 border-t border-slate-800/80 space-y-2 text-center">
+        <a href="https://wa.me/6281234567890?text=Halo%20Sambarang%20Production,%20saya%20ingin%20membeli%20kode%20lisensi%20resmi%20aplikasi%20Keuanganku%20PRO" target="_blank"
+          class="w-full py-2.5 bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition-all">
+          <span class="material-symbols-outlined text-sm">shopping_cart</span>
+          <span>Belum Punya Lisensi? Beli via WhatsApp</span>
+        </a>
+        <div class="flex items-center justify-between pt-1 text-[10px] text-slate-500 px-1">
+          <span>Copyright © 2025 Sambarang Production</span>
+          <div id="gate-server-status-pill">
+            <button type="button" onclick="toggleGateServerConfig()" class="text-slate-500 hover:text-slate-300 underline">Server Config</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Config Server Drawer (Discreet) -->
+      <div id="gate-server-config" class="hidden pt-2 border-t border-slate-800 space-y-2 text-left">
+        <label class="block text-[10px] text-slate-400 font-semibold">Master License Server URL (Web App):</label>
+        <input type="url" id="gate-server-url-input" placeholder="https://script.google.com/macros/s/.../exec"
+          class="w-full p-2 bg-slate-950 border border-slate-700 rounded-lg text-[10px] font-mono-data text-white">
+        <button type="button" onclick="saveGateServerUrl()" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-[10px] font-bold">Simpan Server URL</button>
+      </div>
+    </div>
+  </div>
+
   <!-- BUMPER SPLASH SCREEN -->
   <div id="splash-screen" class="fixed inset-0 bg-gradient-to-br from-navy-dark via-primary to-tertiary z-50 flex flex-col items-center justify-center text-white transition-opacity duration-700 p-4">
     <div class="text-center space-y-4 p-6 max-w-xs w-full bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 shadow-2xl">
@@ -82,12 +187,12 @@
       <!-- FORM PIN UTAMA -->
       <div id="bumper-pin-section" class="pt-2 space-y-2.5">
         <div class="relative">
-          <input type="password" id="bumper-pin-input" placeholder="Masukkan PIN Akses" maxlength="30" onkeyup="if(event.key === 'Enter') verifyBumperPin()" class="w-full py-2.5 pl-3 pr-10 bg-white/10 border border-white/30 rounded-xl text-center text-white placeholder-blue-200 text-sm font-mono-data outline-none tracking-widest focus:border-white">
+          <input type="password" id="bumper-pin-input" placeholder="Masukkan PIN atau Token Lisensi" maxlength="35" onkeyup="if(event.key === 'Enter') verifyBumperPin()" class="w-full py-2.5 pl-3 pr-10 bg-white/10 border border-white/30 rounded-xl text-center text-white placeholder-blue-200 text-sm font-mono-data outline-none tracking-widest focus:border-white">
           <button type="button" onclick="toggleBumperPinVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-blue-200 hover:text-white" title="Lihat PIN">
             <span class="material-symbols-outlined text-lg" id="bumper-eye-icon">visibility</span>
           </button>
         </div>
-        <button onclick="verifyBumperPin()" class="w-full py-2.5 bg-white text-primary font-bold rounded-xl text-xs hover:bg-blue-50 shadow transition-all">MASUK APLIKASI</button>
+        <button id="btn-bumper-login" onclick="verifyBumperPin()" class="w-full py-2.5 bg-white text-primary font-bold rounded-xl text-xs hover:bg-blue-50 shadow transition-all cursor-pointer">MASUK APLIKASI</button>
         <p id="bumper-error-msg" class="text-[11px] text-red-200 font-semibold leading-relaxed hidden">PIN Salah! Coba lagi.</p>
         
         <div class="pt-2 border-t border-white/15">
@@ -111,7 +216,7 @@
         <button type="button" onclick="toggleBumperCloudModal(false)" class="text-[10px] text-blue-200 hover:text-white underline">← Kembali ke Masuk PIN</button>
       </div>
 
-      <div class="pt-3"><p class="text-[9px] text-gray-300 font-medium tracking-wider uppercase">By: <b class="text-white">Sambarang Production</b></p></div>
+      <div class="pt-3"><p class="text-[9px] text-gray-300 font-medium tracking-wider uppercase">Copyright © 2025 <b class="text-white">Sambarang Production</b></p></div>
     </div>
   </div>
 
@@ -346,7 +451,7 @@
   <header class="bg-surface border-b border-outline-variant fixed top-0 w-full z-40 flex justify-between items-center px-3 sm:px-4 md:px-8 h-16 shadow-sm">
     <div class="flex items-center gap-2 sm:gap-3">
       <span class="material-symbols-outlined text-primary" style="font-size: 28px;">account_balance_wallet</span>
-      <h1 id="header-brand-title" class="font-headline-md text-sm sm:text-base md:text-lg font-bold text-primary">KEUANGANKU</h1>
+      <h1 id="header-brand-title" class="font-headline-md text-sm sm:text-base md:text-lg font-bold text-primary flex items-center gap-1.5">KEUANGANKU <span class="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 tracking-normal font-sans">v1.0</span></h1>
     </div>
     <div class="flex items-center gap-2">
       <!-- TOMBOL INSTAL APLIKASI (PWA) -->
@@ -382,6 +487,9 @@
 
     <!-- PAGE 1: DASHBOARD -->
     <div id="page-dashboard" class="space-y-6">
+      <!-- BANNER PERINGATAN MASIH MENGGUNAKAN TOKEN BAWAAN (TERKUNCI 1 DEVICE) -->
+      <div id="token-security-warning-banner" class="hidden"></div>
+
       <div id="due-date-alert-container"></div>
       <div id="receivable-alert-container"></div>
 
@@ -562,7 +670,7 @@
           </div>
         </div>
       </section>
-      <footer class="pt-6 pb-2 text-center border-t border-outline-variant/50"><p class="text-[10px] text-gray-400 font-medium tracking-widest uppercase">By: Sambarang Production</p></footer>
+      <footer class="pt-6 pb-2 text-center border-t border-outline-variant/50"><p class="text-[10px] text-gray-400 font-medium tracking-widest uppercase">Copyright © 2025 Sambarang Production</p></footer>
     </div>
 
     <!-- PAGE 2: TRANSAKSI -->
@@ -719,312 +827,438 @@
           </div>
         </div>
       </section>
-      <footer class="pt-6 pb-2 text-center border-t border-outline-variant/50"><p class="text-[10px] text-gray-400 font-medium tracking-widest uppercase">By: Sambarang Production</p></footer>
+      <footer class="pt-6 pb-2 text-center border-t border-outline-variant/50"><p class="text-[10px] text-gray-400 font-medium tracking-widest uppercase">Copyright © 2025 Sambarang Production</p></footer>
     </div>
 
     <!-- PAGE 3: SETUP -->
     <div id="page-setup" class="hidden space-y-6">
       <div id="setup-lock-card" class="bg-white dark:bg-slate-800 border rounded-2xl p-8 max-w-md mx-auto text-center space-y-4 shadow-sm">
         <div class="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto"><span class="material-symbols-outlined text-3xl">lock</span></div>
-        <div><h3 class="font-headline-md font-bold text-on-surface">Menu Setup Terkunci</h3><p class="text-xs text-on-surface-variant mt-1">Masukkan password pemilik akun untuk mengakses database master.</p></div>
-        <input type="password" id="setup-pass-input" placeholder="Masukkan Password Pemilik" class="w-full p-3 border rounded-xl text-center font-mono-data text-sm outline-none focus:ring-1 focus:ring-primary bg-surface">
-        <button onclick="verifySetupPassword()" class="w-full py-3 bg-primary text-white font-bold rounded-xl shadow">Buka Akses Setup</button>
+        <div><h3 class="font-headline-md font-bold text-on-surface">Menu Setup Terkunci</h3><p class="text-xs text-on-surface-variant mt-1">Masukkan Token Pembelian (PRO-XXXX...) atau PIN Pribadi Anda untuk membuka konfigurasi.</p></div>
+        <input type="password" id="setup-pass-input" placeholder="Masukkan Token Lisensi / PIN Pribadi" onkeyup="if(event.key === 'Enter') verifySetupPassword()" class="w-full p-3 border rounded-xl text-center font-mono-data text-sm outline-none focus:ring-1 focus:ring-primary bg-surface">
+        <button onclick="verifySetupPassword()" class="w-full py-3 bg-primary text-white font-bold rounded-xl shadow cursor-pointer">Buka Akses Setup</button>
       </div>
 
       <div id="setup-unlocked-content" class="hidden space-y-6">
-        <div class="bg-primary/10 border border-primary/30 rounded-2xl p-4 flex items-center justify-between shadow-sm">
-          <div><p class="font-bold text-primary text-sm">Pusat Konfigurasi Database</p><p class="text-[11px] text-gray-600">Perbarui nilai atau kategori, lalu klik simpan di bawah.</p></div>
-          <button onclick="manualSaveSetup()" class="px-5 py-2.5 bg-primary text-white font-bold rounded-xl text-xs shadow flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">save</span> SIMPAN PERUBAHAN</button>
-        </div>
-
-        <section class="bg-white dark:bg-slate-800 border rounded-2xl p-6 shadow-sm space-y-3">
-          <div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary">key</span><h2 class="font-headline-md text-headline-md font-bold">Ubah Password Pemilik</h2></div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
-            <input type="password" id="new-pass-input" placeholder="Masukkan Password Baru" class="p-2.5 border rounded-xl text-xs font-mono-data bg-surface">
-            <button onclick="changeOwnerPassword()" class="py-2.5 bg-secondary text-white font-bold text-xs rounded-xl shadow">Ubah Password</button>
-          </div>
-        </section>
-
-        <!-- FITUR EKSKLUSIF PEMILIK (HANYA MUNCUL JIKA TERHUBUNG KE CLOUD PRIBADI) -->
-        <section id="setup-owner-feature-section" class="bg-indigo-50 border border-indigo-200 dark:bg-indigo-900/30 dark:border-indigo-800 rounded-2xl p-6 shadow-sm space-y-3 hidden">
-          <div class="flex items-center justify-between flex-wrap gap-2">
-            <div class="flex items-center gap-2">
-              <span class="material-symbols-outlined text-indigo-600">admin_panel_settings</span>
-              <h2 class="font-headline-md text-headline-md font-bold text-indigo-900 dark:text-indigo-100">Fitur Eksklusif Pemilik</h2>
-            </div>
-            <span class="px-2.5 py-1 bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 text-[10px] font-extrabold rounded-full flex items-center gap-1 border border-indigo-200 dark:border-indigo-800">
-              👑 KHUSUS PEMILIK
-            </span>
-          </div>
-          <p class="text-[11px] text-indigo-800 dark:text-indigo-200 leading-relaxed">
-            Menu Kalkulator Bisnis & Usaha (HPP Konveksi/Sablon, Modal Usaha, Murabahah). Menu ini <b>hanya muncul untuk Anda</b> dan disembunyikan total dari pengguna lain/kerabat.
-          </p>
-          <div class="flex items-center gap-3 pt-2 bg-white dark:bg-slate-800 p-3 rounded-xl border border-indigo-100 dark:border-indigo-900">
-            <input type="checkbox" id="setup-enable-calc" onchange="toggleCalculatorFeature(this.checked)" class="w-5 h-5 rounded text-indigo-600 border-outline-variant cursor-pointer focus:ring-indigo-500">
-            <label for="setup-enable-calc" class="text-xs font-bold text-gray-700 dark:text-gray-300 cursor-pointer">Aktifkan Menu Navigasi Kalkulator Bisnis & Finansial</label>
-          </div>
-        </section>
-
-        <!-- FITUR CLOUD & SINKRONISASI -->
-        <section class="bg-blue-50 border border-blue-200 dark:bg-blue-900/30 dark:border-blue-800 rounded-2xl p-6 shadow-sm space-y-3">
-          <div class="flex items-center justify-between flex-wrap gap-2">
-            <div class="flex items-center gap-2">
-              <span class="material-symbols-outlined text-blue-600">cloud_sync</span>
-              <h2 class="font-headline-md text-headline-md font-bold text-blue-900 dark:text-blue-100">Koneksi Cloud & Auto-Sync</h2>
-            </div>
-            <span class="px-2.5 py-1 bg-green-100 dark:bg-green-950/80 text-green-700 dark:text-green-300 text-[10px] font-extrabold rounded-full flex items-center gap-1.5 border border-green-200 dark:border-green-800">
-              <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> AUTO-SYNC AKTIF
-            </span>
-          </div>
-          <p class="text-[11px] text-blue-800 dark:text-blue-200 leading-relaxed">
-            Masukkan Link Web App Google Sheets Anda untuk mengaktifkan sinkronisasi otomatis multi-perangkat. 
-            <b>Data otomatis tersinkron</b> saat aplikasi dibuka, berpindah menu, beralih tab/layar HP, atau setelah menginput transaksi di perangkat lain. Anda juga bisa menekan tombol awan di Header kapan saja.
-          </p>
-          <input type="text" id="setup-cloud-url" placeholder="https://script.google.com/macros/s/..." onchange="updateCloudUrl(this.value)" class="w-full p-2.5 border border-blue-300 rounded-xl text-xs font-mono-data bg-white dark:bg-slate-900 text-on-surface mt-1 outline-none focus:border-blue-500">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3 border-b border-blue-200/50 dark:border-blue-800/50 pb-4">
-            <button id="btn-upload-cloud" onclick="forceUploadToCloud()" class="py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] uppercase rounded-xl shadow flex items-center justify-center gap-2 transition-all">
-              <span class="material-symbols-outlined text-base">cloud_upload</span> PAKSA UPLOAD KE CLOUD
+        <!-- SUB-TAB SWITCHER SETUP (PENGATURAN vs DATABASE) -->
+        <div class="bg-surface dark:bg-slate-900 border border-outline-variant p-2 rounded-2xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div class="inline-flex p-1 bg-surface-container dark:bg-slate-800 rounded-xl w-full sm:w-auto">
+            <button id="btn-subtab-pengaturan" onclick="switchSetupSubtab('pengaturan')" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-xs font-bold transition-all bg-primary text-white shadow">
+              <span class="material-symbols-outlined text-base">tune</span>
+              <span>Pengaturan Aplikasi</span>
             </button>
-            <button id="btn-download-cloud" onclick="forceDownloadFromCloud()" class="py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold text-[11px] uppercase rounded-xl shadow flex items-center justify-center gap-2 transition-all">
-              <span class="material-symbols-outlined text-base">cloud_download</span> PAKSA TARIK DARI CLOUD
+            <button id="btn-subtab-database" onclick="switchSetupSubtab('database')" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-xs font-bold transition-all text-gray-500 dark:text-gray-400 hover:text-on-surface">
+              <span class="material-symbols-outlined text-base">database</span>
+              <span>Database Master</span>
+              <span id="badge-db-total-count" class="ml-1 px-2 py-0.5 text-[10px] bg-primary/15 text-primary dark:text-blue-400 rounded-full font-extrabold">12</span>
             </button>
           </div>
-          <div class="pt-2">
-            <p class="text-[10px] text-blue-700 dark:text-blue-300 font-bold mb-2">Atau Backup/Restore Manual (Offline):</p>
-            <div class="flex gap-2">
-              <button onclick="exportDatabase()" class="flex-1 py-2 bg-white dark:bg-slate-800 border border-blue-300 text-blue-700 font-bold text-[10px] rounded-lg shadow-sm">COPY TEKS DB</button>
-              <button onclick="importDatabase()" class="flex-1 py-2 bg-white dark:bg-slate-800 border border-blue-300 text-blue-700 font-bold text-[10px] rounded-lg shadow-sm">PASTE TEKS DB</button>
-            </div>
-          </div>
-        </section>
-
-        <!-- FITUR PWA: PASANG APLIKASI DI PERANGKAT -->
-        <section class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 dark:from-slate-900 dark:to-slate-900 dark:border-blue-900/60 rounded-2xl p-5 shadow-sm space-y-3">
-          <div class="flex items-center justify-between flex-wrap gap-2">
-            <div class="flex items-center gap-2">
-              <span class="material-symbols-outlined text-primary text-xl">download_for_offline</span>
-              <h2 class="font-headline-md text-headline-md font-bold text-on-surface">Pasang Aplikasi di Perangkat Ini</h2>
-            </div>
-            <span class="px-2.5 py-0.5 bg-blue-100 dark:bg-blue-950 text-primary text-[10px] font-extrabold rounded-full border border-blue-200 dark:border-blue-800">
-              📱 ANDROID • iOS • PC
-            </span>
-          </div>
-          <p class="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
-            Pasang KEUANGANKU langsung di layar utama HP atau desktop laptop Anda untuk akses instan tanpa bilah browser. Memiliki ikon aplikasi tersendiri dan siap dibuka secara offline.
-          </p>
-          <button onclick="triggerPWAInstall()" class="w-full py-3 bg-primary hover:bg-primary-container text-white font-bold text-xs rounded-xl shadow flex items-center justify-center gap-2 transition-all active:scale-95">
-            <span class="material-symbols-outlined text-base">add_to_home_screen</span> PASANG / INSTAL APLIKASI SEKARANG
+          <button onclick="manualSaveSetup()" class="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-primary to-indigo-600 hover:brightness-110 text-white font-bold rounded-xl text-xs shadow flex items-center justify-center gap-1.5 active:scale-95 transition-all">
+            <span class="material-symbols-outlined text-base">save</span>
+            <span>SIMPAN PERUBAHAN</span>
           </button>
-        </section>
-
-        <!-- JADWAL PEMBAYARAN RUTIN -->
-        <section class="space-y-3">
-          <div>
-            <div class="flex items-center gap-2"><span class="material-symbols-outlined text-tertiary">alarm</span><h2 class="font-headline-md text-headline-md font-bold text-on-surface">Jadwal Pembayaran Rutin Bulanan</h2></div>
-            <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-              <b class="text-on-surface">Fungsi & Tujuan:</b> Mengatur tanggal jatuh tempo tagihan agar sistem menampilkan notifikasi pengingat di Dashboard saat mendekati tanggal bayar (H-3 s.d. hari H).<br>
-              <span class="text-gray-400 dark:text-gray-500"><b>Contoh:</b> Listrik PLN (tgl 5), Wi-Fi Indihome (tgl 15), BPJS Kesehatan (tgl 10), Sewa Tempat / Server (tgl 25).</span>
-            </p>
-          </div>
-          <div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 space-y-3 shadow-sm">
-            <div id="setup-routine-list" class="space-y-2"></div>
-            <button onclick="addRoutinePaymentItem()" class="w-full py-3 bg-surface-container hover:bg-surface-container-high border rounded-xl text-primary font-bold text-xs flex items-center justify-center gap-1"><span class="material-symbols-outlined text-sm">add</span> TAMBAHKAN JADWAL RUTIN</button>
-          </div>
-        </section>
-
-        <!-- SALDO AWAL -->
-        <section class="space-y-3">
-          <div>
-            <div class="flex items-center gap-2"><span class="material-symbols-outlined text-secondary">account_balance_wallet</span><h2 class="font-headline-md text-headline-md font-bold text-on-surface">Saldo Awal</h2></div>
-            <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-              <b class="text-on-surface">Fungsi & Tujuan:</b> Titik awal saldo kas fisik/bebas yang Anda miliki saat pertama kali mulai memakai aplikasi ini sebelum transaksi dicatat.<br>
-              <span class="text-gray-400 dark:text-gray-500"><b>Contoh:</b> Total uang tunai di dompet fisik atau modal kas awal yang siap digunakan.</span>
-            </p>
-          </div>
-          <div class="bg-white dark:bg-slate-800 border rounded-2xl p-6 shadow-sm space-y-2">
-            <label class="block font-label-caps text-xs font-bold uppercase text-gray-500">Saldo Awal (Yang Bisa Digunakan)</label>
-            <div class="relative pt-2">
-              <span class="absolute left-4 top-1/2 -translate-y-1/2 font-extrabold text-primary text-lg">Rp</span>
-              <input type="number" id="setup-starting-balance" onchange="updateStartingBalance(this.value)" class="w-full bg-surface border rounded-xl py-3 pl-12 pr-4 font-mono-data font-bold text-xl outline-none">
-            </div>
-          </div>
-        </section>
-
-        <!-- 1. AKUN BANK & E-WALLET -->
-        <section class="space-y-3">
-          <div>
-            <div class="flex items-center gap-2"><span class="material-symbols-outlined text-secondary">credit_card</span><h2 class="font-headline-md text-headline-md font-bold text-on-surface">1. Akun Bank & E-Wallet</h2></div>
-            <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-              <b class="text-on-surface">Fungsi & Tujuan:</b> Kantong/wadah penyimpanan saldo aktif Anda. Setiap transaksi uang masuk, belanja, atau transfer akan menambah/memotong saldo pada akun yang dipilih di sini.<br>
-              <span class="text-gray-400 dark:text-gray-500"><b>Contoh:</b> Rekening BCA, BRI, Bank Mandiri, Bank Jago, SeaBank, Kas Tunai (Cash), GoPay, OVO, DANA.</span>
-            </p>
-          </div>
-          <div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 space-y-4 shadow-sm">
-            <div id="setup-account-list" class="space-y-3"></div>
-            <button onclick="addAccountItem()" class="w-full py-3.5 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2"><span class="material-symbols-outlined text-sm">add</span> TAMBAHKAN ACCOUNT BANK</button>
-          </div>
-        </section>
-        
-        <!-- 2. INCOME & 3. BILLS (GRID 2 KOLOM) -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- 2. INCOME -->
-          <section class="space-y-3">
-            <div>
-              <div class="flex items-center gap-2"><span class="material-symbols-outlined text-green-600">payments</span><h2 class="font-bold text-base text-on-surface">2. Income (Pemasukan)</h2></div>
-              <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-                <b class="text-on-surface">Fungsi & Tujuan:</b> Kategori sumber aliran dana masuk yang menambah saldo rekening Anda.<br>
-                <span class="text-gray-400 dark:text-gray-500"><b>Contoh:</b> Gaji Bulanan, Bonus Kinerja, THR, Hasil Penjualan/Usaha, Komisi, Hadiah/Hibah.</span>
-              </p>
-            </div>
-            <div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm">
-              <div id="setup-income-tags" class="flex flex-wrap gap-2 mb-6"></div>
-              <button onclick="addSimpleCategory('incomes', 'Income')" class="w-full py-3 border-2 border-dashed rounded-xl font-bold text-xs flex items-center justify-center gap-2"><span class="material-symbols-outlined text-sm">add_circle</span> TAMBAHKAN INCOME</button>
-            </div>
-          </section>
-
-          <!-- 3. BILLS -->
-          <section class="space-y-3">
-            <div>
-              <div class="flex items-center gap-2"><span class="material-symbols-outlined text-blue-600">receipt_long</span><h2 class="font-bold text-base text-on-surface">3. Bills (Tagihan Rutin Wajib)</h2></div>
-              <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-                <b class="text-on-surface">Fungsi & Tujuan:</b> Pos pengeluaran wajib yang jumlahnya relatif tetap setiap bulan untuk operasional/fasilitas hidup.<br>
-                <span class="text-gray-400 dark:text-gray-500"><b>Contoh:</b> Listrik PLN, Air PDAM, Wi-Fi Indihome, BPJS Kesehatan, Iuran IPL Lingkungan.</span>
-              </p>
-            </div>
-            <div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm">
-              <div id="setup-bills-list" class="space-y-2 mb-6"></div>
-              <button onclick="addSimpleCategory('bills', 'Tagihan')" class="w-full py-3 border-2 border-dashed rounded-xl font-bold text-xs flex items-center justify-center gap-2"><span class="material-symbols-outlined text-sm">add_circle</span> TAMBAHKAN BILLS</button>
-            </div>
-          </section>
         </div>
 
-        <!-- 4. SPENDING -->
-        <section class="space-y-3">
-          <div>
-            <div class="flex items-center gap-2"><span class="material-symbols-outlined text-red-500">shopping_cart</span><h2 class="font-bold text-base text-on-surface">4. Spending (Pengeluaran Sehari-hari)</h2></div>
-            <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-              <b class="text-on-surface">Fungsi & Tujuan:</b> Pos belanja kebutuhan sehari-hari yang nominalnya dinamis/berubah-ubah. Kategori ini nantinya dihubungkan dengan batas maksimal pada menu <i>Budgeting Bulanan</i>.<br>
-              <span class="text-gray-400 dark:text-gray-500"><b>Contoh:</b> Makan & Minum, Belanja Dapur / Sembako, Bensin / Transportasi, Jajan / Nongkrong, Pakaian, Sedekah.</span>
+        <!-- ========================================== -->
+        <!-- SUBTAB 1: PENGATURAN APLIKASI              -->
+        <!-- ========================================== -->
+        <div id="setup-view-pengaturan" class="space-y-6">
+          <!-- KARTU PENGATURAN PASSWORD / PIN PRIBADI (HANGUSKAN TOKEN) -->
+          <section id="setup-pass-section" class="bg-white dark:bg-slate-800 border rounded-2xl p-6 shadow-sm space-y-4">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+              <div class="flex items-center gap-2">
+                <span id="setup-pass-icon" class="material-symbols-outlined text-amber-500 text-xl">key</span>
+                <h2 id="setup-pass-title" class="font-headline-md text-headline-md font-bold text-on-surface">Ubah Password & PIN Akses</h2>
+              </div>
+              <span id="setup-pass-badge" class="px-2.5 py-0.5 text-[10px] font-extrabold rounded-full border bg-amber-500/15 text-amber-500 border-amber-500/30">
+                MASIH TOKEN BAWAAN
+              </span>
+            </div>
+
+            <div id="setup-pass-info-box" class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs leading-relaxed space-y-1">
+              <p class="font-bold flex items-center gap-1.5 text-amber-800 dark:text-amber-300">
+                <span class="material-symbols-outlined text-sm">security</span> Kunci Keamanan Anti-Sharing
+              </p>
+              <p id="setup-pass-info-text">
+                Saat ini Anda masih masuk menggunakan Token Bawaan (akses terkunci hanya 1 perangkat). Tentukan <b>PIN Pribadi</b> Anda di bawah ini. Setelah PIN disimpan, Token bawaan akan otomatis <b>HANGUS</b> sehingga tidak bisa digunakan orang lain, dan fitur Sinkronisasi Multi-Perangkat akan aktif!
+              </p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+              <div class="sm:col-span-2 relative">
+                <input type="password" id="new-pass-input" placeholder="Masukkan PIN Pribadi Baru (4-12 Karakter)" class="w-full p-2.5 border rounded-xl text-xs font-mono-data bg-surface text-on-surface tracking-wider">
+              </div>
+              <button id="btn-save-personal-pin" onclick="handleBurnTokenAndSetPin()" class="w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs rounded-xl shadow flex items-center justify-center gap-1.5 transition-all">
+                <span class="material-symbols-outlined text-sm">local_fire_department</span> BUAT PIN & HANGUSKAN
+              </button>
+            </div>
+          </section>
+
+          <!-- FITUR EKSKLUSIF PEMILIK (HANYA MUNCUL JIKA TERHUBUNG KE CLOUD PRIBADI) -->
+          <section id="setup-owner-feature-section" class="bg-indigo-50 border border-indigo-200 dark:bg-indigo-900/30 dark:border-indigo-800 rounded-2xl p-6 shadow-sm space-y-3 hidden">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-indigo-600">admin_panel_settings</span>
+                <h2 class="font-headline-md text-headline-md font-bold text-indigo-900 dark:text-indigo-100">Fitur Eksklusif Pemilik</h2>
+              </div>
+              <span class="px-2.5 py-1 bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 text-[10px] font-extrabold rounded-full flex items-center gap-1 border border-indigo-200 dark:border-indigo-800">
+                👑 KHUSUS PEMILIK
+              </span>
+            </div>
+            <p class="text-[11px] text-indigo-800 dark:text-indigo-200 leading-relaxed">
+              Menu Kalkulator Bisnis & Usaha (HPP Konveksi/Sablon, Modal Usaha, Murabahah). Menu ini <b>hanya muncul untuk Anda</b> dan disembunyikan total dari pengguna lain/kerabat.
             </p>
-          </div>
-          <div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm">
-            <div id="setup-spending-tags" class="flex flex-wrap gap-2 mb-6"></div>
-            <button onclick="addSimpleCategory('spendings', 'Spending')" class="w-full py-3.5 bg-primary text-white rounded-xl font-bold text-xs shadow flex items-center justify-center gap-2"><span class="material-symbols-outlined text-sm">add</span> TAMBAHKAN SPENDING</button>
-          </div>
-        </section>
+            <div class="flex items-center gap-3 pt-2 bg-white dark:bg-slate-800 p-3 rounded-xl border border-indigo-100 dark:border-indigo-900">
+              <input type="checkbox" id="setup-enable-calc" onchange="toggleCalculatorFeature(this.checked)" class="w-5 h-5 rounded text-indigo-600 border-outline-variant cursor-pointer focus:ring-indigo-500">
+              <label for="setup-enable-calc" class="text-xs font-bold text-gray-700 dark:text-gray-300 cursor-pointer">Aktifkan Menu Navigasi Kalkulator Bisnis & Finansial</label>
+            </div>
+          </section>
 
-        <!-- 5. INVEST / SAVINGS -->
-        <section class="space-y-3">
-          <div>
-            <div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary">savings</span><h2 class="font-bold text-base text-on-surface">5. Invest / Savings (Simpanan & Investasi Kas)</h2></div>
-            <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-              <b class="text-on-surface">Fungsi & Tujuan:</b> Akumulasi simpanan kas yang disisihkan secara likuid untuk dana darurat, tabungan masa depan, atau instrumen pertumbuhan uang.<br>
-              <span class="text-gray-400 dark:text-gray-500"><b>Contoh:</b> Dana Darurat, Reksadana Pasar Uang, Deposito Bank Digital, Simpanan Modal Usaha, Tabungan Hari Tua.</span>
+          <!-- FITUR CLOUD & SINKRONISASI -->
+          <section id="setup-cloud-section" class="bg-blue-50 border border-blue-200 dark:bg-blue-900/30 dark:border-blue-800 rounded-2xl p-6 shadow-sm space-y-3">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-blue-600">cloud_sync</span>
+                <h2 class="font-headline-md text-headline-md font-bold text-blue-900 dark:text-blue-100">Koneksi Cloud & Auto-Sync</h2>
+              </div>
+              <span id="setup-cloud-status-badge" class="px-2.5 py-1 bg-green-100 dark:bg-green-950/80 text-green-700 dark:text-green-300 text-[10px] font-extrabold rounded-full flex items-center gap-1.5 border border-green-200 dark:border-green-800">
+                <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> AUTO-SYNC AKTIF
+              </span>
+            </div>
+
+            <!-- NOTIFIKASI KUNCI JIKA MASIH MENGGUNAKAN TOKEN BAWAAN -->
+            <div id="cloud-sync-lock-notice" class="hidden p-3.5 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-900 dark:text-amber-200 text-xs flex items-start gap-2.5">
+              <span class="material-symbols-outlined text-amber-500 text-lg shrink-0 mt-0.5">lock</span>
+              <div class="space-y-1">
+                <p class="font-bold text-amber-800 dark:text-amber-300">Fitur Sinkronisasi Cloud Terkunci</p>
+                <p class="text-[11px] leading-relaxed opacity-95">
+                  Anda saat ini masih masuk menggunakan <b>Token Bawaan</b> (mode akses 1 perangkat). Untuk menghindari aplikasi dibagikan secara ilegal, fitur sinkronisasi otomatis multi-perangkat hanya aktif setelah Anda mengganti Token menjadi <b>PIN Pribadi</b> Anda sendiri.
+                </p>
+              </div>
+            </div>
+
+            <p class="text-[11px] text-blue-800 dark:text-blue-200 leading-relaxed">
+              Masukkan Link Web App Google Sheets Anda untuk mengaktifkan sinkronisasi otomatis multi-perangkat. 
+              <b>Data otomatis tersinkron</b> saat aplikasi dibuka, berpindah menu, beralih tab/layar HP, atau setelah menginput transaksi di perangkat lain. Anda juga bisa menekan tombol awan di Header kapan saja.
             </p>
-          </div>
-          <div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm">
-            <div id="setup-invest-list" class="space-y-3"></div>
-            <button onclick="addValuedCategory('investData', 'Invest')" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2">TAMBAH INVEST</button>
-          </div>
-        </section>
+            <input type="text" id="setup-cloud-url" placeholder="https://script.google.com/macros/s/..." onchange="updateCloudUrl(this.value)" class="w-full p-2.5 border border-blue-300 rounded-xl text-xs font-mono-data bg-white dark:bg-slate-900 text-on-surface mt-1 outline-none focus:border-blue-500">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3 border-b border-blue-200/50 dark:border-blue-800/50 pb-4">
+              <button id="btn-upload-cloud" onclick="forceUploadToCloud()" class="py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] uppercase rounded-xl shadow flex items-center justify-center gap-2 transition-all">
+                <span class="material-symbols-outlined text-base">cloud_upload</span> PAKSA UPLOAD KE CLOUD
+              </button>
+              <button id="btn-download-cloud" onclick="forceDownloadFromCloud()" class="py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold text-[11px] uppercase rounded-xl shadow flex items-center justify-center gap-2 transition-all">
+                <span class="material-symbols-outlined text-base">cloud_download</span> PAKSA TARIK DARI CLOUD
+              </button>
+            </div>
+            <div class="pt-2">
+              <p class="text-[10px] text-blue-700 dark:text-blue-300 font-bold mb-2">Atau Backup/Restore Manual (Offline):</p>
+              <div class="flex gap-2">
+                <button onclick="exportDatabase()" class="flex-1 py-2 bg-white dark:bg-slate-800 border border-blue-300 text-blue-700 font-bold text-[10px] rounded-lg shadow-sm">COPY TEKS DB</button>
+                <button onclick="importDatabase()" class="flex-1 py-2 bg-white dark:bg-slate-800 border border-blue-300 text-blue-700 font-bold text-[10px] rounded-lg shadow-sm">PASTE TEKS DB</button>
+              </div>
+            </div>
+          </section>
 
-        <!-- 6. SINKING FUND -->
-        <section class="space-y-3">
-          <div>
-            <div class="flex items-center gap-2"><span class="material-symbols-outlined text-indigo-600">water_drop</span><h2 class="font-bold text-base text-on-surface">6. Sinking Fund (Dana Terencana Berkala)</h2></div>
-            <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-              <b class="text-on-surface">Fungsi & Tujuan:</b> Menabung berkala sedikit demi sedikit untuk pengeluaran besar terencana yang pasti datang di masa depan, agar arus kas bulanan tidak terbebani saat hari H.<br>
-              <span class="text-gray-400 dark:text-gray-500"><b>Contoh:</b> Pajak Kendaraan Tahunan, Servis Mobil/Motor, Kurban Idul Adha, Dana Mudik Lebaran, Biaya Masuk Sekolah Anak.</span>
+          <!-- LISENSI RESMI & DEVICE STATUS -->
+          <section class="bg-gradient-to-r from-slate-900 to-slate-950 border border-cyan-500/30 rounded-2xl p-5 shadow-sm space-y-3 text-white">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-cyan-400 text-xl">verified_user</span>
+                <h2 class="font-headline-md text-headline-md font-bold text-white">Lisensi Resmi Keuanganku PRO</h2>
+              </div>
+              <span id="setup-license-badge" class="px-2.5 py-0.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] font-extrabold rounded-full flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> TERAKTIVASI (RESMI)
+              </span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-slate-950/80 p-3.5 rounded-xl border border-slate-800">
+              <div>
+                <p class="text-[10px] text-slate-400 font-semibold">Kode Lisensi Anda:</p>
+                <p id="setup-license-token" class="font-mono-data font-bold text-cyan-300 text-sm mt-0.5 select-all">-</p>
+              </div>
+              <div>
+                <p class="text-[10px] text-slate-400 font-semibold">Pemilik Lisensi:</p>
+                <p id="setup-license-owner" class="font-bold text-slate-200 mt-0.5">-</p>
+              </div>
+              <div>
+                <p class="text-[10px] text-slate-400 font-semibold">Status PIN & Proteksi:</p>
+                <p id="setup-license-pin-status" class="font-bold mt-0.5 text-amber-400">-</p>
+              </div>
+              <div>
+                <p class="text-[10px] text-slate-400 font-semibold">Status Kuota:</p>
+                <p id="setup-license-quota" class="font-mono-data text-emerald-400 font-bold mt-0.5">-</p>
+              </div>
+            </div>
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-2 pt-1">
+              <button onclick="handleDeactivateCurrentDevice()" class="w-full sm:w-auto px-3.5 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all">
+                <span class="material-symbols-outlined text-sm">phonelink_erase</span>
+                Lepas Lisensi dari Perangkat Ini
+              </button>
+              <a href="dev-dashboard.html" target="_blank" class="w-full sm:w-auto px-3.5 py-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/40 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all">
+                <span class="material-symbols-outlined text-sm">terminal</span>
+                Buka Developer Dashboard
+              </a>
+            </div>
+          </section>
+
+          <!-- FITUR PWA: PASANG APLIKASI DI PERANGKAT -->
+          <section class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 dark:from-slate-900 dark:to-slate-900 dark:border-blue-900/60 rounded-2xl p-5 shadow-sm space-y-3">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-xl">download_for_offline</span>
+                <h2 class="font-headline-md text-headline-md font-bold text-on-surface">Pasang Aplikasi di Perangkat Ini</h2>
+              </div>
+              <span class="px-2.5 py-0.5 bg-blue-100 dark:bg-blue-950 text-primary text-[10px] font-extrabold rounded-full border border-blue-200 dark:border-blue-800">
+                📱 ANDROID • iOS • PC
+              </span>
+            </div>
+            <p class="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
+              Pasang KEUANGANKU langsung di layar utama HP atau desktop laptop Anda untuk akses instan tanpa bilah browser. Memiliki ikon aplikasi tersendiri dan siap dibuka secara offline.
             </p>
-          </div>
-          <div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm">
-            <div id="setup-sinking-list" class="space-y-3"></div>
-            <button onclick="addValuedCategory('sinkingData', 'Sinking Fund')" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2">TAMBAH SINKING FUND</button>
-          </div>
-        </section>
+            <button onclick="triggerPWAInstall()" class="w-full py-3 bg-primary hover:bg-primary-container text-white font-bold text-xs rounded-xl shadow flex items-center justify-center gap-2 transition-all active:scale-95">
+              <span class="material-symbols-outlined text-base">add_to_home_screen</span> PASANG / INSTAL APLIKASI SEKARANG
+            </button>
+          </section>
 
-        <!-- 7. FINANCIAL GOALS -->
-        <section class="space-y-3">
-          <div>
-            <div class="flex items-center gap-2"><span class="material-symbols-outlined text-sky-600">track_changes</span><h2 class="font-bold text-base text-on-surface">7. Financial Goals (Target Impian Finansial)</h2></div>
-            <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-              <b class="text-on-surface">Fungsi & Tujuan:</b> Target impian bernilai besar dengan nominal target dan batas waktu tertentu (*deadline*) untuk mengukur progres pencapaian aset impian.<br>
-              <span class="text-gray-400 dark:text-gray-500"><b>Contoh:</b> Beli Rumah / DP KPR (Target Rp 100 Jt), Beli Mobil Baru, Biaya Pernikahan, Ibadah Umroh / Haji, Liburan Luar Negeri.</span>
-            </p>
-          </div>
-          <div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm">
-            <div id="setup-goals-list" class="space-y-3"></div>
-            <button onclick="addValuedCategory('goalsData', 'Goals')" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2">TAMBAH GOALS</button>
-          </div>
-        </section>
+          <!-- SALDO AWAL -->
+          <section class="space-y-3">
+            <div>
+              <div class="flex items-center gap-2"><span class="material-symbols-outlined text-secondary">account_balance_wallet</span><h2 class="font-headline-md text-headline-md font-bold text-on-surface">Saldo Awal Kas Bebas</h2></div>
+              <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+                <b class="text-on-surface">Fungsi & Tujuan:</b> Titik awal saldo kas fisik/bebas yang Anda miliki saat pertama kali mulai memakai aplikasi ini sebelum transaksi dicatat.<br>
+                <span class="text-gray-400 dark:text-gray-500"><b>Contoh:</b> Total uang tunai di dompet fisik atau modal kas awal yang siap digunakan.</span>
+              </p>
+            </div>
+            <div class="bg-white dark:bg-slate-800 border rounded-2xl p-6 shadow-sm space-y-2">
+              <label class="block font-label-caps text-xs font-bold uppercase text-gray-500">Saldo Awal (Yang Bisa Digunakan)</label>
+              <div class="relative pt-2">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 font-extrabold text-primary text-lg">Rp</span>
+                <input type="number" id="setup-starting-balance" onchange="updateStartingBalance(this.value)" class="w-full bg-surface border rounded-xl py-3 pl-12 pr-4 font-mono-data font-bold text-xl outline-none">
+              </div>
+            </div>
+          </section>
 
-        <!-- 8. PIUTANG -->
-        <section class="space-y-3">
-          <div>
-            <div class="flex items-center gap-2"><span class="material-symbols-outlined text-teal-600">request_quote</span><h2 class="font-bold text-base text-on-surface">8. Piutang (Receivables - Uang Anda di Orang Lain)</h2></div>
-            <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-              <b class="text-on-surface">Fungsi & Tujuan:</b> Mencatat uang Anda yang sedang dipinjam atau belum dibayar oleh orang lain/klien. Memantau siapa debiturnya, total piutang, tanggal jatuh tempo, dan yang sudah dibayar.<br>
-              <span class="text-gray-400 dark:text-gray-500"><b>Contoh:</b> Pinjaman Teman / Kerabat, Talangan Belanja Kantor, Invoice Penjualan Barang yang Belum Dilunasi Pembeli.</span>
-            </p>
-          </div>
-          <div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm">
-            <div id="setup-receivables-list" class="space-y-3"></div>
-            <button onclick="addValuedCategory('receivablesData', 'Piutang')" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2">TAMBAH PIUTANG</button>
-          </div>
-        </section>
+          <!-- ZONA BAHAYA -->
+          <section class="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 rounded-2xl p-5 flex items-center justify-between shadow-sm">
+            <div>
+              <p class="font-bold text-error text-sm">Zona Bahaya</p>
+              <p class="text-xs text-gray-600 dark:text-gray-400">Hapus seluruh riwayat transaksi yang pernah dicatat.</p>
+            </div>
+            <button onclick="resetTransactionHistory()" class="px-4 py-2.5 bg-error text-white font-bold rounded-xl text-xs shadow hover:bg-red-700 transition-colors">RESET RIWAYAT</button>
+          </section>
 
-        <!-- 9. ASET NON-UANG & NISAB -->
-        <section class="space-y-3">
-          <div>
-            <div class="flex items-center gap-2"><span class="material-symbols-outlined text-amber-500">toll</span><h2 class="font-bold text-base text-on-surface">9. Aset Non Uang & Nisab (Harta Fisik / Barang)</h2></div>
-            <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-              <b class="text-on-surface">Fungsi & Tujuan:</b> Menginventarisasi aset fisik bernilai tinggi beserta taksiran harganya saat ini. Sistem secara cerdas menghitung apakah total harta Anda telah mencapai batas Nisab Zakat Mal (setara 85 gram emas).<br>
-              <span class="text-gray-400 dark:text-gray-500"><b>Contoh:</b> Logam Mulia / Emas Antam (Gram), Tanah / Bangunan Properti, Kendaraan (Mobil/Motor), Saham Usaha, Hewan Ternak.</span>
-            </p>
-          </div>
-          <div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm">
-            <div id="setup-nonmoney-list" class="space-y-3"></div>
-            <button onclick="addValuedCategory('nonMoneyAssets', 'Aset')" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2">TAMBAH ASET NON-UANG</button>
-          </div>
-        </section>
+          <button onclick="manualSaveSetup()" class="w-full py-4 bg-primary text-white font-extrabold text-sm rounded-2xl shadow-lg hover:brightness-110 flex items-center justify-center gap-2 transition-all">
+            <span class="material-symbols-outlined">save</span> SIMPAN SELURUH PENGATURAN
+          </button>
+        </div>
 
-        <!-- 10. UTANG & CICILAN -->
-        <section class="space-y-3">
-          <div>
-            <div class="flex items-center gap-2"><span class="material-symbols-outlined text-rose-600">money_off</span><h2 class="font-bold text-base text-on-surface">10. Utang & Cicilan (Kewajiban Finansial Anda)</h2></div>
-            <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-              <b class="text-on-surface">Fungsi & Tujuan:</b> Mencatat kewajiban utang atau cicilan yang wajib Anda bayar ke pihak lain. Memantau sisa pokok utang, nominal cicilan, serta siklus pembayarannya (Bulanan / Mingguan / Tanggal Tertentu).<br>
-              <span class="text-gray-400 dark:text-gray-500"><b>Contoh:</b> Cicilan KPR Rumah, Kredit Kendaraan (Leasing), Utang Kartu Kredit, Pinjaman Usaha / KUR, Paylater.</span>
-            </p>
+        <!-- ========================================== -->
+        <!-- SUBTAB 2: DATABASE MASTER (KARTU KATEGORI) -->
+        <!-- ========================================== -->
+        <div id="setup-view-database" class="hidden space-y-6">
+          <div class="bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-purple-500/10 border border-blue-500/20 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="space-y-1">
+              <h3 class="text-sm font-bold text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-xl">folder_managed</span>
+                Katalog Master Database
+              </h3>
+              <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                Pilih salah satu kartu kategori di bawah untuk mengelola item dalam mode <b>Pop-up</b> tanpa perlu scroll panjang ke bawah.
+              </p>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <span class="text-xs font-semibold text-gray-500 dark:text-gray-400">Total Kategori:</span>
+              <span class="px-3 py-1 bg-primary text-white text-xs font-bold rounded-xl shadow-sm">12 Kategori</span>
+            </div>
           </div>
-          <div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm">
-            <div id="setup-debt-list" class="space-y-3"></div>
-            <button onclick="addDebtItemModal()" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2">TAMBAH UTANG</button>
-          </div>
-        </section>
 
-        <!-- 11. BUDGETING BULANAN -->
-        <section class="space-y-3">
-          <div>
-            <div class="flex items-center gap-2"><span class="material-symbols-outlined text-orange-500">pie_chart</span><h2 class="font-bold text-base text-on-surface">11. Budgeting Bulanan (Batas Maksimal Pengeluaran)</h2></div>
-            <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-              <b class="text-on-surface">Fungsi & Tujuan:</b> Menetapkan batas maksimal (*ceiling limit*) belanja bulanan pada tiap pos <i>Spending</i>. Sistem akan memberikan indikator visual di Dashboard (*Aman, Waspada, Overbudget*) untuk mencegah pengeluaran bocor halus.<br>
-              <span class="text-gray-400 dark:text-gray-500"><b>Contoh:</b> Limit Makan & Minum (Maks Rp 2.000.000/bln), Limit Belanja Dapur (Maks Rp 1.500.000/bln), Limit Bensin (Maks Rp 500.000/bln).</span>
-            </p>
+          <!-- GRID KARTU KATEGORI (DIRENDER OLEH JS) -->
+          <div id="setup-database-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Dinamis dirender oleh renderSetupDatabaseCards() -->
           </div>
-          <div class="bg-white dark:bg-slate-800 border rounded-2xl p-4 shadow-sm">
-            <div id="setup-budget-list" class="space-y-2"></div>
-          </div>
-        </section>
 
-        <section class="bg-red-50 border border-red-200 rounded-2xl p-5 flex items-center justify-between shadow-sm mt-6">
-          <div><p class="font-bold text-error text-sm">Zona Bahaya</p><p class="text-xs text-gray-600">Hapus seluruh riwayat transaksi.</p></div>
-          <button onclick="resetTransactionHistory()" class="px-4 py-2.5 bg-error text-white font-bold rounded-xl text-xs shadow">RESET RIWAYAT</button>
-        </section>
-
-        <button onclick="manualSaveSetup()" class="w-full py-4 bg-primary text-white font-extrabold text-sm rounded-2xl shadow-lg hover:brightness-110 flex items-center justify-center gap-2">SIMPAN SELURUH PERUBAHAN</button>
+          <button onclick="manualSaveSetup()" class="w-full py-4 bg-primary text-white font-extrabold text-sm rounded-2xl shadow-lg hover:brightness-110 flex items-center justify-center gap-2 transition-all">
+            <span class="material-symbols-outlined">save</span> SIMPAN SELURUH PERUBAHAN DATABASE
+          </button>
+        </div>
       </div>
-      <footer class="pt-6 pb-2 text-center border-t border-outline-variant/50"><p class="text-[10px] text-gray-400 font-medium tracking-widest uppercase">By: Sambarang Production</p></footer>
+
+      <!-- =================================================================== -->
+      <!-- POPUP MODAL KELOLA KATEGORI DATABASE (12 KATEGORI TERISOLASI)      -->
+      <!-- =================================================================== -->
+      <div id="modal-setup-category" onclick="handleSetupModalBackdrop(event)" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 hidden opacity-0 transition-opacity duration-200">
+        <div id="modal-setup-category-card" class="bg-white dark:bg-slate-900 border border-outline-variant rounded-3xl w-full max-w-2xl max-h-[88vh] flex flex-col shadow-2xl overflow-hidden scale-95 transition-transform duration-200">
+          <!-- Header Popup Modal -->
+          <div class="p-4 sm:p-5 border-b border-outline-variant/60 flex items-center justify-between gap-3 bg-surface-container/50 dark:bg-slate-800/50">
+            <div class="flex items-center gap-3">
+              <div id="modal-cat-icon-container" class="w-11 h-11 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-bold shrink-0">
+                <span id="modal-cat-icon" class="material-symbols-outlined text-2xl">folder</span>
+              </div>
+              <div>
+                <h3 id="modal-cat-title" class="font-bold text-base text-on-surface">Kelola Kategori</h3>
+                <p id="modal-cat-desc" class="text-[11px] text-gray-500 dark:text-gray-400">Pengaturan data master kategori</p>
+              </div>
+            </div>
+            <button onclick="closeSetupDbModal()" class="w-9 h-9 rounded-full bg-surface-container hover:bg-surface-container-high dark:bg-slate-800 dark:hover:bg-slate-700 text-on-surface flex items-center justify-center transition-all cursor-pointer">
+              <span class="material-symbols-outlined text-lg">close</span>
+            </button>
+          </div>
+
+          <!-- Body Popup Modal (12 Panel Kategori) -->
+          <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+            <!-- 1. PANEL AKUN BANK & E-WALLET -->
+            <div id="db-panel-accounts" class="setup-db-panel hidden space-y-4">
+              <div class="p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 rounded-xl text-xs text-blue-900 dark:text-blue-200 leading-relaxed">
+                <b>Fungsi & Tujuan:</b> Kantong/wadah penyimpanan saldo aktif Anda. Setiap transaksi uang masuk, belanja, atau transfer akan menambah/memotong saldo pada akun yang dipilih di sini.<br>
+                <span class="text-blue-700 dark:text-blue-300"><b>Contoh:</b> Rekening BCA, BRI, Bank Mandiri, Bank Jago, SeaBank, Kas Tunai (Cash), GoPay, OVO, DANA.</span>
+              </div>
+              <div id="setup-account-list" class="space-y-3"></div>
+              <button onclick="addAccountItem()" class="w-full py-3.5 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2 hover:bg-surface-container-high transition-all">
+                <span class="material-symbols-outlined text-sm">add</span> TAMBAHKAN ACCOUNT BANK / DOMPET
+              </button>
+            </div>
+
+            <!-- 2. PANEL INCOME (PEMASUKAN) -->
+            <div id="db-panel-incomes" class="setup-db-panel hidden space-y-4">
+              <div class="p-3 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900/50 rounded-xl text-xs text-green-900 dark:text-green-200 leading-relaxed">
+                <b>Fungsi & Tujuan:</b> Kategori sumber aliran dana masuk yang menambah saldo rekening Anda.<br>
+                <span class="text-green-700 dark:text-green-300"><b>Contoh:</b> Gaji Bulanan, Bonus Kinerja, THR, Hasil Penjualan/Usaha, Komisi, Hadiah/Hibah.</span>
+              </div>
+              <div id="setup-income-tags" class="flex flex-wrap gap-2 mb-4"></div>
+              <button onclick="addSimpleCategory('incomes', 'Income')" class="w-full py-3 border-2 border-dashed rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:border-primary text-primary transition-all">
+                <span class="material-symbols-outlined text-sm">add_circle</span> TAMBAHKAN KATEGORI INCOME
+              </button>
+            </div>
+
+            <!-- 3. PANEL BILLS (TAGIHAN RUTIN WAJIB) -->
+            <div id="db-panel-bills" class="setup-db-panel hidden space-y-4">
+              <div class="p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 rounded-xl text-xs text-blue-900 dark:text-blue-200 leading-relaxed">
+                <b>Fungsi & Tujuan:</b> Pos pengeluaran wajib yang jumlahnya relatif tetap setiap bulan untuk operasional/fasilitas hidup.<br>
+                <span class="text-blue-700 dark:text-blue-300"><b>Contoh:</b> Listrik PLN, Air PDAM, Wi-Fi Indihome, BPJS Kesehatan, Iuran IPL Lingkungan.</span>
+              </div>
+              <div id="setup-bills-list" class="space-y-2 mb-4"></div>
+              <button onclick="addSimpleCategory('bills', 'Tagihan')" class="w-full py-3 border-2 border-dashed rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:border-primary text-primary transition-all">
+                <span class="material-symbols-outlined text-sm">add_circle</span> TAMBAHKAN POS BILLS
+              </button>
+            </div>
+
+            <!-- 4. PANEL SPENDING (PENGELUARAN SEHARI-HARI) -->
+            <div id="db-panel-spendings" class="setup-db-panel hidden space-y-4">
+              <div class="p-3 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 rounded-xl text-xs text-rose-900 dark:text-rose-200 leading-relaxed">
+                <b>Fungsi & Tujuan:</b> Pos belanja kebutuhan sehari-hari yang nominalnya dinamis/berubah-ubah. Kategori ini dihubungkan dengan batas maksimal pada menu <i>Budgeting Bulanan</i>.<br>
+                <span class="text-rose-700 dark:text-rose-300"><b>Contoh:</b> Makan & Minum, Belanja Dapur / Sembako, Bensin / Transportasi, Jajan / Nongkrong, Pakaian, Sedekah.</span>
+              </div>
+              <div id="setup-spending-tags" class="flex flex-wrap gap-2 mb-4"></div>
+              <button onclick="addSimpleCategory('spendings', 'Spending')" class="w-full py-3.5 bg-primary text-white rounded-xl font-bold text-xs shadow flex items-center justify-center gap-2 hover:brightness-110 transition-all">
+                <span class="material-symbols-outlined text-sm">add</span> TAMBAHKAN POS SPENDING
+              </button>
+            </div>
+
+            <!-- 5. PANEL INVEST / SAVINGS -->
+            <div id="db-panel-invest" class="setup-db-panel hidden space-y-4">
+              <div class="p-3 bg-cyan-50 dark:bg-cyan-950/30 border border-cyan-200 dark:border-cyan-900/50 rounded-xl text-xs text-cyan-900 dark:text-cyan-200 leading-relaxed">
+                <b>Fungsi & Tujuan:</b> Akumulasi simpanan kas yang disisihkan secara likuid untuk dana darurat, tabungan masa depan, atau instrumen pertumbuhan uang.<br>
+                <span class="text-cyan-700 dark:text-cyan-300"><b>Contoh:</b> Dana Darurat, Reksadana Pasar Uang, Deposito Bank Digital, Simpanan Modal Usaha, Tabungan Hari Tua.</span>
+              </div>
+              <div id="setup-invest-list" class="space-y-3"></div>
+              <button onclick="addValuedCategory('investData', 'Invest')" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2 hover:bg-surface-container-high transition-all">
+                <span class="material-symbols-outlined text-sm">add</span> TAMBAH POS INVEST / TABUNGAN
+              </button>
+            </div>
+
+            <!-- 6. PANEL SINKING FUND -->
+            <div id="db-panel-sinking" class="setup-db-panel hidden space-y-4">
+              <div class="p-3 bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-900/50 rounded-xl text-xs text-purple-900 dark:text-purple-200 leading-relaxed">
+                <b>Fungsi & Tujuan:</b> Menabung berkala sedikit demi sedikit untuk pengeluaran besar terencana yang pasti datang di masa depan, agar arus kas bulanan tidak terbebani saat hari H.<br>
+                <span class="text-purple-700 dark:text-purple-300"><b>Contoh:</b> Pajak Kendaraan Tahunan, Servis Mobil/Motor, Kurban Idul Adha, Dana Mudik Lebaran, Biaya Masuk Sekolah Anak.</span>
+              </div>
+              <div id="setup-sinking-list" class="space-y-3"></div>
+              <button onclick="addValuedCategory('sinkingData', 'Sinking Fund')" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2 hover:bg-surface-container-high transition-all">
+                <span class="material-symbols-outlined text-sm">add</span> TAMBAH POS SINKING FUND
+              </button>
+            </div>
+
+            <!-- 7. PANEL FINANCIAL GOALS -->
+            <div id="db-panel-goals" class="setup-db-panel hidden space-y-4">
+              <div class="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-xl text-xs text-amber-900 dark:text-amber-200 leading-relaxed">
+                <b>Fungsi & Tujuan:</b> Target impian bernilai besar dengan nominal target dan batas waktu tertentu (*deadline*) untuk mengukur progres pencapaian aset impian.<br>
+                <span class="text-amber-700 dark:text-amber-300"><b>Contoh:</b> Beli Rumah / DP KPR (Target Rp 100 Jt), Beli Mobil Baru, Biaya Pernikahan, Ibadah Umroh / Haji, Liburan Luar Negeri.</span>
+              </div>
+              <div id="setup-goals-list" class="space-y-3"></div>
+              <button onclick="addValuedCategory('goalsData', 'Goals')" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2 hover:bg-surface-container-high transition-all">
+                <span class="material-symbols-outlined text-sm">add</span> TAMBAH TARGET FINANCIAL GOAL
+              </button>
+            </div>
+
+            <!-- 8. PANEL PIUTANG (RECEIVABLES) -->
+            <div id="db-panel-receivables" class="setup-db-panel hidden space-y-4">
+              <div class="p-3 bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-900/50 rounded-xl text-xs text-teal-900 dark:text-teal-200 leading-relaxed">
+                <b>Fungsi & Tujuan:</b> Mencatat uang Anda yang sedang dipinjam atau belum dibayar oleh orang lain/klien. Memantau siapa debiturnya, total piutang, tanggal jatuh tempo, dan yang sudah dibayar.<br>
+                <span class="text-teal-700 dark:text-teal-300"><b>Contoh:</b> Pinjaman Teman / Kerabat, Talangan Belanja Kantor, Invoice Penjualan Barang yang Belum Dilunasi Pembeli.</span>
+              </div>
+              <div id="setup-receivables-list" class="space-y-3"></div>
+              <button onclick="addValuedCategory('receivablesData', 'Piutang')" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2 hover:bg-surface-container-high transition-all">
+                <span class="material-symbols-outlined text-sm">add</span> TAMBAH DATA PIUTANG
+              </button>
+            </div>
+
+            <!-- 9. PANEL ASET NON-UANG & NISAB -->
+            <div id="db-panel-nonmoney" class="setup-db-panel hidden space-y-4">
+              <div class="p-3 bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-900/50 rounded-xl text-xs text-yellow-900 dark:text-yellow-200 leading-relaxed">
+                <b>Fungsi & Tujuan:</b> Menginventarisasi aset fisik bernilai tinggi beserta taksiran harganya saat ini. Sistem secara cerdas menghitung apakah total harta Anda telah mencapai batas Nisab Zakat Mal (setara 85 gram emas).<br>
+                <span class="text-yellow-700 dark:text-yellow-300"><b>Contoh:</b> Logam Mulia / Emas Antam (Gram), Tanah / Bangunan Properti, Kendaraan (Mobil/Motor), Saham Usaha, Hewan Ternak.</span>
+              </div>
+              <div id="setup-nonmoney-list" class="space-y-3"></div>
+              <button onclick="addValuedCategory('nonMoneyAssets', 'Aset')" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2 hover:bg-surface-container-high transition-all">
+                <span class="material-symbols-outlined text-sm">add</span> TAMBAH ASET NON-UANG
+              </button>
+            </div>
+
+            <!-- 10. PANEL UTANG & CICILAN -->
+            <div id="db-panel-debts" class="setup-db-panel hidden space-y-4">
+              <div class="p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-xl text-xs text-red-900 dark:text-red-200 leading-relaxed">
+                <b>Fungsi & Tujuan:</b> Mencatat kewajiban utang atau cicilan yang wajib Anda bayar ke pihak lain. Memantau sisa pokok utang, nominal cicilan, serta siklus pembayarannya (Bulanan / Mingguan / Tanggal Tertentu).<br>
+                <span class="text-red-700 dark:text-red-300"><b>Contoh:</b> Cicilan KPR Rumah, Kredit Kendaraan (Leasing), Utang Kartu Kredit, Pinjaman Usaha / KUR, Paylater.</span>
+              </div>
+              <div id="setup-debt-list" class="space-y-3"></div>
+              <button onclick="addDebtItemModal()" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2 hover:bg-surface-container-high transition-all">
+                <span class="material-symbols-outlined text-sm">add</span> TAMBAH UTANG / CICILAN
+              </button>
+            </div>
+
+            <!-- 11. PANEL JADWAL PEMBAYARAN RUTIN -->
+            <div id="db-panel-routine" class="setup-db-panel hidden space-y-4">
+              <div class="p-3 bg-violet-50 dark:bg-violet-950/30 border border-violet-200 dark:border-violet-900/50 rounded-xl text-xs text-violet-900 dark:text-violet-200 leading-relaxed">
+                <b>Fungsi & Tujuan:</b> Mengatur tanggal jatuh tempo tagihan agar sistem menampilkan notifikasi pengingat di Dashboard saat mendekati tanggal bayar (H-3 s.d. hari H).<br>
+                <span class="text-violet-700 dark:text-violet-300"><b>Contoh:</b> Listrik PLN (tgl 5), Wi-Fi Indihome (tgl 15), BPJS Kesehatan (tgl 10), Sewa Tempat / Server (tgl 25).</span>
+              </div>
+              <div id="setup-routine-list" class="space-y-2"></div>
+              <button onclick="addRoutinePaymentItem()" class="w-full py-3 bg-surface-container hover:bg-surface-container-high border rounded-xl text-primary font-bold text-xs flex items-center justify-center gap-1 transition-all">
+                <span class="material-symbols-outlined text-sm">add</span> TAMBAHKAN JADWAL RUTIN
+              </button>
+            </div>
+
+            <!-- 12. PANEL BUDGETING BULANAN -->
+            <div id="db-panel-budgets" class="setup-db-panel hidden space-y-4">
+              <div class="p-3 bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-900/50 rounded-xl text-xs text-orange-900 dark:text-orange-200 leading-relaxed">
+                <b>Fungsi & Tujuan:</b> Menetapkan batas maksimal (*ceiling limit*) belanja bulanan pada tiap pos <i>Spending</i>. Sistem akan memberikan indikator visual di Dashboard (*Aman, Waspada, Overbudget*) untuk mencegah pengeluaran bocor halus.<br>
+                <span class="text-orange-700 dark:text-orange-300"><b>Contoh:</b> Limit Makan & Minum (Maks Rp 2.000.000/bln), Limit Belanja Dapur (Maks Rp 1.500.000/bln), Limit Bensin (Maks Rp 500.000/bln).</span>
+              </div>
+              <div id="setup-budget-list" class="space-y-2"></div>
+            </div>
+          </div>
+
+          <!-- Footer Popup Modal -->
+          <div class="p-4 border-t border-outline-variant/60 bg-surface-container/30 dark:bg-slate-800/30 flex items-center justify-between gap-3">
+            <span class="text-[11px] text-gray-500 dark:text-gray-400 flex items-center gap-1">
+              <span class="material-symbols-outlined text-sm text-green-500">check_circle</span> Perubahan langsung tersimpan otomatis
+            </span>
+            <button onclick="closeSetupDbModal()" class="px-5 py-2.5 bg-primary text-white font-bold rounded-xl text-xs shadow flex items-center gap-1.5 hover:brightness-110 active:scale-95 transition-all">
+              <span class="material-symbols-outlined text-sm">done</span> Selesai & Tutup
+            </button>
+          </div>
+        </div>
+      </div>
+      <footer class="pt-6 pb-2 text-center border-t border-outline-variant/50"><p class="text-[10px] text-gray-400 font-medium tracking-widest uppercase">Copyright © 2025 Sambarang Production</p></footer>
     </div>
 
     <!-- PAGE 4: KALKULATOR FINANSIAL -->
@@ -1301,6 +1535,7 @@
           </div>
         </div>
       </div>
+      <footer class="pt-6 pb-2 text-center border-t border-outline-variant/50"><p class="text-[10px] text-gray-400 font-medium tracking-widest uppercase">Copyright © 2025 Sambarang Production</p></footer>
     </div>
 
   </main>
@@ -1336,7 +1571,605 @@
       '#84cc16'  // Lime
     ];
 
+    // ==============================================================================
+    // SISTEM LISENSI & PERLINDUNGAN ANTI-SHARING (SAMBARANG PRODUCTION)
+    // ==============================================================================
+    const DEFAULT_MASTER_LICENSE_URL = "https://script.google.com/macros/s/AKfycbwYOUR_SCRIPT_ID/exec";
+
+    function getMasterLicenseServerUrl() {
+      // 1. Cek parameter URL (?masterUrl=... atau ?server=...) jika dibuka langsung dari Dev Portal / Link Khusus
+      try {
+        let params = new URLSearchParams(window.location.search);
+        let urlParam = params.get("masterUrl") || params.get("server");
+        if (urlParam && urlParam.startsWith("http")) {
+          localStorage.setItem("KEUANGANKU_DEV_API_URL", urlParam);
+          localStorage.setItem("KEUANGANKU_CUSTOM_LICENSE_URL", urlParam);
+          return urlParam;
+        }
+      } catch(e) {}
+
+      // 2. Cek localStorage
+      let saved = localStorage.getItem("KEUANGANKU_DEV_API_URL") || localStorage.getItem("KEUANGANKU_CUSTOM_LICENSE_URL");
+      return (saved && saved.startsWith("http")) ? saved : DEFAULT_MASTER_LICENSE_URL;
+    }
+
+    function getOrCreateDeviceId() {
+      let devId = localStorage.getItem("KEUANGANKU_DEVICE_ID");
+      if (!devId) {
+        devId = "DEV-" + Date.now().toString(36).toUpperCase() + "-" + Math.random().toString(36).substring(2, 7).toUpperCase();
+        localStorage.setItem("KEUANGANKU_DEVICE_ID", devId);
+      }
+      return devId;
+    }
+
+    function detectDeviceName() {
+      let ua = navigator.userAgent;
+      let os = "Web App";
+      if (/android/i.test(ua)) os = "Android Smartphone";
+      else if (/iphone/i.test(ua)) os = "iPhone";
+      else if (/ipad/i.test(ua)) os = "iPad";
+      else if (/windows/i.test(ua)) os = "Windows PC";
+      else if (/macintosh|mac os x/i.test(ua)) os = "Mac Desktop";
+      else if (/linux/i.test(ua)) os = "Linux PC";
+
+      let browser = "Browser";
+      if (/chrome|crios/i.test(ua) && !/edge|edg/i.test(ua)) browser = "Chrome";
+      else if (/safari/i.test(ua) && !/chrome/i.test(ua)) browser = "Safari";
+      else if (/edg/i.test(ua)) browser = "Edge";
+      else if (/firefox|fxios/i.test(ua)) browser = "Firefox";
+
+      return `${os} (${browser})`;
+    }
+
+    function getSavedLicense() {
+      try {
+        let raw = localStorage.getItem("KEUANGANKU_LICENSE_DATA");
+        if (!raw) return null;
+        let parsed = JSON.parse(raw);
+        return (parsed && parsed.token) ? parsed : null;
+      } catch(e) {
+        return null;
+      }
+    }
+
+    function checkAppLicenseOnStartup() {
+      let devId = getOrCreateDeviceId();
+      let devName = detectDeviceName();
+
+      let nameEl = document.getElementById('gate-device-name');
+      let idEl = document.getElementById('gate-device-id');
+      if (nameEl) nameEl.textContent = devName;
+      if (idEl) idEl.textContent = `Device ID: ${devId}`;
+
+      // Cek apakah ada parameter ?token= di URL (misal dibuka langsung dari Dev Portal atau link WA)
+      try {
+        let params = new URLSearchParams(window.location.search);
+        let tokenParam = params.get("token");
+        if (tokenParam) {
+          let tokenInp = document.getElementById('license-input-token');
+          if (tokenInp && !tokenInp.value) {
+            tokenInp.value = tokenParam.trim().toUpperCase();
+          }
+          let bumperInp = document.getElementById('bumper-pin-input');
+          if (bumperInp && !bumperInp.value) {
+            bumperInp.value = tokenParam.trim().toUpperCase();
+          }
+        }
+      } catch(e) {}
+
+      updateGateServerIndicator();
+
+      let license = getSavedLicense();
+      let gateScreen = document.getElementById('license-gate-screen');
+      let splashScreen = document.getElementById('splash-screen');
+
+      if (!license || !license.token) {
+        // Belum teraktivasi: Tampilkan Layar Aktivasi Lisensi RESMI, sembunyikan PIN Splash
+        if (gateScreen) gateScreen.classList.remove('hidden');
+        if (splashScreen) splashScreen.classList.add('hidden');
+        return false;
+      } else {
+        // Sudah teraktivasi: Sembunyikan Layar Aktivasi, tampilkan PIN Bumper jika belum login
+        if (gateScreen) gateScreen.classList.add('hidden');
+        if (splashScreen) splashScreen.classList.remove('hidden');
+
+        updateSetupLicenseDisplay(license);
+        updateTokenSecurityBanner(license);
+        updateCloudSyncLockUI(license);
+        renderSetupPasswordCard(license);
+
+        // Verifikasi latar belakang secara senyap (Background Heartbeat) saat ada internet
+        if (navigator.onLine) {
+          setTimeout(() => { verifyLicenseStatusSilently(license.token, devId); }, 1500);
+        }
+        return true;
+      }
+    }
+
+    async function verifyLicenseStatusSilently(token, devId) {
+      let apiUrl = getMasterLicenseServerUrl();
+      if (!apiUrl || !apiUrl.startsWith("http") || apiUrl.includes("YOUR_SCRIPT_ID")) return;
+
+      try {
+        let resp = await fetch(`${apiUrl}?action=verify_status&token=${encodeURIComponent(token)}&deviceId=${encodeURIComponent(devId)}&_t=${Date.now()}`);
+        let res = await resp.json();
+
+        if (res && res.success && res.active === false) {
+          // Lisensi diblokir atau perangkat ini telah direset oleh developer!
+          localStorage.removeItem("KEUANGANKU_LICENSE_DATA");
+          let gateScreen = document.getElementById('license-gate-screen');
+          if (gateScreen) gateScreen.classList.remove('hidden');
+
+          let errBox = document.getElementById('gate-error-box');
+          let errTxt = document.getElementById('gate-error-text');
+          if (errBox && errTxt) {
+            errBox.classList.remove('hidden');
+            errTxt.textContent = res.message || "Lisensi dinonaktifkan atau perangkat telah dilepas oleh Developer.";
+          }
+        } else if (res && res.success && res.active === true) {
+          // Update status PIN jika diubah oleh admin / di perangkat lain
+          let lic = getSavedLicense();
+          if (lic && res.pinStatus && lic.pinStatus !== res.pinStatus) {
+            lic.pinStatus = res.pinStatus;
+            localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(lic));
+            updateSetupLicenseDisplay(lic);
+            updateTokenSecurityBanner(lic);
+            updateCloudSyncLockUI(lic);
+            renderSetupPasswordCard(lic);
+          }
+        }
+      } catch(e) {
+        // Offline / network fallback
+      }
+    }
+
+    // Helper komunikasi API lisensi klien yang kebal CORS
+    async function callClientLicenseApi(payload) {
+      let apiUrl = getMasterLicenseServerUrl();
+      if (!apiUrl || !apiUrl.startsWith("http") || apiUrl.includes("YOUR_SCRIPT_ID")) {
+        throw new Error("Server lisensi developer belum dikonfigurasi.");
+      }
+
+      // 1. Coba POST dengan simple header 'text/plain;charset=utf-8' (tanpa CORS preflight OPTIONS)
+      try {
+        let resp = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        if (resp.ok) {
+          let data = await resp.json();
+          return data;
+        }
+      } catch(e) {
+        console.warn("Metode POST dialihkan ke GET fallback...", e);
+      }
+
+      // 2. Fallback GET otomatis jika browser memblokir POST (kebal CORS 100%)
+      let queryParams = new URLSearchParams();
+      for (let key in payload) {
+        if (payload[key] !== undefined && payload[key] !== null) {
+          queryParams.append(key, typeof payload[key] === 'object' ? JSON.stringify(payload[key]) : payload[key]);
+        }
+      }
+      queryParams.append('_t', Date.now());
+
+      let sep = apiUrl.includes('?') ? '&' : '?';
+      let getResp = await fetch(`${apiUrl}${sep}${queryParams.toString()}`);
+      return await getResp.json();
+    }
+
+    async function handleClientLicenseSubmit(e) {
+      e.preventDefault();
+      let tokenInput = (document.getElementById('license-input-token').value || '').trim().toUpperCase();
+      let personalPinInput = (document.getElementById('license-input-personal-pin')?.value || '').trim();
+      let devId = getOrCreateDeviceId();
+      let devName = detectDeviceName();
+      let apiUrl = getMasterLicenseServerUrl();
+
+      let errBox = document.getElementById('gate-error-box');
+      let errTxt = document.getElementById('gate-error-text');
+      let btn = document.getElementById('btn-gate-activate');
+      let personalPinBox = document.getElementById('gate-personal-pin-container');
+      let personalPinInp = document.getElementById('license-input-personal-pin');
+
+      if (errBox) errBox.classList.add('hidden');
+
+      if (!tokenInput) {
+        if (errBox && errTxt) { errBox.classList.remove('hidden'); errTxt.textContent = "Masukkan kode token lisensi Anda."; }
+        return;
+      }
+
+      if (!apiUrl || !apiUrl.startsWith("http") || apiUrl.includes("YOUR_SCRIPT_ID")) {
+        if (errBox && errTxt) {
+          errBox.classList.remove('hidden');
+          errTxt.innerHTML = "Server lisensi developer belum dikonfigurasi. Klik '<b>Server Config</b>' di bawah untuk memasukkan URL Web App Google Script Anda.";
+        }
+        toggleGateServerConfig(true);
+        return;
+      }
+
+      let origHtml = btn.innerHTML;
+      btn.innerHTML = `<span class="material-symbols-outlined text-base animate-spin">progress_activity</span> MEMVALIDASI LISENSI...`;
+      btn.disabled = true;
+
+      try {
+        let res = await callClientLicenseApi({
+          action: 'validate_token',
+          token: tokenInput,
+          pin: personalPinInput,
+          deviceId: devId,
+          deviceName: devName
+        });
+
+        // JIKA TOKEN SUDAH HANGUS DAN BUTUH PIN PRIBADI
+        if (res.isBurned) {
+          if (personalPinBox) personalPinBox.classList.remove('hidden');
+          if (personalPinInp) {
+            personalPinInp.required = true;
+            personalPinInp.focus();
+          }
+          if (errBox && errTxt) {
+            errBox.classList.remove('hidden');
+            errTxt.textContent = res.message || "Token ini sudah hangus. Masukkan PIN Pribadi yang telah Anda buat di perangkat sebelumnya.";
+          }
+          btn.innerHTML = origHtml;
+          btn.disabled = false;
+          return;
+        }
+
+        if (res.success && res.data) {
+          // Simpan lisensi
+          localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(res.data));
+
+          // Set default PIN aplikasi sesuai token jika masih status USING_TOKEN
+          if (res.data.pinStatus === 'USING_TOKEN') {
+            globalData.appPin = res.data.token;
+            globalData.ownerPassword = res.data.token;
+            saveStorageData();
+          } else if (res.data.pinStatus === 'PIN_CHANGED' && personalPinInput) {
+            globalData.appPin = personalPinInput;
+            globalData.ownerPassword = personalPinInput;
+            saveStorageData();
+          }
+
+          playSuccessSound();
+          showSyncToast("🎉 Lisensi Berhasil Diaktivasi!");
+
+          let gateScreen = document.getElementById('license-gate-screen');
+          if (gateScreen) gateScreen.classList.add('hidden');
+
+          updateSetupLicenseDisplay(res.data);
+          updateTokenSecurityBanner(res.data);
+          updateCloudSyncLockUI(res.data);
+          renderSetupPasswordCard(res.data);
+
+          let welcomeMsg = (res.data.pinStatus === 'USING_TOKEN')
+            ? `Selamat datang, ${res.data.buyerName}!\n\nLisensi Keuanganku PRO Anda berhasil diaktivasi di perangkat ini.\n\n📌 Catatan Penting:\nToken pembelian Anda (${res.data.token}) adalah password default masuk aplikasi. Fitur Cloud Sync masih terkunci sampai Anda membuat PIN Pribadi di menu Setup.`
+            : `Selamat datang kembali, ${res.data.buyerName}!\n\nPerangkat tambahan berhasil diotorisasi dengan PIN Pribadi Anda. Fitur Multi-Perangkat dan Cloud Sync telah aktif!`;
+
+          alert(welcomeMsg);
+        } else {
+          if (errBox && errTxt) {
+            errBox.classList.remove('hidden');
+            errTxt.textContent = res.message || "Aktivasi gagal. Periksa kembali kode token Anda.";
+          }
+        }
+      } catch(err) {
+        if (errBox && errTxt) {
+          errBox.classList.remove('hidden');
+          errTxt.textContent = "Koneksi ke server lisensi gagal. Pastikan kuota internet aktif atau URL server valid.";
+        }
+      }
+
+      btn.innerHTML = origHtml;
+      btn.disabled = false;
+    }
+
+    function updateSetupLicenseDisplay(lic) {
+      if (!lic) return;
+      let tokEl = document.getElementById('setup-license-token');
+      let ownerEl = document.getElementById('setup-license-owner');
+      let pinStatusEl = document.getElementById('setup-license-pin-status');
+      let quotaEl = document.getElementById('setup-license-quota');
+      let badgeEl = document.getElementById('setup-license-badge');
+
+      if (tokEl) tokEl.textContent = lic.token || '-';
+      if (ownerEl) ownerEl.textContent = lic.buyerName || '-';
+
+      let isChanged = (lic.pinStatus === 'PIN_CHANGED');
+      if (pinStatusEl) {
+        if (isChanged) {
+          pinStatusEl.className = "font-bold mt-0.5 text-emerald-400 flex items-center gap-1";
+          pinStatusEl.innerHTML = `<span class="material-symbols-outlined text-xs">verified</span> PIN Pribadi Aktif (Token Hangus 🔥)`;
+        } else {
+          pinStatusEl.className = "font-bold mt-0.5 text-amber-400 flex items-center gap-1";
+          pinStatusEl.innerHTML = `<span class="material-symbols-outlined text-xs">key</span> Token Bawaan (Akses 1 Device)`;
+        }
+      }
+
+      if (quotaEl) {
+        if (isChanged) {
+          quotaEl.className = "font-mono-data text-emerald-400 font-bold mt-0.5";
+          quotaEl.textContent = `${lic.deviceCount || 1} / ${lic.maxDevices || 2} Perangkat Digunakan`;
+        } else {
+          quotaEl.className = "font-mono-data text-amber-400 font-bold mt-0.5";
+          quotaEl.textContent = `1 Perangkat (Terkunci Sebelum Ganti PIN)`;
+        }
+      }
+
+      if (badgeEl) {
+        if (isChanged) {
+          badgeEl.className = "px-2.5 py-0.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] font-extrabold rounded-full flex items-center gap-1";
+          badgeEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> TERAKTIVASI (PIN PRIBADI)`;
+        } else {
+          badgeEl.className = "px-2.5 py-0.5 bg-amber-500/20 text-amber-400 border border-amber-500/40 text-[10px] font-extrabold rounded-full flex items-center gap-1";
+          badgeEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span> MASIH TOKEN BAWAAN (1 DEVICE)`;
+        }
+      }
+    }
+
+    function updateTokenSecurityBanner(lic) {
+      let banner = document.getElementById('token-security-warning-banner');
+      if (!banner) return;
+
+      if (lic && lic.pinStatus === 'USING_TOKEN') {
+        banner.className = "bg-gradient-to-r from-amber-500/15 via-amber-600/10 to-orange-500/15 border border-amber-500/40 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-amber-300 shadow-sm";
+        banner.innerHTML = `
+          <div class="flex items-start sm:items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-amber-400 text-2xl">shield_lock</span>
+            </div>
+            <div class="text-xs">
+              <p class="font-bold text-amber-200 text-sm">Mode Token Pembelian (Terkunci 1 Perangkat)</p>
+              <p class="text-[11px] text-amber-300/80 mt-0.5 leading-relaxed">
+                Aplikasi saat ini menggunakan Token Bawaan sebagai password. <b>Fitur Sinkronisasi Cloud terkunci</b>. Segera buat <b>PIN Pribadi</b> Anda di menu Setup untuk menghanguskan token dan membuka fitur sinkronisasi multi-perangkat!
+              </p>
+            </div>
+          </div>
+          <button onclick="navTo('setup'); document.getElementById('setup-pass-section')?.scrollIntoView({behavior:'smooth'});" class="px-3.5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs rounded-xl whitespace-nowrap shadow-md active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0">
+            <span class="material-symbols-outlined text-sm">local_fire_department</span> BUAT PIN PRIBADI
+          </button>
+        `;
+        banner.classList.remove('hidden');
+      } else {
+        banner.classList.add('hidden');
+        banner.innerHTML = '';
+      }
+    }
+
+    function updateCloudSyncLockUI(lic) {
+      let lockNotice = document.getElementById('cloud-sync-lock-notice');
+      let statusBadge = document.getElementById('setup-cloud-status-badge');
+      let btnUpload = document.getElementById('btn-upload-cloud');
+      let btnDownload = document.getElementById('btn-download-cloud');
+
+      let isLocked = (!lic || lic.pinStatus === 'USING_TOKEN');
+
+      if (lockNotice) {
+        if (isLocked) lockNotice.classList.remove('hidden');
+        else lockNotice.classList.add('hidden');
+      }
+
+      if (statusBadge) {
+        if (isLocked) {
+          statusBadge.className = "px-2.5 py-1 bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 text-[10px] font-extrabold rounded-full flex items-center gap-1.5 border border-amber-300 dark:border-amber-800";
+          statusBadge.innerHTML = `<span class="material-symbols-outlined text-xs">lock</span> CLOUD TERKUNCI`;
+        } else {
+          statusBadge.className = "px-2.5 py-1 bg-green-100 dark:bg-green-950/80 text-green-700 dark:text-green-300 text-[10px] font-extrabold rounded-full flex items-center gap-1.5 border border-green-200 dark:border-green-800";
+          statusBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> AUTO-SYNC AKTIF`;
+        }
+      }
+
+      if (btnUpload && btnDownload) {
+        if (isLocked) {
+          btnUpload.classList.add('opacity-50');
+          btnDownload.classList.add('opacity-50');
+        } else {
+          btnUpload.classList.remove('opacity-50');
+          btnDownload.classList.remove('opacity-50');
+        }
+      }
+    }
+
+    function renderSetupPasswordCard(lic) {
+      let iconEl = document.getElementById('setup-pass-icon');
+      let titleEl = document.getElementById('setup-pass-title');
+      let badgeEl = document.getElementById('setup-pass-badge');
+      let infoBox = document.getElementById('setup-pass-info-box');
+      let btnSave = document.getElementById('btn-save-personal-pin');
+
+      if (!btnSave) return;
+
+      let isChanged = (lic && lic.pinStatus === 'PIN_CHANGED');
+
+      if (isChanged) {
+        if (iconEl) { iconEl.className = "material-symbols-outlined text-emerald-500 text-xl"; iconEl.textContent = "verified_user"; }
+        if (titleEl) titleEl.textContent = "Ubah PIN Pribadi Pemilik";
+        if (badgeEl) {
+          badgeEl.className = "px-2.5 py-0.5 text-[10px] font-extrabold rounded-full border bg-emerald-500/15 text-emerald-400 border-emerald-500/30";
+          badgeEl.textContent = "PIN PRIBADI AKTIF (TOKEN HANGUS)";
+        }
+        if (infoBox) {
+          infoBox.className = "p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-900 dark:text-emerald-200 text-xs leading-relaxed space-y-1";
+          infoBox.innerHTML = `
+            <p class="font-bold flex items-center gap-1.5 text-emerald-800 dark:text-emerald-300">
+              <span class="material-symbols-outlined text-sm">verified</span> Proteksi Pribadi Aktif
+            </p>
+            <p>Token pembelian bawaan Anda telah <b>HANGUS</b> secara permanen di server master. Anda dapat memperbarui PIN Pribadi Anda kapan saja di bawah ini.</p>
+          `;
+        }
+        btnSave.className = "w-full py-2.5 bg-primary hover:bg-primary-container text-white font-bold text-xs rounded-xl shadow flex items-center justify-center gap-1.5 transition-all cursor-pointer";
+        btnSave.innerHTML = `<span class="material-symbols-outlined text-sm">save</span> SIMPAN PIN BARU`;
+      } else {
+        if (iconEl) { iconEl.className = "material-symbols-outlined text-amber-500 text-xl"; iconEl.textContent = "key"; }
+        if (titleEl) titleEl.textContent = "Buat PIN Pribadi (Hanguskan Token)";
+        if (badgeEl) {
+          badgeEl.className = "px-2.5 py-0.5 text-[10px] font-extrabold rounded-full border bg-amber-500/15 text-amber-400 border-amber-500/30";
+          badgeEl.textContent = "MASIH TOKEN BAWAAN (1 DEVICE)";
+        }
+        if (infoBox) {
+          infoBox.className = "p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs leading-relaxed space-y-1";
+          infoBox.innerHTML = `
+            <p class="font-bold flex items-center gap-1.5 text-amber-800 dark:text-amber-300">
+              <span class="material-symbols-outlined text-sm">security</span> Kunci Keamanan Anti-Sharing
+            </p>
+            <p id="setup-pass-info-text">
+              Saat ini Anda masih masuk menggunakan Token Bawaan (akses terkunci hanya 1 perangkat). Tentukan <b>PIN Pribadi</b> Anda di bawah ini. Setelah PIN disimpan, Token bawaan akan otomatis <b>HANGUS</b> sehingga tidak bisa digunakan orang lain, dan fitur Sinkronisasi Multi-Perangkat akan aktif!
+            </p>
+          `;
+        }
+        btnSave.className = "w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs rounded-xl shadow flex items-center justify-center gap-1.5 transition-all cursor-pointer";
+        btnSave.innerHTML = `<span class="material-symbols-outlined text-sm">local_fire_department</span> BUAT PIN & HANGUSKAN`;
+      }
+    }
+
+    async function handleBurnTokenAndSetPin() {
+      let pinInput = document.getElementById('new-pass-input');
+      if (!pinInput) return;
+      let newPin = pinInput.value.trim();
+      if (!newPin || newPin.length < 3) {
+        alert("PIN Pribadi minimal 3 karakter!");
+        return;
+      }
+
+      let lic = getSavedLicense();
+      if (!lic || !lic.token) {
+        alert("Lisensi resmi tidak ditemukan di perangkat ini.");
+        return;
+      }
+
+      let isFirstTime = (lic.pinStatus !== 'PIN_CHANGED');
+      let confirmMsg = isFirstTime 
+        ? `🔥 KONFIRMASI BUAT PIN & HANGUSKAN TOKEN:\n\n1. Token lisensi Anda (${lic.token}) akan HANGUS dan tidak bisa dipakai lagi oleh orang lain.\n2. PIN baru Anda (${newPin}) akan menjadi kunci masuk aplikasi dan otorisasi perangkat baru.\n3. Fitur Sinkronisasi Cloud Multi-Perangkat akan langsung TERBUKA.\n\nApakah Anda yakin ingin memproses ini sekarang?`
+        : `Konfirmasi Perubahan PIN Pribadi:\n\nUbah PIN Pribadi menjadi: ${newPin}?`;
+
+      if (!confirm(confirmMsg)) return;
+
+      let devId = getOrCreateDeviceId();
+      let apiUrl = getMasterLicenseServerUrl();
+
+      let btn = document.getElementById('btn-save-personal-pin');
+      let origHtml = btn ? btn.innerHTML : '';
+      if (btn) {
+        btn.innerHTML = `<span class="material-symbols-outlined text-sm animate-spin">sync</span> MENGHANGUSKAN TOKEN...`;
+        btn.disabled = true;
+      }
+
+      try {
+        let res = await callClientLicenseApi({
+          action: 'client_change_pin',
+          token: lic.token,
+          newPin: newPin,
+          deviceId: devId
+        });
+
+        if (res && res.success) {
+          // Update status lokal
+          lic.pinStatus = 'PIN_CHANGED';
+          localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(lic));
+
+          // Simpan ke database lokal
+          globalData.appPin = newPin;
+          globalData.ownerPassword = newPin;
+          saveStorageData();
+
+          pinInput.value = '';
+          playSuccessSound();
+          showSyncToast("🎉 PIN Pribadi Aktif! Token Bawaan Hangus & Cloud Sync Terbuka!");
+
+          updateSetupLicenseDisplay(lic);
+          updateTokenSecurityBanner(lic);
+          updateCloudSyncLockUI(lic);
+          renderSetupPasswordCard(lic);
+
+          alert(`🎉 SELAMAT!\n\nPIN Pribadi Anda berhasil dibuat (${newPin}).\n\n✓ Token bawaan (${lic.token}) telah HANGUS di server master dan tidak dapat dibagikan secara ilegal.\n✓ Fitur Sinkronisasi Cloud Multi-Perangkat sekarang TERBUKA!`);
+        } else {
+          alert("Gagal memproses PIN: " + (res.message || "Terjadi kesalahan server."));
+        }
+      } catch(err) {
+        alert("Gagal terhubung ke Master Server Lisensi. Pastikan koneksi internet Anda aktif untuk menghanguskan token di server developer.");
+      } finally {
+        if (btn) {
+          btn.innerHTML = origHtml;
+          btn.disabled = false;
+        }
+      }
+    }
+
+    async function handleDeactivateCurrentDevice() {
+      let lic = getSavedLicense();
+      if (!lic || !lic.token) return;
+
+      if (!confirm(`Konfirmasi Pelepasan Lisensi:\n\nApakah Anda yakin ingin melepas lisensi ${lic.token} dari perangkat ini?\n\nSetelah dilepas, aplikasi di perangkat ini akan terkunci kembali dan kuota slot perangkat Anda di server akan dibebaskan sehingga bisa dipakai di HP/Laptop lain.`)) {
+        return;
+      }
+
+      let devId = getOrCreateDeviceId();
+
+      try {
+        await callClientLicenseApi({
+          action: 'deactivate_device',
+          token: lic.token,
+          deviceId: devId
+        });
+      } catch(e) {}
+
+      localStorage.removeItem("KEUANGANKU_LICENSE_DATA");
+      alert("Lisensi berhasil dilepas dari perangkat ini.");
+      location.reload();
+    }
+
+    function updateGateServerIndicator() {
+      let pill = document.getElementById('gate-server-status-pill');
+      if (!pill) return;
+      let url = getMasterLicenseServerUrl();
+      let isConfigured = url && url.startsWith("http") && !url.includes("YOUR_SCRIPT_ID");
+      if (isConfigured) {
+        pill.innerHTML = `
+          <button type="button" onclick="toggleGateServerConfig()" class="text-emerald-400 hover:text-emerald-300 font-mono-data text-[10px] flex items-center gap-1 transition-colors" title="Server Lisensi Terhubung: ${url}">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Server Terhubung
+          </button>
+        `;
+      } else {
+        pill.innerHTML = `
+          <button type="button" onclick="toggleGateServerConfig(true)" class="text-amber-400 hover:text-amber-300 font-bold underline text-[10px] flex items-center gap-1 animate-pulse" title="Klik untuk mengatur URL Server Lisensi Google Script">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Hubungkan Server
+          </button>
+        `;
+      }
+    }
+
+    function toggleGateServerConfig(show) {
+      let box = document.getElementById('gate-server-config');
+      let input = document.getElementById('gate-server-url-input');
+      if (!box) return;
+      if (show === true) box.classList.remove('hidden');
+      else box.classList.toggle('hidden');
+      if (!box.classList.contains('hidden') && input) {
+        input.value = getMasterLicenseServerUrl();
+      }
+    }
+
+    function saveGateServerUrl() {
+      let input = document.getElementById('gate-server-url-input');
+      if (!input) return;
+      let val = input.value.trim();
+      if (val && val.startsWith('http')) {
+        localStorage.setItem("KEUANGANKU_CUSTOM_LICENSE_URL", val);
+        localStorage.setItem("KEUANGANKU_DEV_API_URL", val);
+        let errBox = document.getElementById('gate-error-box');
+        if (errBox) errBox.classList.add('hidden');
+        updateGateServerIndicator();
+        alert("✓ URL Master Server Lisensi berhasil disimpan & terhubung!");
+        toggleGateServerConfig(false);
+      } else {
+        alert("URL tidak valid. Harus diawali https://");
+      }
+    }
+
     window.onload = function() {
+      checkAppLicenseOnStartup();
       loadStorageData();
       let dateInput = document.getElementById('tx-date');
       if (dateInput) dateInput.valueAsDate = new Date();
@@ -1428,6 +2261,15 @@
       if (!input) return;
       let url = input.value.trim();
 
+      let lic = getSavedLicense();
+      if (lic && lic.pinStatus === 'USING_TOKEN') {
+        if (errEl) {
+          errEl.textContent = "Fitur Sinkronisasi Cloud terkunci. Anda masih menggunakan Token Bawaan. Silakan masuk menggunakan Token dan buat PIN Pribadi di menu Setup terlebih dahulu!";
+          errEl.classList.remove('hidden');
+        }
+        return;
+      }
+
       if (!url || !url.startsWith("http")) {
         if (errEl) {
           errEl.textContent = "Link Cloud tidak valid! Harap masukkan URL diawali https://";
@@ -1449,6 +2291,8 @@
           globalData = data;
           globalData.cloudUrl = url;
           localStorage.setItem("KEUANGANKU_CLOUD_URL", url);
+          localStorage.setItem("KEUANGANKU_DEV_API_URL", url);
+          localStorage.setItem("KEUANGANKU_CUSTOM_LICENSE_URL", url);
           localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData));
           
           initApp();
@@ -1477,25 +2321,144 @@
       }
     }
 
-    function verifyBumperPin() {
+    async function verifyBumperPin() {
       let pinInput = (document.getElementById('bumper-pin-input').value || '').trim();
-      let validPin = String((globalData && globalData.appPin !== undefined && globalData.appPin !== '') ? globalData.appPin : '123').trim();
-      let validPass = String((globalData && globalData.ownerPassword !== undefined && globalData.ownerPassword !== '') ? globalData.ownerPassword : '').trim();
+      let err = document.getElementById('bumper-error-msg');
+      let btn = document.getElementById('btn-bumper-login') || document.querySelector('#bumper-pin-section button');
+      let origBtnHtml = btn ? btn.innerHTML : 'MASUK APLIKASI';
 
-      // Hanya izinkan masuk jika PIN cocok, atau password pemilik cocok.
-      // PIN bawaan '123' hanya berlaku jika PIN belum pernah diubah dari default.
-      let isPinValid = (pinInput === validPin);
-      let isPassValid = (validPass !== "" && pinInput === validPass);
+      if (err) err.classList.add('hidden');
 
-      if (isPinValid || isPassValid) {
-        let splash = document.getElementById('splash-screen');
-        if (splash) { splash.classList.add('opacity-0'); setTimeout(() => splash.classList.add('hidden'), 700); }
-      } else {
-        let err = document.getElementById('bumper-error-msg'); 
+      if (!pinInput) {
         if (err) {
-          err.textContent = "PIN Salah! Coba lagi.";
+          err.textContent = "Masukkan PIN atau Kode Token Lisensi Anda.";
           err.classList.remove('hidden');
         }
+        return;
+      }
+
+      let upperInput = pinInput.toUpperCase();
+      let cleanInput = upperInput.replace(/[^A-Z0-9]/g, '');
+      let isTokenFormat = cleanInput.startsWith('PRO') || cleanInput.length >= 8 || pinInput.includes('-');
+
+      let validPin = String((globalData && globalData.appPin !== undefined && globalData.appPin !== '') ? globalData.appPin : '123').trim();
+      let validPass = String((globalData && globalData.ownerPassword !== undefined && globalData.ownerPassword !== '') ? globalData.ownerPassword : '').trim();
+      let lic = getSavedLicense();
+
+      // 1. Jika pengguna memasukkan PIN reguler yang cocok (misal PIN pribadi atau PIN default)
+      let isPinValid = (pinInput === validPin);
+      let isPassValid = (validPass !== "" && pinInput === validPass);
+      let isSavedTokenValid = (lic && lic.pinStatus === 'USING_TOKEN' && lic.token && (upperInput === lic.token.toUpperCase() || cleanInput === lic.token.replace(/[^A-Z0-9]/g, '').toUpperCase()));
+
+      if (isSavedTokenValid || (isPinValid && lic) || (isPassValid && lic)) {
+        let splash = document.getElementById('splash-screen');
+        if (splash) { splash.classList.add('opacity-0'); setTimeout(() => splash.classList.add('hidden'), 700); }
+        let gate = document.getElementById('license-gate-screen');
+        if (gate) gate.classList.add('hidden');
+        return;
+      }
+
+      // 2. Jika lisensi sudah aktif dan berstatus PIN_CHANGED, tapi pengguna malah mengetik token bawaan lama
+      if (lic && lic.pinStatus === 'PIN_CHANGED' && lic.token && (upperInput === lic.token.toUpperCase() || cleanInput === lic.token.replace(/[^A-Z0-9]/g, '').toUpperCase())) {
+        if (err) {
+          err.textContent = "Token bawaan ini sudah HANGUS! Masukkan PIN Pribadi yang telah Anda buat di menu Setup.";
+          err.classList.remove('hidden');
+        }
+        return;
+      }
+
+      // 3. JIKA INPUT ADALAH TOKEN LISENSI (Misal: PRO-FEKY-P7F7-G5ZB atau PROFEKYP7F7G5ZB)
+      //    Validasi langsung ke Server Master Google Apps Script!
+      if (isTokenFormat) {
+        let apiUrl = getMasterLicenseServerUrl();
+        if (!apiUrl || !apiUrl.startsWith("http") || apiUrl.includes("YOUR_SCRIPT_ID")) {
+          if (err) {
+            err.innerHTML = "Server lisensi belum diatur. Klik '<b>Hubungkan ke Cloud</b>' di bawah untuk mengisi link Web App Google Script Anda.";
+            err.classList.remove('hidden');
+          }
+          toggleBumperCloudModal(true);
+          return;
+        }
+
+        if (btn) {
+          btn.innerHTML = `<span class="material-symbols-outlined text-sm animate-spin">progress_activity</span> MEMVALIDASI LISENSI...`;
+          btn.disabled = true;
+        }
+
+        try {
+          let devId = getOrCreateDeviceId();
+          let devName = detectDeviceName();
+
+          let res = await callClientLicenseApi({
+            action: 'validate_token',
+            token: pinInput,
+            deviceId: devId,
+            deviceName: devName
+          });
+
+          if (res.isBurned) {
+            if (err) {
+              err.textContent = res.message || "Token ini sudah hangus. Masukkan PIN Pribadi yang Anda buat di perangkat sebelumnya.";
+              err.classList.remove('hidden');
+            }
+            if (btn) { btn.innerHTML = origBtnHtml; btn.disabled = false; }
+            return;
+          }
+
+          if (res.success && res.data) {
+            // Lisensi VALID & Berhasil Diaktivasi!
+            localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(res.data));
+            if (res.data.pinStatus === 'USING_TOKEN') {
+              globalData.appPin = res.data.token;
+              globalData.ownerPassword = res.data.token;
+              saveStorageData();
+            }
+
+            playSuccessSound();
+            showSyncToast("🎉 Lisensi Berhasil Diaktivasi!");
+
+            let splash = document.getElementById('splash-screen');
+            if (splash) { splash.classList.add('opacity-0'); setTimeout(() => splash.classList.add('hidden'), 700); }
+            let gate = document.getElementById('license-gate-screen');
+            if (gate) gate.classList.add('hidden');
+
+            updateSetupLicenseDisplay(res.data);
+            updateTokenSecurityBanner(res.data);
+            updateCloudSyncLockUI(res.data);
+            renderSetupPasswordCard(res.data);
+
+            alert(`Selamat datang, ${res.data.buyerName}!\n\nLisensi Keuanganku PRO Anda (${res.data.token}) berhasil diaktivasi di perangkat ini.`);
+            return;
+          } else {
+            if (err) {
+              err.textContent = res.message || "Kode lisensi tidak valid atau belum terdaftar.";
+              err.classList.remove('hidden');
+            }
+          }
+        } catch(apiErr) {
+          if (err) {
+            err.textContent = "Koneksi ke server lisensi gagal: " + (apiErr.message || "Periksa koneksi internet Anda.");
+            err.classList.remove('hidden');
+          }
+        } finally {
+          if (btn) { btn.innerHTML = origBtnHtml; btn.disabled = false; }
+        }
+        return;
+      }
+
+      // 4. Jika bukan format token, dan lisensi belum pernah diaktifkan
+      if (!lic) {
+        if (err) {
+          err.textContent = "Aplikasi membutuhkan Aktivasi Lisensi. Masukkan Kode Token Pembelian Anda (format: PRO-XXXX-XXXX-XXXX).";
+          err.classList.remove('hidden');
+        }
+        return;
+      }
+
+      // 5. Salah PIN reguler
+      if (err) {
+        err.textContent = "PIN / Password Salah! Coba lagi.";
+        err.classList.remove('hidden');
       }
     }
 
@@ -1572,6 +2535,17 @@
     }
 
     async function syncWithCloud(isManualClick = false) {
+      let lic = getSavedLicense();
+      if (lic && lic.pinStatus === 'USING_TOKEN') {
+        setSyncStatus('offline', 'Cloud Terkunci');
+        if (isManualClick) {
+          alert("🔒 FITUR SINKRONISASI CLOUD TERKUNCI\n\nAnda saat ini masih masuk menggunakan Token Pembelian bawaan (mode akses 1 perangkat).\n\nUntuk menghindari aplikasi dibagikan secara ilegal, fitur sinkronisasi antar-perangkat dinonaktifkan sementara. Silakan buat PIN Pribadi Anda di Menu Setup untuk membuka fitur ini!");
+          navTo('setup');
+          document.getElementById('setup-pass-section')?.scrollIntoView({behavior:'smooth'});
+        }
+        return;
+      }
+
       if (!globalData.cloudUrl || !globalData.cloudUrl.startsWith("http")) {
         setSyncStatus('offline', 'Cloud Nonaktif');
         if (isManualClick) {
@@ -1737,6 +2711,12 @@
       populateReportFilterCategories();
       
       if (globalData.cloudUrl && globalData.cloudUrl.startsWith("http")) {
+        let lic = getSavedLicense();
+        if (lic && lic.pinStatus === 'USING_TOKEN') {
+          setSyncStatus('offline', 'Cloud Terkunci');
+          return;
+        }
+
         setSyncStatus('syncing', 'Menyimpan...');
         try { 
           await fetch(globalData.cloudUrl, { 
@@ -1754,6 +2734,13 @@
     }
 
     async function forceUploadToCloud() {
+      let lic = getSavedLicense();
+      if (lic && lic.pinStatus === 'USING_TOKEN') {
+        alert("🔒 SINKRONISASI CLOUD TERKUNCI\n\nAnda masih menggunakan Token Pembelian bawaan. Untuk melindungi keamanan lisensi dari pembagian ilegal, fitur upload/download Cloud hanya dapat digunakan setelah Anda membuat PIN Pribadi di menu Setup di atas.");
+        document.getElementById('setup-pass-section')?.scrollIntoView({behavior:'smooth'});
+        return;
+      }
+
       if (!globalData.cloudUrl || !globalData.cloudUrl.startsWith("http")) {
         alert("GAGAL: Kunci Cloud kosong atau tidak valid!\nSilakan isi link Web App Google Sheets Anda di kolom yang tersedia terlebih dahulu.");
         return;
@@ -1772,6 +2759,13 @@
     }
 
     async function forceDownloadFromCloud() {
+      let lic = getSavedLicense();
+      if (lic && lic.pinStatus === 'USING_TOKEN') {
+        alert("🔒 SINKRONISASI CLOUD TERKUNCI\n\nAnda masih menggunakan Token Pembelian bawaan. Untuk melindungi keamanan lisensi dari pembagian ilegal, fitur upload/download Cloud hanya dapat digunakan setelah Anda membuat PIN Pribadi di menu Setup di atas.");
+        document.getElementById('setup-pass-section')?.scrollIntoView({behavior:'smooth'});
+        return;
+      }
+
       if (!globalData.cloudUrl || !globalData.cloudUrl.startsWith("http")) {
         alert("GAGAL: Kunci Cloud kosong!\nSilakan isi link Web App Google Sheets Anda terlebih dahulu agar sistem tahu data mana yang harus ditarik.");
         return;
@@ -3255,6 +4249,387 @@
       renderHistoryTable(); 
     }
     
+    
+    const SETUP_DB_CATEGORIES = [
+      {
+        id: 'accounts',
+        title: 'Akun Bank & E-Wallet',
+        icon: 'credit_card',
+        iconColor: 'text-indigo-600 dark:text-indigo-400',
+        bgIcon: 'bg-indigo-500/10 dark:bg-indigo-500/20',
+        badgeColor: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800',
+        desc: 'Rekening bank, dompet digital, dan kas fisik tempat penyimpanan saldo aktif.',
+        getCount: () => (globalData.accounts ? globalData.accounts.length : 0),
+        getCountUnit: () => 'Akun',
+        getPreview: () => {
+          let arr = globalData.accounts || [];
+          if (!arr.length) return 'Belum ada akun';
+          return arr.slice(0, 3).join(', ') + (arr.length > 3 ? ' (+' + (arr.length - 3) + ')' : '');
+        }
+      },
+      {
+        id: 'incomes',
+        title: 'Income (Pemasukan)',
+        icon: 'payments',
+        iconColor: 'text-emerald-600 dark:text-emerald-400',
+        bgIcon: 'bg-emerald-500/10 dark:bg-emerald-500/20',
+        badgeColor: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
+        desc: 'Kategori sumber aliran dana & pemasukan kas masuk (gaji, usaha, komisi, dll).',
+        getCount: () => (globalData.incomes ? globalData.incomes.length : 0),
+        getCountUnit: () => 'Kategori',
+        getPreview: () => {
+          let arr = globalData.incomes || [];
+          if (!arr.length) return 'Belum ada kategori';
+          return arr.slice(0, 3).join(', ') + (arr.length > 3 ? ' (+' + (arr.length - 3) + ')' : '');
+        }
+      },
+      {
+        id: 'bills',
+        title: 'Bills (Tagihan Rutin)',
+        icon: 'receipt_long',
+        iconColor: 'text-blue-600 dark:text-blue-400',
+        bgIcon: 'bg-blue-500/10 dark:bg-blue-500/20',
+        badgeColor: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border-blue-200 dark:border-blue-800',
+        desc: 'Pos pengeluaran wajib bulanan tetap untuk fasilitas hidup (listrik, wifi, PDAM, dll).',
+        getCount: () => (globalData.bills ? globalData.bills.length : 0),
+        getCountUnit: () => 'Kategori',
+        getPreview: () => {
+          let arr = globalData.bills || [];
+          if (!arr.length) return 'Belum ada tagihan';
+          return arr.slice(0, 3).join(', ') + (arr.length > 3 ? ' (+' + (arr.length - 3) + ')' : '');
+        }
+      },
+      {
+        id: 'spendings',
+        title: 'Spending (Pengeluaran)',
+        icon: 'shopping_cart',
+        iconColor: 'text-rose-600 dark:text-rose-400',
+        bgIcon: 'bg-rose-500/10 dark:bg-rose-500/20',
+        badgeColor: 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 border-rose-200 dark:border-rose-800',
+        desc: 'Pos belanja harian fleksibel yang dihubungkan dengan limit Budgeting.',
+        getCount: () => (globalData.spendings ? globalData.spendings.length : 0),
+        getCountUnit: () => 'Kategori',
+        getPreview: () => {
+          let arr = globalData.spendings || [];
+          if (!arr.length) return 'Belum ada spending';
+          return arr.slice(0, 3).join(', ') + (arr.length > 3 ? ' (+' + (arr.length - 3) + ')' : '');
+        }
+      },
+      {
+        id: 'invest',
+        title: 'Invest & Tabungan',
+        icon: 'savings',
+        iconColor: 'text-cyan-600 dark:text-cyan-400',
+        bgIcon: 'bg-cyan-500/10 dark:bg-cyan-500/20',
+        badgeColor: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-950 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800',
+        desc: 'Instrumen simpanan dana darurat, reksadana, deposito, & modal investasi.',
+        getCount: () => (globalData.investData ? Object.keys(globalData.investData).length : 0),
+        getCountUnit: () => 'Instrumen',
+        getPreview: () => {
+          let keys = Object.keys(globalData.investData || {});
+          if (!keys.length) return 'Belum ada investasi';
+          return keys.slice(0, 3).join(', ') + (keys.length > 3 ? ' (+' + (keys.length - 3) + ')' : '');
+        }
+      },
+      {
+        id: 'sinking',
+        title: 'Sinking Fund',
+        icon: 'water_drop',
+        iconColor: 'text-purple-600 dark:text-purple-400',
+        bgIcon: 'bg-purple-500/10 dark:bg-purple-500/20',
+        badgeColor: 'bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 border-purple-200 dark:border-purple-800',
+        desc: 'Tabungan bertahap untuk pengeluaran besar terencana (pajak STNK, kurban, dll).',
+        getCount: () => (globalData.sinkingData ? Object.keys(globalData.sinkingData).length : 0),
+        getCountUnit: () => 'Pos Dana',
+        getPreview: () => {
+          let keys = Object.keys(globalData.sinkingData || {});
+          if (!keys.length) return 'Belum ada sinking fund';
+          return keys.slice(0, 3).join(', ') + (keys.length > 3 ? ' (+' + (keys.length - 3) + ')' : '');
+        }
+      },
+      {
+        id: 'goals',
+        title: 'Financial Goals',
+        icon: 'track_changes',
+        iconColor: 'text-amber-600 dark:text-amber-400',
+        bgIcon: 'bg-amber-500/10 dark:bg-amber-500/20',
+        badgeColor: 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300 border-amber-200 dark:border-amber-800',
+        desc: 'Target impian finansial bernilai besar dengan target nominal & deadline waktu.',
+        getCount: () => (globalData.goalsData ? Object.keys(globalData.goalsData).length : 0),
+        getCountUnit: () => 'Target',
+        getPreview: () => {
+          let keys = Object.keys(globalData.goalsData || {});
+          if (!keys.length) return 'Belum ada goals';
+          return keys.slice(0, 3).join(', ') + (keys.length > 3 ? ' (+' + (keys.length - 3) + ')' : '');
+        }
+      },
+      {
+        id: 'receivables',
+        title: 'Piutang (Receivables)',
+        icon: 'request_quote',
+        iconColor: 'text-teal-600 dark:text-teal-400',
+        bgIcon: 'bg-teal-500/10 dark:bg-teal-500/20',
+        badgeColor: 'bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300 border-teal-200 dark:border-teal-800',
+        desc: 'Catatan uang Anda yang dipinjam atau belum dibayar pihak lain / klien.',
+        getCount: () => (globalData.receivablesData ? Object.keys(globalData.receivablesData).length : 0),
+        getCountUnit: () => 'Peminjam',
+        getPreview: () => {
+          let keys = Object.keys(globalData.receivablesData || {});
+          if (!keys.length) return 'Belum ada piutang';
+          return keys.slice(0, 3).join(', ') + (keys.length > 3 ? ' (+' + (keys.length - 3) + ')' : '');
+        }
+      },
+      {
+        id: 'nonmoney',
+        title: 'Aset Non-Uang & Nisab',
+        icon: 'toll',
+        iconColor: 'text-yellow-600 dark:text-yellow-400',
+        bgIcon: 'bg-yellow-500/10 dark:bg-yellow-500/20',
+        badgeColor: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800',
+        desc: 'Inventaris aset fisik berharga (emas antam, tanah, kendaraan) & hitung Nisab Zakat.',
+        getCount: () => (globalData.nonMoneyAssets ? Object.keys(globalData.nonMoneyAssets).length : 0),
+        getCountUnit: () => 'Aset',
+        getPreview: () => {
+          let keys = Object.keys(globalData.nonMoneyAssets || {});
+          if (!keys.length) return 'Belum ada aset fisik';
+          return keys.slice(0, 3).join(', ') + (keys.length > 3 ? ' (+' + (keys.length - 3) + ')' : '');
+        }
+      },
+      {
+        id: 'debts',
+        title: 'Utang & Cicilan',
+        icon: 'money_off',
+        iconColor: 'text-red-600 dark:text-red-400',
+        bgIcon: 'bg-red-500/10 dark:bg-red-500/20',
+        badgeColor: 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300 border-red-200 dark:border-red-800',
+        desc: 'Kewajiban finansial yang wajib dibayar beserta jadwal & sisa cicilan.',
+        getCount: () => (globalData.debtData ? Object.keys(globalData.debtData).length : 0),
+        getCountUnit: () => 'Kewajiban',
+        getPreview: () => {
+          let keys = Object.keys(globalData.debtData || {});
+          if (!keys.length) return 'Belum ada utang';
+          return keys.slice(0, 3).join(', ') + (keys.length > 3 ? ' (+' + (keys.length - 3) + ')' : '');
+        }
+      },
+      {
+        id: 'routine',
+        title: 'Jadwal Pembayaran Rutin',
+        icon: 'alarm',
+        iconColor: 'text-violet-600 dark:text-violet-400',
+        bgIcon: 'bg-violet-500/10 dark:bg-violet-500/20',
+        badgeColor: 'bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300 border-violet-200 dark:border-violet-800',
+        desc: 'Tanggal jatuh tempo tagihan agar muncul notifikasi pengingat di Dashboard.',
+        getCount: () => (globalData.routinePayments ? Object.keys(globalData.routinePayments).length : 0),
+        getCountUnit: () => 'Jadwal',
+        getPreview: () => {
+          let keys = Object.keys(globalData.routinePayments || {});
+          if (!keys.length) return 'Belum ada jadwal';
+          return keys.slice(0, 3).join(', ') + (keys.length > 3 ? ' (+' + (keys.length - 3) + ')' : '');
+        }
+      },
+      {
+        id: 'budgets',
+        title: 'Budgeting Bulanan',
+        icon: 'pie_chart',
+        iconColor: 'text-orange-600 dark:text-orange-400',
+        bgIcon: 'bg-orange-500/10 dark:bg-orange-500/20',
+        badgeColor: 'bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300 border-orange-200 dark:border-orange-800',
+        desc: 'Batas maksimal belanja tiap pos Spending untuk mengontrol pengeluaran.',
+        getCount: () => (globalData.spendings ? globalData.spendings.length : 0),
+        getCountUnit: () => 'Pos Limit',
+        getPreview: () => {
+          let arr = globalData.spendings || [];
+          if (!arr.length) return 'Atur pos spending dulu';
+          return arr.length + ' pos budget aktif';
+        }
+      }
+    ];
+
+    let currentSetupSubtab = 'pengaturan';
+
+    function switchSetupSubtab(tab) {
+      currentSetupSubtab = tab;
+      let viewPengaturan = document.getElementById('setup-view-pengaturan');
+      let viewDatabase = document.getElementById('setup-view-database');
+      let btnPengaturan = document.getElementById('btn-subtab-pengaturan');
+      let btnDatabase = document.getElementById('btn-subtab-database');
+
+      if (tab === 'database') {
+        if (viewPengaturan) viewPengaturan.classList.add('hidden');
+        if (viewDatabase) viewDatabase.classList.remove('hidden');
+
+        if (btnPengaturan) {
+          btnPengaturan.className = "flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-xs font-bold transition-all text-gray-500 dark:text-gray-400 hover:text-on-surface";
+        }
+        if (btnDatabase) {
+          btnDatabase.className = "flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-xs font-bold transition-all bg-primary text-white shadow";
+        }
+        renderSetupDatabaseCards();
+      } else {
+        if (viewPengaturan) viewPengaturan.classList.remove('hidden');
+        if (viewDatabase) viewDatabase.classList.add('hidden');
+
+        if (btnPengaturan) {
+          btnPengaturan.className = "flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-xs font-bold transition-all bg-primary text-white shadow";
+        }
+        if (btnDatabase) {
+          btnDatabase.className = "flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-xs font-bold transition-all text-gray-500 dark:text-gray-400 hover:text-on-surface";
+        }
+      }
+    }
+
+    function renderSetupDatabaseCards() {
+      let grid = document.getElementById('setup-database-cards-grid');
+      if (!grid) return;
+
+      let html = '';
+      SETUP_DB_CATEGORIES.forEach(cat => {
+        let count = 0;
+        try { count = cat.getCount(); } catch(e) { count = 0; }
+        let unit = cat.getCountUnit ? cat.getCountUnit() : 'Item';
+        let preview = '';
+        try { preview = cat.getPreview(); } catch(e) { preview = '-'; }
+
+        html += `
+          <div onclick="openSetupDbModal('${cat.id}')" class="bg-white dark:bg-slate-800 border border-outline-variant/70 hover:border-primary/50 hover:shadow-lg rounded-2xl p-5 cursor-pointer transition-all flex flex-col justify-between group active:scale-[0.98]">
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <div class="w-11 h-11 rounded-2xl ${cat.bgIcon} ${cat.iconColor} flex items-center justify-center transition-transform group-hover:scale-110 shadow-sm">
+                  <span class="material-symbols-outlined text-2xl">${cat.icon}</span>
+                </div>
+                <span class="px-2.5 py-1 text-[11px] font-extrabold rounded-full border ${cat.badgeColor}">
+                  ${count} ${unit}
+                </span>
+              </div>
+              <div>
+                <h4 class="font-bold text-sm text-on-surface group-hover:text-primary transition-colors flex items-center justify-between">
+                  <span>${cat.title}</span>
+                  <span class="material-symbols-outlined text-base text-gray-400 group-hover:text-primary group-hover:translate-x-1 transition-all">arrow_forward</span>
+                </h4>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed line-clamp-2">${cat.desc}</p>
+              </div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-outline-variant/40 flex items-center justify-between text-xs">
+              <div class="text-[11px] text-gray-500 dark:text-gray-400 truncate max-w-[200px]" title="${preview}">
+                <span class="font-medium opacity-90">${preview}</span>
+              </div>
+              <span class="text-primary text-[11px] font-bold group-hover:underline flex items-center gap-0.5 shrink-0 ml-2">
+                Kelola <span class="material-symbols-outlined text-xs">open_in_new</span>
+              </span>
+            </div>
+          </div>
+        `;
+      });
+      grid.innerHTML = html;
+    }
+
+    function openSetupDbModal(catId) {
+      let modal = document.getElementById('modal-setup-category');
+      let card = document.getElementById('modal-setup-category-card');
+      if (!modal || !card) return;
+
+      let cat = SETUP_DB_CATEGORIES.find(c => c.id === catId);
+      if (!cat) return;
+
+      let titleEl = document.getElementById('modal-cat-title');
+      let descEl = document.getElementById('modal-cat-desc');
+      let iconEl = document.getElementById('modal-cat-icon');
+      let iconCont = document.getElementById('modal-cat-icon-container');
+
+      if (titleEl) titleEl.textContent = cat.title;
+      if (descEl) descEl.textContent = cat.desc;
+      if (iconEl) iconEl.textContent = cat.icon;
+      if (iconCont) {
+        iconCont.className = `w-11 h-11 rounded-2xl ${cat.bgIcon} ${cat.iconColor} flex items-center justify-center font-bold shrink-0`;
+      }
+
+      document.querySelectorAll('.setup-db-panel').forEach(p => p.classList.add('hidden'));
+      let activePanel = document.getElementById(`db-panel-${catId}`);
+      if (activePanel) activePanel.classList.remove('hidden');
+
+      if (catId === 'accounts') {
+        let accContainer = document.getElementById('setup-account-list');
+        if (accContainer && globalData.accounts) {
+          accContainer.innerHTML = '';
+          if (!globalData.accountDetails) globalData.accountDetails = {};
+          globalData.accounts.forEach((acc, idx) => {
+            let bal = globalData.currentBalances[acc] || 0;
+            let dt = globalData.accountDetails[acc] || { bankName: acc, accNo: "", owner: "" };
+            accContainer.innerHTML += `<div class="p-4 bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant space-y-3"><div class="flex justify-between items-center border-b border-outline-variant/40 pb-2"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary dark:text-blue-400">account_balance</span><b class="text-sm font-bold text-on-surface">${acc}</b></div><button onclick="removeAccountItem(${idx})" class="text-xs text-error font-bold flex items-center gap-0.5 hover:underline"><span class="material-symbols-outlined text-sm">close</span> Hapus Akun</button></div><div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs"><div><label class="text-[10px] text-gray-500 font-bold uppercase">Nama Bank / E-Wallet</label><input type="text" value="${dt.bankName||acc}" onchange="updateAccountDetail('${acc}', 'bankName', this.value)" class="w-full bg-white dark:bg-slate-800 text-on-surface border rounded-lg p-1.5 font-bold"></div><div><label class="text-[10px] text-gray-500 font-bold uppercase">Nomor Rekening</label><input type="text" value="${dt.accNo||''}" placeholder="Contoh: 712345..." onchange="updateAccountDetail('${acc}', 'accNo', this.value)" class="w-full bg-white dark:bg-slate-800 text-on-surface border rounded-lg p-1.5 font-mono-data"></div><div><label class="text-[10px] text-gray-500 font-bold uppercase">Atas Nama (a.n)</label><input type="text" value="${dt.owner||''}" placeholder="Pemilik" onchange="updateAccountDetail('${acc}', 'owner', this.value)" class="w-full bg-white dark:bg-slate-800 text-on-surface border rounded-lg p-1.5 font-bold"></div><div><label class="text-[10px] text-gray-500 font-bold uppercase">Saldo Awal (Rp)</label><input type="number" value="${bal}" onchange="updateAccountBalance('${acc}', this.value)" class="w-full bg-white dark:bg-slate-800 text-on-surface border border-primary/50 rounded-lg p-1.5 font-mono-data font-bold text-primary dark:text-blue-400"></div></div></div>`;
+          });
+        }
+      } else if (catId === 'incomes') {
+        renderSimpleCategoryTags('incomes', 'setup-income-tags');
+      } else if (catId === 'bills') {
+        renderSimpleCategoryTags('bills', 'setup-bills-list');
+      } else if (catId === 'spendings') {
+        renderSimpleCategoryTags('spendings', 'setup-spending-tags');
+      } else if (catId === 'invest') {
+        renderValuedCategoryList('investData', 'setup-invest-list', ['initial']);
+      } else if (catId === 'sinking') {
+        renderValuedCategoryList('sinkingData', 'setup-sinking-list', ['initial', 'target', 'deadline', 'durationMonths']);
+      } else if (catId === 'goals') {
+        renderValuedCategoryList('goalsData', 'setup-goals-list', ['initial', 'target', 'timeframeVal']);
+      } else if (catId === 'receivables') {
+        renderValuedCategoryList('receivablesData', 'setup-receivables-list', ['total', 'deadline', 'paid']);
+      } else if (catId === 'nonmoney') {
+        renderValuedCategoryList('nonMoneyAssets', 'setup-nonmoney-list', ['qty', 'estimatedPrice', 'type', 'unit']);
+      } else if (catId === 'debts') {
+        renderDebtListSetup();
+      } else if (catId === 'routine') {
+        let rContainer = document.getElementById('setup-routine-list');
+        if (rContainer) {
+          rContainer.innerHTML = '';
+          if (!globalData.routinePayments) globalData.routinePayments = {};
+          Object.keys(globalData.routinePayments).forEach(k => {
+            let item = globalData.routinePayments[k];
+            rContainer.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant flex items-center justify-between gap-2 text-xs"><b class="font-bold text-primary dark:text-blue-400 w-1/3">${k}</b><div class="grid grid-cols-2 gap-2 w-2/3"><input type="number" value="${item.amount||0}" placeholder="Nominal" onchange="globalData.routinePayments['${k}'].amount=parseFloat(this.value)||0; saveStorageData();" class="p-1.5 border rounded-lg font-mono-data bg-surface text-on-surface"><div class="flex items-center gap-1"><input type="number" min="1" max="31" value="${item.dueDay||1}" placeholder="Tgl" onchange="globalData.routinePayments['${k}'].dueDay=parseInt(this.value,10)||1;" class="p-1.5 border rounded-lg font-mono-data w-16 bg-surface text-on-surface"><span onclick="removeRoutinePaymentItem('${k}')" class="material-symbols-outlined text-sm text-error cursor-pointer">close</span></div></div></div>`;
+          });
+        }
+      } else if (catId === 'budgets') {
+        let budgetContainer = document.getElementById('setup-budget-list');
+        if (budgetContainer) {
+          budgetContainer.innerHTML = '';
+          if (!globalData.monthlyBudgets) globalData.monthlyBudgets = {};
+          if (globalData.spendings && globalData.spendings.length > 0) {
+            globalData.spendings.forEach(c => {
+              let limit = globalData.monthlyBudgets[c] || 0;
+              budgetContainer.innerHTML += `<div class="flex justify-between items-center bg-surface-container dark:bg-slate-900 p-2 rounded-lg border border-outline-variant/40 mb-2 text-xs"><span class="font-bold w-1/2">${c}</span><div class="w-1/2 relative"><span class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-[10px]">Rp</span><input type="text" value="${limit.toLocaleString('id-ID')}" oninput="formatInputNominal(this)" onchange="updateBudgetLimit('${c}', this.value)" placeholder="Limit Budget..." class="w-full pl-6 pr-2 py-1.5 border rounded-lg font-mono-data bg-white dark:bg-slate-800 text-on-surface font-bold text-right outline-none focus:border-primary"></div></div>`;
+            });
+          } else {
+            budgetContainer.innerHTML = '<p class="text-xs text-gray-500">Silakan tambahkan kategori Spending terlebih dahulu.</p>';
+          }
+        }
+      }
+
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        card.classList.remove('scale-95');
+        card.classList.add('scale-100');
+      }, 10);
+    }
+
+    function closeSetupDbModal() {
+      let modal = document.getElementById('modal-setup-category');
+      let card = document.getElementById('modal-setup-category-card');
+      if (!modal || !card) return;
+
+      modal.classList.add('opacity-0');
+      card.classList.remove('scale-100');
+      card.classList.add('scale-95');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+        renderSetupDatabaseCards();
+      }, 200);
+    }
+
+    function handleSetupModalBackdrop(e) {
+      if (e.target === document.getElementById('modal-setup-category')) {
+        closeSetupDbModal();
+      }
+    }
+
     function renderSetupView() { 
       let sb = document.getElementById('setup-starting-balance'); if (sb) sb.value = globalData.startingBalance || 0; 
       let rContainer = document.getElementById('setup-routine-list'); if (rContainer) { rContainer.innerHTML = ''; if (!globalData.routinePayments) globalData.routinePayments = {}; Object.keys(globalData.routinePayments).forEach(k => { let item = globalData.routinePayments[k]; rContainer.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant flex items-center justify-between gap-2 text-xs"><b class="font-bold text-primary dark:text-blue-400 w-1/3">${k}</b><div class="grid grid-cols-2 gap-2 w-2/3"><input type="number" value="${item.amount||0}" placeholder="Nominal" onchange="globalData.routinePayments['${k}'].amount=parseFloat(this.value)||0; saveStorageData();" class="p-1.5 border rounded-lg font-mono-data bg-surface text-on-surface"><div class="flex items-center gap-1"><input type="number" min="1" max="31" value="${item.dueDay||1}" placeholder="Tgl" onchange="globalData.routinePayments['${k}'].dueDay=parseInt(this.value,10)||1;" class="p-1.5 border rounded-lg font-mono-data w-16 bg-surface text-on-surface"><span onclick="removeRoutinePaymentItem('${k}')" class="material-symbols-outlined text-sm text-error cursor-pointer">close</span></div></div></div>`; }); } 
@@ -3270,7 +4645,13 @@
       let calcToggle = document.getElementById('setup-enable-calc'); 
       if (calcToggle) calcToggle.checked = isOwner && (globalData.enableCalculator !== false);
       let budgetContainer = document.getElementById('setup-budget-list'); if (budgetContainer) { budgetContainer.innerHTML = ''; if (!globalData.monthlyBudgets) globalData.monthlyBudgets = {}; if (globalData.spendings && globalData.spendings.length > 0) { globalData.spendings.forEach(cat => { let limit = globalData.monthlyBudgets[cat] || 0; budgetContainer.innerHTML += `<div class="flex justify-between items-center bg-surface-container dark:bg-slate-900 p-2 rounded-lg border border-outline-variant/40 mb-2 text-xs"><span class="font-bold w-1/2">${cat}</span><div class="w-1/2 relative"><span class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-[10px]">Rp</span><input type="text" value="${limit.toLocaleString('id-ID')}" oninput="formatInputNominal(this)" onchange="updateBudgetLimit('${cat}', this.value)" placeholder="Limit Budget..." class="w-full pl-6 pr-2 py-1.5 border rounded-lg font-mono-data bg-white dark:bg-slate-800 text-on-surface font-bold text-right outline-none focus:border-primary"></div></div>`; }); } else { budgetContainer.innerHTML = '<p class="text-xs text-gray-500">Silakan tambahkan kategori Spending terlebih dahulu.</p>'; } } 
+      let currentLic = getSavedLicense();
+      updateSetupLicenseDisplay(currentLic);
+      renderSetupPasswordCard(currentLic);
+      updateCloudSyncLockUI(currentLic);
+      renderSetupDatabaseCards();
     }
+
     
     function renderDebtListSetup() { let container = document.getElementById('setup-debt-list'); if (!container) return; container.innerHTML = ''; if (!globalData.debtData) globalData.debtData = {}; Object.keys(globalData.debtData).forEach(k => { let item = globalData.debtData[k]; let currentPeriod = item.period || 'Bulanan'; let isDateType = currentPeriod.startsWith('Setiap Tanggal'); let selectedBasePeriod = isDateType ? 'Setiap Tanggal' : currentPeriod; let selectedDateNum = isDateType ? currentPeriod.replace('Setiap Tanggal ', '') : '1'; container.innerHTML += `<div class="p-4 bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant space-y-3 text-xs"><div class="flex justify-between items-center border-b border-outline-variant/30 pb-2"><div class="flex items-center gap-2"><b class="text-sm font-bold text-primary dark:text-blue-400">${k}</b><span class="text-[10px] px-2 py-0.5 bg-primary/10 text-primary dark:text-blue-300 rounded-full font-bold">${item.category || 'Utang'}</span></div><span onclick="removeDebtItem('${k}')" class="material-symbols-outlined text-sm text-error cursor-pointer">close</span></div><div class="grid grid-cols-2 md:grid-cols-5 gap-2"><div><label class="text-[9px] uppercase font-bold text-gray-500">Kategori</label><select onchange="updateDebtField('${k}', 'category', this.value)" class="w-full p-1.5 border rounded-lg text-xs bg-surface text-on-surface"><option value="Utang" ${item.category === 'Utang' ? 'selected' : ''}>Utang</option><option value="Cicilan" ${item.category === 'Cicilan' ? 'selected' : ''}>Cicilan</option><option value="Remberg" ${item.category === 'Remberg' ? 'selected' : ''}>Remberg</option></select></div><div><label class="text-[9px] uppercase font-bold text-gray-500">Total Harus Bayar</label><input type="number" value="${item.total || 0}" onchange="updateDebtField('${k}', 'total', this.value)" class="w-full p-1.5 border rounded-lg text-xs font-mono-data bg-surface text-on-surface"></div><div><label class="text-[9px] uppercase font-bold text-gray-500">Sudah Bayar</label><input type="number" value="${item.paid || 0}" onchange="updateDebtField('${k}', 'paid', this.value)" class="w-full p-1.5 border rounded-lg text-xs font-mono-data bg-surface text-on-surface"></div><div><label class="text-[9px] uppercase font-bold text-gray-500">Nominal Pembayaran</label><input type="number" value="${item.monthlyPay || 0}" onchange="updateDebtField('${k}', 'monthlyPay', this.value)" class="w-full p-1.5 border rounded-lg text-xs font-mono-data bg-surface text-on-surface"></div><div><label class="text-[9px] uppercase font-bold text-gray-500">Bayar Setiap</label><select onchange="handleDebtPeriodChange('${k}', this.value)" class="w-full p-1.5 border rounded-lg text-xs bg-surface text-on-surface"><option value="Bulanan" ${selectedBasePeriod === 'Bulanan' ? 'selected' : ''}>Bulanan</option><option value="Mingguan" ${selectedBasePeriod === 'Mingguan' ? 'selected' : ''}>Mingguan</option><option value="Setiap Hari" ${selectedBasePeriod === 'Setiap Hari' ? 'selected' : ''}>Setiap Hari</option><option value="Tahunan" ${selectedBasePeriod === 'Tahunan' ? 'selected' : ''}>Tahunan</option><option value="Setiap Tanggal" ${selectedBasePeriod === 'Setiap Tanggal' ? 'selected' : ''}>Setiap Tanggal...</option></select></div></div><div id="debt-date-box-${k}" class="${isDateType ? '' : 'hidden'} pt-2 flex items-center gap-2"><span class="text-[10px] font-bold text-gray-500">Pilih Tanggal:</span><select onchange="updateDebtDateNum('${k}', this.value)" class="p-1 border rounded text-xs bg-surface text-on-surface">${Array.from({length: 31}, (_, i) => `<option value="${i+1}" ${selectedDateNum == (i+1) ? 'selected' : ''}>${i+1}</option>`).join('')}</select></div></div>`; }); }
     function handleDebtPeriodChange(key, val) { let dateBox = document.getElementById(`debt-date-box-${key}`); if (val === 'Setiap Tanggal') { if (dateBox) dateBox.classList.remove('hidden'); updateDebtField(key, 'period', 'Setiap Tanggal 1'); } else { if (dateBox) dateBox.classList.add('hidden'); updateDebtField(key, 'period', val); } }
@@ -3278,7 +4659,7 @@
     function addDebtItemModal() { let name = prompt("Masukkan Nama Utang / Cicilan / Rembers baru:"); if (name && name.trim() !== "") { let clean = name.trim(); if (!globalData.debtData) globalData.debtData = {}; if (!globalData.debtData[clean]) { globalData.debtData[clean] = { total: 1000000, paid: 0, monthlyPay: 100000, category: "Cicilan", period: "Bulanan" }; saveStorageData(); renderSetupView(); } else alert("Nama sudah ada!"); } }
     function updateDebtField(key, field, val) { if (!globalData.debtData[key]) return; if (field === 'category' || field === 'period') globalData.debtData[key][field] = val; else globalData.debtData[key][field] = parseFloat(val) || 0; saveStorageData(); }
     function removeDebtItem(key) { if (confirm(`Hapus ${key} dari database?`)) { delete globalData.debtData[key]; saveStorageData(); renderSetupView(); } }
-    function renderSimpleCategoryTags(key, containerId) { let container = document.getElementById(containerId); if (!container) return; container.innerHTML = ''; if (!globalData.key) globalData.key = []; globalData.key.forEach((item, idx) => { if (containerId === 'setup-bills-list') container.innerHTML += `<div class="flex items-center justify-between bg-surface-container dark:bg-slate-900 px-3 py-2 rounded-xl border border-outline-variant/40"><span class="text-xs font-bold text-on-surface">${item}</span><span onclick="removeSimpleCategory('${key}', ${idx})" class="material-symbols-outlined text-sm cursor-pointer hover:text-error">close</span></div>`; else container.innerHTML += `<span class="px-3.5 py-2 bg-surface dark:bg-slate-900 border border-outline-variant text-on-surface rounded-xl text-xs font-semibold flex items-center gap-1">${item}<span onclick="removeSimpleCategory('${key}', ${idx})" class="material-symbols-outlined text-xs cursor-pointer hover:text-error ml-1">close</span></span>`; }); }
+    function renderSimpleCategoryTags(key, containerId) { let container = document.getElementById(containerId); if (!container) return; container.innerHTML = ''; if (!globalData[key]) globalData[key] = []; (globalData[key] || []).forEach((item, idx) => { if (containerId === 'setup-bills-list') container.innerHTML += `<div class="flex items-center justify-between bg-surface-container dark:bg-slate-900 px-3 py-2 rounded-xl border border-outline-variant/40"><span class="text-xs font-bold text-on-surface">${item}</span><span onclick="removeSimpleCategory('${key}', ${idx})" class="material-symbols-outlined text-sm cursor-pointer hover:text-error">close</span></div>`; else container.innerHTML += `<span class="px-3.5 py-2 bg-surface dark:bg-slate-900 border border-outline-variant text-on-surface rounded-xl text-xs font-semibold flex items-center gap-1">${item}<span onclick="removeSimpleCategory('${key}', ${idx})" class="material-symbols-outlined text-xs cursor-pointer hover:text-error ml-1">close</span></span>`; }); }
     function renderValuedCategoryList(objKey, containerId, fields) { let container = document.getElementById(containerId); if (!container) return; container.innerHTML = ''; if (!globalData[objKey]) globalData[objKey] = {}; Object.keys(globalData[objKey]).forEach(k => { let item = globalData[objKey][k]; let inputsHtml = ''; fields.forEach(f => { let val = item[f] !== undefined ? item[f] : ''; inputsHtml += `<div><label class="text-[9px] uppercase font-bold text-gray-500">${f.toUpperCase()}</label><input type="${typeof val === 'number' ? 'number' : (f === 'deadline' ? 'date' : 'text')}" value="${val}" onchange="updateValuedCategoryField('${objKey}', '${k}', '${f}', this.value)" class="w-full p-1.5 border rounded-lg text-xs font-mono-data bg-surface dark:bg-slate-800 text-on-surface"></div>`; }); container.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant space-y-2 text-xs"><div class="flex justify-between items-center border-b border-outline-variant/30 pb-1"><b class="font-bold text-primary dark:text-blue-400 text-sm">${k}</b><span onclick="removeValuedCategoryItem('${objKey}', '${k}')" class="material-symbols-outlined text-sm text-error cursor-pointer">close</span></div><div class="grid grid-cols-2 md:grid-cols-4 gap-2">${inputsHtml}</div></div>`; }); }
     function addAccountItem() { let name = prompt("Masukkan nama Akun / Bank / E-Wallet baru:"); if (name && name.trim() !== "") { let clean = name.trim(); if (!globalData.accounts.includes(clean)) { globalData.accounts.push(clean); globalData.currentBalances[clean] = 0; if (!globalData.accountDetails) globalData.accountDetails = {}; globalData.accountDetails[clean] = { bankName: clean, accNo: "-", owner: "-" }; saveStorageData(); renderSetupView(); } else alert("Nama akun sudah ada!"); } }
     function removeAccountItem(idx) { let accName = globalData.accounts[idx]; if (confirm(`Hapus akun ${accName}?`)) { globalData.accounts.splice(idx, 1); delete globalData.currentBalances[accName]; if (globalData.accountDetails) delete globalData.accountDetails[accName]; saveStorageData(); renderSetupView(); } }
@@ -3303,16 +4684,114 @@
     function updateAccountDetail(accName, field, value) { if (!globalData.accountDetails) globalData.accountDetails = {}; if (!globalData.accountDetails[accName]) globalData.accountDetails[accName] = {}; globalData.accountDetails[accName][field] = value; saveStorageData(); renderDashboard(); }
     function updateStartingBalance(val) { globalData.startingBalance = parseFloat(val) || 0; saveStorageData(); }
     function updateAccountBalance(accName, newBal) { globalData.currentBalances[accName] = parseFloat(newBal) || 0; saveStorageData(); renderDashboard(); }
-    function verifySetupPassword() { 
+    async function verifySetupPassword() { 
       let p = (document.getElementById('setup-pass-input').value || '').trim(); 
-      let validPass = String((globalData && globalData.ownerPassword !== undefined && globalData.ownerPassword !== '') ? globalData.ownerPassword : (globalData.appPin || "123")).trim(); 
-      let validPin = String((globalData && globalData.appPin !== undefined && globalData.appPin !== '') ? globalData.appPin : '').trim();
-      
-      if (p === validPass || (validPin !== "" && p === validPin)) { 
+      if (!p) {
+        alert("Masukkan Password atau Kode Token Lisensi!");
+        return;
+      }
+
+      let upperP = p.toUpperCase();
+      let cleanP = upperP.replace(/[^A-Z0-9]/g, '');
+      let isTokenFormat = cleanP.startsWith('PRO') || cleanP.length >= 8 || p.includes('-');
+
+      let lic = getSavedLicense();
+      let cleanLicToken = (lic && lic.token) ? lic.token.toUpperCase().replace(/[^A-Z0-9]/g, '') : '';
+
+      // 1. Cek kecocokan dengan token lisensi yang sudah aktif di perangkat ini
+      if (cleanLicToken && cleanP === cleanLicToken) {
+        if (lic.pinStatus === 'PIN_CHANGED') {
+          alert('Token lisensi ini sudah HANGUS! Masukkan PIN Pribadi yang telah Anda buat di menu Setup.');
+          return;
+        }
+        // Token bawaan sah sebagai kunci masuk Setup awal!
         document.getElementById('setup-lock-card').classList.add('hidden'); 
         document.getElementById('setup-unlocked-content').classList.remove('hidden'); 
         renderSetupView(); 
-      } else alert('Password salah!'); 
+        return;
+      }
+
+      // 2. Jika input adalah format token lisensi (misal belum aktif di database lokal)
+      if (isTokenFormat) {
+        let apiUrl = getMasterLicenseServerUrl();
+        if (apiUrl && apiUrl.startsWith("http") && !apiUrl.includes("YOUR_SCRIPT_ID")) {
+          let btn = document.querySelector('#setup-lock-card button');
+          let origText = btn ? btn.innerHTML : 'Buka Akses Setup';
+          if (btn) { btn.innerHTML = `<span class="material-symbols-outlined text-sm animate-spin">progress_activity</span> MEMVALIDASI LISENSI...`; btn.disabled = true; }
+
+          try {
+            let devId = getOrCreateDeviceId();
+            let devName = detectDeviceName();
+            let res = await callClientLicenseApi({
+              action: 'validate_token',
+              token: p,
+              deviceId: devId,
+              deviceName: devName
+            });
+
+            if (res && res.success && res.data) {
+              localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(res.data));
+              if (res.data.pinStatus === 'USING_TOKEN') {
+                globalData.appPin = res.data.token;
+                globalData.ownerPassword = res.data.token;
+                saveStorageData();
+              }
+              updateSetupLicenseDisplay(res.data);
+              updateTokenSecurityBanner(res.data);
+              updateCloudSyncLockUI(res.data);
+              renderSetupPasswordCard(res.data);
+
+              document.getElementById('setup-lock-card').classList.add('hidden'); 
+              document.getElementById('setup-unlocked-content').classList.remove('hidden'); 
+              renderSetupView(); 
+              showSyncToast("🎉 Lisensi Berhasil Diaktivasi! Menu Setup terbuka.");
+              return;
+            } else if (res && res.isBurned) {
+              alert(res.message || "Token ini sudah hangus! Masukkan PIN Pribadi Anda.");
+              return;
+            } else {
+              alert((res && res.message) ? res.message : "Token lisensi tidak valid.");
+              return;
+            }
+          } catch(e) {
+            console.warn("Gagal validasi online di setup:", e);
+          } finally {
+            if (btn) { btn.innerHTML = origText; btn.disabled = false; }
+          }
+        }
+      }
+
+      // 3. Cek PIN Pribadi pemilik (jika pengguna sudah pernah ganti PIN)
+      let currentPass = String((globalData && globalData.ownerPassword !== undefined && globalData.ownerPassword !== '') ? globalData.ownerPassword : '').trim();
+      let currentPin = String((globalData && globalData.appPin !== undefined && globalData.appPin !== '') ? globalData.appPin : '').trim();
+
+      // Jika lisensi masih aktif dan berstatus USING_TOKEN, password utamanya adalah TOKEN
+      if (lic && lic.pinStatus === 'USING_TOKEN' && lic.token) {
+        if (cleanP === cleanLicToken || p === lic.token) {
+          document.getElementById('setup-lock-card').classList.add('hidden'); 
+          document.getElementById('setup-unlocked-content').classList.remove('hidden'); 
+          renderSetupView(); 
+          return;
+        }
+      }
+
+      // Jika memasukkan PIN Pribadi yang sudah diset
+      if ((currentPass && p === currentPass) || (currentPin && p === currentPin)) {
+        document.getElementById('setup-lock-card').classList.add('hidden'); 
+        document.getElementById('setup-unlocked-content').classList.remove('hidden'); 
+        renderSetupView(); 
+        return;
+      }
+
+      // 4. Default fallback 123 HANYA jika belum ada lisensi sama sekali
+      if (!lic && (p === "123" || p === currentPin)) {
+        document.getElementById('setup-lock-card').classList.add('hidden'); 
+        document.getElementById('setup-unlocked-content').classList.remove('hidden'); 
+        renderSetupView(); 
+        return;
+      }
+
+      alert('Password / Token Lisensi salah! Masukkan Kode Token Pembelian Anda (PRO-XXXX-XXXX-XXXX) atau PIN Pribadi Anda.'); 
     }
 
     // === PWA & SERVICE WORKER INSTALLATION MANAGEMENT ===
