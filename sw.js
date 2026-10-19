@@ -1,7 +1,9 @@
-const CACHE_NAME = 'keuanganku-pwa-v1.0';
+const CACHE_NAME = 'keuanganku-pwa-v1.1';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
+  './poster-panduan-penggunaan.html',
+  './panduan-pengguna.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',

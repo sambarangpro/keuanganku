@@ -24,6 +24,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
   
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -72,6 +74,8 @@
     .animate-bounce-check { animation: checkBounce 0.5s ease-out forwards; }
     @keyframes pulseLogo { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
     .animate-pulse-logo { animation: pulseLogo 1.5s infinite; }
+    @keyframes scanLaser { 0% { top: 6%; opacity: 0.3; } 50% { opacity: 1; } 100% { top: 92%; opacity: 0.3; } }
+    .animate-scanner-laser { animation: scanLaser 2s ease-in-out infinite alternate; }
   </style>
 </head>
 <body class="bg-background text-on-surface font-body-md min-h-screen pb-32">
@@ -94,6 +98,27 @@
         <p class="text-xs text-slate-400 leading-relaxed">
           Aplikasi ini dilindungi lisensi resmi Sambarang Production. Masukkan kode lisensi yang Anda peroleh saat pembelian untuk mengaktifkan aplikasi di perangkat ini.
         </p>
+      </div>
+
+      <!-- OPSI 1: SCAN BARCODE / QR CEPAT (UNTUK HP 2, 3, DST) -->
+      <div class="p-4 bg-gradient-to-r from-blue-950/70 via-slate-900 to-cyan-950/70 border border-cyan-500/40 rounded-2xl text-center space-y-2.5 shadow-lg shadow-cyan-950/40">
+        <div class="flex items-center justify-center gap-1.5 text-cyan-300 text-xs font-bold">
+          <span class="material-symbols-outlined text-base text-cyan-400">qr_code_scanner</span>
+          <span>Hubungkan Perangkat ke-2 / 3 Otomatis</span>
+        </div>
+        <p class="text-[11px] text-slate-300 leading-snug">
+          Sudah login di HP/Laptop lain? Buka menu <b>Setup</b> di perangkat pertama Anda, lalu scan barcode untuk langsung masuk otomatis tanpa ribet ketik kode.
+        </p>
+        <button type="button" onclick="openQrScannerModal()" class="w-full py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-md flex items-center justify-center gap-2 active:scale-95 transition-all cursor-pointer">
+          <span class="material-symbols-outlined text-base">photo_camera</span>
+          <span>Scan Barcode / QR Sekarang</span>
+        </button>
+      </div>
+
+      <div class="flex items-center gap-3 my-1">
+        <div class="h-px bg-slate-800 flex-1"></div>
+        <span class="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">Atau Masukkan Manual</span>
+        <div class="h-px bg-slate-800 flex-1"></div>
       </div>
 
       <!-- Form Input Token -->
@@ -150,13 +175,26 @@
 
       <!-- Tombol Beli & Bantuan -->
       <div class="pt-3 border-t border-slate-800/80 space-y-2 text-center">
-        <a href="https://wa.me/6281234567890?text=Halo%20Sambarang%20Production,%20saya%20ingin%20membeli%20kode%20lisensi%20resmi%20aplikasi%20Keuanganku%20PRO" target="_blank"
-          class="w-full py-2.5 bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition-all">
-          <span class="material-symbols-outlined text-sm">shopping_cart</span>
-          <span>Belum Punya Lisensi? Beli via WhatsApp</span>
+        <a href="poster-panduan-penggunaan.html" target="_blank"
+          class="w-full py-2 bg-blue-600/10 hover:bg-blue-600/20 text-cyan-400 border border-cyan-500/30 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all">
+          <span class="material-symbols-outlined text-sm">menu_book</span>
+          <span>Buka Panduan & Poster Penggunaan</span>
         </a>
+        <div class="grid grid-cols-2 gap-2 pt-0.5">
+          <a href="https://wa.me/6281234567890?text=Halo%20Sambarang%20Production,%20saya%20ingin%20membeli%20kode%20lisensi%20resmi%20aplikasi%20Keuanganku%20PRO" target="_blank"
+            class="py-2.5 px-2 bg-emerald-600/15 hover:bg-emerald-600/25 text-emerald-400 border border-emerald-500/30 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all">
+            <span class="material-symbols-outlined text-sm">chat</span>
+            <span>Beli via WhatsApp</span>
+          </a>
+          <a href="mailto:keuangankupro@gmail.com?subject=Pemesanan%20Lisensi%20Resmi%20Keuanganku%20PRO&body=Halo%20Tim%20Keuanganku%20PRO,%0A%0ASaya%20ingin%20memesan%20kode%20lisensi%20resmi%20aplikasi%20Keuanganku%20PRO.%0A%0AMohon%20informasi%20paket,%20rekening%20pembayaran,%20dan%20petunjuk%20aktivasinya.%0A%0ATerima%20kasih."
+            class="py-2.5 px-2 bg-blue-600/15 hover:bg-blue-600/25 text-cyan-300 border border-blue-500/30 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all"
+            title="Kirim email ke keuangankupro@gmail.com">
+            <span class="material-symbols-outlined text-sm">mail</span>
+            <span>Beli via Email</span>
+          </a>
+        </div>
         <div class="flex items-center justify-between pt-1 text-[10px] text-slate-500 px-1">
-          <span>Copyright © 2025 Sambarang Production</span>
+          <span>Copyright © 2026 Sambarang Production</span>
           <div id="gate-server-status-pill">
             <button type="button" onclick="toggleGateServerConfig()" class="text-slate-500 hover:text-slate-300 underline">Server Config</button>
           </div>
@@ -195,9 +233,12 @@
         <button id="btn-bumper-login" onclick="verifyBumperPin()" class="w-full py-2.5 bg-white text-primary font-bold rounded-xl text-xs hover:bg-blue-50 shadow transition-all cursor-pointer">MASUK APLIKASI</button>
         <p id="bumper-error-msg" class="text-[11px] text-red-200 font-semibold leading-relaxed hidden">PIN Salah! Coba lagi.</p>
         
-        <div class="pt-2 border-t border-white/15">
-          <button type="button" onclick="toggleBumperCloudModal(true)" class="text-[11px] text-blue-200/90 hover:text-white underline font-medium flex items-center justify-center gap-1 mx-auto py-1">
-            <span class="material-symbols-outlined text-xs">cloud_sync</span> Hubungkan ke Cloud
+        <div class="pt-2.5 border-t border-white/10 flex items-center justify-center gap-2.5">
+          <button type="button" onclick="openQrScannerModal()" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 text-cyan-200 hover:text-white flex items-center justify-center border border-white/15 transition-all active:scale-90 cursor-pointer shadow-sm" title="Scan Barcode Akun (Login Otomatis)">
+            <span class="material-symbols-outlined text-base">qr_code_scanner</span>
+          </button>
+          <button type="button" onclick="toggleBumperCloudModal(true)" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 text-blue-200 hover:text-white flex items-center justify-center border border-white/15 transition-all active:scale-90 cursor-pointer shadow-sm" title="Hubungkan ke Cloud (Google Sheets)">
+            <span class="material-symbols-outlined text-base">cloud_sync</span>
           </button>
         </div>
       </div>
@@ -216,13 +257,13 @@
         <button type="button" onclick="toggleBumperCloudModal(false)" class="text-[10px] text-blue-200 hover:text-white underline">← Kembali ke Masuk PIN</button>
       </div>
 
-      <div class="pt-3"><p class="text-[9px] text-gray-300 font-medium tracking-wider uppercase">Copyright © 2025 <b class="text-white">Sambarang Production</b></p></div>
+      <div class="pt-3"><p class="text-[9px] text-gray-300 font-medium tracking-wider uppercase">Copyright © 2026 <b class="text-white">Sambarang Production</b></p></div>
     </div>
   </div>
 
   <!-- MODAL DETAIL REKAPITULASI (OPSI A: POPUP CARD) -->
   <div id="recap-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300 p-4">
-    <div id="recap-modal-card" class="bg-white dark:bg-slate-900 border border-outline-variant rounded-2xl w-full max-w-3xl max-h-[88vh] flex flex-col shadow-2xl transform scale-95 transition-transform duration-300 overflow-hidden">
+    <div id="recap-modal-card" class="bg-white dark:bg-slate-900 border border-outline-variant rounded-2xl w-full max-w-3xl lg:max-w-4xl xl:max-w-5xl max-h-[88vh] flex flex-col shadow-2xl transform scale-95 transition-transform duration-300 overflow-hidden">
       <!-- Modal Header -->
       <div class="p-4 border-b border-outline-variant flex items-center justify-between bg-surface dark:bg-slate-800 sticky top-0 z-10">
         <div class="flex items-center gap-3">
@@ -447,28 +488,169 @@
     </div>
   </div>
 
-  <!-- HEADER -->
-  <header class="bg-surface border-b border-outline-variant fixed top-0 w-full z-40 flex justify-between items-center px-3 sm:px-4 md:px-8 h-16 shadow-sm">
-    <div class="flex items-center gap-2 sm:gap-3">
-      <span class="material-symbols-outlined text-primary" style="font-size: 28px;">account_balance_wallet</span>
-      <h1 id="header-brand-title" class="font-headline-md text-sm sm:text-base md:text-lg font-bold text-primary flex items-center gap-1.5">KEUANGANKU <span class="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 tracking-normal font-sans">v1.0</span></h1>
+  <!-- MODAL BARCODE / QR PAIRING (GENERATOR DI PERANGKAT AKTIF) -->
+  <div id="modal-pair-device-qr" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[70] flex items-center justify-center hidden p-4 overflow-y-auto">
+    <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl relative text-slate-100 my-auto">
+      <button onclick="closePairDeviceModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-full hover:bg-slate-800 transition-colors cursor-pointer">
+        <span class="material-symbols-outlined text-xl">close</span>
+      </button>
+
+      <div class="flex items-center gap-2.5">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-400 flex items-center justify-center text-white shadow-lg shadow-cyan-500/25">
+          <span class="material-symbols-outlined text-xl">qr_code_2</span>
+        </div>
+        <div>
+          <h3 class="font-headline-md font-bold text-white text-base">Hubungkan Perangkat Baru</h3>
+          <p class="text-[11px] text-slate-400">Scan barcode ini di HP ke-2, Laptop, atau Tablet Anda</p>
+        </div>
+      </div>
+
+      <!-- KOTAK BARCODE QR CODE -->
+      <div class="bg-white p-4 rounded-2xl mx-auto shadow-inner border border-slate-200 flex flex-col items-center justify-center min-h-[230px] w-fit">
+        <div id="pair-qrcode-container" class="flex items-center justify-center"></div>
+        <p class="text-[10px] text-slate-600 font-mono-data font-bold mt-2" id="pair-qr-token-label">PRO-XXXX-XXXX-XXXX</p>
+      </div>
+
+      <!-- OPSI PIN PRIBADI & KUOTA -->
+      <div class="space-y-2">
+        <label class="flex items-start gap-2.5 p-3 rounded-xl bg-slate-950/80 border border-slate-800 cursor-pointer hover:border-slate-700 transition-colors">
+          <input type="checkbox" id="pair-include-pin-check" checked onchange="regeneratePairQrCode()" class="mt-0.5 rounded text-cyan-500 focus:ring-cyan-400">
+          <div>
+            <span class="text-xs font-bold text-white flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-cyan-400 text-sm">bolt</span> Masuk Otomatis 100% (Sertakan PIN)
+            </span>
+            <p class="text-[10px] text-slate-400 leading-snug mt-0.5">
+              Perangkat baru langsung terbuka dan siap pakai tanpa perlu mengetik PIN lagi. Hilangkan centang jika ingin HP ke-2 meminta PIN secara manual.
+            </p>
+          </div>
+        </label>
+
+        <div class="flex items-center justify-between text-xs px-1 text-slate-400">
+          <span>Status Kuota Lisensi:</span>
+          <span id="pair-qr-quota-label" class="font-mono-data font-bold text-cyan-400">1 / 3 Perangkat</span>
+        </div>
+      </div>
+
+      <!-- OPSI SALIN LINK CADANGAN JIKA TIDAK BISA SCAN KAMERA -->
+      <div class="pt-2 border-t border-slate-800 space-y-2">
+        <label class="block text-[10px] text-slate-400 font-semibold">Atau bagikan Link Aktivasi Cepat (Bila tidak bisa scan):</label>
+        <div class="flex items-center gap-1.5">
+          <input type="text" id="pair-qr-link-input" readonly class="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-[10px] font-mono-data text-cyan-300 truncate focus:outline-none">
+          <button type="button" onclick="copyPairLink()" class="px-3 py-1.5 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-xs font-bold rounded-xl shrink-0 flex items-center gap-1 transition-colors cursor-pointer">
+            <span class="material-symbols-outlined text-xs">content_copy</span> Salin
+          </button>
+        </div>
+      </div>
+
+      <div class="p-3 bg-blue-950/40 border border-blue-500/30 rounded-xl text-[11px] text-blue-200 leading-relaxed flex items-start gap-2">
+        <span class="material-symbols-outlined text-cyan-400 text-sm shrink-0 mt-0.5">help</span>
+        <p>Di HP ke-2, Anda bisa scan barcode di atas menggunakan <b>Kamera Bawaan HP</b>, <b>Google Lens</b>, atau buka aplikasi KEUANGANKU lalu klik <b>Scan Barcode</b>.</p>
+      </div>
+
+      <button onclick="closePairDeviceModal()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer">
+        Tutup
+      </button>
     </div>
-    <div class="flex items-center gap-2">
-      <!-- TOMBOL INSTAL APLIKASI (PWA) -->
-      <button id="header-install-btn" onclick="triggerPWAInstall()" title="Pasang aplikasi di HP/Laptop" class="hidden flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-primary text-white hover:brightness-110 active:scale-95 transition-all shadow-sm">
-        <span class="material-symbols-outlined text-base">download_for_offline</span>
-        <span class="text-[11px] font-bold hidden sm:inline">Instal App</span>
+  </div>
+
+  <!-- MODAL KAMERA SCANNER ("TOLS SCANENYA") -->
+  <div id="modal-qr-scanner" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[75] flex items-center justify-center hidden p-4 overflow-y-auto">
+    <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-sm w-full p-5 space-y-4 shadow-2xl relative text-slate-100 my-auto text-center">
+      <button onclick="closeQrScannerModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-full hover:bg-slate-800 transition-colors cursor-pointer">
+        <span class="material-symbols-outlined text-xl">close</span>
       </button>
 
-      <!-- TOMBOL & INDIKATOR SINKRONISASI OTOMATIS -->
-      <button id="header-sync-btn" onclick="syncWithCloud(true)" title="Status Sinkronisasi Cloud (Klik untuk sinkron sekarang)" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-surface-container dark:bg-slate-800 border border-outline-variant/60 hover:border-primary active:scale-95 transition-all shadow-sm">
-        <span id="header-sync-icon" class="material-symbols-outlined text-base text-green-500">cloud_done</span>
-        <span id="header-sync-text" class="text-[11px] font-medium hidden sm:inline text-on-surface-variant">Tersinkron</span>
-      </button>
+      <div>
+        <h3 class="font-headline-md font-bold text-white text-base flex items-center justify-center gap-1.5">
+          <span class="material-symbols-outlined text-cyan-400 text-lg">qr_code_scanner</span>
+          <span>Scan Barcode Lisensi</span>
+        </h3>
+        <p class="text-[11px] text-slate-400 mt-1">Arahkan kamera ke layar HP/Laptop pertama Anda</p>
+      </div>
 
-      <button onclick="toggleDarkMode()" class="p-2 rounded-full hover:bg-surface-container transition-colors flex items-center gap-1 text-xs font-bold" title="Ubah Tema Gelap/Terang">
-        <span class="material-symbols-outlined text-on-surface-variant">dark_mode</span>
+      <!-- VIEWFINDER CAMERA SCANNER -->
+      <div class="relative w-full aspect-square max-w-[280px] mx-auto rounded-2xl overflow-hidden bg-black border-2 border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.25)]">
+        <div id="qr-camera-reader" class="w-full h-full"></div>
+
+        <!-- ANIMATED SCANNER LASER -->
+        <div class="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_12px_#22d3ee] animate-scanner-laser pointer-events-none"></div>
+
+        <!-- CORNER ACCENTS -->
+        <div class="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-cyan-300 pointer-events-none"></div>
+        <div class="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-cyan-300 pointer-events-none"></div>
+        <div class="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-cyan-300 pointer-events-none"></div>
+        <div class="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-cyan-300 pointer-events-none"></div>
+
+        <!-- STATUS PILL -->
+        <div id="qr-scan-status" class="absolute bottom-2 inset-x-2 text-center py-1 px-2 bg-slate-950/85 backdrop-blur-md text-[10px] text-cyan-300 font-semibold rounded-lg border border-cyan-500/30 truncate">
+          Mempersiapkan kamera...
+        </div>
+      </div>
+
+      <!-- KONTROL KAMERA -->
+      <div class="grid grid-cols-2 gap-2 pt-1">
+        <button type="button" onclick="flipQrCamera()" class="py-2 px-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
+          <span class="material-symbols-outlined text-sm">flip_camera_ios</span>
+          <span>Ganti Kamera</span>
+        </button>
+        <label class="py-2 px-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
+          <span class="material-symbols-outlined text-sm">image</span>
+          <span>Pilih Foto</span>
+          <input type="file" accept="image/*" onchange="handleQrImageUpload(this)" class="hidden">
+        </label>
+      </div>
+
+      <button onclick="closeQrScannerModal()" class="w-full py-2 border border-slate-700 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer">
+        Batal / Masukkan Manual
       </button>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <header class="bg-surface/90 backdrop-blur-md border-b border-outline-variant fixed top-0 w-full z-40 h-16 shadow-sm">
+    <div class="w-full max-w-7xl 2xl:max-w-[1600px] mx-auto h-full flex justify-between items-center px-4 sm:px-6 lg:px-8 xl:px-10">
+      <div class="flex items-center gap-2 sm:gap-3 cursor-pointer" onclick="navTo('dashboard')" title="Kembali ke Dashboard">
+        <span class="material-symbols-outlined text-primary" style="font-size: 28px;">account_balance_wallet</span>
+        <h1 id="header-brand-title" class="font-headline-md text-sm sm:text-base md:text-lg font-bold text-primary flex items-center gap-1.5">KEUANGANKU <span class="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 tracking-normal font-sans">v1.0</span></h1>
+      </div>
+
+      <!-- DESKTOP NAVIGATION TABS (TAMPIL PADA LAYAR LAPTOP / PC) -->
+      <nav class="hidden md:flex items-center gap-1.5 bg-surface-container/70 dark:bg-slate-800/80 p-1.5 rounded-2xl border border-outline-variant/60 shadow-inner">
+        <button onclick="navTo('dashboard')" id="dnav-dash" class="px-4 py-1.5 rounded-xl text-xs font-extrabold bg-primary text-white shadow-sm transition-all flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-base">dashboard</span>
+          <span>Dashboard</span>
+        </button>
+        <button onclick="navTo('transaksi')" id="dnav-tx" class="px-4 py-1.5 rounded-xl text-xs font-bold text-on-surface-variant hover:text-primary hover:bg-surface transition-all flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-base">receipt_long</span>
+          <span>Transaksi</span>
+        </button>
+        <button onclick="navTo('kalkulator')" id="dnav-calc" style="display: none;" class="px-4 py-1.5 rounded-xl text-xs font-bold text-on-surface-variant hover:text-primary hover:bg-surface transition-all flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-base">calculate</span>
+          <span>Kalkulator</span>
+        </button>
+        <button onclick="navTo('setup')" id="dnav-setup" class="px-4 py-1.5 rounded-xl text-xs font-bold text-on-surface-variant hover:text-primary hover:bg-surface transition-all flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-base">settings</span>
+          <span>Setup</span>
+        </button>
+      </nav>
+
+      <div class="flex items-center gap-2">
+        <!-- TOMBOL INSTAL APLIKASI (PWA) -->
+        <button id="header-install-btn" onclick="triggerPWAInstall()" title="Pasang aplikasi di HP/Laptop" class="hidden flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-primary text-white hover:brightness-110 active:scale-95 transition-all shadow-sm">
+          <span class="material-symbols-outlined text-base">download_for_offline</span>
+          <span class="text-[11px] font-bold hidden sm:inline">Instal App</span>
+        </button>
+
+        <!-- TOMBOL & INDIKATOR SINKRONISASI OTOMATIS -->
+        <button id="header-sync-btn" onclick="syncWithCloud(true)" title="Status Sinkronisasi Cloud (Klik untuk sinkron sekarang)" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-surface-container dark:bg-slate-800 border border-outline-variant/60 hover:border-primary active:scale-95 transition-all shadow-sm">
+          <span id="header-sync-icon" class="material-symbols-outlined text-base text-green-500">cloud_done</span>
+          <span id="header-sync-text" class="text-[11px] font-medium hidden sm:inline text-on-surface-variant">Tersinkron</span>
+        </button>
+
+        <button onclick="toggleDarkMode()" class="p-2 rounded-full hover:bg-surface-container transition-colors flex items-center gap-1 text-xs font-bold" title="Ubah Tema Gelap/Terang">
+          <span class="material-symbols-outlined text-on-surface-variant">dark_mode</span>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -479,11 +661,11 @@
   </div>
 
   <!-- TOMBOL MENGAMBANG -->
-  <button onclick="toggleBalanceMask()" class="fixed bottom-24 right-6 z-50 bg-slate-800 dark:bg-slate-600 text-white p-3 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.2)] border border-slate-600 dark:border-slate-500 hover:scale-110 active:scale-95 transition-transform flex items-center justify-center group" title="Sembunyikan/Tampilkan Saldo">
+  <button onclick="toggleBalanceMask()" class="fixed bottom-24 md:bottom-8 right-6 md:right-8 z-50 bg-slate-800 dark:bg-slate-600 text-white p-3 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.25)] border border-slate-600 dark:border-slate-500 hover:scale-110 active:scale-95 transition-transform flex items-center justify-center group" title="Sembunyikan/Tampilkan Saldo">
     <span class="material-symbols-outlined" id="icon-mask-balance-fab" style="font-size: 26px;">visibility_off</span>
   </button>
 
-  <main class="mt-20 px-4 md:px-8 max-w-5xl mx-auto space-y-6">
+  <main class="mt-20 pb-24 md:pb-12 px-4 sm:px-6 lg:px-8 xl:px-10 max-w-7xl 2xl:max-w-[1600px] mx-auto space-y-6">
 
     <!-- PAGE 1: DASHBOARD -->
     <div id="page-dashboard" class="space-y-6">
@@ -493,42 +675,51 @@
       <div id="due-date-alert-container"></div>
       <div id="receivable-alert-container"></div>
 
-      <section class="bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-600 text-white p-6 rounded-2xl flex flex-col justify-between relative overflow-hidden shadow-xl shadow-blue-500/20">
-        <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
-        <div>
-          <span class="bg-white/20 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Hanya Uang Kas</span>
-          <p class="font-label-caps text-xs tracking-wider opacity-90 uppercase font-bold mt-2">TOTAL ASSET & SAVINGS</p>
-          <h2 id="dash-total-asset" class="text-3xl md:text-5xl font-extrabold mt-1 tracking-tight font-mono-data">Rp 0</h2>
-        </div>
-        <p class="text-[11px] opacity-90 mt-4 border-t border-white/25 pt-3">*Akumulasi simpanan uang kas dari Invest/Savings, Sinking Fund, & Financial Goals.</p>
-      </section>
+      <!-- TOP HERO ROW: 2 KOLOM SEIMBANG PADA LAYAR LEBAR / DESKTOP -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 items-stretch">
+        <section class="bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-600 text-white p-6 sm:p-7 rounded-3xl flex flex-col justify-between relative overflow-hidden shadow-xl shadow-blue-500/20 min-h-[190px]">
+          <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl pointer-events-none"></div>
+          <div>
+            <span class="bg-white/20 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider backdrop-blur-sm">Hanya Uang Kas</span>
+            <p class="font-label-caps text-xs tracking-wider opacity-90 uppercase font-bold mt-2.5">TOTAL ASSET & SAVINGS</p>
+            <h2 id="dash-total-asset" class="text-3xl sm:text-4xl md:text-5xl font-extrabold mt-1 tracking-tight font-mono-data">Rp 0</h2>
+          </div>
+          <p class="text-[11px] opacity-90 mt-4 border-t border-white/25 pt-3">*Akumulasi simpanan uang kas dari Invest/Savings, Sinking Fund, & Financial Goals.</p>
+        </section>
 
-      <section class="space-y-3">
         <!-- KARTU AKUMULASI SELURUH REKENING DENGAN MINI DONUT DI SISI KANAN -->
-        <div class="bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-5 shadow-sm flex items-center justify-between gap-4">
-          <div class="flex-1 min-w-0">
-            <span class="text-[11px] sm:text-xs font-bold text-secondary uppercase tracking-wider">AKUMULASI SELURUH REKENING</span>
-            <p class="text-[10px] text-gray-500">Total Nominal Saldo Bank & E-Wallet Terkini</p>
-            <h3 id="dash-total-bank" class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-primary dark:text-blue-400 font-mono-data mt-1 tracking-tight truncate">Rp 0</h3>
-            <div id="dash-top-wallet-hint" class="mt-1 flex items-center gap-1.5 text-[11px] font-medium text-gray-500">
-              <!-- Indikator dompet terbanyak otomatis diisi oleh JS -->
+        <div class="bg-white dark:bg-slate-800 border border-outline-variant rounded-3xl p-6 sm:p-7 shadow-sm flex flex-col justify-between min-h-[190px]">
+          <div class="flex items-center justify-between gap-4">
+            <div class="flex-1 min-w-0">
+              <span class="text-[11px] sm:text-xs font-bold text-secondary uppercase tracking-wider">AKUMULASI SELURUH REKENING</span>
+              <p class="text-[10px] text-gray-500">Total Nominal Saldo Bank & E-Wallet Terkini</p>
+              <h3 id="dash-total-bank" class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-primary dark:text-blue-400 font-mono-data mt-1 tracking-tight truncate">Rp 0</h3>
+              <div id="dash-top-wallet-hint" class="mt-2 flex items-center gap-1.5 text-[11px] font-medium text-gray-500">
+                <!-- Indikator dompet terbanyak otomatis diisi oleh JS -->
+              </div>
+            </div>
+            
+            <!-- Mini Donut Ring Chart -->
+            <div class="relative w-24 h-24 sm:w-28 sm:h-28 flex-shrink-0 flex items-center justify-center">
+              <canvas id="walletDistChart"></canvas>
+              <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <span class="material-symbols-outlined text-gray-400 dark:text-gray-500 text-lg sm:text-xl">pie_chart</span>
+              </div>
             </div>
           </div>
-          
-          <!-- Mini Donut Ring Chart -->
-          <div class="relative w-24 h-24 sm:w-28 sm:h-28 flex-shrink-0 flex items-center justify-center">
-            <canvas id="walletDistChart"></canvas>
-            <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <span class="material-symbols-outlined text-gray-400 dark:text-gray-500 text-lg sm:text-xl">pie_chart</span>
-            </div>
+          <div class="text-[11px] text-gray-400 dark:text-gray-500 border-t border-outline-variant/60 pt-2.5 mt-3 flex items-center justify-between">
+            <span>Distribusi Dompet & Rekening Aktif</span>
+            <span class="text-[10px] font-bold text-primary dark:text-blue-400 uppercase">Realtime Sync</span>
           </div>
         </div>
+      </div>
 
+      <section class="space-y-3 pt-1">
         <div class="flex items-center justify-between">
           <h3 class="font-title-sm font-bold flex items-center gap-2 text-on-surface"><span class="material-symbols-outlined text-primary">account_balance</span> <span>Saldo Per Akun</span></h3>
           <span class="text-xs font-bold text-secondary uppercase tracking-wider">DATABASE AKUN</span>
         </div>
-        <div id="account-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
+        <div id="account-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4"></div>
       </section>
 
       <!-- BAGIAN GRID KARTU TOMBOL (REKAPITULASI & ANALISIS FINANSIAL) -->
@@ -542,7 +733,7 @@
         </div>
 
         <!-- GRID 9 KARTU TOMBOL INTERAKTIF -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-3 sm:gap-4 lg:gap-5">
           <!-- 1. Monthly Budgeting -->
           <div onclick="openRecapModal('budget')" class="bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-4 shadow-sm hover:border-orange-500 hover:shadow-md transition-all text-left flex flex-col justify-between group cursor-pointer active:scale-95">
             <div class="flex justify-between items-start">
@@ -670,7 +861,7 @@
           </div>
         </div>
       </section>
-      <footer class="pt-6 pb-2 text-center border-t border-outline-variant/50"><p class="text-[10px] text-gray-400 font-medium tracking-widest uppercase">Copyright © 2025 Sambarang Production</p></footer>
+      <footer class="pt-6 pb-2 text-center border-t border-outline-variant/50"><p class="text-[10px] text-gray-400 font-medium tracking-widest uppercase">Copyright © 2026 Sambarang Production</p></footer>
     </div>
 
     <!-- PAGE 2: TRANSAKSI -->
@@ -686,23 +877,25 @@
             <div class="flex flex-col gap-1"><label class="text-xs font-bold uppercase text-gray-500">Waktu / Tanggal</label><input type="date" id="tx-date" required class="w-full px-3 py-2.5 border border-outline rounded-xl text-sm focus:ring-1 focus:ring-primary outline-none bg-surface"></div>
             <div class="flex flex-col gap-1"><label class="text-xs font-bold uppercase text-gray-500">Nama Transaksi</label><input type="text" id="tx-name" placeholder="Contoh: Honor / Belanja ATK" required class="w-full px-3 py-2.5 border border-outline rounded-xl text-sm focus:ring-1 focus:ring-primary outline-none bg-surface"></div>
           </div>
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-bold uppercase text-gray-500">Nominal (Rp)</label>
-            <div class="relative">
-              <span class="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-primary text-sm">Rp</span>
-              <input type="text" id="tx-amount" placeholder="0" required oninput="formatInputNominal(this)" class="w-full pl-9 pr-3 py-2.5 border border-outline rounded-xl font-mono-data text-sm focus:ring-1 focus:ring-primary outline-none font-bold bg-surface">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-bold uppercase text-gray-500">Nominal (Rp)</label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-primary text-sm">Rp</span>
+                <input type="text" id="tx-amount" placeholder="0" required oninput="formatInputNominal(this)" class="w-full pl-9 pr-3 py-2.5 border border-outline rounded-xl font-mono-data text-sm focus:ring-1 focus:ring-primary outline-none font-bold bg-surface">
+              </div>
             </div>
-          </div>
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-bold uppercase text-gray-500">Tipe Cashflow</label>
-            <select id="tx-cashflow" onchange="applyCashflowLogic()" required class="w-full px-3 py-2.5 border border-outline rounded-xl text-sm bg-white dark:bg-slate-900 text-on-surface focus:ring-1 focus:ring-primary outline-none font-semibold">
-              <option value="">-- Pilih Cashflow --</option>
-              <option value="Income">Income (Pemasukan)</option><option value="Spending">Spending (Pengeluaran)</option>
-              <option value="Invest / Savings">Invest / Savings</option><option value="Financial Goals">Financial Goals</option>
-              <option value="Cicilan / Utang Baru">Cicilan / Utang / Rembers Baru</option><option value="Bayar Cicilan / Utang">Bayar Cicilan / Utang / Rembers</option>
-              <option value="Piutang Baru">Piutang Baru</option><option value="Pelunasan Piutang">Pelunasan Piutang</option>
-              <option value="Transfer">Transfer (Antar Rekening)</option><option value="Dari Asset / Saving">Dari Asset / Saving</option>
-            </select>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-bold uppercase text-gray-500">Tipe Cashflow</label>
+              <select id="tx-cashflow" onchange="applyCashflowLogic()" required class="w-full px-3 py-2.5 border border-outline rounded-xl text-sm bg-white dark:bg-slate-900 text-on-surface focus:ring-1 focus:ring-primary outline-none font-semibold">
+                <option value="">-- Pilih Cashflow --</option>
+                <option value="Income">Income (Pemasukan)</option><option value="Spending">Spending (Pengeluaran)</option>
+                <option value="Invest / Savings">Invest / Savings</option><option value="Financial Goals">Financial Goals</option>
+                <option value="Cicilan / Utang Baru">Cicilan / Utang / Rembers Baru</option><option value="Bayar Cicilan / Utang">Bayar Cicilan / Utang / Rembers</option>
+                <option value="Piutang Baru">Piutang Baru</option><option value="Pelunasan Piutang">Pelunasan Piutang</option>
+                <option value="Transfer">Transfer (Antar Rekening)</option><option value="Dari Asset / Saving">Dari Asset / Saving</option>
+              </select>
+            </div>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2 border-t border-outline-variant">
@@ -827,7 +1020,7 @@
           </div>
         </div>
       </section>
-      <footer class="pt-6 pb-2 text-center border-t border-outline-variant/50"><p class="text-[10px] text-gray-400 font-medium tracking-widest uppercase">Copyright © 2025 Sambarang Production</p></footer>
+      <footer class="pt-6 pb-2 text-center border-t border-outline-variant/50"><p class="text-[10px] text-gray-400 font-medium tracking-widest uppercase">Copyright © 2026 Sambarang Production</p></footer>
     </div>
 
     <!-- PAGE 3: SETUP -->
@@ -863,188 +1056,243 @@
         <!-- SUBTAB 1: PENGATURAN APLIKASI              -->
         <!-- ========================================== -->
         <div id="setup-view-pengaturan" class="space-y-6">
-          <!-- KARTU PENGATURAN PASSWORD / PIN PRIBADI (HANGUSKAN TOKEN) -->
-          <section id="setup-pass-section" class="bg-white dark:bg-slate-800 border rounded-2xl p-6 shadow-sm space-y-4">
-            <div class="flex items-center justify-between flex-wrap gap-2">
-              <div class="flex items-center gap-2">
-                <span id="setup-pass-icon" class="material-symbols-outlined text-amber-500 text-xl">key</span>
-                <h2 id="setup-pass-title" class="font-headline-md text-headline-md font-bold text-on-surface">Ubah Password & PIN Akses</h2>
-              </div>
-              <span id="setup-pass-badge" class="px-2.5 py-0.5 text-[10px] font-extrabold rounded-full border bg-amber-500/15 text-amber-500 border-amber-500/30">
-                MASIH TOKEN BAWAAN
-              </span>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+            <!-- KOLOM KIRI: KEAMANAN, LISENSI & PERANGKAT -->
+            <div class="space-y-6">
+              <!-- KARTU PENGATURAN PASSWORD / PIN PRIBADI (HANGUSKAN TOKEN) -->
+              <section id="setup-pass-section" class="bg-white dark:bg-slate-800 border border-outline-variant/60 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                  <div class="flex items-center gap-2">
+                    <span id="setup-pass-icon" class="material-symbols-outlined text-amber-500 text-xl">key</span>
+                    <h2 id="setup-pass-title" class="font-headline-md text-headline-md font-bold text-on-surface">Ubah Password & PIN Akses</h2>
+                  </div>
+                  <span id="setup-pass-badge" class="px-2.5 py-0.5 text-[10px] font-extrabold rounded-full border bg-amber-500/15 text-amber-500 border-amber-500/30">
+                    MASIH TOKEN BAWAAN
+                  </span>
+                </div>
+
+                <div id="setup-pass-info-box" class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs leading-relaxed space-y-1">
+                  <p class="font-bold flex items-center gap-1.5 text-amber-800 dark:text-amber-300">
+                    <span class="material-symbols-outlined text-sm">security</span> Kunci Keamanan Anti-Sharing
+                  </p>
+                  <p id="setup-pass-info-text">
+                    Saat ini Anda masih masuk menggunakan Token Bawaan (akses terkunci hanya 1 perangkat). Tentukan <b>PIN Pribadi</b> Anda di bawah ini. Setelah PIN disimpan, Token bawaan akan otomatis <b>HANGUS</b> sehingga tidak bisa digunakan orang lain, dan fitur Sinkronisasi Multi-Perangkat akan aktif!
+                  </p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                  <div class="sm:col-span-2 relative">
+                    <input type="password" id="new-pass-input" placeholder="Masukkan PIN Pribadi Baru (4-12 Karakter)" class="w-full p-2.5 border rounded-xl text-xs font-mono-data bg-surface text-on-surface tracking-wider">
+                  </div>
+                  <button id="btn-save-personal-pin" onclick="handleBurnTokenAndSetPin()" class="w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs rounded-xl shadow flex items-center justify-center gap-1.5 transition-all">
+                    <span class="material-symbols-outlined text-sm">local_fire_department</span> BUAT PIN & HANGUSKAN
+                  </button>
+                </div>
+              </section>
+
+              <!-- LISENSI RESMI & DEVICE STATUS -->
+              <section class="bg-gradient-to-r from-slate-900 to-slate-950 border border-cyan-500/30 rounded-2xl p-5 sm:p-6 shadow-sm space-y-3 text-white">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                  <div class="flex items-center gap-2 cursor-pointer select-none" onclick="handleSecretDevTap()" title="Lisensi Resmi Keuanganku PRO">
+                    <span class="material-symbols-outlined text-cyan-400 text-xl">verified_user</span>
+                    <h2 class="font-headline-md text-headline-md font-bold text-white">Lisensi Resmi Keuanganku PRO</h2>
+                  </div>
+                  <span id="setup-license-badge" class="px-2.5 py-0.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] font-extrabold rounded-full flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> TERAKTIVASI (RESMI)
+                  </span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-slate-950/80 p-3.5 rounded-xl border border-slate-800">
+                  <div>
+                    <p class="text-[10px] text-slate-400 font-semibold">Kode Lisensi Anda:</p>
+                    <p id="setup-license-token" class="font-mono-data font-bold text-cyan-300 text-sm mt-0.5 select-all">-</p>
+                  </div>
+                  <div>
+                    <p class="text-[10px] text-slate-400 font-semibold">Pemilik Lisensi:</p>
+                    <p id="setup-license-owner" class="font-bold text-slate-200 mt-0.5">-</p>
+                  </div>
+                  <div>
+                    <p class="text-[10px] text-slate-400 font-semibold">Status PIN & Proteksi:</p>
+                    <p id="setup-license-pin-status" class="font-bold mt-0.5 text-amber-400">-</p>
+                  </div>
+                  <div>
+                    <p class="text-[10px] text-slate-400 font-semibold">Status Kuota:</p>
+                    <p id="setup-license-quota" class="font-mono-data text-emerald-400 font-bold mt-0.5">-</p>
+                  </div>
+                </div>
+                <!-- DAFTAR PERANGKAT TERHUBUNG & KICKOUT REMOTELY -->
+                <div class="mt-2 pt-4 border-t border-slate-800 space-y-3">
+                  <div class="flex items-center justify-between flex-wrap gap-2">
+                    <div class="flex items-center gap-2">
+                      <div class="w-8 h-8 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-base">devices</span>
+                      </div>
+                      <div>
+                        <h3 class="font-bold text-white text-xs sm:text-sm flex items-center gap-2">
+                          <span>Daftar Perangkat Terhubung</span>
+                          <span id="connected-devices-badge" class="px-2 py-0.5 rounded-full text-[10px] font-mono-data font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">1 Perangkat</span>
+                        </h3>
+                        <p class="text-[10px] text-slate-400">Kelola dan cabut akses perangkat dari jarak jauh</p>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      <button type="button" onclick="openPairDeviceModal()" class="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-cyan-500/20 active:scale-95 transition-all cursor-pointer" title="Tampilkan Barcode untuk di-scan dari HP 2 atau Laptop 3">
+                        <span class="material-symbols-outlined text-sm">qr_code_2</span>
+                        <span class="text-[11px]">Hubungkan Perangkat Baru (Barcode)</span>
+                      </button>
+                      <button type="button" onclick="loadConnectedDevices(true)" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer" title="Perbarui daftar perangkat terhubung">
+                        <span id="btn-refresh-devices-icon" class="material-symbols-outlined text-sm">refresh</span>
+                        <span class="text-[11px]">Segarkan</span>
+                      </button>
+                      <button type="button" id="btn-kick-all-others" onclick="handleDeactivateAllOtherDevices()" class="hidden px-2.5 py-1.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer" title="Keluarkan semua perangkat lain jika ada HP/Laptop hilang atau lupa logout">
+                        <span class="material-symbols-outlined text-sm">phonelink_erase</span>
+                        <span class="text-[11px] font-bold">Keluarkan Perangkat Lain</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="p-3 bg-slate-950/60 border border-slate-800/80 rounded-xl text-[11px] text-slate-400 flex items-start gap-2">
+                    <span class="material-symbols-outlined text-cyan-400 text-sm shrink-0 mt-0.5">shield</span>
+                    <p>Jika ada HP atau Laptop Anda yang <b>hilang</b> atau <b>lupa keluar (logout)</b>, Anda dapat mengklik tombol <b>Keluarkan</b> di bawah untuk mencabut akses perangkat tersebut seketika dan membebaskan kuota slot lisensi.</p>
+                  </div>
+
+                  <!-- List Kontainer Perangkat -->
+                  <div id="connected-devices-list" class="space-y-2 pt-1">
+                    <div class="p-4 text-center text-slate-500 text-xs">
+                      <span class="material-symbols-outlined text-2xl animate-spin text-cyan-400">progress_activity</span>
+                      <p class="mt-1">Memuat daftar perangkat terhubung...</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Action Footer -->
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-2 pt-3 border-t border-slate-800">
+                  <button onclick="handleDeactivateCurrentDevice()" class="w-full sm:w-auto px-3.5 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer">
+                    <span class="material-symbols-outlined text-sm">logout</span>
+                    Keluar dari Perangkat Ini Saja
+                  </button>
+                  <a href="dev-dashboard.html" id="btn-open-dev-dashboard" target="_blank" class="hidden w-full sm:w-auto px-3.5 py-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/40 rounded-xl text-xs font-bold items-center justify-center gap-1.5 transition-all">
+                    <span class="material-symbols-outlined text-sm">terminal</span>
+                    Buka Developer Dashboard
+                  </a>
+                </div>
+              </section>
             </div>
 
-            <div id="setup-pass-info-box" class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs leading-relaxed space-y-1">
-              <p class="font-bold flex items-center gap-1.5 text-amber-800 dark:text-amber-300">
-                <span class="material-symbols-outlined text-sm">security</span> Kunci Keamanan Anti-Sharing
-              </p>
-              <p id="setup-pass-info-text">
-                Saat ini Anda masih masuk menggunakan Token Bawaan (akses terkunci hanya 1 perangkat). Tentukan <b>PIN Pribadi</b> Anda di bawah ini. Setelah PIN disimpan, Token bawaan akan otomatis <b>HANGUS</b> sehingga tidak bisa digunakan orang lain, dan fitur Sinkronisasi Multi-Perangkat akan aktif!
-              </p>
-            </div>
+            <!-- KOLOM KANAN: CLOUD SYNC & FITUR TAMBAHAN -->
+            <div class="space-y-6">
+              <!-- FITUR CLOUD & SINKRONISASI -->
+              <section id="setup-cloud-section" class="bg-blue-50/70 border border-blue-200 dark:bg-blue-900/30 dark:border-blue-800 rounded-2xl p-5 sm:p-6 shadow-sm space-y-3">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                  <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-blue-600">cloud_sync</span>
+                    <h2 class="font-headline-md text-headline-md font-bold text-blue-900 dark:text-blue-100">Koneksi Cloud & Auto-Sync</h2>
+                  </div>
+                  <span id="setup-cloud-status-badge" class="px-2.5 py-1 bg-green-100 dark:bg-green-950/80 text-green-700 dark:text-green-300 text-[10px] font-extrabold rounded-full flex items-center gap-1.5 border border-green-200 dark:border-green-800">
+                    <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> AUTO-SYNC AKTIF
+                  </span>
+                </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-              <div class="sm:col-span-2 relative">
-                <input type="password" id="new-pass-input" placeholder="Masukkan PIN Pribadi Baru (4-12 Karakter)" class="w-full p-2.5 border rounded-xl text-xs font-mono-data bg-surface text-on-surface tracking-wider">
-              </div>
-              <button id="btn-save-personal-pin" onclick="handleBurnTokenAndSetPin()" class="w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs rounded-xl shadow flex items-center justify-center gap-1.5 transition-all">
-                <span class="material-symbols-outlined text-sm">local_fire_department</span> BUAT PIN & HANGUSKAN
-              </button>
-            </div>
-          </section>
+                <!-- NOTIFIKASI KUNCI JIKA MASIH MENGGUNAKAN TOKEN BAWAAN -->
+                <div id="cloud-sync-lock-notice" class="hidden p-3.5 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-900 dark:text-amber-200 text-xs flex items-start gap-2.5">
+                  <span class="material-symbols-outlined text-amber-500 text-lg shrink-0 mt-0.5">lock</span>
+                  <div class="space-y-1">
+                    <p class="font-bold text-amber-800 dark:text-amber-300">Fitur Sinkronisasi Cloud Terkunci</p>
+                    <p class="text-[11px] leading-relaxed opacity-95">
+                      Anda saat ini masih masuk menggunakan <b>Token Bawaan</b> (mode akses 1 perangkat). Untuk menghindari aplikasi dibagikan secara ilegal, fitur sinkronisasi otomatis multi-perangkat hanya aktif setelah Anda mengganti Token menjadi <b>PIN Pribadi</b> Anda sendiri.
+                    </p>
+                  </div>
+                </div>
 
-          <!-- FITUR EKSKLUSIF PEMILIK (HANYA MUNCUL JIKA TERHUBUNG KE CLOUD PRIBADI) -->
-          <section id="setup-owner-feature-section" class="bg-indigo-50 border border-indigo-200 dark:bg-indigo-900/30 dark:border-indigo-800 rounded-2xl p-6 shadow-sm space-y-3 hidden">
-            <div class="flex items-center justify-between flex-wrap gap-2">
-              <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-indigo-600">admin_panel_settings</span>
-                <h2 class="font-headline-md text-headline-md font-bold text-indigo-900 dark:text-indigo-100">Fitur Eksklusif Pemilik</h2>
-              </div>
-              <span class="px-2.5 py-1 bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 text-[10px] font-extrabold rounded-full flex items-center gap-1 border border-indigo-200 dark:border-indigo-800">
-                👑 KHUSUS PEMILIK
-              </span>
-            </div>
-            <p class="text-[11px] text-indigo-800 dark:text-indigo-200 leading-relaxed">
-              Menu Kalkulator Bisnis & Usaha (HPP Konveksi/Sablon, Modal Usaha, Murabahah). Menu ini <b>hanya muncul untuk Anda</b> dan disembunyikan total dari pengguna lain/kerabat.
-            </p>
-            <div class="flex items-center gap-3 pt-2 bg-white dark:bg-slate-800 p-3 rounded-xl border border-indigo-100 dark:border-indigo-900">
-              <input type="checkbox" id="setup-enable-calc" onchange="toggleCalculatorFeature(this.checked)" class="w-5 h-5 rounded text-indigo-600 border-outline-variant cursor-pointer focus:ring-indigo-500">
-              <label for="setup-enable-calc" class="text-xs font-bold text-gray-700 dark:text-gray-300 cursor-pointer">Aktifkan Menu Navigasi Kalkulator Bisnis & Finansial</label>
-            </div>
-          </section>
-
-          <!-- FITUR CLOUD & SINKRONISASI -->
-          <section id="setup-cloud-section" class="bg-blue-50 border border-blue-200 dark:bg-blue-900/30 dark:border-blue-800 rounded-2xl p-6 shadow-sm space-y-3">
-            <div class="flex items-center justify-between flex-wrap gap-2">
-              <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-blue-600">cloud_sync</span>
-                <h2 class="font-headline-md text-headline-md font-bold text-blue-900 dark:text-blue-100">Koneksi Cloud & Auto-Sync</h2>
-              </div>
-              <span id="setup-cloud-status-badge" class="px-2.5 py-1 bg-green-100 dark:bg-green-950/80 text-green-700 dark:text-green-300 text-[10px] font-extrabold rounded-full flex items-center gap-1.5 border border-green-200 dark:border-green-800">
-                <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> AUTO-SYNC AKTIF
-              </span>
-            </div>
-
-            <!-- NOTIFIKASI KUNCI JIKA MASIH MENGGUNAKAN TOKEN BAWAAN -->
-            <div id="cloud-sync-lock-notice" class="hidden p-3.5 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-900 dark:text-amber-200 text-xs flex items-start gap-2.5">
-              <span class="material-symbols-outlined text-amber-500 text-lg shrink-0 mt-0.5">lock</span>
-              <div class="space-y-1">
-                <p class="font-bold text-amber-800 dark:text-amber-300">Fitur Sinkronisasi Cloud Terkunci</p>
-                <p class="text-[11px] leading-relaxed opacity-95">
-                  Anda saat ini masih masuk menggunakan <b>Token Bawaan</b> (mode akses 1 perangkat). Untuk menghindari aplikasi dibagikan secara ilegal, fitur sinkronisasi otomatis multi-perangkat hanya aktif setelah Anda mengganti Token menjadi <b>PIN Pribadi</b> Anda sendiri.
+                <p class="text-[11px] text-blue-800 dark:text-blue-200 leading-relaxed">
+                  Masukkan Link Web App Google Sheets Anda untuk mengaktifkan sinkronisasi otomatis multi-perangkat. 
+                  <b>Data otomatis tersinkron</b> saat aplikasi dibuka, berpindah menu, beralih tab/layar HP, atau setelah menginput transaksi di perangkat lain. Anda juga bisa menekan tombol awan di Header kapan saja.
                 </p>
-              </div>
-            </div>
+                <input type="text" id="setup-cloud-url" placeholder="https://script.google.com/macros/s/..." onchange="updateCloudUrl(this.value)" class="w-full p-2.5 border border-blue-300 rounded-xl text-xs font-mono-data bg-white dark:bg-slate-900 text-on-surface mt-1 outline-none focus:border-blue-500">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3 border-b border-blue-200/50 dark:border-blue-800/50 pb-4">
+                  <button id="btn-upload-cloud" onclick="forceUploadToCloud()" class="py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] uppercase rounded-xl shadow flex items-center justify-center gap-2 transition-all">
+                    <span class="material-symbols-outlined text-base">cloud_upload</span> PAKSA UPLOAD KE CLOUD
+                  </button>
+                  <button id="btn-download-cloud" onclick="forceDownloadFromCloud()" class="py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold text-[11px] uppercase rounded-xl shadow flex items-center justify-center gap-2 transition-all">
+                    <span class="material-symbols-outlined text-base">cloud_download</span> PAKSA TARIK DARI CLOUD
+                  </button>
+                </div>
+                <div class="pt-3 border-t border-blue-200/50 dark:border-blue-800/50 space-y-2">
+                  <div class="flex items-center justify-between">
+                    <p class="text-[11px] text-blue-900 dark:text-blue-200 font-bold flex items-center gap-1.5">
+                      <span class="material-symbols-outlined text-sm text-blue-600">save_as</span>
+                      <span>Cadangan Manual (Backup & Restore Offline)</span>
+                    </p>
+                    <span class="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">Tanpa Internet</span>
+                  </div>
+                  <p class="text-[10px] text-blue-800/80 dark:text-blue-300/80 leading-relaxed">
+                    <b>Fungsi:</b> Salin seluruh data catatan keuangan Anda menjadi kode teks untuk disimpan/dicadangkan secara offline (<b>COPY TEKS DB</b>), atau tempelkan kode tersebut di HP baru untuk memulihkan data tanpa memerlukan koneksi Google Sheets (<b>PASTE TEKS DB</b>).
+                  </p>
+                  <div class="grid grid-cols-2 gap-2 pt-1">
+                    <button onclick="exportDatabase()" class="py-2.5 px-3 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 font-bold text-[11px] rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer" title="Salin seluruh data keuangan ke clipboard">
+                      <span class="material-symbols-outlined text-sm">content_copy</span>
+                      <span>COPY TEKS DB</span>
+                    </button>
+                    <button onclick="importDatabase()" class="py-2.5 px-3 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 font-bold text-[11px] rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer" title="Tempel kode database untuk memulihkan data">
+                      <span class="material-symbols-outlined text-sm">content_paste</span>
+                      <span>PASTE TEKS DB</span>
+                    </button>
+                  </div>
+                </div>
+              </section>
 
-            <p class="text-[11px] text-blue-800 dark:text-blue-200 leading-relaxed">
-              Masukkan Link Web App Google Sheets Anda untuk mengaktifkan sinkronisasi otomatis multi-perangkat. 
-              <b>Data otomatis tersinkron</b> saat aplikasi dibuka, berpindah menu, beralih tab/layar HP, atau setelah menginput transaksi di perangkat lain. Anda juga bisa menekan tombol awan di Header kapan saja.
-            </p>
-            <input type="text" id="setup-cloud-url" placeholder="https://script.google.com/macros/s/..." onchange="updateCloudUrl(this.value)" class="w-full p-2.5 border border-blue-300 rounded-xl text-xs font-mono-data bg-white dark:bg-slate-900 text-on-surface mt-1 outline-none focus:border-blue-500">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3 border-b border-blue-200/50 dark:border-blue-800/50 pb-4">
-              <button id="btn-upload-cloud" onclick="forceUploadToCloud()" class="py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] uppercase rounded-xl shadow flex items-center justify-center gap-2 transition-all">
-                <span class="material-symbols-outlined text-base">cloud_upload</span> PAKSA UPLOAD KE CLOUD
-              </button>
-              <button id="btn-download-cloud" onclick="forceDownloadFromCloud()" class="py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold text-[11px] uppercase rounded-xl shadow flex items-center justify-center gap-2 transition-all">
-                <span class="material-symbols-outlined text-base">cloud_download</span> PAKSA TARIK DARI CLOUD
-              </button>
-            </div>
-            <div class="pt-2">
-              <p class="text-[10px] text-blue-700 dark:text-blue-300 font-bold mb-2">Atau Backup/Restore Manual (Offline):</p>
-              <div class="flex gap-2">
-                <button onclick="exportDatabase()" class="flex-1 py-2 bg-white dark:bg-slate-800 border border-blue-300 text-blue-700 font-bold text-[10px] rounded-lg shadow-sm">COPY TEKS DB</button>
-                <button onclick="importDatabase()" class="flex-1 py-2 bg-white dark:bg-slate-800 border border-blue-300 text-blue-700 font-bold text-[10px] rounded-lg shadow-sm">PASTE TEKS DB</button>
-              </div>
-            </div>
-          </section>
+              <!-- FITUR PWA: PASANG APLIKASI DI PERANGKAT -->
+              <section class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 dark:from-slate-900 dark:to-slate-900 dark:border-blue-900/60 rounded-2xl p-5 sm:p-6 shadow-sm space-y-3">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                  <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-xl">download_for_offline</span>
+                    <h2 class="font-headline-md text-headline-md font-bold text-on-surface">Pasang Aplikasi di Perangkat Ini</h2>
+                  </div>
+                  <span class="px-2.5 py-0.5 bg-blue-100 dark:bg-blue-950 text-primary text-[10px] font-extrabold rounded-full border border-blue-200 dark:border-blue-800">
+                    📱 ANDROID • iOS • PC
+                  </span>
+                </div>
+                <p class="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
+                  Pasang KEUANGANKU langsung di layar utama HP atau desktop laptop Anda untuk akses instan tanpa bilah browser. Memiliki ikon aplikasi tersendiri dan siap dibuka secara offline.
+                </p>
+                <button onclick="triggerPWAInstall()" class="w-full py-3 bg-primary hover:bg-primary-container text-white font-bold text-xs rounded-xl shadow flex items-center justify-center gap-2 transition-all active:scale-95">
+                  <span class="material-symbols-outlined text-base">add_to_home_screen</span> PASANG / INSTAL APLIKASI SEKARANG
+                </button>
+              </section>
 
-          <!-- LISENSI RESMI & DEVICE STATUS -->
-          <section class="bg-gradient-to-r from-slate-900 to-slate-950 border border-cyan-500/30 rounded-2xl p-5 shadow-sm space-y-3 text-white">
-            <div class="flex items-center justify-between flex-wrap gap-2">
-              <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-cyan-400 text-xl">verified_user</span>
-                <h2 class="font-headline-md text-headline-md font-bold text-white">Lisensi Resmi Keuanganku PRO</h2>
-              </div>
-              <span id="setup-license-badge" class="px-2.5 py-0.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] font-extrabold rounded-full flex items-center gap-1">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> TERAKTIVASI (RESMI)
-              </span>
+              <!-- FITUR EKSKLUSIF PEMILIK (HANYA MUNCUL JIKA TERHUBUNG KE CLOUD PRIBADI) -->
+              <section id="setup-owner-feature-section" class="bg-indigo-50 border border-indigo-200 dark:bg-indigo-900/30 dark:border-indigo-800 rounded-2xl p-5 sm:p-6 shadow-sm space-y-3 hidden">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                  <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-indigo-600">admin_panel_settings</span>
+                    <h2 class="font-headline-md text-headline-md font-bold text-indigo-900 dark:text-indigo-100">Fitur Eksklusif Pemilik</h2>
+                  </div>
+                  <span class="px-2.5 py-1 bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 text-[10px] font-extrabold rounded-full flex items-center gap-1 border border-indigo-200 dark:border-indigo-800">
+                    👑 KHUSUS PEMILIK
+                  </span>
+                </div>
+                <p class="text-[11px] text-indigo-800 dark:text-indigo-200 leading-relaxed">
+                  Menu Kalkulator Bisnis & Usaha (HPP Konveksi/Sablon, Modal Usaha, Murabahah). Menu ini <b>hanya muncul untuk Anda</b> dan disembunyikan total dari pengguna lain/kerabat.
+                </p>
+                <div class="flex items-center gap-3 pt-2 bg-white dark:bg-slate-800 p-3 rounded-xl border border-indigo-100 dark:border-indigo-900">
+                  <input type="checkbox" id="setup-enable-calc" onchange="toggleCalculatorFeature(this.checked)" class="w-5 h-5 rounded text-indigo-600 border-outline-variant cursor-pointer focus:ring-indigo-500">
+                  <label for="setup-enable-calc" class="text-xs font-bold text-gray-700 dark:text-gray-300 cursor-pointer">Aktifkan Menu Navigasi Kalkulator Bisnis & Finansial</label>
+                </div>
+                <div class="pt-3 border-t border-indigo-200/60 dark:border-indigo-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                  <div>
+                    <p class="text-xs font-bold text-indigo-950 dark:text-indigo-100 flex items-center gap-1.5">
+                      <span class="material-symbols-outlined text-sm text-indigo-600">terminal</span>
+                      <span>Master Developer & License Portal</span>
+                    </p>
+                    <p class="text-[10px] text-indigo-800/80 dark:text-indigo-300/80">Kelola kuota lisensi, terbitkan token pembeli baru, cabut perangkat hilang, dan pantau log audit.</p>
+                  </div>
+                  <a href="dev-dashboard.html" target="_blank" class="px-3.5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-md shrink-0">
+                    <span class="material-symbols-outlined text-sm">open_in_new</span>
+                    <span>Buka Dev Dashboard</span>
+                  </a>
+                </div>
+              </section>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-slate-950/80 p-3.5 rounded-xl border border-slate-800">
-              <div>
-                <p class="text-[10px] text-slate-400 font-semibold">Kode Lisensi Anda:</p>
-                <p id="setup-license-token" class="font-mono-data font-bold text-cyan-300 text-sm mt-0.5 select-all">-</p>
-              </div>
-              <div>
-                <p class="text-[10px] text-slate-400 font-semibold">Pemilik Lisensi:</p>
-                <p id="setup-license-owner" class="font-bold text-slate-200 mt-0.5">-</p>
-              </div>
-              <div>
-                <p class="text-[10px] text-slate-400 font-semibold">Status PIN & Proteksi:</p>
-                <p id="setup-license-pin-status" class="font-bold mt-0.5 text-amber-400">-</p>
-              </div>
-              <div>
-                <p class="text-[10px] text-slate-400 font-semibold">Status Kuota:</p>
-                <p id="setup-license-quota" class="font-mono-data text-emerald-400 font-bold mt-0.5">-</p>
-              </div>
-            </div>
-            <div class="flex flex-col sm:flex-row items-center justify-between gap-2 pt-1">
-              <button onclick="handleDeactivateCurrentDevice()" class="w-full sm:w-auto px-3.5 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all">
-                <span class="material-symbols-outlined text-sm">phonelink_erase</span>
-                Lepas Lisensi dari Perangkat Ini
-              </button>
-              <a href="dev-dashboard.html" target="_blank" class="w-full sm:w-auto px-3.5 py-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/40 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all">
-                <span class="material-symbols-outlined text-sm">terminal</span>
-                Buka Developer Dashboard
-              </a>
-            </div>
-          </section>
-
-          <!-- FITUR PWA: PASANG APLIKASI DI PERANGKAT -->
-          <section class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 dark:from-slate-900 dark:to-slate-900 dark:border-blue-900/60 rounded-2xl p-5 shadow-sm space-y-3">
-            <div class="flex items-center justify-between flex-wrap gap-2">
-              <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-primary text-xl">download_for_offline</span>
-                <h2 class="font-headline-md text-headline-md font-bold text-on-surface">Pasang Aplikasi di Perangkat Ini</h2>
-              </div>
-              <span class="px-2.5 py-0.5 bg-blue-100 dark:bg-blue-950 text-primary text-[10px] font-extrabold rounded-full border border-blue-200 dark:border-blue-800">
-                📱 ANDROID • iOS • PC
-              </span>
-            </div>
-            <p class="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
-              Pasang KEUANGANKU langsung di layar utama HP atau desktop laptop Anda untuk akses instan tanpa bilah browser. Memiliki ikon aplikasi tersendiri dan siap dibuka secara offline.
-            </p>
-            <button onclick="triggerPWAInstall()" class="w-full py-3 bg-primary hover:bg-primary-container text-white font-bold text-xs rounded-xl shadow flex items-center justify-center gap-2 transition-all active:scale-95">
-              <span class="material-symbols-outlined text-base">add_to_home_screen</span> PASANG / INSTAL APLIKASI SEKARANG
-            </button>
-          </section>
-
-          <!-- SALDO AWAL -->
-          <section class="space-y-3">
-            <div>
-              <div class="flex items-center gap-2"><span class="material-symbols-outlined text-secondary">account_balance_wallet</span><h2 class="font-headline-md text-headline-md font-bold text-on-surface">Saldo Awal Kas Bebas</h2></div>
-              <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-                <b class="text-on-surface">Fungsi & Tujuan:</b> Titik awal saldo kas fisik/bebas yang Anda miliki saat pertama kali mulai memakai aplikasi ini sebelum transaksi dicatat.<br>
-                <span class="text-gray-400 dark:text-gray-500"><b>Contoh:</b> Total uang tunai di dompet fisik atau modal kas awal yang siap digunakan.</span>
-              </p>
-            </div>
-            <div class="bg-white dark:bg-slate-800 border rounded-2xl p-6 shadow-sm space-y-2">
-              <label class="block font-label-caps text-xs font-bold uppercase text-gray-500">Saldo Awal (Yang Bisa Digunakan)</label>
-              <div class="relative pt-2">
-                <span class="absolute left-4 top-1/2 -translate-y-1/2 font-extrabold text-primary text-lg">Rp</span>
-                <input type="number" id="setup-starting-balance" onchange="updateStartingBalance(this.value)" class="w-full bg-surface border rounded-xl py-3 pl-12 pr-4 font-mono-data font-bold text-xl outline-none">
-              </div>
-            </div>
-          </section>
-
-          <!-- ZONA BAHAYA -->
-          <section class="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 rounded-2xl p-5 flex items-center justify-between shadow-sm">
-            <div>
-              <p class="font-bold text-error text-sm">Zona Bahaya</p>
-              <p class="text-xs text-gray-600 dark:text-gray-400">Hapus seluruh riwayat transaksi yang pernah dicatat.</p>
-            </div>
-            <button onclick="resetTransactionHistory()" class="px-4 py-2.5 bg-error text-white font-bold rounded-xl text-xs shadow hover:bg-red-700 transition-colors">RESET RIWAYAT</button>
-          </section>
+          </div>
 
           <button onclick="manualSaveSetup()" class="w-full py-4 bg-primary text-white font-extrabold text-sm rounded-2xl shadow-lg hover:brightness-110 flex items-center justify-center gap-2 transition-all">
             <span class="material-symbols-outlined">save</span> SIMPAN SELURUH PENGATURAN
@@ -1071,10 +1319,59 @@
             </div>
           </div>
 
+          <!-- SALDO AWAL KAS BEBAS -->
+          <section class="bg-white dark:bg-slate-800 border border-outline-variant/60 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-3 dark:border-slate-700">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-secondary/15 text-secondary flex items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-xl">account_balance_wallet</span>
+                </div>
+                <div>
+                  <h2 class="font-headline-md text-headline-md font-bold text-on-surface">Saldo Awal Kas Bebas</h2>
+                  <p class="text-[11px] text-gray-500 dark:text-gray-400">Titik awal saldo kas fisik/bebas yang Anda miliki saat pertama kali mulai memakai aplikasi sebelum transaksi dicatat.</p>
+                </div>
+              </div>
+              <span class="px-2.5 py-1 text-[10px] font-bold rounded-full bg-secondary/10 text-secondary border border-secondary/20 self-start sm:self-center shrink-0">
+                Kas Tunai / Bebas Awal
+              </span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+              <div class="md:col-span-2 space-y-1.5">
+                <label class="block font-label-caps text-xs font-bold uppercase text-gray-500">Nominal Saldo Awal (Yang Bisa Digunakan):</label>
+                <div class="relative">
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 font-extrabold text-primary text-lg">Rp</span>
+                  <input type="number" id="setup-starting-balance" onchange="updateStartingBalance(this.value)" placeholder="0" class="w-full bg-surface border rounded-xl py-3 pl-12 pr-4 font-mono-data font-bold text-xl outline-none focus:border-primary transition-all">
+                </div>
+              </div>
+              <div class="p-3.5 bg-surface-container/60 dark:bg-slate-900/60 rounded-xl border border-outline-variant/60 text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
+                <p class="font-semibold text-on-surface mb-0.5 flex items-center gap-1">
+                  <span class="material-symbols-outlined text-xs text-primary">info</span> Catatan Saldo:
+                </p>
+                Total uang tunai di dompet fisik atau modal kas awal. Untuk saldo di rekening bank / e-wallet diatur langsung pada kartu <b>Rekening & Bank</b> di bawah.
+              </div>
+            </div>
+          </section>
+
           <!-- GRID KARTU KATEGORI (DIRENDER OLEH JS) -->
-          <div id="setup-database-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div id="setup-database-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             <!-- Dinamis dirender oleh renderSetupDatabaseCards() -->
           </div>
+
+          <!-- ZONA BAHAYA -->
+          <section class="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+            <div class="space-y-1">
+              <p class="font-bold text-error text-sm flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-base">warning</span>
+                <span>Zona Bahaya Database</span>
+              </p>
+              <p class="text-xs text-gray-600 dark:text-gray-400">Hapus seluruh riwayat transaksi yang pernah dicatat tanpa menghapus susunan kategori master database Anda.</p>
+            </div>
+            <button onclick="resetTransactionHistory()" class="px-5 py-2.5 bg-error hover:bg-red-700 text-white font-bold rounded-xl text-xs shadow flex items-center justify-center gap-1.5 transition-colors shrink-0 cursor-pointer">
+              <span class="material-symbols-outlined text-sm">delete_forever</span>
+              <span>RESET RIWAYAT</span>
+            </button>
+          </section>
 
           <button onclick="manualSaveSetup()" class="w-full py-4 bg-primary text-white font-extrabold text-sm rounded-2xl shadow-lg hover:brightness-110 flex items-center justify-center gap-2 transition-all">
             <span class="material-symbols-outlined">save</span> SIMPAN SELURUH PERUBAHAN DATABASE
@@ -1086,7 +1383,7 @@
       <!-- POPUP MODAL KELOLA KATEGORI DATABASE (12 KATEGORI TERISOLASI)      -->
       <!-- =================================================================== -->
       <div id="modal-setup-category" onclick="handleSetupModalBackdrop(event)" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 hidden opacity-0 transition-opacity duration-200">
-        <div id="modal-setup-category-card" class="bg-white dark:bg-slate-900 border border-outline-variant rounded-3xl w-full max-w-2xl max-h-[88vh] flex flex-col shadow-2xl overflow-hidden scale-95 transition-transform duration-200">
+        <div id="modal-setup-category-card" class="bg-white dark:bg-slate-900 border border-outline-variant rounded-3xl w-full max-w-2xl lg:max-w-3xl max-h-[88vh] flex flex-col shadow-2xl overflow-hidden scale-95 transition-transform duration-200">
           <!-- Header Popup Modal -->
           <div class="p-4 sm:p-5 border-b border-outline-variant/60 flex items-center justify-between gap-3 bg-surface-container/50 dark:bg-slate-800/50">
             <div class="flex items-center gap-3">
@@ -1258,7 +1555,7 @@
           </div>
         </div>
       </div>
-      <footer class="pt-6 pb-2 text-center border-t border-outline-variant/50"><p class="text-[10px] text-gray-400 font-medium tracking-widest uppercase">Copyright © 2025 Sambarang Production</p></footer>
+      <footer class="pt-6 pb-2 text-center border-t border-outline-variant/50"><p class="text-[10px] text-gray-400 font-medium tracking-widest uppercase">Copyright © 2026 Sambarang Production</p></footer>
     </div>
 
     <!-- PAGE 4: KALKULATOR FINANSIAL -->
@@ -1269,7 +1566,7 @@
           <p class="text-xs text-gray-500">Pilih alat bantu perhitungan untuk merencanakan usaha Anda.</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <button onclick="openCalcSub('calc-sub-currency')" class="p-5 bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl shadow-sm hover:border-primary transition-all text-left flex items-start gap-4 group">
             <div class="p-3 bg-blue-100 dark:bg-blue-950 text-primary rounded-xl group-hover:scale-110 transition-transform"><span class="material-symbols-outlined text-2xl">currency_exchange</span></div>
             <div>
@@ -1535,12 +1832,12 @@
           </div>
         </div>
       </div>
-      <footer class="pt-6 pb-2 text-center border-t border-outline-variant/50"><p class="text-[10px] text-gray-400 font-medium tracking-widest uppercase">Copyright © 2025 Sambarang Production</p></footer>
+      <footer class="pt-6 pb-2 text-center border-t border-outline-variant/50"><p class="text-[10px] text-gray-400 font-medium tracking-widest uppercase">Copyright © 2026 Sambarang Production</p></footer>
     </div>
 
   </main>
 
-  <nav class="fixed bottom-0 left-0 w-full z-40 flex justify-around items-center py-2 bg-surface border-t border-outline-variant shadow-lg">
+  <nav class="md:hidden fixed bottom-0 left-0 w-full z-40 flex justify-around items-center py-2 bg-surface/95 backdrop-blur-md border-t border-outline-variant shadow-lg">
     <button onclick="navTo('dashboard')" id="nav-dash" class="flex flex-col items-center text-primary px-4 py-1 font-bold"><span class="material-symbols-outlined">dashboard</span><span class="font-label-caps text-[10px] mt-0.5">Dashboard</span></button>
     <button onclick="navTo('transaksi')" id="nav-tx" class="flex flex-col items-center text-on-surface-variant px-4 py-1 hover:text-primary"><span class="material-symbols-outlined">receipt_long</span><span class="font-label-caps text-[10px] mt-0.5">Transaksi</span></button>
     
@@ -1641,18 +1938,42 @@
       if (nameEl) nameEl.textContent = devName;
       if (idEl) idEl.textContent = `Device ID: ${devId}`;
 
-      // Cek apakah ada parameter ?token= di URL (misal dibuka langsung dari Dev Portal atau link WA)
+      // Cek apakah ada parameter ?token= atau ?pair=1 di URL (misal scan kamera HP bawaan, Google Lens, link WA)
       try {
         let params = new URLSearchParams(window.location.search);
         let tokenParam = params.get("token");
+        let pinParam = params.get("pin");
+        let isPair = params.get("pair") === "1";
+        let masterParam = params.get("masterUrl");
+
+        if (masterParam && masterParam.startsWith("http") && !masterParam.includes("YOUR_SCRIPT_ID")) {
+          localStorage.setItem("KEUANGANKU_MASTER_SERVER_URL", masterParam);
+        }
+
         if (tokenParam) {
+          let tokenClean = tokenParam.trim().toUpperCase();
           let tokenInp = document.getElementById('license-input-token');
           if (tokenInp && !tokenInp.value) {
-            tokenInp.value = tokenParam.trim().toUpperCase();
+            tokenInp.value = tokenClean;
           }
           let bumperInp = document.getElementById('bumper-pin-input');
           if (bumperInp && !bumperInp.value) {
-            bumperInp.value = tokenParam.trim().toUpperCase();
+            bumperInp.value = tokenClean;
+          }
+          if (pinParam) {
+            let pinInp = document.getElementById('license-input-personal-pin');
+            if (pinInp) pinInp.value = pinParam.trim();
+          }
+
+          let curLic = getSavedLicense();
+          // Jika URL memiliki ?pair=1 atau belum teraktivasi, lakukan auto-pairing langsung!
+          if (isPair || !curLic || curLic.token !== tokenClean) {
+            if (window.history && window.history.replaceState) {
+              window.history.replaceState({}, document.title, window.location.pathname);
+            }
+            setTimeout(() => {
+              processAutoPairing(tokenClean, pinParam ? pinParam.trim() : '', masterParam ? masterParam.trim() : '');
+            }, 350);
           }
         }
       } catch(e) {}
@@ -1695,33 +2016,55 @@
         let res = await resp.json();
 
         if (res && res.success && res.active === false) {
-          // Lisensi diblokir atau perangkat ini telah direset oleh developer!
+          // Lisensi diblokir atau perangkat ini telah dikeluarkan dari perangkat lain!
           localStorage.removeItem("KEUANGANKU_LICENSE_DATA");
+          sessionStorage.removeItem("KEUANGANKU_PIN_PASSED");
           let gateScreen = document.getElementById('license-gate-screen');
+          let splashScreen = document.getElementById('splash-screen');
+          if (splashScreen) splashScreen.classList.add('hidden');
           if (gateScreen) gateScreen.classList.remove('hidden');
 
           let errBox = document.getElementById('gate-error-box');
           let errTxt = document.getElementById('gate-error-text');
           if (errBox && errTxt) {
             errBox.classList.remove('hidden');
-            errTxt.textContent = res.message || "Lisensi dinonaktifkan atau perangkat telah dilepas oleh Developer.";
+            errTxt.textContent = res.message || "Akses perangkat ini telah dicabut atau dikeluarkan dari perangkat lain.";
           }
         } else if (res && res.success && res.active === true) {
-          // Update status PIN jika diubah oleh admin / di perangkat lain
+          // Update status PIN & Device Count jika diubah di perangkat lain
           let lic = getSavedLicense();
-          if (lic && res.pinStatus && lic.pinStatus !== res.pinStatus) {
-            lic.pinStatus = res.pinStatus;
-            localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(lic));
-            updateSetupLicenseDisplay(lic);
-            updateTokenSecurityBanner(lic);
-            updateCloudSyncLockUI(lic);
-            renderSetupPasswordCard(lic);
+          let needsUpdate = false;
+          if (lic) {
+            if (res.pinStatus && lic.pinStatus !== res.pinStatus) {
+              lic.pinStatus = res.pinStatus;
+              needsUpdate = true;
+            }
+            if (res.deviceCount && lic.deviceCount !== res.deviceCount) {
+              lic.deviceCount = res.deviceCount;
+              needsUpdate = true;
+            }
+            if (needsUpdate) {
+              localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(lic));
+              updateSetupLicenseDisplay(lic);
+              updateTokenSecurityBanner(lic);
+              updateCloudSyncLockUI(lic);
+              renderSetupPasswordCard(lic);
+            }
           }
         }
       } catch(e) {
         // Offline / network fallback
       }
     }
+
+    // Auto-check status saat tab/aplikasi dibuka kembali (mendeteksi jika perangkat telah dikeluarkan dari HP/Laptop lain)
+    window.addEventListener('focus', () => {
+      let lic = getSavedLicense();
+      let devId = getOrCreateDeviceId();
+      if (lic && lic.token && navigator.onLine) {
+        verifyLicenseStatusSilently(lic.token, devId);
+      }
+    });
 
     // Helper komunikasi API lisensi klien yang kebal CORS
     async function callClientLicenseApi(payload) {
@@ -1907,6 +2250,7 @@
           badgeEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span> MASIH TOKEN BAWAAN (1 DEVICE)`;
         }
       }
+      updateDevDashboardButtonVisibility(lic);
     }
 
     function updateTokenSecurityBanner(lic) {
@@ -2116,8 +2460,548 @@
       } catch(e) {}
 
       localStorage.removeItem("KEUANGANKU_LICENSE_DATA");
+      sessionStorage.removeItem("KEUANGANKU_PIN_PASSED");
       alert("Lisensi berhasil dilepas dari perangkat ini.");
       location.reload();
+    }
+
+    // ============================================================
+    // DAFTAR PERANGKAT TERHUBUNG & REMOVAL JARAK JAUH
+    // ============================================================
+
+    async function loadConnectedDevices(showToastAlert = false) {
+      let lic = getSavedLicense();
+      let listEl = document.getElementById('connected-devices-list');
+      let badgeEl = document.getElementById('connected-devices-badge');
+      let btnKickOthers = document.getElementById('btn-kick-all-others');
+      let refreshIcon = document.getElementById('btn-refresh-devices-icon');
+
+      if (!listEl) return;
+      if (refreshIcon) refreshIcon.classList.add('animate-spin');
+
+      let currentDevId = getOrCreateDeviceId();
+      let currentDevName = detectDeviceName();
+
+      if (!lic || !lic.token) {
+        listEl.innerHTML = `<p class="p-3 text-center text-slate-500 text-xs italic">Aplikasi belum terhubung dengan lisensi resmi.</p>`;
+        if (refreshIcon) refreshIcon.classList.remove('animate-spin');
+        return;
+      }
+
+      try {
+        let res = await callClientLicenseApi({
+          action: 'client_get_devices',
+          token: lic.token,
+          deviceId: currentDevId
+        });
+
+        if (res && res.success && Array.isArray(res.devices)) {
+          let devices = res.devices;
+          let otherDevicesCount = devices.filter(d => d.deviceId !== currentDevId).length;
+
+          if (badgeEl) {
+            badgeEl.textContent = `${devices.length} Perangkat Aktif`;
+          }
+
+          if (btnKickOthers) {
+            if (otherDevicesCount > 0) {
+              btnKickOthers.classList.remove('hidden');
+            } else {
+              btnKickOthers.classList.add('hidden');
+            }
+          }
+
+          if (devices.length === 0) {
+            renderFallbackCurrentDevice(listEl, currentDevName, currentDevId);
+          } else {
+            listEl.innerHTML = '';
+            devices.forEach((d, idx) => {
+              let isCurrent = (d.deviceId === currentDevId);
+              let devName = d.deviceName || ('Perangkat #' + (idx + 1));
+              let lowerName = devName.toLowerCase();
+              let icon = 'smartphone';
+              if (lowerName.includes('windows') || lowerName.includes('pc') || lowerName.includes('laptop') || lowerName.includes('mac') || lowerName.includes('desktop')) {
+                icon = 'laptop_mac';
+              } else if (lowerName.includes('tablet') || lowerName.includes('ipad')) {
+                icon = 'tablet_android';
+              }
+
+              let actTime = String(d.activatedAt || d.lastActive || '').substring(0, 16).replace('T', ' ') || 'Baru Saja';
+
+              listEl.innerHTML += `
+                <div class="p-3.5 bg-slate-950 border ${isCurrent ? 'border-cyan-500/40 bg-gradient-to-r from-slate-950 to-cyan-950/20' : 'border-slate-800'} rounded-2xl flex items-center justify-between gap-3 text-xs transition-all hover:border-slate-700">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-10 h-10 rounded-xl ${isCurrent ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' : 'bg-slate-900 text-slate-400 border border-slate-800'} flex items-center justify-center shrink-0">
+                      <span class="material-symbols-outlined text-xl">${icon}</span>
+                    </div>
+                    <div class="min-w-0">
+                      <div class="flex items-center gap-2 flex-wrap">
+                        <span class="font-bold text-white text-xs truncate max-w-[180px] sm:max-w-xs">${escapeHtml(devName)}</span>
+                        ${isCurrent 
+                          ? `<span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span> PERANGKAT INI</span>` 
+                          : `<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-slate-800 text-slate-400 border border-slate-700">ONLINE</span>`}
+                      </div>
+                      <p class="text-[10px] text-slate-400 font-mono-data mt-0.5 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[11px] text-slate-500">schedule</span>
+                        Diaktivasi: ${escapeHtml(actTime)}
+                        <span class="text-slate-600">•</span>
+                        <span class="text-slate-500" title="${escapeHtml(d.deviceId)}">ID: ${escapeHtml(d.deviceId.substring(0, 8))}...</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="shrink-0">
+                    ${isCurrent 
+                      ? `<button type="button" onclick="handleDeactivateCurrentDevice()" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-slate-800 hover:border-rose-500/30 text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer" title="Keluar dari akun lisensi di perangkat ini">
+                           <span class="material-symbols-outlined text-xs">logout</span>
+                           <span class="hidden sm:inline">Keluar</span>
+                         </button>`
+                      : `<button type="button" onclick="handleDeactivateSpecificDevice('${escapeHtml(d.deviceId)}', '${escapeHtml(devName)}')" class="px-3 py-1.5 rounded-xl bg-rose-500/15 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/30 text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer" title="Keluarkan perangkat ini dari akun lisensi (logout otomatis)">
+                           <span class="material-symbols-outlined text-xs">phonelink_erase</span>
+                           <span>Keluarkan</span>
+                         </button>`}
+                  </div>
+                </div>
+              `;
+            });
+          }
+
+          if (showToastAlert) {
+            alert("Daftar perangkat terhubung berhasil diperbarui.");
+          }
+        } else {
+          renderFallbackCurrentDevice(listEl, currentDevName, currentDevId);
+        }
+      } catch(e) {
+        renderFallbackCurrentDevice(listEl, currentDevName, currentDevId);
+      }
+
+      if (refreshIcon) refreshIcon.classList.remove('animate-spin');
+    }
+
+    function renderFallbackCurrentDevice(listEl, currentDevName, currentDevId) {
+      if (!listEl) return;
+      listEl.innerHTML = `
+        <div class="p-3.5 bg-slate-950 border border-cyan-500/40 rounded-2xl flex items-center justify-between gap-3 text-xs">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-xl">devices</span>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-white text-xs">${escapeHtml(currentDevName)}</span>
+                <span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">PERANGKAT INI</span>
+              </div>
+              <p class="text-[10px] text-slate-500 font-mono-data mt-0.5">ID: ${escapeHtml(currentDevId.substring(0, 10))}...</p>
+            </div>
+          </div>
+          <button type="button" onclick="handleDeactivateCurrentDevice()" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-slate-800 text-xs font-semibold flex items-center gap-1 transition-all">
+            <span class="material-symbols-outlined text-xs">logout</span>
+            <span>Keluar</span>
+          </button>
+        </div>
+      `;
+    }
+
+    async function handleDeactivateSpecificDevice(targetDeviceId, targetDeviceName) {
+      let lic = getSavedLicense();
+      if (!lic || !lic.token) return;
+
+      let confirmMsg = `Konfirmasi Keluarkan Perangkat:\n\nApakah Anda yakin ingin mengeluarkan perangkat:\n"${targetDeviceName}"?\n\nPerangkat tersebut akan segera kehilangan akses (logout otomatis) dan slot kuota lisensi Anda di server akan dibebaskan.`;
+      if (!confirm(confirmMsg)) return;
+
+      try {
+        let res = await callClientLicenseApi({
+          action: 'deactivate_device',
+          token: lic.token,
+          targetDeviceId: targetDeviceId,
+          deviceId: targetDeviceId,
+          currentDeviceId: getOrCreateDeviceId()
+        });
+
+        if (res && res.success) {
+          alert(`Sukses: Perangkat "${targetDeviceName}" berhasil dikeluarkan dari lisensi Anda.`);
+          loadConnectedDevices(false);
+          if (lic.deviceCount && lic.deviceCount > 1) {
+            lic.deviceCount--;
+            localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(lic));
+            updateSetupLicenseDisplay(lic);
+          }
+        } else {
+          alert((res && res.message) ? res.message : "Gagal mengeluarkan perangkat.");
+        }
+      } catch(e) {
+        alert("Gagal menghubungi server. Pastikan Anda memiliki koneksi internet.");
+      }
+    }
+
+    async function handleDeactivateAllOtherDevices() {
+      let lic = getSavedLicense();
+      if (!lic || !lic.token) return;
+
+      let confirmMsg = `PENTING: Keluarkan Semua Perangkat Lain?\n\nSemua perangkat HP atau Laptop lain yang terhubung ke lisensi ${lic.token} akan langsung dikeluarkan (logout otomatis).\n\nHanya perangkat ini yang akan tetap aktif. Apakah Anda yakin?`;
+      if (!confirm(confirmMsg)) return;
+
+      try {
+        let res = await callClientLicenseApi({
+          action: 'deactivate_device',
+          token: lic.token,
+          targetDeviceId: 'ALL_OTHERS',
+          currentDeviceId: getOrCreateDeviceId()
+        });
+
+        if (res && res.success) {
+          alert("Semua perangkat lain berhasil dikeluarkan dari akun lisensi Anda!");
+          loadConnectedDevices(false);
+          lic.deviceCount = 1;
+          localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(lic));
+          updateSetupLicenseDisplay(lic);
+        } else {
+          alert((res && res.message) ? res.message : "Gagal memproses permintaan.");
+        }
+      } catch(e) {
+        alert("Gagal menghubungi server. Pastikan ada koneksi internet.");
+      }
+    }
+
+    // ============================================================
+    // SISTEM BARCODE / QR CODE PAIRING & SCANNER CEPAT (HP 2, 3, DST)
+    // ============================================================
+    let activeQrScannerInstance = null;
+    let qrCameraFacing = "environment"; // default kamera belakang
+
+    function getAppPairBaseUrl() {
+      let origin = window.location.origin;
+      let pathname = window.location.pathname;
+      if (!origin || origin === 'null' || origin.startsWith('file:')) {
+        return "https://sambarang.github.io/keuanganku/index.html";
+      }
+      return `${origin}${pathname}`;
+    }
+
+    function openPairDeviceModal() {
+      let lic = getSavedLicense();
+      if (!lic || !lic.token) {
+        alert("Aplikasi belum teraktivasi lisensi. Silakan aktivasi lisensi terlebih dahulu.");
+        return;
+      }
+      let modal = document.getElementById('modal-pair-device-qr');
+      if (modal) {
+        modal.classList.remove('hidden');
+        regeneratePairQrCode();
+      }
+    }
+
+    function closePairDeviceModal() {
+      let modal = document.getElementById('modal-pair-device-qr');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function regeneratePairQrCode() {
+      let lic = getSavedLicense();
+      if (!lic || !lic.token) return;
+
+      let includePinCheck = document.getElementById('pair-include-pin-check');
+      let includePin = includePinCheck ? includePinCheck.checked : true;
+      let pinToUse = (lic.pinStatus === 'USING_TOKEN') ? lic.token : (globalData.appPin || globalData.ownerPassword || '');
+
+      let baseUrl = getAppPairBaseUrl();
+      let masterUrl = getMasterLicenseServerUrl() || '';
+
+      let pairUrl = new URL(baseUrl);
+      pairUrl.searchParams.set("pair", "1");
+      pairUrl.searchParams.set("token", lic.token);
+      if (includePin && pinToUse) {
+        pairUrl.searchParams.set("pin", pinToUse);
+      }
+      if (masterUrl && masterUrl.startsWith("http") && !masterUrl.includes("YOUR_SCRIPT_ID")) {
+        pairUrl.searchParams.set("masterUrl", masterUrl);
+      }
+
+      let qrString = pairUrl.toString();
+
+      let tokenDisplay = document.getElementById('pair-qr-token-label');
+      if (tokenDisplay) tokenDisplay.textContent = lic.token;
+
+      let linkDisplay = document.getElementById('pair-qr-link-input');
+      if (linkDisplay) linkDisplay.value = qrString;
+
+      let quotaDisplay = document.getElementById('pair-qr-quota-label');
+      if (quotaDisplay) {
+        let maxQuota = lic.maxDevices || 3;
+        let used = lic.deviceCount || 1;
+        quotaDisplay.textContent = `${used} / ${maxQuota} Perangkat`;
+      }
+
+      let qrContainer = document.getElementById('pair-qrcode-container');
+      if (!qrContainer) return;
+      qrContainer.innerHTML = '';
+
+      try {
+        if (typeof QRCode !== 'undefined') {
+          new QRCode(qrContainer, {
+            text: qrString,
+            width: 210,
+            height: 210,
+            colorDark: "#020617",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.M
+          });
+        } else {
+          qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=210x210&data=${encodeURIComponent(qrString)}" class="w-[210px] h-[210px] mx-auto rounded-lg shadow-sm" alt="QR Code Lisensi">`;
+        }
+      } catch(e) {
+        qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=210x210&data=${encodeURIComponent(qrString)}" class="w-[210px] h-[210px] mx-auto rounded-lg shadow-sm" alt="QR Code Lisensi">`;
+      }
+    }
+
+    function copyPairLink() {
+      let linkDisplay = document.getElementById('pair-qr-link-input');
+      if (!linkDisplay || !linkDisplay.value) return;
+      navigator.clipboard.writeText(linkDisplay.value).then(() => {
+        showSyncToast("✓ Link aktivasi otomatis berhasil disalin!");
+      }).catch(() => {
+        linkDisplay.select();
+        document.execCommand('copy');
+        showSyncToast("✓ Link aktivasi otomatis berhasil disalin!");
+      });
+    }
+
+    async function openQrScannerModal() {
+      let modal = document.getElementById('modal-qr-scanner');
+      let statusEl = document.getElementById('qr-scan-status');
+      if (modal) modal.classList.remove('hidden');
+      if (statusEl) statusEl.textContent = "Mengaktifkan kamera...";
+      startQrCamera();
+    }
+
+    async function closeQrScannerModal() {
+      await stopQrCamera();
+      let modal = document.getElementById('modal-qr-scanner');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    async function startQrCamera() {
+      let statusEl = document.getElementById('qr-scan-status');
+      try {
+        if (typeof Html5Qrcode === 'undefined') {
+          if (statusEl) statusEl.innerHTML = `<span class="text-amber-400">Pustaka kamera belum siap. Anda dapat mengunggah foto barcode di bawah.</span>`;
+          return;
+        }
+
+        if (!activeQrScannerInstance) {
+          activeQrScannerInstance = new Html5Qrcode("qr-camera-reader");
+        }
+
+        const config = { fps: 10, qrbox: { width: 220, height: 220 } };
+        await activeQrScannerInstance.start(
+          { facingMode: qrCameraFacing },
+          config,
+          (decodedText) => {
+            onQrScanSuccess(decodedText);
+          },
+          (errorMessage) => {
+            // searching for QR...
+          }
+        );
+
+        if (statusEl) statusEl.textContent = "Arahkan barcode ke dalam kotak panduan";
+      } catch(err) {
+        console.warn("Gagal memulai kamera scanner:", err);
+        if (statusEl) {
+          statusEl.innerHTML = `<span class="text-rose-400">Akses kamera tidak diizinkan. Silakan klik 'Pilih Foto' untuk upload foto barcode.</span>`;
+        }
+      }
+    }
+
+    async function stopQrCamera() {
+      if (activeQrScannerInstance) {
+        try {
+          if (activeQrScannerInstance.isScanning) {
+            await activeQrScannerInstance.stop();
+          }
+          activeQrScannerInstance.clear();
+        } catch(e) {}
+        activeQrScannerInstance = null;
+      }
+    }
+
+    async function flipQrCamera() {
+      await stopQrCamera();
+      qrCameraFacing = (qrCameraFacing === "environment") ? "user" : "environment";
+      startQrCamera();
+    }
+
+    async function handleQrImageUpload(inputEl) {
+      if (!inputEl || !inputEl.files || inputEl.files.length === 0) return;
+      let file = inputEl.files[0];
+      let statusEl = document.getElementById('qr-scan-status');
+      if (statusEl) statusEl.textContent = "Menganalisis gambar...";
+
+      try {
+        if (!activeQrScannerInstance) {
+          activeQrScannerInstance = new Html5Qrcode("qr-camera-reader");
+        }
+        let result = await activeQrScannerInstance.scanFileV2(file, false);
+        if (result && result.decodedText) {
+          onQrScanSuccess(result.decodedText);
+        } else {
+          alert("Kode QR / Barcode tidak terdeteksi pada gambar tersebut. Pastikan barcode terlihat jelas.");
+          if (statusEl) statusEl.textContent = "Barcode tidak terdeteksi. Coba gambar lain.";
+        }
+      } catch(err) {
+        alert("Tidak dapat menemukan barcode pada foto yang dipilih. Pastikan foto jelas dan terang.");
+        if (statusEl) statusEl.textContent = "Pindai gagal. Silakan coba lagi.";
+      }
+      inputEl.value = '';
+    }
+
+    function parseQrScannedPayload(rawText) {
+      if (!rawText) return null;
+      let trimmed = rawText.trim();
+
+      // Kasus 1: URL dengan query parameter (?pair=1&token=...&pin=...)
+      if (trimmed.includes("?") && (trimmed.includes("token=") || trimmed.includes("pair="))) {
+        try {
+          let urlObj = new URL(trimmed);
+          let token = urlObj.searchParams.get("token") || "";
+          let pin = urlObj.searchParams.get("pin") || "";
+          let masterUrl = urlObj.searchParams.get("masterUrl") || "";
+          return { token: token.trim().toUpperCase(), pin: pin.trim(), masterUrl: masterUrl.trim() };
+        } catch(e) {
+          let matchToken = trimmed.match(/[?&]token=([^&]+)/i);
+          let matchPin = trimmed.match(/[?&]pin=([^&]+)/i);
+          let matchMaster = trimmed.match(/[?&]masterUrl=([^&]+)/i);
+          return {
+            token: matchToken ? decodeURIComponent(matchToken[1]).toUpperCase() : "",
+            pin: matchPin ? decodeURIComponent(matchPin[1]) : "",
+            masterUrl: matchMaster ? decodeURIComponent(matchMaster[1]) : ""
+          };
+        }
+      }
+
+      // Kasus 2: Format JSON
+      if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+        try {
+          let data = JSON.parse(trimmed);
+          return {
+            token: (data.token || "").toUpperCase(),
+            pin: data.pin || "",
+            masterUrl: data.masterUrl || ""
+          };
+        } catch(e) {}
+      }
+
+      // Kasus 3: Token polos (PRO-XXXX-XXXX-XXXX)
+      let clean = trimmed.toUpperCase().replace(/[^A-Z0-9-]/g, '');
+      if (clean.startsWith("PRO-") || clean.length >= 10) {
+        return { token: clean, pin: "", masterUrl: "" };
+      }
+
+      return null;
+    }
+
+    async function onQrScanSuccess(decodedText) {
+      playSuccessSound();
+      if (navigator.vibrate) navigator.vibrate(200);
+
+      let parsed = parseQrScannedPayload(decodedText);
+      if (!parsed || !parsed.token) {
+        alert("Format barcode tidak dikenali sebagai lisensi resmi KEUANGANKU PRO.\n\nTeks terbaca: " + decodedText);
+        return;
+      }
+
+      closeQrScannerModal();
+      await processAutoPairing(parsed.token, parsed.pin, parsed.masterUrl);
+    }
+
+    async function processAutoPairing(token, pin = "", masterUrl = "") {
+      let devId = getOrCreateDeviceId();
+      let devName = detectDeviceName();
+
+      if (masterUrl && masterUrl.startsWith("http") && !masterUrl.includes("YOUR_SCRIPT_ID")) {
+        localStorage.setItem("KEUANGANKU_MASTER_SERVER_URL", masterUrl);
+      }
+
+      let tokenInp = document.getElementById('license-input-token');
+      if (tokenInp) tokenInp.value = token;
+      let pinInp = document.getElementById('license-input-personal-pin');
+      if (pinInp && pin) pinInp.value = pin;
+
+      showSyncToast("⚡ Mengkoneksikan perangkat via Barcode...");
+
+      try {
+        let res = await callClientLicenseApi({
+          action: 'validate_token',
+          token: token,
+          pin: pin,
+          deviceId: devId,
+          deviceName: devName
+        });
+
+        if (res.isBurned && !pin) {
+          let gateScreen = document.getElementById('license-gate-screen');
+          if (gateScreen) gateScreen.classList.remove('hidden');
+          let personalPinBox = document.getElementById('gate-personal-pin-container');
+          if (personalPinBox) personalPinBox.classList.remove('hidden');
+          if (pinInp) {
+            pinInp.required = true;
+            pinInp.focus();
+          }
+          let errBox = document.getElementById('gate-error-box');
+          let errTxt = document.getElementById('gate-error-text');
+          if (errBox && errTxt) {
+            errBox.classList.remove('hidden');
+            errTxt.textContent = "Barcode valid! Masukkan PIN Pribadi Anda untuk menyelesaikan otorisasi perangkat ini.";
+          }
+          alert("Barcode Lisensi Terverifikasi!\n\nKarena lisensi telah dipersonalisasi di perangkat utama, silakan masukkan PIN Pribadi Anda untuk masuk.");
+          return;
+        }
+
+        if (res.success && res.data) {
+          localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(res.data));
+
+          if (res.data.pinStatus === 'USING_TOKEN') {
+            globalData.appPin = res.data.token;
+            globalData.ownerPassword = res.data.token;
+            saveStorageData();
+          } else if (res.data.pinStatus === 'PIN_CHANGED' && pin) {
+            globalData.appPin = pin;
+            globalData.ownerPassword = pin;
+            saveStorageData();
+          }
+
+          sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
+
+          let gateScreen = document.getElementById('license-gate-screen');
+          if (gateScreen) gateScreen.classList.add('hidden');
+          let splashScreen = document.getElementById('splash-screen');
+          if (splashScreen) {
+            splashScreen.classList.add('opacity-0');
+            setTimeout(() => splashScreen.classList.add('hidden'), 700);
+          }
+
+          updateSetupLicenseDisplay(res.data);
+          updateTokenSecurityBanner(res.data);
+          updateCloudSyncLockUI(res.data);
+          renderSetupPasswordCard(res.data);
+
+          playSuccessSound();
+          showSyncToast("🎉 Perangkat Berhasil Terhubung Otomatis!");
+
+          // Tawaran Download / Pasang PWA ke Layar Utama
+          setTimeout(() => {
+            if (!isStandaloneMode()) {
+              triggerPWAInstall();
+            }
+          }, 1200);
+
+        } else {
+          alert("Gagal menghubungkan perangkat: " + (res.message || "Token tidak valid atau kuota lisensi penuh."));
+        }
+      } catch(err) {
+        alert("Gagal menghubungkan ke server lisensi. Pastikan internet aktif.");
+      }
     }
 
     function updateGateServerIndicator() {
@@ -2689,6 +3573,59 @@
     function isOwnerDevice() {
       return !!(globalData && globalData.cloudUrl && typeof globalData.cloudUrl === 'string' && globalData.cloudUrl.trim().startsWith("http"));
     }
+
+    let devTapCount = 0;
+    let devTapTimer = null;
+    function handleSecretDevTap() {
+      devTapCount++;
+      clearTimeout(devTapTimer);
+      devTapTimer = setTimeout(() => { devTapCount = 0; }, 3000);
+      if (devTapCount >= 5) {
+        devTapCount = 0;
+        let isCurrentlyOn = localStorage.getItem("KEUANGANKU_DEV_MODE") === "true";
+        let newState = !isCurrentlyOn;
+        localStorage.setItem("KEUANGANKU_DEV_MODE", newState ? "true" : "false");
+        alert(newState ? "🛠️ Mode Pengembang Diaktifkan!\n\nTombol Developer Dashboard kini dibuka khusus di akun Anda." : "🔒 Mode Pengembang Dimatikan.");
+        updateDevDashboardButtonVisibility();
+      }
+    }
+
+    function isDevOrOwner(lic) {
+      // 1. Cek jika sesi dev portal pernah dibuka di perangkat ini
+      if (localStorage.getItem("KEUANGANKU_DEV_API_URL") || localStorage.getItem("KEUANGANKU_DEV_SAVED_PASS")) {
+        return true;
+      }
+      // 2. Cek perangkat pemilik (terhubung cloud pribadi)
+      if (typeof isOwnerDevice === 'function' && isOwnerDevice()) {
+        return true;
+      }
+      // 3. Cek data lisensi (khusus akun Muh Akbar atau token master resmi)
+      if (!lic && typeof getSavedLicense === 'function') lic = getSavedLicense();
+      if (lic) {
+        let name = (lic.buyerName || '').toLowerCase();
+        let tok = (lic.token || '').toUpperCase();
+        if (name.includes('akbar') || tok === 'PRO-S8GF-HQT5-CNVE') {
+          return true;
+        }
+      }
+      // 4. Cek override rahasia (ketukan 5x)
+      if (localStorage.getItem("KEUANGANKU_DEV_MODE") === "true") {
+        return true;
+      }
+      return false;
+    }
+
+    function updateDevDashboardButtonVisibility(lic) {
+      let devBtn = document.getElementById('btn-open-dev-dashboard');
+      if (!devBtn) return;
+      if (isDevOrOwner(lic)) {
+        devBtn.classList.remove('hidden');
+        devBtn.classList.add('flex');
+      } else {
+        devBtn.classList.add('hidden');
+        devBtn.classList.remove('flex');
+      }
+    }
     
     function toggleCalculatorFeature(val) {
       if (!isOwnerDevice()) {
@@ -2698,6 +3635,8 @@
       saveStorageData();
       let navCalc = document.getElementById('nav-calc');
       if (navCalc) navCalc.style.display = (isOwnerDevice() && val) ? 'flex' : 'none';
+      let dnavCalc = document.getElementById('dnav-calc');
+      if (dnavCalc) dnavCalc.style.display = (isOwnerDevice() && val) ? 'inline-flex' : 'none';
       if ((!val || !isOwnerDevice()) && !document.getElementById('page-kalkulator').classList.contains('hidden')) {
         navTo('dashboard');
       }
@@ -2816,13 +3755,14 @@
     function initApp() { 
       let isOwner = isOwnerDevice();
       let navCalc = document.getElementById('nav-calc');
+      let dnavCalc = document.getElementById('dnav-calc');
       // Kalkulator HANYA BISA aktif jika ini adalah perangkat pemilik terverifikasi (terhubung ke Cloud pribadi)
-      if (navCalc) {
-        if (isOwner && globalData.enableCalculator !== false) {
-          navCalc.style.display = 'flex';
-        } else {
-          navCalc.style.display = 'none';
-        }
+      if (isOwner && globalData.enableCalculator !== false) {
+        if (navCalc) navCalc.style.display = 'flex';
+        if (dnavCalc) dnavCalc.style.display = 'inline-flex';
+      } else {
+        if (navCalc) navCalc.style.display = 'none';
+        if (dnavCalc) dnavCalc.style.display = 'none';
       }
 
       let ownerSection = document.getElementById('setup-owner-feature-section');
@@ -2833,6 +3773,8 @@
           ownerSection.classList.add('hidden');
         }
       }
+
+      updateDevDashboardButtonVisibility();
 
       renderDashboard(); 
       populateFormDropdowns(); 
@@ -2847,15 +3789,22 @@
     function navTo(page) {
       ['page-dashboard', 'page-transaksi', 'page-setup', 'page-kalkulator'].forEach(id => { let el = document.getElementById(id); if(el) el.classList.add('hidden'); });
       ['nav-dash', 'nav-tx', 'nav-setup', 'nav-calc'].forEach(id => { let el = document.getElementById(id); if(el && el.style.display !== 'none') el.className = "flex flex-col items-center text-on-surface-variant px-4 py-1 hover:text-primary"; });
+      ['dnav-dash', 'dnav-tx', 'dnav-setup', 'dnav-calc'].forEach(id => { 
+        let el = document.getElementById(id); 
+        if(el && el.style.display !== 'none') el.className = "px-4 py-1.5 rounded-xl text-xs font-bold text-on-surface-variant hover:text-primary hover:bg-surface transition-all flex items-center gap-1.5"; 
+      });
+
       if (page === 'dashboard') { 
         document.getElementById('page-dashboard').classList.remove('hidden'); 
-        document.getElementById('nav-dash').className = "flex flex-col items-center text-primary px-4 py-1 font-bold"; 
+        let nd = document.getElementById('nav-dash'); if(nd) nd.className = "flex flex-col items-center text-primary px-4 py-1 font-bold"; 
+        let dnd = document.getElementById('dnav-dash'); if(dnd) dnd.className = "px-4 py-1.5 rounded-xl text-xs font-extrabold bg-primary text-white shadow-sm transition-all flex items-center gap-1.5"; 
         renderDashboard(); 
         syncWithCloud(false); 
       } 
       else if (page === 'transaksi') { 
         document.getElementById('page-transaksi').classList.remove('hidden'); 
-        document.getElementById('nav-tx').className = "flex flex-col items-center text-primary px-4 py-1 font-bold"; 
+        let nt = document.getElementById('nav-tx'); if(nt) nt.className = "flex flex-col items-center text-primary px-4 py-1 font-bold"; 
+        let dnt = document.getElementById('dnav-tx'); if(dnt) dnt.className = "px-4 py-1.5 rounded-xl text-xs font-extrabold bg-primary text-white shadow-sm transition-all flex items-center gap-1.5"; 
         let dateInput = document.getElementById('tx-date'); 
         if (dateInput) dateInput.valueAsDate = new Date(); 
         populateFormDropdowns(); 
@@ -2866,7 +3815,8 @@
       } 
       else if (page === 'setup') { 
         document.getElementById('page-setup').classList.remove('hidden'); 
-        document.getElementById('nav-setup').className = "flex flex-col items-center text-primary px-4 py-1 font-bold"; 
+        let ns = document.getElementById('nav-setup'); if(ns) ns.className = "flex flex-col items-center text-primary px-4 py-1 font-bold"; 
+        let dns = document.getElementById('dnav-setup'); if(dns) dns.className = "px-4 py-1.5 rounded-xl text-xs font-extrabold bg-primary text-white shadow-sm transition-all flex items-center gap-1.5"; 
         renderSetupView(); 
       } 
       else if (page === 'kalkulator') { 
@@ -2878,6 +3828,8 @@
         document.getElementById('page-kalkulator').classList.remove('hidden'); 
         let navCalc = document.getElementById('nav-calc'); 
         if (navCalc) navCalc.className = "flex flex-col items-center text-primary px-4 py-1 font-bold"; 
+        let dnavCalc = document.getElementById('dnav-calc'); 
+        if (dnavCalc) dnavCalc.className = "px-4 py-1.5 rounded-xl text-xs font-extrabold bg-primary text-white shadow-sm transition-all flex items-center gap-1.5"; 
         backToCalcMenu(); 
       }
     }
@@ -4650,6 +5602,7 @@
       renderSetupPasswordCard(currentLic);
       updateCloudSyncLockUI(currentLic);
       renderSetupDatabaseCards();
+      loadConnectedDevices();
     }
 
     
