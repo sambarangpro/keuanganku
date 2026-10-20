@@ -2673,8 +2673,12 @@
     function getAppPairBaseUrl() {
       let origin = window.location.origin;
       let pathname = window.location.pathname;
-      if (!origin || origin === 'null' || origin.startsWith('file:')) {
-        return "https://sambarang.github.io/keuanganku/index.html";
+      if (!origin || origin === 'null' || origin.startsWith('file:') || origin.includes('localhost') || origin.includes('127.0.0.1')) {
+        return "https://sambarangpro.github.io/keuanganku/index.html";
+      }
+      // Koreksi otomatis jika terdapat typo domain sambarang.github.io tanpa 'pro'
+      if (origin.includes("sambarang.github.io") && !origin.includes("sambarangpro.github.io")) {
+        return "https://sambarangpro.github.io/keuanganku/index.html";
       }
       return `${origin}${pathname}`;
     }
