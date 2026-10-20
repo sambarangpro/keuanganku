@@ -116,6 +116,21 @@ function handleRequest(params) {
         break;
 
       // -------------------------------------------------------------
+      // SISTEM PAIRING WHATSAPP WEB STYLE (PC/iPad Tampilkan QR, HP Utama Scan)
+      // -------------------------------------------------------------
+      case "create_pair_session":
+        result = createPairSession(params);
+        break;
+
+      case "check_pair_session":
+        result = checkPairSession(params);
+        break;
+
+      case "authorize_pair_session":
+        result = authorizePairSession(params);
+        break;
+
+      // -------------------------------------------------------------
       // API DEVELOPER / ADMIN DASHBOARD
       // -------------------------------------------------------------
       case "admin_login":
@@ -192,6 +207,10 @@ function validateClientToken(params) {
       tokenInput = rowToken; // Gunakan format resmi canonical (dengan tanda strip)
       var buyerName = data[i][1];
       var maxDevices = parseInt(data[i][3]) || 2;
+      // Berikan batas kuota prioritas pemilik/developer akun agar bebas multi-perangkat saat pengujian
+      if (tokenInput === 'PRO-S8GF-HQT5-CNVE' || String(buyerName).toLowerCase().includes('akbar')) {
+        maxDevices = Math.max(maxDevices, 10);
+      }
       var status = String(data[i][6]).trim().toUpperCase();
       var pinStatus = String(data[i][7] || "UNCLAIMED").trim().toUpperCase();
       var storedPersonalPin = String(data[i][8] || "").trim();
@@ -329,6 +348,181 @@ function validateClientToken(params) {
   return { success: false, message: "Token Pembelian tidak ditemukan. Pastikan Anda memasukkan kode yang benar dari bukti pemesanan." };
 }
 
+// ==============================================================================
+// SISTEM PAIRING WHATSAPP WEB STYLE (PC/iPad Tampilkan QR, HP Utama Scan)
+// ==============================================================================
+
+function createPairSession(params) {
+  var sessionId = (params.sessionId || "").trim();
+  var deviceId = (params.deviceId || "").trim();
+  var deviceName = (params.deviceName || "Perangkat Web").trim();
+
+  if (!sessionId) {
+    sessionId = "PAIR-" + Utilities.getUuid().substring(0, 8).toUpperCase();
+  }
+
+  var cache = CacheService.getScriptCache();
+  var sessionObj = {
+    status: "WAITING",
+    sessionId: sessionId,
+    deviceId: deviceId,
+    deviceName: deviceName,
+    createdAt: Date.now()
+  };
+
+  // Simpan di cache Google Apps Script selama 600 detik (10 menit)
+  cache.put(sessionId, JSON.stringify(sessionObj), 600);
+
+  return {
+    success: true,
+    sessionId: sessionId,
+    status: "WAITING",
+    message: "Sesi pairing barcode berhasil dibuat."
+  };
+}
+
+function checkPairSession(params) {
+  var sessionId = (params.sessionId || "").trim();
+  if (!sessionId) {
+    return { success: false, status: "EXPIRED", message: "Session ID tidak ditemukan." };
+  }
+
+  var cache = CacheService.getScriptCache();
+  var raw = cache.get(sessionId);
+  if (!raw) {
+    return { success: false, status: "EXPIRED", message: "Sesi barcode telah kedaluwarsa. Silakan muat ulang barcode." };
+  }
+
+  var sessionObj = JSON.parse(raw);
+  return {
+    success: true,
+    status: sessionObj.status,
+    session: sessionObj
+  };
+}
+
+function authorizePairSession(params) {
+  var sessionId = (params.sessionId || "").trim();
+  var tokenInput = (params.token || "").trim().toUpperCase();
+  var inputPin = (params.pin || "").trim();
+  var approverDeviceId = (params.approverDeviceId || "").trim();
+
+  if (!sessionId) {
+    return { success: false, message: "Session ID barcode tidak valid." };
+  }
+  if (!tokenInput) {
+    return { success: false, message: "Token lisensi tidak valid." };
+  }
+
+  var cache = CacheService.getScriptCache();
+  var raw = cache.get(sessionId);
+  if (!raw) {
+    return { success: false, message: "Sesi barcode di layar PC/iPad telah kedaluwarsa. Silakan muat ulang barcode di PC/iPad." };
+  }
+
+  var sessionObj = JSON.parse(raw);
+  var targetDeviceId = sessionObj.deviceId || ("DEV-" + Date.now().toString(36).toUpperCase());
+  var targetDeviceName = sessionObj.deviceName || "Perangkat Tambahan";
+
+  // Validasi lisensi di Spreadsheet Tokens
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(SHEET_TOKENS);
+  var data = sheet.getDataRange().getValues();
+  var cleanInputToken = tokenInput.replace(/[^A-Z0-9]/g, '');
+
+  var foundRow = -1;
+  var rowData = null;
+
+  for (var i = 1; i < data.length; i++) {
+    var rowToken = String(data[i][0]).trim().toUpperCase();
+    var cleanRowToken = rowToken.replace(/[^A-Z0-9]/g, '');
+    if (rowToken === tokenInput || (cleanInputToken && cleanRowToken === cleanInputToken)) {
+      foundRow = i + 1;
+      rowData = data[i];
+      tokenInput = rowToken;
+      break;
+    }
+  }
+
+  if (foundRow === -1 || !rowData) {
+    return { success: false, message: "Token lisensi tidak terdaftar dalam database." };
+  }
+
+  var buyerName = rowData[1];
+  var maxDevices = parseInt(rowData[3]) || 2;
+  var status = String(rowData[6]).trim().toUpperCase();
+  var pinStatus = String(rowData[7] || "UNCLAIMED").trim().toUpperCase();
+  var storedPersonalPin = String(rowData[8] || "").trim();
+  var rawDevices = rowData[5];
+
+  // Prioritas Kuota Developer / Pemilik Akun
+  if (tokenInput === 'PRO-S8GF-HQT5-CNVE' || String(buyerName).toLowerCase().includes('akbar')) {
+    maxDevices = Math.max(maxDevices, 10);
+  }
+
+  if (status === "BLOCKED") {
+    return { success: false, message: "Lisensi ini sedang diblokir oleh developer." };
+  }
+
+  // Parse devices
+  var devices = [];
+  try { devices = rawDevices ? JSON.parse(rawDevices) : []; } catch(e) { devices = []; }
+
+  // Cek apakah device sudah terdaftar
+  var existing = false;
+  for (var d = 0; d < devices.length; d++) {
+    if (devices[d].deviceId === targetDeviceId) {
+      existing = true;
+      devices[d].lastActive = new Date().toISOString();
+      devices[d].deviceName = targetDeviceName;
+      break;
+    }
+  }
+
+  if (!existing) {
+    if (devices.length >= maxDevices) {
+      return { 
+        success: false, 
+        message: "Batas kuota perangkat telah penuh (Maksimal " + maxDevices + " perangkat). Silakan kelola slot perangkat Anda di Developer Dashboard." 
+      };
+    }
+    devices.push({
+      deviceId: targetDeviceId,
+      deviceName: targetDeviceName,
+      activatedAt: new Date().toISOString(),
+      lastActive: new Date().toISOString()
+    });
+  }
+
+  // Simpan update devices ke Sheet
+  sheet.getRange(foundRow, 5).setValue(devices.length);
+  sheet.getRange(foundRow, 6).setValue(JSON.stringify(devices));
+
+  logEvent("PAIR_SESSION_AUTHORIZED", tokenInput, buyerName, targetDeviceId, targetDeviceName, "Perangkat berhasil ditautkan via Scan HP WhatsApp Style");
+
+  // Update session di cache Google Apps Script agar PC/iPad langsung otomatis login
+  sessionObj.status = "AUTHORIZED";
+  sessionObj.licenseData = {
+    token: tokenInput,
+    buyerName: buyerName,
+    pinStatus: pinStatus,
+    isPasswordChanged: (pinStatus === "PIN_CHANGED"),
+    maxDevices: maxDevices,
+    deviceCount: devices.length
+  };
+  sessionObj.pin = inputPin || storedPersonalPin || "";
+  sessionObj.masterUrl = params.masterUrl || "";
+
+  cache.put(sessionId, JSON.stringify(sessionObj), 300);
+
+  return {
+    success: true,
+    message: "Perangkat '" + targetDeviceName + "' berhasil ditautkan!",
+    deviceCount: devices.length,
+    maxDevices: maxDevices
+  };
+}
+
 /**
  * Pengguna Mengganti Token Bawaan ke PIN Pribadi
  * Ini yang membuat Token bawaan HANGUS dan membuka kuota multi-device + Cloud Sync
@@ -449,6 +643,10 @@ function clientGetDevices(params) {
       try { devices = rawDevices ? JSON.parse(rawDevices) : []; } catch(e) {}
 
       var maxDevices = parseInt(data[i][3]) || 2;
+      // Berikan batas kuota prioritas pemilik/developer akun agar bebas multi-perangkat saat pengujian
+      if (tokenInput === 'PRO-S8GF-HQT5-CNVE' || String(buyerName).toLowerCase().includes('akbar')) {
+        maxDevices = Math.max(maxDevices, 10);
+      }
       var pinStatus = String(data[i][7] || "UNCLAIMED").trim().toUpperCase();
       var storedPersonalPin = String(data[i][8] || "").trim();
 

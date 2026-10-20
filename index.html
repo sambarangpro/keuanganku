@@ -134,20 +134,21 @@
           </div>
         </div>
 
-        <!-- INPUT PIN PRIBADI (MUNCUL OTOMATIS JIKA TOKEN HANGUS / PIN SUDAH DIBUAT DI PERANGKAT 1) -->
-        <div id="gate-personal-pin-container" class="hidden space-y-1.5 text-left">
-          <label class="block text-xs font-semibold text-amber-300 flex items-center justify-between">
-            <span>PIN Pribadi Pemilik:</span>
-            <span class="text-[10px] text-amber-400 font-bold flex items-center gap-1">
-              <span class="material-symbols-outlined text-xs">local_fire_department</span> Token Telah Hangus
+        <!-- INPUT PIN PRIBADI (LANGSUNG TERSEDIA AGAR PERANGKAT 2 & 3 BISA LANGSUNG MASUK) -->
+        <div id="gate-personal-pin-container" class="space-y-1.5 text-left">
+          <label class="block text-xs font-semibold text-slate-300 flex items-center justify-between">
+            <span class="flex items-center gap-1.5">
+              <span>PIN Pribadi:</span>
+              <span class="text-[10px] text-amber-400 font-normal">(Khusus Perangkat ke-2 / 3)</span>
             </span>
+            <span class="text-[10px] text-slate-500 font-normal">Wajib jika PIN sudah dibuat</span>
           </label>
           <div class="relative">
-            <input type="password" id="license-input-personal-pin" placeholder="Masukkan PIN Pribadi Anda"
-              class="w-full px-4 py-3 bg-slate-950 border border-amber-500/60 rounded-xl text-center text-sm font-bold font-mono-data text-amber-300 tracking-widest focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all">
+            <input type="password" id="license-input-personal-pin" placeholder="Masukkan PIN Pribadi Anda (jika sudah dibuat di HP 1)"
+              class="w-full px-4 py-3 bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl text-center text-sm font-bold font-mono-data text-amber-300 tracking-widest focus:outline-none focus:ring-1 focus:ring-amber-400 transition-all">
           </div>
           <p class="text-[10px] text-slate-400 leading-relaxed">
-            Token bawaan sudah hangus karena lisensi ini telah dipersonalisasi di perangkat pertama. Masukkan <b>PIN Pribadi</b> Anda untuk mengotorisasi perangkat tambahan ini.
+            Jika ini perangkat kedua/ketiga (iPad/PC/Laptop), masukkan <b>PIN Pribadi</b> yang Anda buat di HP pertama untuk membuka akses.
           </p>
         </div>
 
@@ -212,18 +213,56 @@
   </div>
 
   <!-- BUMPER SPLASH SCREEN -->
-  <div id="splash-screen" class="fixed inset-0 bg-gradient-to-br from-navy-dark via-primary to-tertiary z-50 flex flex-col items-center justify-center text-white transition-opacity duration-700 p-4">
-    <div class="text-center space-y-4 p-6 max-w-xs w-full bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 shadow-2xl">
-      <div class="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto shadow-xl border border-white/20 animate-pulse-logo">
-        <span class="material-symbols-outlined text-white" style="font-size: 38px;">account_balance_wallet</span>
+  <div id="splash-screen" class="fixed inset-0 bg-gradient-to-br from-navy-dark via-primary to-tertiary z-50 flex flex-col items-center justify-center text-white transition-opacity duration-700 p-4 overflow-y-auto">
+    <div class="text-center space-y-4 p-5 sm:p-6 max-w-xs sm:max-w-sm w-full bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 shadow-2xl my-auto">
+      <div class="w-14 h-14 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto shadow-xl border border-white/20 animate-pulse-logo">
+        <span class="material-symbols-outlined text-white" style="font-size: 32px;">account_balance_wallet</span>
       </div>
       <div>
-        <h1 class="text-2xl font-extrabold tracking-tight text-white font-headline-md">KEUANGANKU</h1>
-        <p class="text-[10px] text-blue-200 mt-0.5 font-semibold tracking-widest uppercase">Financial Planner Pro</p>
+        <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-white font-headline-md">KEUANGANKU</h1>
+        <p class="text-[9px] sm:text-[10px] text-blue-200 mt-0.5 font-semibold tracking-widest uppercase">Financial Planner Pro</p>
       </div>
 
-      <!-- FORM PIN UTAMA -->
-      <div id="bumper-pin-section" class="pt-2 space-y-2.5">
+      <!-- 1. VIEW WHATSAPP WEB STYLE (PC/iPad TAMPILKAN QR, HP UTAMA SCAN) -->
+      <div id="splash-qr-pair-section" class="pt-1 space-y-3">
+        <!-- Kotak QR Code -->
+        <div class="relative w-[190px] h-[190px] mx-auto bg-white p-2 rounded-2xl shadow-xl border-2 border-white/40 flex items-center justify-center">
+          <div id="splash-qrcode-container" class="w-full h-full flex items-center justify-center"></div>
+          <div id="splash-qr-reload-overlay" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center p-3 text-center space-y-2">
+            <span class="material-symbols-outlined text-amber-400 text-3xl">refresh</span>
+            <p class="text-[11px] text-white font-bold leading-tight">Barcode Kedaluwarsa</p>
+            <button type="button" onclick="startNewDevicePairingSession(true)" class="px-3 py-1.5 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-bold text-xs rounded-xl shadow cursor-pointer">Muat Ulang Barcode</button>
+          </div>
+        </div>
+
+        <!-- Status Scan -->
+        <div class="flex items-center justify-center gap-1.5 text-xs text-cyan-200 font-semibold">
+          <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+          <span id="splash-pair-status-text">Menunggu scan dari HP utama...</span>
+        </div>
+
+        <!-- Panduan 3 Langkah Mirip WA Web -->
+        <div class="p-3 bg-white/10 border border-white/15 rounded-2xl text-left text-[11px] text-blue-100 space-y-1">
+          <p class="font-bold text-white flex items-center gap-1.5 text-xs pb-0.5 border-b border-white/10">
+            <span class="material-symbols-outlined text-sm text-cyan-300">devices</span>
+            <span>Tautkan Perangkat Ini (Mirip WA Web)</span>
+          </p>
+          <ol class="list-decimal list-inside space-y-1 pt-1 text-slate-200 text-[10px] leading-relaxed">
+            <li>Buka <b>KEUANGANKU</b> di HP Utama Anda</li>
+            <li>Buka menu <b>Setup</b> &gt; ketuk <b>Tautkan Perangkat</b></li>
+            <li>Arahkan kamera HP ke barcode di layar ini</li>
+          </ol>
+        </div>
+
+        <!-- Tombol Beralih ke Masuk PIN / Token -->
+        <button type="button" onclick="switchSplashView('pin')" class="w-full py-2.5 bg-white/10 hover:bg-white/20 text-blue-200 hover:text-white font-semibold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all border border-white/15 cursor-pointer">
+          <span class="material-symbols-outlined text-sm">dialpad</span>
+          <span>Atau Masuk dengan PIN / Token Lisensi</span>
+        </button>
+      </div>
+
+      <!-- 2. VIEW MASUK MANUAL (PIN / TOKEN) -->
+      <div id="bumper-pin-section" class="pt-2 space-y-2.5 hidden">
         <div class="relative">
           <input type="password" id="bumper-pin-input" placeholder="Masukkan PIN atau Token Lisensi" maxlength="35" onkeyup="if(event.key === 'Enter') verifyBumperPin()" class="w-full py-2.5 pl-3 pr-10 bg-white/10 border border-white/30 rounded-xl text-center text-white placeholder-blue-200 text-sm font-mono-data outline-none tracking-widest focus:border-white">
           <button type="button" onclick="toggleBumperPinVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-blue-200 hover:text-white" title="Lihat PIN">
@@ -233,12 +272,10 @@
         <button id="btn-bumper-login" onclick="verifyBumperPin()" class="w-full py-2.5 bg-white text-primary font-bold rounded-xl text-xs hover:bg-blue-50 shadow transition-all cursor-pointer">MASUK APLIKASI</button>
         <p id="bumper-error-msg" class="text-[11px] text-red-200 font-semibold leading-relaxed hidden">PIN Salah! Coba lagi.</p>
         
-        <div class="pt-2.5 border-t border-white/10 flex items-center justify-center gap-2.5">
-          <button type="button" onclick="openQrScannerModal()" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 text-cyan-200 hover:text-white flex items-center justify-center border border-white/15 transition-all active:scale-90 cursor-pointer shadow-sm" title="Scan Barcode Akun (Login Otomatis)">
-            <span class="material-symbols-outlined text-base">qr_code_scanner</span>
-          </button>
-          <button type="button" onclick="toggleBumperCloudModal(true)" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 text-blue-200 hover:text-white flex items-center justify-center border border-white/15 transition-all active:scale-90 cursor-pointer shadow-sm" title="Hubungkan ke Cloud (Google Sheets)">
-            <span class="material-symbols-outlined text-base">cloud_sync</span>
+        <div class="pt-2 border-t border-white/10 space-y-2">
+          <button type="button" onclick="switchSplashView('qr')" class="w-full py-2.5 bg-white/15 hover:bg-white/25 text-cyan-200 hover:text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-all border border-white/20 shadow-sm cursor-pointer" title="Tampilkan Barcode untuk di-scan dari HP Utama">
+            <span class="material-symbols-outlined text-base text-cyan-300">qr_code_2</span>
+            <span>Tampilkan Barcode (Scan via HP)</span>
           </button>
         </div>
       </div>
@@ -257,7 +294,7 @@
         <button type="button" onclick="toggleBumperCloudModal(false)" class="text-[10px] text-blue-200 hover:text-white underline">← Kembali ke Masuk PIN</button>
       </div>
 
-      <div class="pt-3"><p class="text-[9px] text-gray-300 font-medium tracking-wider uppercase">Copyright © 2026 <b class="text-white">Sambarang Production</b></p></div>
+      <div class="pt-2"><p class="text-[9px] text-gray-300 font-medium tracking-wider uppercase">Copyright © 2026 <b class="text-white">Sambarang Production</b></p></div>
     </div>
   </div>
 
@@ -1135,9 +1172,9 @@
                       </div>
                     </div>
                     <div class="flex items-center gap-1.5 flex-wrap">
-                      <button type="button" onclick="openPairDeviceModal()" class="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-cyan-500/20 active:scale-95 transition-all cursor-pointer" title="Tampilkan Barcode untuk di-scan dari HP 2 atau Laptop 3">
-                        <span class="material-symbols-outlined text-sm">qr_code_2</span>
-                        <span class="text-[11px]">Hubungkan Perangkat Baru (Barcode)</span>
+                      <button type="button" onclick="openPrimaryDeviceScannerModal()" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-cyan-500/25 active:scale-95 transition-all cursor-pointer" title="Buka Kamera HP untuk Scan Barcode di Layar PC / iPad (WhatsApp Web Style)">
+                        <span class="material-symbols-outlined text-sm">photo_camera</span>
+                        <span class="text-[11px]">Tautkan Perangkat (Scan QR di PC / iPad)</span>
                       </button>
                       <button type="button" onclick="loadConnectedDevices(true)" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer" title="Perbarui daftar perangkat terhubung">
                         <span id="btn-refresh-devices-icon" class="material-symbols-outlined text-sm">refresh</span>
@@ -1878,16 +1915,19 @@
       try {
         let params = new URLSearchParams(window.location.search);
         let urlParam = params.get("masterUrl") || params.get("server");
-        if (urlParam && urlParam.startsWith("http")) {
+        if (urlParam && urlParam.startsWith("http") && !urlParam.includes("YOUR_SCRIPT_ID")) {
           localStorage.setItem("KEUANGANKU_DEV_API_URL", urlParam);
           localStorage.setItem("KEUANGANKU_CUSTOM_LICENSE_URL", urlParam);
+          localStorage.setItem("KEUANGANKU_MASTER_SERVER_URL", urlParam);
           return urlParam;
         }
       } catch(e) {}
 
-      // 2. Cek localStorage
-      let saved = localStorage.getItem("KEUANGANKU_DEV_API_URL") || localStorage.getItem("KEUANGANKU_CUSTOM_LICENSE_URL");
-      return (saved && saved.startsWith("http")) ? saved : DEFAULT_MASTER_LICENSE_URL;
+      // 2. Cek localStorage (mendukung semua key penyimpanan server)
+      let saved = localStorage.getItem("KEUANGANKU_MASTER_SERVER_URL") ||
+                  localStorage.getItem("KEUANGANKU_DEV_API_URL") || 
+                  localStorage.getItem("KEUANGANKU_CUSTOM_LICENSE_URL");
+      return (saved && saved.startsWith("http") && !saved.includes("YOUR_SCRIPT_ID")) ? saved : DEFAULT_MASTER_LICENSE_URL;
     }
 
     function getOrCreateDeviceId() {
@@ -1948,6 +1988,8 @@
 
         if (masterParam && masterParam.startsWith("http") && !masterParam.includes("YOUR_SCRIPT_ID")) {
           localStorage.setItem("KEUANGANKU_MASTER_SERVER_URL", masterParam);
+          localStorage.setItem("KEUANGANKU_DEV_API_URL", masterParam);
+          localStorage.setItem("KEUANGANKU_CUSTOM_LICENSE_URL", masterParam);
         }
 
         if (tokenParam) {
@@ -1983,17 +2025,26 @@
       let license = getSavedLicense();
       let gateScreen = document.getElementById('license-gate-screen');
       let splashScreen = document.getElementById('splash-screen');
+      let isAlreadyPassed = sessionStorage.getItem("KEUANGANKU_PIN_PASSED") === "true";
 
-      if (!license || !license.token) {
-        // Belum teraktivasi: Tampilkan Layar Aktivasi Lisensi RESMI, sembunyikan PIN Splash
-        if (gateScreen) gateScreen.classList.remove('hidden');
+      // 1 Pintu Masuk Tunggal & Elegan: Selalu sembunyikan gate kaku, gunakan splash screen login universal
+      if (gateScreen) gateScreen.classList.add('hidden');
+
+      if (isAlreadyPassed) {
         if (splashScreen) splashScreen.classList.add('hidden');
-        return false;
       } else {
-        // Sudah teraktivasi: Sembunyikan Layar Aktivasi, tampilkan PIN Bumper jika belum login
-        if (gateScreen) gateScreen.classList.add('hidden');
         if (splashScreen) splashScreen.classList.remove('hidden');
 
+        // Jika perangkat belum teraktivasi (PC / iPad / HP baru), otomatis tampilkan mode QR Code WhatsApp style!
+        if (!license || !license.token) {
+          switchSplashView('qr');
+        } else {
+          // Jika perangkat sudah teraktivasi, buka dalam mode PIN biasa
+          switchSplashView('pin');
+        }
+      }
+
+      if (license && license.token) {
         updateSetupLicenseDisplay(license);
         updateTokenSecurityBanner(license);
         updateCloudSyncLockUI(license);
@@ -2003,8 +2054,8 @@
         if (navigator.onLine) {
           setTimeout(() => { verifyLicenseStatusSilently(license.token, devId); }, 1500);
         }
-        return true;
       }
+      return true;
     }
 
     async function verifyLicenseStatusSilently(token, devId) {
@@ -2664,6 +2715,216 @@
       }
     }
 
+    // ==============================================================================
+    // SISTEM PAIRING WHATSAPP WEB STYLE (PC/iPad Tampilkan QR, HP Utama Scan)
+    // ==============================================================================
+    let pairSessionPollingInterval = null;
+    let currentPairSessionId = null;
+
+    function switchSplashView(view) {
+      let qrSec = document.getElementById('splash-qr-pair-section');
+      let pinSec = document.getElementById('bumper-pin-section');
+      let cloudSec = document.getElementById('bumper-cloud-section');
+
+      if (view === 'qr') {
+        if (qrSec) qrSec.classList.remove('hidden');
+        if (pinSec) pinSec.classList.add('hidden');
+        if (cloudSec) cloudSec.classList.add('hidden');
+        startNewDevicePairingSession();
+      } else if (view === 'pin') {
+        if (qrSec) qrSec.classList.add('hidden');
+        if (pinSec) pinSec.classList.remove('hidden');
+        if (cloudSec) cloudSec.classList.add('hidden');
+        stopPairSessionPolling();
+        setTimeout(() => {
+          let inp = document.getElementById('bumper-pin-input');
+          if (inp) inp.focus();
+        }, 100);
+      }
+    }
+
+    function stopPairSessionPolling() {
+      if (pairSessionPollingInterval) {
+        clearInterval(pairSessionPollingInterval);
+        pairSessionPollingInterval = null;
+      }
+    }
+
+    async function startNewDevicePairingSession(forceRefresh = false) {
+      stopPairSessionPolling();
+
+      let qrContainer = document.getElementById('splash-qrcode-container');
+      let reloadOverlay = document.getElementById('splash-qr-reload-overlay');
+      let statusText = document.getElementById('splash-pair-status-text');
+
+      if (reloadOverlay) reloadOverlay.classList.add('hidden');
+      if (statusText) statusText.textContent = "Mempersiapkan barcode sesi...";
+
+      let devId = getOrCreateDeviceId();
+      let devName = detectDeviceName();
+      let sessionId = "PAIR-" + Date.now().toString(36).toUpperCase() + "-" + Math.random().toString(36).substring(2, 6).toUpperCase();
+      currentPairSessionId = sessionId;
+
+      // 1. Daftarkan sesi ke Google Apps Script (in-memory cache)
+      try {
+        let masterUrl = getMasterLicenseServerUrl();
+        if (masterUrl && !masterUrl.includes("YOUR_SCRIPT_ID")) {
+          callClientLicenseApi({
+            action: 'create_pair_session',
+            sessionId: sessionId,
+            deviceId: devId,
+            deviceName: devName
+          }).catch(e => console.warn("create_pair_session notice:", e));
+        }
+      } catch(e) {}
+
+      // 2. Buat URL / Payload QR Code WhatsApp Style
+      let baseUrl = getAppPairBaseUrl();
+      let qrPayloadUrl = `${baseUrl}?pairSessionId=${encodeURIComponent(sessionId)}&devId=${encodeURIComponent(devId)}&devName=${encodeURIComponent(devName)}`;
+      let masterUrl = getMasterLicenseServerUrl();
+      if (masterUrl && !masterUrl.includes("YOUR_SCRIPT_ID")) {
+        qrPayloadUrl += `&masterUrl=${encodeURIComponent(masterUrl)}`;
+      }
+
+      // 3. Render QR Code
+      if (qrContainer) {
+        qrContainer.innerHTML = '';
+        try {
+          if (typeof QRCode !== 'undefined') {
+            new QRCode(qrContainer, {
+              text: qrPayloadUrl,
+              width: 175,
+              height: 175,
+              colorDark: "#020617",
+              colorLight: "#ffffff",
+              correctLevel: QRCode.CorrectLevel.M
+            });
+          } else {
+            qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=175x175&data=${encodeURIComponent(qrPayloadUrl)}" class="w-[175px] h-[175px] mx-auto rounded-lg shadow-sm" alt="QR Code WhatsApp Style">`;
+          }
+        } catch(err) {
+          qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=175x175&data=${encodeURIComponent(qrPayloadUrl)}" class="w-[175px] h-[175px] mx-auto rounded-lg shadow-sm" alt="QR Code WhatsApp Style">`;
+        }
+      }
+
+      if (statusText) statusText.textContent = "Menunggu scan dari HP utama...";
+
+      // 4. Mulai Polling Status (setiap 2.5 detik)
+      let pollCount = 0;
+      let maxPolls = 150; // ~6 menit
+      pairSessionPollingInterval = setInterval(async () => {
+        pollCount++;
+        if (pollCount > maxPolls) {
+          stopPairSessionPolling();
+          if (reloadOverlay) reloadOverlay.classList.remove('hidden');
+          if (statusText) statusText.textContent = "Barcode kedaluwarsa. Klik muat ulang.";
+          return;
+        }
+        await checkPairSessionStatus(sessionId);
+      }, 2500);
+    }
+
+    async function checkPairSessionStatus(sessionId) {
+      try {
+        let res = await callClientLicenseApi({
+          action: 'check_pair_session',
+          sessionId: sessionId
+        });
+
+        if (res && res.success && res.status === 'AUTHORIZED' && res.session) {
+          stopPairSessionPolling();
+
+          let s = res.session;
+          let licData = s.licenseData;
+
+          localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(licData));
+
+          if (s.pin) {
+            globalData.appPin = s.pin;
+            globalData.ownerPassword = s.pin;
+            saveStorageData();
+          }
+          if (s.masterUrl && s.masterUrl.startsWith("http")) {
+            localStorage.setItem("KEUANGANKU_MASTER_SERVER_URL", s.masterUrl);
+            localStorage.setItem("KEUANGANKU_DEV_API_URL", s.masterUrl);
+            localStorage.setItem("KEUANGANKU_CUSTOM_LICENSE_URL", s.masterUrl);
+          }
+
+          sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
+
+          playSuccessSound();
+          showSyncToast("🎉 Berhasil Ditautkan dari HP Utama!");
+
+          let statusText = document.getElementById('splash-pair-status-text');
+          if (statusText) statusText.innerHTML = `<span class="text-emerald-300 font-bold">✓ Terverifikasi! Membuka aplikasi...</span>`;
+
+          setTimeout(() => {
+            let splash = document.getElementById('splash-screen');
+            if (splash) {
+              splash.classList.add('opacity-0');
+              setTimeout(() => splash.classList.add('hidden'), 700);
+            }
+            updateSetupLicenseDisplay(licData);
+            updateTokenSecurityBanner(licData);
+            updateCloudSyncLockUI(licData);
+            renderSetupPasswordCard(licData);
+          }, 700);
+        } else if (res && res.status === 'EXPIRED') {
+          stopPairSessionPolling();
+          let reloadOverlay = document.getElementById('splash-qr-reload-overlay');
+          if (reloadOverlay) reloadOverlay.classList.remove('hidden');
+        }
+      } catch(e) {
+        // network retry
+      }
+    }
+
+    function openPrimaryDeviceScannerModal() {
+      let lic = getSavedLicense();
+      if (!lic || !lic.token) {
+        alert("HP ini belum teraktivasi lisensi. Hanya perangkat utama yang sudah aktif yang dapat menautkan perangkat baru.");
+        return;
+      }
+      openQrScannerModal();
+    }
+
+    async function handleScanPairSessionFromCamera(pairData) {
+      let lic = getSavedLicense();
+      if (!lic || !lic.token) {
+        alert("HP ini belum memiliki lisensi aktif. Hanya perangkat utama yang sudah teraktivasi yang dapat menautkan perangkat baru.");
+        return;
+      }
+
+      let devName = pairData.deviceName || "Perangkat PC / iPad";
+      let sessionId = pairData.sessionId;
+      let confirmMsg = `Konfirmasi Tautkan Perangkat:\n\nPerangkat di layar Anda terdeteksi sebagai:\n"${devName}"\n\nApakah Anda ingin mengizinkan perangkat ini masuk ke akun lisensi ${lic.token}?`;
+      
+      if (!confirm(confirmMsg)) return;
+
+      showSyncToast("⚡ Mengotorisasi perangkat...");
+
+      try {
+        let pinToUse = (lic.pinStatus === 'USING_TOKEN') ? lic.token : (globalData.appPin || globalData.ownerPassword || '');
+        let res = await callClientLicenseApi({
+          action: 'authorize_pair_session',
+          sessionId: sessionId,
+          token: lic.token,
+          pin: pinToUse,
+          masterUrl: getMasterLicenseServerUrl()
+        });
+
+        if (res && res.success) {
+          playSuccessSound();
+          alert(`🎉 SUKSES!\n\nPerangkat "${devName}" berhasil ditautkan!\n\nPeriksa layar PC / iPad Anda, perangkat tersebut akan langsung otomatis masuk.`);
+          if (typeof loadConnectedDevices === 'function') loadConnectedDevices(false);
+        } else {
+          alert("Gagal menautkan perangkat: " + (res.message || "Terjadi kesalahan server."));
+        }
+      } catch(e) {
+        alert("Gagal menghubungi server. Pastikan koneksi internet Anda aktif.");
+      }
+    }
+
     // ============================================================
     // SISTEM BARCODE / QR CODE PAIRING & SCANNER CEPAT (HP 2, 3, DST)
     // ============================================================
@@ -2864,6 +3125,31 @@
       if (!rawText) return null;
       let trimmed = rawText.trim();
 
+      // Kasus 0: Sesi Pairing WhatsApp Style (PC/iPad tampilkan QR, HP Utama scan)
+      if (trimmed.includes("pairSessionId=") || trimmed.includes("KEUANGANKU_PAIR_SESSION")) {
+        try {
+          if (trimmed.startsWith("{")) {
+            let data = JSON.parse(trimmed);
+            return {
+              isPairSession: true,
+              sessionId: data.sessionId,
+              deviceId: data.deviceId,
+              deviceName: data.deviceName || "Perangkat PC / iPad",
+              masterUrl: data.masterUrl || ""
+            };
+          } else {
+            let urlObj = new URL(trimmed);
+            return {
+              isPairSession: true,
+              sessionId: urlObj.searchParams.get("pairSessionId") || "",
+              deviceId: urlObj.searchParams.get("devId") || "",
+              deviceName: urlObj.searchParams.get("devName") || "Perangkat PC / iPad",
+              masterUrl: urlObj.searchParams.get("masterUrl") || ""
+            };
+          }
+        } catch(e) {}
+      }
+
       // Kasus 1: URL dengan query parameter (?pair=1&token=...&pin=...)
       if (trimmed.includes("?") && (trimmed.includes("token=") || trimmed.includes("pair="))) {
         try {
@@ -2910,13 +3196,22 @@
       if (navigator.vibrate) navigator.vibrate(200);
 
       let parsed = parseQrScannedPayload(decodedText);
-      if (!parsed || !parsed.token) {
+      if (!parsed) {
         alert("Format barcode tidak dikenali sebagai lisensi resmi KEUANGANKU PRO.\n\nTeks terbaca: " + decodedText);
         return;
       }
 
       closeQrScannerModal();
-      await processAutoPairing(parsed.token, parsed.pin, parsed.masterUrl);
+
+      // JIKA INI ADALAH SESI PAIRING WHATSAPP STYLE DARI LAYAR PC/IPAD:
+      if (parsed.isPairSession && parsed.sessionId) {
+        await handleScanPairSessionFromCamera(parsed);
+        return;
+      }
+
+      if (parsed.token) {
+        await processAutoPairing(parsed.token, parsed.pin, parsed.masterUrl);
+      }
     }
 
     async function processAutoPairing(token, pin = "", masterUrl = "") {
@@ -2925,6 +3220,8 @@
 
       if (masterUrl && masterUrl.startsWith("http") && !masterUrl.includes("YOUR_SCRIPT_ID")) {
         localStorage.setItem("KEUANGANKU_MASTER_SERVER_URL", masterUrl);
+        localStorage.setItem("KEUANGANKU_DEV_API_URL", masterUrl);
+        localStorage.setItem("KEUANGANKU_CUSTOM_LICENSE_URL", masterUrl);
       }
 
       let tokenInp = document.getElementById('license-input-token');
@@ -2943,22 +3240,22 @@
           deviceName: devName
         });
 
-        if (res.isBurned && !pin) {
+        if (res.isBurned) {
           let gateScreen = document.getElementById('license-gate-screen');
           if (gateScreen) gateScreen.classList.remove('hidden');
-          let personalPinBox = document.getElementById('gate-personal-pin-container');
-          if (personalPinBox) personalPinBox.classList.remove('hidden');
-          if (pinInp) {
-            pinInp.required = true;
-            pinInp.focus();
+          let personalPinInp = document.getElementById('license-input-personal-pin');
+          if (personalPinInp) {
+            personalPinInp.focus();
+            if (pin) personalPinInp.value = pin;
           }
           let errBox = document.getElementById('gate-error-box');
           let errTxt = document.getElementById('gate-error-text');
+          let msg = res.message || "Token ini sudah hangus karena telah diaktivasi di HP utama. Masukkan PIN Pribadi Anda untuk mengotorisasi perangkat tambahan ini.";
           if (errBox && errTxt) {
             errBox.classList.remove('hidden');
-            errTxt.textContent = "Barcode valid! Masukkan PIN Pribadi Anda untuk menyelesaikan otorisasi perangkat ini.";
+            errTxt.textContent = msg;
           }
-          alert("Barcode Lisensi Terverifikasi!\n\nKarena lisensi telah dipersonalisasi di perangkat utama, silakan masukkan PIN Pribadi Anda untuk masuk.");
+          alert("Otorisasi Perangkat Tambahan (PIN Pribadi):\n\n" + msg);
           return;
         }
 
@@ -3001,7 +3298,8 @@
           }, 1200);
 
         } else {
-          alert("Gagal menghubungkan perangkat: " + (res.message || "Token tidak valid atau kuota lisensi penuh."));
+          let errMsg = res ? (res.message || (res.isBurned ? "Token sudah hangus. Masukkan PIN Pribadi Anda." : "Token tidak valid atau kuota perangkat lisensi telah penuh.")) : "Koneksi ke server lisensi gagal.";
+          alert("Gagal menghubungkan perangkat:\n\n" + errMsg);
         }
       } catch(err) {
         alert("Gagal menghubungkan ke server lisensi. Pastikan internet aktif.");
@@ -3286,7 +3584,7 @@
 
           if (res.isBurned) {
             if (err) {
-              err.textContent = res.message || "Token ini sudah hangus. Masukkan PIN Pribadi yang Anda buat di perangkat sebelumnya.";
+              err.innerHTML = "Token ini sudah dipersonalisasi di HP 1.<br>Silakan gunakan tombol <b>'Hubungkan via Scan QR'</b> di bawah untuk masuk otomatis.";
               err.classList.remove('hidden');
             }
             if (btn) { btn.innerHTML = origBtnHtml; btn.disabled = false; }
