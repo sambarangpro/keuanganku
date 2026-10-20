@@ -1911,19 +1911,29 @@
     const DEFAULT_MASTER_LICENSE_URL = "https://script.google.com/macros/s/AKfycbwFPoNUGmryOTOcvirMd47sW0jOy3nVG7S7MNopbJNXU2BY66HktKl-CWukO93Hl08S/exec";
 
     function getMasterLicenseServerUrl() {
-      // 1. Cek parameter URL (?masterUrl=... atau ?server=...) jika dibuka langsung dari Dev Portal / Link Khusus
+      // 1. Selalu gunakan DEFAULT_MASTER_LICENSE_URL resmi jika sudah terpasang
+      if (DEFAULT_MASTER_LICENSE_URL && DEFAULT_MASTER_LICENSE_URL.startsWith("http") && !DEFAULT_MASTER_LICENSE_URL.includes("YOUR_SCRIPT_ID")) {
+        // Bersihkan key lama di localStorage HP yang dulu pernah tertimpa oleh URL sinkronisasi cloud keuangan
+        let cloudUrl = localStorage.getItem("KEUANGANKU_CLOUD_URL") || (typeof globalData !== 'undefined' ? globalData.cloudUrl : '');
+        ['KEUANGANKU_MASTER_SERVER_URL', 'KEUANGANKU_DEV_API_URL', 'KEUANGANKU_CUSTOM_LICENSE_URL'].forEach(k => {
+          let v = localStorage.getItem(k);
+          if (v && (v === cloudUrl || !v.includes("AKfycbwFPoNUGmryOTOcvirMd47sW0jOy3nVG7S7MNopbJNXU2BY66HktKl-CWukO93Hl08S"))) {
+            localStorage.setItem(k, DEFAULT_MASTER_LICENSE_URL);
+          }
+        });
+        return DEFAULT_MASTER_LICENSE_URL;
+      }
+
+      // 2. Cek parameter URL (?masterUrl=... atau ?server=...) jika dibuka langsung dari Dev Portal / Link Khusus
       try {
         let params = new URLSearchParams(window.location.search);
         let urlParam = params.get("masterUrl") || params.get("server");
         if (urlParam && urlParam.startsWith("http") && !urlParam.includes("YOUR_SCRIPT_ID")) {
-          localStorage.setItem("KEUANGANKU_DEV_API_URL", urlParam);
-          localStorage.setItem("KEUANGANKU_CUSTOM_LICENSE_URL", urlParam);
-          localStorage.setItem("KEUANGANKU_MASTER_SERVER_URL", urlParam);
           return urlParam;
         }
       } catch(e) {}
 
-      // 2. Cek localStorage (mendukung semua key penyimpanan server)
+      // 3. Cek localStorage
       let saved = localStorage.getItem("KEUANGANKU_MASTER_SERVER_URL") ||
                   localStorage.getItem("KEUANGANKU_DEV_API_URL") || 
                   localStorage.getItem("KEUANGANKU_CUSTOM_LICENSE_URL");
@@ -6060,7 +6070,8 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=2.4').then((reg) => {
+          reg.update();
           console.log('KEUANGANKU Service Worker active:', reg.scope);
         }).catch((err) => {
           console.warn('SW registration failed:', err);
