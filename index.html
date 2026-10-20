@@ -1908,7 +1908,7 @@
     // ==============================================================================
     // SISTEM LISENSI & PERLINDUNGAN ANTI-SHARING (SAMBARANG PRODUCTION)
     // ==============================================================================
-    const DEFAULT_MASTER_LICENSE_URL = "https://script.google.com/macros/s/AKfycbwYOUR_SCRIPT_ID/exec";
+    const DEFAULT_MASTER_LICENSE_URL = "https://script.google.com/macros/s/AKfycbwFPoNUGmryOTOcvirMd47sW0jOy3nVG7S7MNopbJNXU2BY66HktKl-CWukO93Hl08S/exec";
 
     function getMasterLicenseServerUrl() {
       // 1. Cek parameter URL (?masterUrl=... atau ?server=...) jika dibuka langsung dari Dev Portal / Link Khusus
@@ -2897,6 +2897,7 @@
 
       let devName = pairData.deviceName || "Perangkat PC / iPad";
       let sessionId = pairData.sessionId;
+      let targetDeviceId = pairData.deviceId || '';
       let confirmMsg = `Konfirmasi Tautkan Perangkat:\n\nPerangkat di layar Anda terdeteksi sebagai:\n"${devName}"\n\nApakah Anda ingin mengizinkan perangkat ini masuk ke akun lisensi ${lic.token}?`;
       
       if (!confirm(confirmMsg)) return;
@@ -2908,6 +2909,8 @@
         let res = await callClientLicenseApi({
           action: 'authorize_pair_session',
           sessionId: sessionId,
+          targetDeviceId: targetDeviceId,
+          targetDeviceName: devName,
           token: lic.token,
           pin: pinToUse,
           masterUrl: getMasterLicenseServerUrl()
@@ -2918,10 +2921,15 @@
           alert(`🎉 SUKSES!\n\nPerangkat "${devName}" berhasil ditautkan!\n\nPeriksa layar PC / iPad Anda, perangkat tersebut akan langsung otomatis masuk.`);
           if (typeof loadConnectedDevices === 'function') loadConnectedDevices(false);
         } else {
-          alert("Gagal menautkan perangkat: " + (res.message || "Terjadi kesalahan server."));
+          let errDetail = (res && res.message) ? res.message :
+                          (res && res.error && typeof res.error === 'object' && res.error.message) ? res.error.message :
+                          (res && res.error && typeof res.error === 'string') ? res.error :
+                          (res && res.msg) ? res.msg :
+                          (res ? JSON.stringify(res) : "Terjadi kesalahan server.");
+          alert("Gagal menautkan perangkat:\n\n" + errDetail);
         }
       } catch(e) {
-        alert("Gagal menghubungi server. Pastikan koneksi internet Anda aktif.");
+        alert("Gagal menghubungi server: " + (e.message || e.toString()) + "\n\nPastikan script Google Apps Script telah diperbarui & dideploy sebagai 'New Deployment'.");
       }
     }
 
@@ -3477,8 +3485,6 @@
           globalData = data;
           globalData.cloudUrl = url;
           localStorage.setItem("KEUANGANKU_CLOUD_URL", url);
-          localStorage.setItem("KEUANGANKU_DEV_API_URL", url);
-          localStorage.setItem("KEUANGANKU_CUSTOM_LICENSE_URL", url);
           localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData));
           
           initApp();
