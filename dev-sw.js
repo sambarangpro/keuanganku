@@ -1,4 +1,4 @@
-const DEV_CACHE_NAME = 'keuanganku-dev-portal-v1.1';
+const DEV_CACHE_NAME = 'keuanganku-dev-portal-v2.4';
 const DEV_ASSETS = [
   './dev-dashboard.html',
   './dev-manifest.json',
