@@ -810,6 +810,82 @@
     </div>
   </div>
 
+  <!-- ========================================== -->
+  <!-- MODAL 7: PANDUAN INSTAL APLIKASI DEV (PWA) -->
+  <!-- ========================================== -->
+  <div id="modal-install-dev-guide" class="hidden fixed inset-0 z-[75] bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="max-w-lg w-full bg-slate-900 border border-slate-700/80 rounded-3xl p-6 shadow-2xl space-y-4 relative max-h-[90vh] overflow-y-auto custom-scroll">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3.5">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-2xl bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-2xl text-amber-400">install_mobile</span>
+          </div>
+          <div>
+            <h3 class="text-sm font-extrabold text-white">Pasang Aplikasi Developer Portal</h3>
+            <p class="text-[11px] text-slate-400">Instal sebagai aplikasi mandiri di PC, Laptop, atau HP</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modal-install-dev-guide')" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-300 leading-relaxed">
+        <b class="text-amber-300">Ya, tentu bisa!</b> Developer Portal ini dirancang dengan teknologi PWA (<i>Progressive Web App</i>). Anda dapat menginstalnya di HP maupun Komputer sehingga memiliki ikon aplikasi sendiri di desktop / layar utama dan dapat dibuka tanpa membuka browser terlebih dahulu.
+      </p>
+
+      <div class="space-y-3 pt-1">
+        <!-- 1. PC / Laptop -->
+        <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800/80 space-y-2">
+          <div class="flex items-center gap-2 text-cyan-300 font-bold text-xs">
+            <span class="material-symbols-outlined text-base">laptop_windows</span>
+            <span>Cara Pasang di Laptop / PC (Windows & Mac)</span>
+          </div>
+          <ol class="list-decimal pl-5 text-[11px] text-slate-300 space-y-1.5 leading-relaxed">
+            <li>Buka halaman ini di browser <b>Google Chrome</b> atau <b>Microsoft Edge</b>.</li>
+            <li>Perhatikan bilah alamat (URL bar) di atas, klik ikon <b>Instal</b> (ikon monitor komputer kecil bertuliskan <i>"Aplikasi tersedia"</i> atau tanda panah ke bawah).</li>
+            <li>Atau klik menu titik tiga (<b>⋮</b>) di pojok kanan atas browser &gt; pilih <b>"Instal Keuanganku PRO - Dev Portal"</b> (atau <i>Apps &gt; Install this site as an app</i>).</li>
+            <li>Aplikasi akan langsung terpasang di desktop / menu Start Windows Anda dan berjalan di jendela aplikasi mandiri!</li>
+          </ol>
+        </div>
+
+        <!-- 2. Android -->
+        <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800/80 space-y-2">
+          <div class="flex items-center gap-2 text-emerald-400 font-bold text-xs">
+            <span class="material-symbols-outlined text-base">phone_android</span>
+            <span>Cara Pasang di HP Android</span>
+          </div>
+          <ol class="list-decimal pl-5 text-[11px] text-slate-300 space-y-1.5 leading-relaxed">
+            <li>Buka halaman developer ini di <b>Google Chrome</b> di HP Anda.</li>
+            <li>Ketuk menu titik tiga (<b>⋮</b>) di pojok kanan atas Chrome.</li>
+            <li>Pilih opsi <b>"Instal Aplikasi"</b> atau <b>"Tambahkan ke Layar Utama"</b> (<i>Add to Home Screen</i>).</li>
+            <li>Ikon <b>Dev Portal</b> akan langsung muncul di layar HP Anda layaknya aplikasi native!</li>
+          </ol>
+        </div>
+
+        <!-- 3. iOS -->
+        <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800/80 space-y-2">
+          <div class="flex items-center gap-2 text-amber-300 font-bold text-xs">
+            <span class="material-symbols-outlined text-base">phone_iphone</span>
+            <span>Cara Pasang di iPhone / iPad</span>
+          </div>
+          <ol class="list-decimal pl-5 text-[11px] text-slate-300 space-y-1.5 leading-relaxed">
+            <li>Buka halaman ini di browser <b>Safari</b>.</li>
+            <li>Ketuk tombol <b>Bagikan (Share)</b> (ikon kotak dengan tanda panah ke atas di bilah bawah).</li>
+            <li>Gulir ke bawah dan ketuk <b>"Tambahkan ke Layar Utama"</b> (<i>Add to Home Screen</i>).</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="pt-2 flex items-center justify-between border-t border-slate-800">
+        <span class="text-[10px] text-slate-500">Dapat berjalan berdampingan dengan aplikasi KeuanganKu utama</span>
+        <button onclick="closeModal('modal-install-dev-guide')" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer">
+          Mengerti & Tutup
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- TOAST NOTIFICATION -->
   <div id="toast-container" class="fixed bottom-5 right-5 z-50 pointer-events-none space-y-2"></div>
 
@@ -851,7 +927,12 @@
         }
         deferredDevPrompt = null;
       } else {
-        alert("PANDUAN MEMASANG APLIKASI DEV PORTAL:\n\n• Windows / Mac (Chrome / Edge): Klik tombol titik tiga (⋮) di pojok kanan atas browser > pilih 'Instal Keuanganku PRO Dev Portal' (atau klik ikon komputer kecil di bilah URL).\n• Android (Chrome): Ketuk menu titik tiga (⋮) > pilih 'Instal Aplikasi' / 'Tambahkan ke Layar Utama'.\n• iPhone / iPad (Safari): Ketuk tombol Share (kotak dengan panah ke atas) > pilih 'Add to Home Screen'.");
+        let modal = document.getElementById('modal-install-dev-guide');
+        if (modal) {
+          modal.classList.remove('hidden');
+        } else {
+          alert("PANDUAN MEMASANG APLIKASI DEV PORTAL:\n\n• Windows / Mac (Chrome / Edge): Klik tombol titik tiga (⋮) di pojok kanan atas browser > pilih 'Instal Keuanganku PRO Dev Portal' (atau klik ikon komputer kecil di bilah URL).\n• Android (Chrome): Ketuk menu titik tiga (⋮) > pilih 'Instal Aplikasi' / 'Tambahkan ke Layar Utama'.\n• iPhone / iPad (Safari): Ketuk tombol Share (kotak dengan panah ke atas) > pilih 'Add to Home Screen'.");
+        }
       }
     }
 
