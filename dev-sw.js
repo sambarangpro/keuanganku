@@ -1,9 +1,10 @@
-const DEV_CACHE_NAME = 'keuanganku-dev-portal-v2.6';
+const DEV_CACHE_NAME = 'keuanganku-dev-portal-v2.7';
 const DEV_ASSETS = [
   './dev-dashboard.html',
   './dev-manifest.json',
-  './icon-192.png',
-  './icon-512.png'
+  './dev-icon.svg',
+  './dev-icon-192.png',
+  './dev-icon-512.png'
 ];
 
 self.addEventListener('install', (event) => {

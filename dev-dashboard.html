@@ -33,13 +33,15 @@
   </script>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="icon" type="image/png" href="icon-192.png">
+  <link rel="icon" type="image/svg+xml" href="dev-icon.svg">
+  <link rel="icon" type="image/png" sizes="192x192" href="dev-icon-192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="dev-icon-192.png">
   <link rel="manifest" href="dev-manifest.json">
   <meta name="theme-color" content="#090d16">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Dev Portal">
-  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="apple-touch-icon" href="dev-icon-192.png">
 
   <style>
     /* Hilangkan ikon mata hitam bawaan browser (Microsoft Edge) agar tidak dobel */
@@ -97,6 +99,21 @@
           <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/40">PRO</span>
         </div>
         <p class="text-xs text-slate-400">Master License & Device Management Center</p>
+      </div>
+
+      <!-- Notice jika dibuka dari file:/// lokal -->
+      <div id="file-protocol-notice" class="hidden p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs space-y-1">
+        <div class="flex items-center gap-1.5 font-bold">
+          <span class="material-symbols-outlined text-sm text-amber-400">info</span>
+          Membuka File Lokal (file://)
+        </div>
+        <p class="text-[11px] text-slate-300 leading-relaxed">
+          Browser tidak mengizinkan pemasangan aplikasi dari file lokal. Buka link resmi <b>HTTPS</b> untuk memunculkan tombol instal/download di bilah browser:
+        </p>
+        <a href="https://sambarangpro.github.io/keuanganku/dev-dashboard.html" class="inline-flex items-center gap-1 text-[11px] font-mono-data text-cyan-400 hover:underline font-bold mt-0.5">
+          <span>sambarangpro.github.io/keuanganku/dev-dashboard.html</span>
+          <span class="material-symbols-outlined text-xs">open_in_new</span>
+        </a>
       </div>
 
       <!-- Login Form -->
@@ -938,6 +955,11 @@
 
     // Inisialisasi saat halaman dibuka
     document.addEventListener("DOMContentLoaded", () => {
+      if (location.protocol === 'file:') {
+        let fileNotice = document.getElementById('file-protocol-notice');
+        if (fileNotice) fileNotice.classList.remove('hidden');
+      }
+
       let savedUrl = localStorage.getItem("KEUANGANKU_DEV_API_URL") || "";
       let savedPass = localStorage.getItem("KEUANGANKU_DEV_SAVED_PASS") || "";
       let rememberMe = localStorage.getItem("KEUANGANKU_DEV_REMEMBER") !== "false";
