@@ -106,6 +106,12 @@
           </div>
         </div>
 
+        <!-- Tombol Download Barcode Gambar (Bila kamera PC/HP buram) -->
+        <button type="button" onclick="downloadSplashQrCode()" class="w-full py-2 px-3 bg-white/15 hover:bg-white/25 border border-white/25 text-white font-bold text-xs rounded-xl shadow flex items-center justify-center gap-1.5 transition-all cursor-pointer" title="Unduh gambar barcode ini untuk di-upload di perangkat utama">
+          <span class="material-symbols-outlined text-sm text-cyan-300">download</span>
+          <span>Download Gambar Barcode (.png)</span>
+        </button>
+
         <!-- Status Scan -->
         <div class="flex items-center justify-center gap-1.5 text-xs text-cyan-200 font-semibold">
           <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
@@ -418,6 +424,12 @@
         <div id="pair-qrcode-container" class="flex items-center justify-center"></div>
         <p class="text-[10px] text-slate-600 font-mono-data font-bold mt-2" id="pair-qr-token-label">PRO-XXXX-XXXX-XXXX</p>
       </div>
+
+      <!-- TOMBOL UNDUH GAMBAR BARCODE MODAL -->
+      <button type="button" onclick="downloadPairModalQrCode()" class="w-full py-2 px-3 bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer" title="Download gambar barcode ini">
+        <span class="material-symbols-outlined text-sm">download</span>
+        <span>Download Gambar Barcode (.png)</span>
+      </button>
 
       <!-- OPSI PIN PRIBADI & KUOTA -->
       <div class="space-y-2">
@@ -1127,6 +1139,11 @@
                         <span class="material-symbols-outlined text-sm">photo_camera</span>
                         <span class="text-[11px]">Tautkan Perangkat (Scan QR di PC / iPad)</span>
                       </button>
+                      <label class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/30 text-xs font-bold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer" title="Upload file foto barcode (cocok bila kamera buram atau tidak ada webcam)">
+                        <span class="material-symbols-outlined text-sm">upload_file</span>
+                        <span class="text-[11px]">Upload Foto Barcode</span>
+                        <input type="file" accept="image/*" onchange="handleDirectQrUpload(this)" class="hidden">
+                      </label>
                       <button type="button" onclick="loadConnectedDevices(true)" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer" title="Perbarui daftar perangkat terhubung">
                         <span id="btn-refresh-devices-icon" class="material-symbols-outlined text-sm">refresh</span>
                         <span class="text-[11px]">Segarkan</span>
@@ -2898,6 +2915,57 @@
       });
     }
 
+    async function downloadQrFromContainer(containerId, defaultFilename = 'KeuanganKu_QR_Code.png') {
+      let container = document.getElementById(containerId);
+      if (!container) return;
+      let canvas = container.querySelector('canvas');
+      let img = container.querySelector('img');
+      let dataUrl = '';
+
+      if (canvas) {
+        try {
+          dataUrl = canvas.toDataURL('image/png');
+        } catch(e) {}
+      }
+      
+      if (!dataUrl && img && img.src) {
+        if (img.src.startsWith('data:image')) {
+          dataUrl = img.src;
+        } else {
+          try {
+            let resp = await fetch(img.src);
+            let blob = await resp.blob();
+            dataUrl = URL.createObjectURL(blob);
+          } catch(err) {
+            dataUrl = img.src;
+          }
+        }
+      }
+
+      if (!dataUrl) {
+        alert("Gambar barcode belum siap. Silakan tunggu 1-2 detik.");
+        return;
+      }
+
+      let a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = defaultFilename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      showSyncToast("✓ Gambar QR code berhasil diunduh!");
+    }
+
+    function downloadSplashQrCode() {
+      let dateStr = new Date().toISOString().slice(0, 10);
+      downloadQrFromContainer('splash-qrcode-container', `KeuanganKu_QR_Login_${dateStr}.png`);
+    }
+
+    function downloadPairModalQrCode() {
+      let dateStr = new Date().toISOString().slice(0, 10);
+      downloadQrFromContainer('pair-qrcode-container', `KeuanganKu_QR_Lisensi_${dateStr}.png`);
+    }
+
     async function openQrScannerModal() {
       let modal = document.getElementById('modal-qr-scanner');
       let statusEl = document.getElementById('qr-scan-status');
@@ -2963,6 +3031,34 @@
       startQrCamera();
     }
 
+    async function handleDirectQrUpload(inputEl) {
+      if (!inputEl || !inputEl.files || inputEl.files.length === 0) return;
+      let file = inputEl.files[0];
+      showSyncToast("Menganalisis gambar barcode...");
+
+      try {
+        let tempContainer = document.getElementById('qr-file-decoder-temp');
+        if (!tempContainer) {
+          tempContainer = document.createElement('div');
+          tempContainer.id = 'qr-file-decoder-temp';
+          tempContainer.style.display = 'none';
+          document.body.appendChild(tempContainer);
+        }
+        const html5QrCode = new Html5Qrcode("qr-file-decoder-temp");
+        let result = await html5QrCode.scanFileV2(file, false);
+        html5QrCode.clear();
+
+        if (result && result.decodedText) {
+          onQrScanSuccess(result.decodedText);
+        } else {
+          alert("Kode QR / Barcode tidak terdeteksi pada gambar tersebut. Pastikan barcode terlihat jelas dan tidak terpotong.");
+        }
+      } catch(err) {
+        alert("Gagal membaca barcode dari gambar: " + (err.message || "Pastikan foto barcode jelas dan terang."));
+      }
+      inputEl.value = '';
+    }
+
     async function handleQrImageUpload(inputEl) {
       if (!inputEl || !inputEl.files || inputEl.files.length === 0) return;
       let file = inputEl.files[0];
@@ -2970,19 +3066,29 @@
       if (statusEl) statusEl.textContent = "Menganalisis gambar...";
 
       try {
-        if (!activeQrScannerInstance) {
-          activeQrScannerInstance = new Html5Qrcode("qr-camera-reader");
+        await stopQrCamera();
+        let tempContainer = document.getElementById('qr-file-decoder-temp');
+        if (!tempContainer) {
+          tempContainer = document.createElement('div');
+          tempContainer.id = 'qr-file-decoder-temp';
+          tempContainer.style.display = 'none';
+          document.body.appendChild(tempContainer);
         }
-        let result = await activeQrScannerInstance.scanFileV2(file, false);
+        const html5QrCode = new Html5Qrcode("qr-file-decoder-temp");
+        let result = await html5QrCode.scanFileV2(file, false);
+        html5QrCode.clear();
+
         if (result && result.decodedText) {
           onQrScanSuccess(result.decodedText);
         } else {
           alert("Kode QR / Barcode tidak terdeteksi pada gambar tersebut. Pastikan barcode terlihat jelas.");
           if (statusEl) statusEl.textContent = "Barcode tidak terdeteksi. Coba gambar lain.";
+          startQrCamera();
         }
       } catch(err) {
         alert("Tidak dapat menemukan barcode pada foto yang dipilih. Pastikan foto jelas dan terang.");
         if (statusEl) statusEl.textContent = "Pindai gagal. Silakan coba lagi.";
+        startQrCamera();
       }
       inputEl.value = '';
     }
