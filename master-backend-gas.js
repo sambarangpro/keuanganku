@@ -164,21 +164,176 @@ function initSheets() {
   }
 }
 
+/**
+ * Menyimpan data keuangan pengguna secara otomatis ke tab Spreadsheet:
+ * 1. Sheet 'Database_Keuangan': Cadangan lengkap format JSON untuk sinkronisasi multi-device
+ * 2. Sheet 'Transaksi': Tabel riwayat transaksi rapi & mudah dibaca
+ * 3. Sheet 'Rekening_Saldo': Tabel daftar rekening & saldo terkini
+ */
+function saveFinancialDataToSheets(rawData, parsedData) {
+  try {
+    var ss = getSpreadsheet();
+    if (!ss) return;
+
+    // 1. Cadangan Full JSON ke Sheet Database_Keuangan
+    var dbSheet = ss.getSheetByName("Database_Keuangan");
+    if (!dbSheet) {
+      dbSheet = ss.insertSheet("Database_Keuangan");
+      dbSheet.appendRow(["Cadangan JSON Database Keuangan", "Status Terakhir"]);
+      dbSheet.getRange("A1:B1").setFontWeight("bold").setBackground("#1e293b").setFontColor("#38bdf8");
+    }
+    dbSheet.getRange("A2").setValue(rawData);
+    dbSheet.getRange("B2").setValue("Diperbarui: " + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss"));
+
+    // 2. Format & Update Sheet Transaksi jika ada riwayat transaksi
+    if (parsedData && parsedData.recentHistory && Array.isArray(parsedData.recentHistory)) {
+      var txSheet = ss.getSheetByName("Transaksi");
+      if (!txSheet) {
+        txSheet = ss.insertSheet("Transaksi");
+      }
+      txSheet.clear();
+      txSheet.appendRow(["Tanggal", "Tipe", "Kategori", "Pos / Rekening", "Nominal (Rp)", "Catatan"]);
+      txSheet.getRange("A1:F1").setFontWeight("bold").setBackground("#0f172a").setFontColor("#38bdf8");
+      txSheet.setFrozenRows(1);
+
+      var history = parsedData.recentHistory;
+      if (history.length > 0) {
+        var rows = [];
+        for (var t = 0; t < history.length; t++) {
+          var item = history[t];
+          rows.push([
+            String(item.date || ""),
+            String(item.type || "").toUpperCase(),
+            String(item.category || "-"),
+            String(item.account || "-"),
+            Number(item.amount) || 0,
+            String(item.notes || "")
+          ]);
+        }
+        if (rows.length > 0) {
+          txSheet.getRange(2, 1, rows.length, 6).setValues(rows);
+          txSheet.getRange(2, 5, rows.length, 1).setNumberFormat("#,##0");
+        }
+      }
+    }
+
+    // 3. Format & Update Sheet Rekening_Saldo
+    if (parsedData && parsedData.accounts && Array.isArray(parsedData.accounts)) {
+      var accSheet = ss.getSheetByName("Rekening_Saldo");
+      if (!accSheet) {
+        accSheet = ss.insertSheet("Rekening_Saldo");
+      }
+      accSheet.clear();
+      accSheet.appendRow(["Nama Rekening / Dompet", "Saldo Saat Ini (Rp)"]);
+      accSheet.getRange("A1:B1").setFontWeight("bold").setBackground("#0f172a").setFontColor("#10b981");
+      accSheet.setFrozenRows(1);
+
+      var accounts = parsedData.accounts;
+      var balances = parsedData.currentBalances || {};
+      var accRows = [];
+      for (var a = 0; a < accounts.length; a++) {
+        var accName = accounts[a];
+        var bal = Number(balances[accName]) || 0;
+        accRows.push([accName, bal]);
+      }
+      if (accRows.length > 0) {
+        accSheet.getRange(2, 1, accRows.length, 2).setValues(accRows);
+        accSheet.getRange(2, 2, accRows.length, 1).setNumberFormat("#,##0");
+      }
+    }
+  } catch(err) {
+    // Jangan biarkan error sheet mengganggu proses respon
+  }
+}
+
 function doGet(e) {
-  return handleRequest(e ? e.parameter : {});
+  var params = (e && e.parameter) ? e.parameter : {};
+
+  // 1. Jika ada parameter action, jalankan API Lisensi / Pairing / Admin
+  if (params.action) {
+    return handleRequest(params);
+  }
+
+  // 2. Jika TIDAK ada parameter action, ini adalah permintaan GET Sinkronisasi Data Keuangan
+  var doc = PropertiesService.getScriptProperties();
+  var data = doc.getProperty("KEUANGANKU_DATA");
+
+  // Jika di PropertiesService belum ada, coba baca dari tab Database_Keuangan cell A2
+  if (!data) {
+    try {
+      var ss = getSpreadsheet();
+      if (ss) {
+        var dbSheet = ss.getSheetByName("Database_Keuangan");
+        if (dbSheet) {
+          var val = dbSheet.getRange("A2").getValue();
+          if (val && String(val).trim().startsWith("{")) {
+            data = String(val).trim();
+            doc.setProperty("KEUANGANKU_DATA", data);
+          }
+        }
+      }
+    } catch(err) {}
+  }
+
+  if (!data) {
+    return ContentService.createTextOutput(JSON.stringify({ 
+      status: "empty", 
+      accounts: [], 
+      recentHistory: [],
+      message: "Database keuangan cloud belum berisi data. Klik 'Paksa Upload ke Cloud' di aplikasi untuk mengunggah data pertama kali." 
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  return ContentService.createTextOutput(data)
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
 function doPost(e) {
+  var rawData = "";
   var params = {};
+
   if (e && e.postData && e.postData.contents) {
+    rawData = e.postData.contents;
     try {
-      params = JSON.parse(e.postData.contents);
+      params = JSON.parse(rawData);
     } catch(err) {
       params = e.parameter || {};
     }
   } else if (e && e.parameter) {
     params = e.parameter;
   }
+
+  // 1. Jika ada parameter action, jalankan API Lisensi / Pairing / Admin
+  if (params && params.action) {
+    return handleRequest(params);
+  }
+
+  // 2. Jika TIDAK ada action (atau berisi data keuangan accounts / recentHistory / globalData):
+  // Ini adalah UPLOAD SINKRONISASI DATABASE KEUANGAN PENGGUNA!
+  try {
+    if (rawData) {
+      // Simpan ke Script Properties untuk sinkronisasi instan berkecepatan tinggi
+      var doc = PropertiesService.getScriptProperties();
+      doc.setProperty("KEUANGANKU_DATA", rawData);
+
+      // Simpan & format ke tab Spreadsheet fisik
+      saveFinancialDataToSheets(rawData, params);
+
+      return ContentService.createTextOutput(JSON.stringify({
+        status: "success",
+        success: true,
+        message: "Data keuangan berhasil disimpan dan disinkronkan ke Google Sheets",
+        timestamp: new Date()
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+  } catch(err) {
+    return ContentService.createTextOutput(JSON.stringify({
+      status: "error",
+      success: false,
+      message: "Gagal menyimpan data keuangan: " + err.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+
   return handleRequest(params);
 }
 
@@ -275,6 +430,23 @@ function handleRequest(params) {
 
       case "admin_delete_token":
         result = adminDeleteToken(params);
+        break;
+
+      // -------------------------------------------------------------
+      // API SINKRONISASI DATA KEUANGAN PENGGUNA
+      // -------------------------------------------------------------
+      case "get_financial_data":
+        var savedData = PropertiesService.getScriptProperties().getProperty("KEUANGANKU_DATA") || "{}";
+        return ContentService.createTextOutput(savedData).setMimeType(ContentService.MimeType.JSON);
+
+      case "save_financial_data":
+        if (params.data) {
+          var dataStr = typeof params.data === 'string' ? params.data : JSON.stringify(params.data);
+          var parsedObj = typeof params.data === 'string' ? JSON.parse(params.data) : params.data;
+          PropertiesService.getScriptProperties().setProperty("KEUANGANKU_DATA", dataStr);
+          saveFinancialDataToSheets(dataStr, parsedObj);
+        }
+        result = { success: true, message: "Data keuangan berhasil disimpan." };
         break;
 
       default:
@@ -460,24 +632,6 @@ function validateClientToken(params) {
       sheet.getRange(i + 1, colMap.deviceCount + 1).setValue(devices.length);
       sheet.getRange(i + 1, colMap.usedDevices + 1).setValue(JSON.stringify(devices));
       sheet.getRange(i + 1, colMap.pinStatus + 1).setValue(newPinStatus);
-
-      logEvent("DEVICE_ACTIVATED", tokenInput, buyerName, deviceId, deviceName, "Perangkat ke-" + devices.length + " berhasil terdaftar (Status: " + newPinStatus + ")");
-
-      return {
-        success: true,
-        message: "Selamat! Aplikasi Keuanganku PRO berhasil diaktivasi di perangkat ini.",
-        data: {
-          token: tokenInput,
-          buyerName: buyerName,
-          pinStatus: newPinStatus,
-          isPasswordChanged: (newPinStatus === "PIN_CHANGED"),
-          maxDevices: (newPinStatus === "PIN_CHANGED" ? maxDevices : 1),
-          deviceCount: devices.length,
-          activatedAt: newDevObj.activatedAt
-        }
-      };
-    }
-  }
 
       logEvent("DEVICE_ACTIVATED", tokenInput, buyerName, deviceId, deviceName, "Perangkat ke-" + devices.length + " berhasil terdaftar (Status: " + newPinStatus + ")");
 

@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poster Rilis Resmi - KEUANGANKU PRO</title>
+  <!-- Tailwind CSS via allowlisted CDN -->
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    .font-mono-code {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .poster-container {
+      width: 100%;
+      max-width: 540px; /* Rasio potret ideal untuk cetak A4 / Story / Banner vertikal */
+      min-height: 960px;
+    }
+    @media print {
+      .no-print { display: none !important; }
+      body { background: white !important; padding: 0 !important; margin: 0 !important; }
+      .poster-container {
+        max-width: 100% !important;
+        width: 100% !important;
+        min-height: 100vh !important;
+        border: none !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+      }
+      @page {
+        size: A4 portrait;
+        margin: 0;
+      }
+    }
+    .radial-top-glow {
+      background: radial-gradient(circle at 50% -10%, rgba(59, 130, 246, 0.35) 0%, rgba(99, 102, 241, 0.15) 40%, transparent 75%);
+    }
+    .phone-shadow {
+      box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.8), 0 0 40px rgba(59, 130, 246, 0.25);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen p-3 sm:p-6 flex flex-col items-center justify-center selection:bg-blue-600 selection:text-white">
+
+  <!-- TOP ACTION BAR (No-print) -->
+  <div class="no-print max-w-[540px] w-full flex items-center justify-between gap-3 mb-5 bg-slate-900/90 backdrop-blur-md p-3 rounded-2xl border border-slate-800 shadow-xl">
+    <div class="flex items-center gap-2">
+      <span class="inline-flex w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+      <span class="text-xs font-bold text-slate-300">Poster Peluncuran (Portrait)</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <button onclick="window.print()" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-md flex items-center gap-1.5 transition-all active:scale-95">
+        <span class="material-symbols-outlined text-sm">print</span> Cetak / Simpan PDF
+      </button>
+      <button onclick="copyBroadcastMessage()" id="btn-copy-bc" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl border border-slate-700 flex items-center gap-1.5 transition-all active:scale-95">
+        <span class="material-symbols-outlined text-sm">campaign</span> Salin Broadcast WA
+      </button>
+    </div>
+  </div>
+
+  <!-- POSTER CARD (PORTRAIT RATIO) -->
+  <div class="poster-container bg-slate-900 border border-slate-800 rounded-[32px] shadow-2xl overflow-hidden relative radial-top-glow flex flex-col justify-between">
+    
+    <!-- TOP AMBIENT LIGHTS -->
+    <div class="absolute -top-24 left-1/2 -translate-x-1/2 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute top-1/3 -right-20 w-60 h-60 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute bottom-1/4 -left-20 w-60 h-60 bg-sky-500/15 rounded-full blur-3xl pointer-events-none"></div>
+
+    <!-- MAIN BODY CONTENT -->
+    <div class="p-6 sm:p-8 space-y-6 relative z-10">
+
+      <!-- HEADER: RELEASE BADGE & PRODUCTION TAG -->
+      <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+        <div class="flex items-center gap-1.5 text-[10px] font-black tracking-widest text-slate-400 uppercase">
+          <span class="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
+          SAMBARANG PRODUCTION
+        </div>
+        <div class="flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full text-[10px] font-black text-white uppercase tracking-wider shadow-md shadow-blue-500/20">
+          <span class="material-symbols-outlined text-xs">rocket_launch</span> OFFICIAL RELEASE v2.1
+        </div>
+      </div>
+
+      <!-- BRAND & HEADLINE SECTION -->
+      <div class="text-center space-y-2 pt-1">
+        <!-- LOGO ICON -->
+        <div class="inline-flex items-center justify-center relative mb-1">
+          <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-400 p-0.5 shadow-xl shadow-blue-500/30 flex items-center justify-center">
+            <div class="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center relative overflow-hidden">
+              <div class="absolute inset-0 bg-gradient-to-br from-blue-500/25 to-transparent"></div>
+              <svg class="w-9 h-9 text-blue-400 drop-shadow-[0_2px_8px_rgba(59,130,246,0.6)]" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M21 7.28V5c0-1.1-.9-2-2-2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-2.28c.59-.35 1-.98 1-1.72V9c0-.74-.41-1.37-1-1.72zM20 9v6h-7V9h7zM5 19V5h14v2h-6c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h6v2H5z"/>
+                <circle cx="16" cy="12" r="1.5" fill="#38bdf8"/>
+              </svg>
+            </div>
+          </div>
+          <span class="absolute -bottom-1 -right-1 px-1.5 py-0.5 bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 text-[9px] font-black rounded shadow-md uppercase tracking-wider">PRO</span>
+        </div>
+
+        <h1 class="text-3xl sm:text-4xl font-black tracking-tight text-white leading-tight">
+          KEUANGANKU <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400 font-black">PRO</span>
+        </h1>
+        <p class="text-xs sm:text-sm font-bold text-slate-300">
+          Financial Planner & Buku Kas Modern Multi-Perangkat
+        </p>
+        <p class="text-[11px] text-slate-400 max-w-sm mx-auto leading-relaxed pt-0.5">
+          Kelola arus kas pribadi & usaha jadi rapi, aman, dan tersinkronisasi otomatis ke Google Drive pribadi Anda!
+        </p>
+      </div>
+
+      <!-- VISUAL CENTERPIECE: REALISTIC PHONE MOCKUP -->
+      <div class="relative py-2 flex justify-center">
+        <!-- BACKGROUND HALO -->
+        <div class="absolute inset-0 bg-blue-500/10 rounded-full blur-2xl"></div>
+
+        <!-- SMARTPHONE FRAME -->
+        <div class="w-64 sm:w-72 bg-slate-900 border-4 border-slate-700/80 rounded-[36px] p-2 phone-shadow relative z-10 transform hover:scale-[1.02] transition-transform duration-300">
+          <!-- SPEAKER / DYNAMIC ISLAND -->
+          <div class="w-20 h-3 bg-slate-800 rounded-full mx-auto mb-2 flex items-center justify-end pr-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-slate-950 inline-block"></span>
+          </div>
+
+          <!-- PHONE SCREEN CONTENT -->
+          <div class="bg-slate-950 rounded-[26px] p-3 space-y-2.5 text-slate-200 border border-slate-800 overflow-hidden">
+            
+            <!-- SCREEN HEADER -->
+            <div class="flex items-center justify-between pb-1 border-b border-slate-900">
+              <div class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-blue-400 text-sm">account_balance_wallet</span>
+                <span class="text-[10px] font-black text-white">KEUANGANKU</span>
+              </div>
+              <span class="text-[8px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold flex items-center gap-0.5">
+                <span class="w-1 h-1 rounded-full bg-emerald-400 animate-pulse"></span> Cloud Aktif
+              </span>
+            </div>
+
+            <!-- TOTAL ASSET CARD -->
+            <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-500 p-3 rounded-2xl text-white shadow-lg relative overflow-hidden">
+              <div class="absolute -right-4 -bottom-4 w-16 h-16 bg-white/10 rounded-full blur-xl"></div>
+              <span class="text-[7px] uppercase font-bold tracking-wider opacity-80">TOTAL ASSET & SAVINGS</span>
+              <div class="text-lg font-black font-mono-code tracking-tight mt-0.5">Rp 84.750.000</div>
+              <div class="flex justify-between items-center text-[7px] opacity-90 mt-1 pt-1 border-t border-white/20">
+                <span>Tabungan, Sinking & Goals</span>
+                <span class="text-emerald-200 font-bold">▲ Aman Terkendali</span>
+              </div>
+            </div>
+
+            <!-- WALLET BALANCES (MINI) -->
+            <div class="grid grid-cols-2 gap-1.5 text-[8px]">
+              <div class="bg-slate-900/90 p-1.5 rounded-xl border border-slate-800">
+                <span class="text-[7px] text-slate-400 font-bold">BCA Bisnis</span>
+                <div class="font-bold text-white font-mono-code">Rp 32.500.000</div>
+              </div>
+              <div class="bg-slate-900/90 p-1.5 rounded-xl border border-slate-800">
+                <span class="text-[7px] text-slate-400 font-bold">Mandiri Kas</span>
+                <div class="font-bold text-white font-mono-code">Rp 18.200.000</div>
+              </div>
+            </div>
+
+            <!-- QUICK TRANSACTION ACTION BUTTONS -->
+            <div class="grid grid-cols-3 gap-1 text-[7px] font-bold text-center">
+              <div class="bg-emerald-950/60 border border-emerald-800/60 text-emerald-400 p-1 rounded-lg">
+                + Income
+              </div>
+              <div class="bg-rose-950/60 border border-rose-800/60 text-rose-400 p-1 rounded-lg">
+                - Spending
+              </div>
+              <div class="bg-blue-950/60 border border-blue-800/60 text-blue-400 p-1 rounded-lg">
+                ⇄ Transfer
+              </div>
+            </div>
+
+            <!-- RECENT ENTRY PREVIEW WITH RECEIPT BADGE -->
+            <div class="bg-slate-900/80 p-2 rounded-xl border border-slate-800/80 text-[7.5px] space-y-1">
+              <div class="flex justify-between items-center text-slate-400 font-bold">
+                <span>Transaksi Terakhir</span>
+                <span class="text-blue-400 flex items-center gap-0.5">
+                  <span class="material-symbols-outlined text-[9px]">receipt_long</span> Bukti Terlampir
+                </span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-slate-200 font-medium">Honor Desain Grafis</span>
+                <span class="text-emerald-400 font-bold font-mono-code">+Rp 2.500.000</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- HOME BAR -->
+          <div class="w-20 h-1 bg-slate-600 rounded-full mx-auto mt-2"></div>
+        </div>
+
+        <!-- FLOATING HIGHLIGHT PILLS -->
+        <div class="absolute -left-2 top-10 bg-slate-800/95 border border-slate-700 text-slate-200 text-[10px] font-bold px-3 py-1.5 rounded-xl shadow-xl flex items-center gap-1.5 backdrop-blur-md">
+          <span class="material-symbols-outlined text-sm text-green-400">sync</span> Auto-Sync
+        </div>
+        <div class="absolute -right-2 bottom-12 bg-slate-800/95 border border-slate-700 text-slate-200 text-[10px] font-bold px-3 py-1.5 rounded-xl shadow-xl flex items-center gap-1.5 backdrop-blur-md">
+          <span class="material-symbols-outlined text-sm text-amber-400">lock</span> 100% Privat
+        </div>
+      </div>
+
+      <!-- KEY FEATURES HIGHLIGHT GRID -->
+      <div class="space-y-2.5 pt-1">
+        <h3 class="text-xs font-black uppercase tracking-wider text-slate-400 text-center">
+          Apa Saja Fitur Unggulan Versi 2.1?
+        </h3>
+
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          
+          <div class="bg-slate-950/60 border border-slate-800 p-2.5 rounded-2xl flex items-start gap-2.5 hover:border-blue-500/40 transition-colors">
+            <div class="w-8 h-8 rounded-xl bg-blue-600/20 text-blue-400 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-base">cloud_sync</span>
+            </div>
+            <div>
+              <h4 class="font-bold text-white text-[11px]">Multi-Device Sync</h4>
+              <p class="text-[9.5px] text-slate-400 leading-tight mt-0.5">HP, laptop, dan tablet selalu sinkron otomatis secara hening.</p>
+            </div>
+          </div>
+
+          <div class="bg-slate-950/60 border border-slate-800 p-2.5 rounded-2xl flex items-start gap-2.5 hover:border-emerald-500/40 transition-colors">
+            <div class="w-8 h-8 rounded-xl bg-emerald-600/20 text-emerald-400 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-base">shield</span>
+            </div>
+            <div>
+              <h4 class="font-bold text-white text-[11px]">Google Drive Pribadi</h4>
+              <p class="text-[9.5px] text-slate-400 leading-tight mt-0.5">Data hanya tersimpan di akun Anda. Bebas intip & bebas bocor.</p>
+            </div>
+          </div>
+
+          <div class="bg-slate-950/60 border border-slate-800 p-2.5 rounded-2xl flex items-start gap-2.5 hover:border-purple-500/40 transition-colors">
+            <div class="w-8 h-8 rounded-xl bg-purple-600/20 text-purple-400 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-base">receipt_long</span>
+            </div>
+            <div>
+              <h4 class="font-bold text-white text-[11px]">Lampirkan Nota & Struk</h4>
+              <p class="text-[9.5px] text-slate-400 leading-tight mt-0.5">Upload JPG, PNG, HEIC iPhone, atau PDF dengan kompresi cerdas.</p>
+            </div>
+          </div>
+
+          <div class="bg-slate-950/60 border border-slate-800 p-2.5 rounded-2xl flex items-start gap-2.5 hover:border-amber-500/40 transition-colors">
+            <div class="w-8 h-8 rounded-xl bg-amber-600/20 text-amber-400 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-base">pie_chart</span>
+            </div>
+            <div>
+              <h4 class="font-bold text-white text-[11px]">Budget & Nisab Zakat</h4>
+              <p class="text-[9.5px] text-slate-400 leading-tight mt-0.5">Evaluasi batas belanja bulanan dan otomatis hitung nisab zakat mal.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- COMPATIBILITY STRIP -->
+      <div class="bg-slate-950/80 border border-slate-800/80 p-3 rounded-2xl flex items-center justify-between text-[10px]">
+        <span class="font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+          <span class="material-symbols-outlined text-sm text-blue-400">devices</span> Kompatibel:
+        </span>
+        <div class="flex items-center gap-2 font-bold text-slate-300">
+          <span>Android</span> • <span>iPhone</span> • <span>Windows</span> • <span>Mac</span> • <span>Tablet</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- CALL TO ACTION (CTA) & SCAN LAUNCH FOOTER -->
+    <div class="bg-gradient-to-b from-slate-900 to-slate-950 p-6 border-t border-slate-800/90 relative z-10">
+      <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 rounded-2xl p-4 text-white shadow-xl flex items-center justify-between gap-3">
+        
+        <div class="space-y-1 min-w-0">
+          <span class="px-2 py-0.5 bg-white/20 rounded-md text-[9px] font-black uppercase tracking-wider inline-block">
+            100% FREE • TANPA INSTALL
+          </span>
+          <h4 class="text-sm sm:text-base font-black leading-tight">
+            Scan / Buka Sekarang!
+          </h4>
+          <a href="https://sambarangpro.github.io/keuanganku/" target="_blank" class="text-[10px] sm:text-[11px] text-blue-100 font-mono-code font-bold underline hover:text-white flex items-center gap-1 truncate max-w-[210px] sm:max-w-xs">
+            sambarangpro.github.io/keuanganku
+            <span class="material-symbols-outlined text-xs">open_in_new</span>
+          </a>
+        </div>
+
+        <!-- REAL SCANNABLE QR CODE BADGE -->
+        <a href="https://sambarangpro.github.io/keuanganku/" target="_blank" class="w-20 h-20 sm:w-22 sm:h-22 bg-white p-1 rounded-xl shadow-xl shrink-0 flex flex-col items-center justify-center border-2 border-white/90 hover:scale-105 active:scale-95 transition-transform" title="Scan untuk membuka aplikasi KEUANGANKU PRO">
+          <svg class="w-full h-full" viewBox="0 0 290 290">
+            <rect fill="#ffffff" width="290" height="290" />
+            <path fill="#0f172a" d="M 0,0 l 10,0 0,10 -10,0 z M 10,0 l 10,0 0,10 -10,0 z M 20,0 l 10,0 0,10 -10,0 z M 30,0 l 10,0 0,10 -10,0 z M 40,0 l 10,0 0,10 -10,0 z M 50,0 l 10,0 0,10 -10,0 z M 60,0 l 10,0 0,10 -10,0 z M 100,0 l 10,0 0,10 -10,0 z M 120,0 l 10,0 0,10 -10,0 z M 160,0 l 10,0 0,10 -10,0 z M 170,0 l 10,0 0,10 -10,0 z M 180,0 l 10,0 0,10 -10,0 z M 190,0 l 10,0 0,10 -10,0 z M 200,0 l 10,0 0,10 -10,0 z M 220,0 l 10,0 0,10 -10,0 z M 230,0 l 10,0 0,10 -10,0 z M 240,0 l 10,0 0,10 -10,0 z M 250,0 l 10,0 0,10 -10,0 z M 260,0 l 10,0 0,10 -10,0 z M 270,0 l 10,0 0,10 -10,0 z M 280,0 l 10,0 0,10 -10,0 z M 0,10 l 10,0 0,10 -10,0 z M 60,10 l 10,0 0,10 -10,0 z M 80,10 l 10,0 0,10 -10,0 z M 100,10 l 10,0 0,10 -10,0 z M 130,10 l 10,0 0,10 -10,0 z M 140,10 l 10,0 0,10 -10,0 z M 150,10 l 10,0 0,10 -10,0 z M 180,10 l 10,0 0,10 -10,0 z M 200,10 l 10,0 0,10 -10,0 z M 220,10 l 10,0 0,10 -10,0 z M 280,10 l 10,0 0,10 -10,0 z M 0,20 l 10,0 0,10 -10,0 z M 20,20 l 10,0 0,10 -10,0 z M 30,20 l 10,0 0,10 -10,0 z M 40,20 l 10,0 0,10 -10,0 z M 60,20 l 10,0 0,10 -10,0 z M 120,20 l 10,0 0,10 -10,0 z M 140,20 l 10,0 0,10 -10,0 z M 160,20 l 10,0 0,10 -10,0 z M 190,20 l 10,0 0,10 -10,0 z M 200,20 l 10,0 0,10 -10,0 z M 220,20 l 10,0 0,10 -10,0 z M 240,20 l 10,0 0,10 -10,0 z M 250,20 l 10,0 0,10 -10,0 z M 260,20 l 10,0 0,10 -10,0 z M 280,20 l 10,0 0,10 -10,0 z M 0,30 l 10,0 0,10 -10,0 z M 20,30 l 10,0 0,10 -10,0 z M 30,30 l 10,0 0,10 -10,0 z M 40,30 l 10,0 0,10 -10,0 z M 60,30 l 10,0 0,10 -10,0 z M 80,30 l 10,0 0,10 -10,0 z M 90,30 l 10,0 0,10 -10,0 z M 100,30 l 10,0 0,10 -10,0 z M 120,30 l 10,0 0,10 -10,0 z M 130,30 l 10,0 0,10 -10,0 z M 140,30 l 10,0 0,10 -10,0 z M 170,30 l 10,0 0,10 -10,0 z M 220,30 l 10,0 0,10 -10,0 z M 240,30 l 10,0 0,10 -10,0 z M 250,30 l 10,0 0,10 -10,0 z M 260,30 l 10,0 0,10 -10,0 z M 280,30 l 10,0 0,10 -10,0 z M 0,40 l 10,0 0,10 -10,0 z M 20,40 l 10,0 0,10 -10,0 z M 30,40 l 10,0 0,10 -10,0 z M 40,40 l 10,0 0,10 -10,0 z M 60,40 l 10,0 0,10 -10,0 z M 90,40 l 10,0 0,10 -10,0 z M 160,40 l 10,0 0,10 -10,0 z M 190,40 l 10,0 0,10 -10,0 z M 200,40 l 10,0 0,10 -10,0 z M 220,40 l 10,0 0,10 -10,0 z M 240,40 l 10,0 0,10 -10,0 z M 250,40 l 10,0 0,10 -10,0 z M 260,40 l 10,0 0,10 -10,0 z M 280,40 l 10,0 0,10 -10,0 z M 0,50 l 10,0 0,10 -10,0 z M 60,50 l 10,0 0,10 -10,0 z M 80,50 l 10,0 0,10 -10,0 z M 90,50 l 10,0 0,10 -10,0 z M 110,50 l 10,0 0,10 -10,0 z M 120,50 l 10,0 0,10 -10,0 z M 150,50 l 10,0 0,10 -10,0 z M 160,50 l 10,0 0,10 -10,0 z M 220,50 l 10,0 0,10 -10,0 z M 280,50 l 10,0 0,10 -10,0 z M 0,60 l 10,0 0,10 -10,0 z M 10,60 l 10,0 0,10 -10,0 z M 20,60 l 10,0 0,10 -10,0 z M 30,60 l 10,0 0,10 -10,0 z M 40,60 l 10,0 0,10 -10,0 z M 50,60 l 10,0 0,10 -10,0 z M 60,60 l 10,0 0,10 -10,0 z M 80,60 l 10,0 0,10 -10,0 z M 100,60 l 10,0 0,10 -10,0 z M 120,60 l 10,0 0,10 -10,0 z M 140,60 l 10,0 0,10 -10,0 z M 160,60 l 10,0 0,10 -10,0 z M 180,60 l 10,0 0,10 -10,0 z M 200,60 l 10,0 0,10 -10,0 z M 220,60 l 10,0 0,10 -10,0 z M 230,60 l 10,0 0,10 -10,0 z M 240,60 l 10,0 0,10 -10,0 z M 250,60 l 10,0 0,10 -10,0 z M 260,60 l 10,0 0,10 -10,0 z M 270,60 l 10,0 0,10 -10,0 z M 280,60 l 10,0 0,10 -10,0 z M 90,70 l 10,0 0,10 -10,0 z M 100,70 l 10,0 0,10 -10,0 z M 110,70 l 10,0 0,10 -10,0 z M 140,70 l 10,0 0,10 -10,0 z M 150,70 l 10,0 0,10 -10,0 z M 180,70 l 10,0 0,10 -10,0 z M 190,70 l 10,0 0,10 -10,0 z M 200,70 l 10,0 0,10 -10,0 z M 0,80 l 10,0 0,10 -10,0 z M 10,80 l 10,0 0,10 -10,0 z M 20,80 l 10,0 0,10 -10,0 z M 30,80 l 10,0 0,10 -10,0 z M 40,80 l 10,0 0,10 -10,0 z M 60,80 l 10,0 0,10 -10,0 z M 70,80 l 10,0 0,10 -10,0 z M 80,80 l 10,0 0,10 -10,0 z M 90,80 l 10,0 0,10 -10,0 z M 110,80 l 10,0 0,10 -10,0 z M 130,80 l 10,0 0,10 -10,0 z M 140,80 l 10,0 0,10 -10,0 z M 150,80 l 10,0 0,10 -10,0 z M 170,80 l 10,0 0,10 -10,0 z M 190,80 l 10,0 0,10 -10,0 z M 210,80 l 10,0 0,10 -10,0 z M 230,80 l 10,0 0,10 -10,0 z M 250,80 l 10,0 0,10 -10,0 z M 270,80 l 10,0 0,10 -10,0 z M 10,90 l 10,0 0,10 -10,0 z M 50,90 l 10,0 0,10 -10,0 z M 70,90 l 10,0 0,10 -10,0 z M 80,90 l 10,0 0,10 -10,0 z M 100,90 l 10,0 0,10 -10,0 z M 120,90 l 10,0 0,10 -10,0 z M 130,90 l 10,0 0,10 -10,0 z M 160,90 l 10,0 0,10 -10,0 z M 170,90 l 10,0 0,10 -10,0 z M 180,90 l 10,0 0,10 -10,0 z M 190,90 l 10,0 0,10 -10,0 z M 210,90 l 10,0 0,10 -10,0 z M 220,90 l 10,0 0,10 -10,0 z M 230,90 l 10,0 0,10 -10,0 z M 240,90 l 10,0 0,10 -10,0 z M 280,90 l 10,0 0,10 -10,0 z M 40,100 l 10,0 0,10 -10,0 z M 50,100 l 10,0 0,10 -10,0 z M 60,100 l 10,0 0,10 -10,0 z M 70,100 l 10,0 0,10 -10,0 z M 80,100 l 10,0 0,10 -10,0 z M 100,100 l 10,0 0,10 -10,0 z M 130,100 l 10,0 0,10 -10,0 z M 140,100 l 10,0 0,10 -10,0 z M 150,100 l 10,0 0,10 -10,0 z M 160,100 l 10,0 0,10 -10,0 z M 180,100 l 10,0 0,10 -10,0 z M 200,100 l 10,0 0,10 -10,0 z M 210,100 l 10,0 0,10 -10,0 z M 20,110 l 10,0 0,10 -10,0 z M 40,110 l 10,0 0,10 -10,0 z M 50,110 l 10,0 0,10 -10,0 z M 80,110 l 10,0 0,10 -10,0 z M 120,110 l 10,0 0,10 -10,0 z M 150,110 l 10,0 0,10 -10,0 z M 160,110 l 10,0 0,10 -10,0 z M 180,110 l 10,0 0,10 -10,0 z M 190,110 l 10,0 0,10 -10,0 z M 200,110 l 10,0 0,10 -10,0 z M 240,110 l 10,0 0,10 -10,0 z M 250,110 l 10,0 0,10 -10,0 z M 270,110 l 10,0 0,10 -10,0 z M 10,120 l 10,0 0,10 -10,0 z M 50,120 l 10,0 0,10 -10,0 z M 60,120 l 10,0 0,10 -10,0 z M 90,120 l 10,0 0,10 -10,0 z M 100,120 l 10,0 0,10 -10,0 z M 120,120 l 10,0 0,10 -10,0 z M 130,120 l 10,0 0,10 -10,0 z M 140,120 l 10,0 0,10 -10,0 z M 150,120 l 10,0 0,10 -10,0 z M 160,120 l 10,0 0,10 -10,0 z M 170,120 l 10,0 0,10 -10,0 z M 190,120 l 10,0 0,10 -10,0 z M 250,120 l 10,0 0,10 -10,0 z M 260,120 l 10,0 0,10 -10,0 z M 40,130 l 10,0 0,10 -10,0 z M 50,130 l 10,0 0,10 -10,0 z M 130,130 l 10,0 0,10 -10,0 z M 160,130 l 10,0 0,10 -10,0 z M 190,130 l 10,0 0,10 -10,0 z M 200,130 l 10,0 0,10 -10,0 z M 220,130 l 10,0 0,10 -10,0 z M 230,130 l 10,0 0,10 -10,0 z M 240,130 l 10,0 0,10 -10,0 z M 280,130 l 10,0 0,10 -10,0 z M 0,140 l 10,0 0,10 -10,0 z M 20,140 l 10,0 0,10 -10,0 z M 30,140 l 10,0 0,10 -10,0 z M 40,140 l 10,0 0,10 -10,0 z M 50,140 l 10,0 0,10 -10,0 z M 60,140 l 10,0 0,10 -10,0 z M 100,140 l 10,0 0,10 -10,0 z M 110,140 l 10,0 0,10 -10,0 z M 120,140 l 10,0 0,10 -10,0 z M 130,140 l 10,0 0,10 -10,0 z M 150,140 l 10,0 0,10 -10,0 z M 160,140 l 10,0 0,10 -10,0 z M 210,140 l 10,0 0,10 -10,0 z M 230,140 l 10,0 0,10 -10,0 z M 240,140 l 10,0 0,10 -10,0 z M 250,140 l 10,0 0,10 -10,0 z M 260,140 l 10,0 0,10 -10,0 z M 0,150 l 10,0 0,10 -10,0 z M 10,150 l 10,0 0,10 -10,0 z M 40,150 l 10,0 0,10 -10,0 z M 50,150 l 10,0 0,10 -10,0 z M 80,150 l 10,0 0,10 -10,0 z M 100,150 l 10,0 0,10 -10,0 z M 110,150 l 10,0 0,10 -10,0 z M 140,150 l 10,0 0,10 -10,0 z M 150,150 l 10,0 0,10 -10,0 z M 160,150 l 10,0 0,10 -10,0 z M 190,150 l 10,0 0,10 -10,0 z M 210,150 l 10,0 0,10 -10,0 z M 220,150 l 10,0 0,10 -10,0 z M 230,150 l 10,0 0,10 -10,0 z M 270,150 l 10,0 0,10 -10,0 z M 0,160 l 10,0 0,10 -10,0 z M 10,160 l 10,0 0,10 -10,0 z M 20,160 l 10,0 0,10 -10,0 z M 40,160 l 10,0 0,10 -10,0 z M 60,160 l 10,0 0,10 -10,0 z M 80,160 l 10,0 0,10 -10,0 z M 90,160 l 10,0 0,10 -10,0 z M 100,160 l 10,0 0,10 -10,0 z M 110,160 l 10,0 0,10 -10,0 z M 130,160 l 10,0 0,10 -10,0 z M 140,160 l 10,0 0,10 -10,0 z M 150,160 l 10,0 0,10 -10,0 z M 170,160 l 10,0 0,10 -10,0 z M 200,160 l 10,0 0,10 -10,0 z M 250,160 l 10,0 0,10 -10,0 z M 260,160 l 10,0 0,10 -10,0 z M 0,170 l 10,0 0,10 -10,0 z M 20,170 l 10,0 0,10 -10,0 z M 40,170 l 10,0 0,10 -10,0 z M 70,170 l 10,0 0,10 -10,0 z M 80,170 l 10,0 0,10 -10,0 z M 90,170 l 10,0 0,10 -10,0 z M 100,170 l 10,0 0,10 -10,0 z M 120,170 l 10,0 0,10 -10,0 z M 140,170 l 10,0 0,10 -10,0 z M 160,170 l 10,0 0,10 -10,0 z M 180,170 l 10,0 0,10 -10,0 z M 190,170 l 10,0 0,10 -10,0 z M 200,170 l 10,0 0,10 -10,0 z M 210,170 l 10,0 0,10 -10,0 z M 220,170 l 10,0 0,10 -10,0 z M 230,170 l 10,0 0,10 -10,0 z M 240,170 l 10,0 0,10 -10,0 z M 260,170 l 10,0 0,10 -10,0 z M 280,170 l 10,0 0,10 -10,0 z M 0,180 l 10,0 0,10 -10,0 z M 30,180 l 10,0 0,10 -10,0 z M 40,180 l 10,0 0,10 -10,0 z M 50,180 l 10,0 0,10 -10,0 z M 60,180 l 10,0 0,10 -10,0 z M 90,180 l 10,0 0,10 -10,0 z M 140,180 l 10,0 0,10 -10,0 z M 150,180 l 10,0 0,10 -10,0 z M 160,180 l 10,0 0,10 -10,0 z M 170,180 l 10,0 0,10 -10,0 z M 180,180 l 10,0 0,10 -10,0 z M 210,180 l 10,0 0,10 -10,0 z M 230,180 l 10,0 0,10 -10,0 z M 240,180 l 10,0 0,10 -10,0 z M 260,180 l 10,0 0,10 -10,0 z M 0,190 l 10,0 0,10 -10,0 z M 20,190 l 10,0 0,10 -10,0 z M 40,190 l 10,0 0,10 -10,0 z M 80,190 l 10,0 0,10 -10,0 z M 120,190 l 10,0 0,10 -10,0 z M 140,190 l 10,0 0,10 -10,0 z M 180,190 l 10,0 0,10 -10,0 z M 240,190 l 10,0 0,10 -10,0 z M 270,190 l 10,0 0,10 -10,0 z M 0,200 l 10,0 0,10 -10,0 z M 20,200 l 10,0 0,10 -10,0 z M 40,200 l 10,0 0,10 -10,0 z M 50,200 l 10,0 0,10 -10,0 z M 60,200 l 10,0 0,10 -10,0 z M 70,200 l 10,0 0,10 -10,0 z M 80,200 l 10,0 0,10 -10,0 z M 90,200 l 10,0 0,10 -10,0 z M 100,200 l 10,0 0,10 -10,0 z M 120,200 l 10,0 0,10 -10,0 z M 130,200 l 10,0 0,10 -10,0 z M 170,200 l 10,0 0,10 -10,0 z M 180,200 l 10,0 0,10 -10,0 z M 200,200 l 10,0 0,10 -10,0 z M 210,200 l 10,0 0,10 -10,0 z M 220,200 l 10,0 0,10 -10,0 z M 230,200 l 10,0 0,10 -10,0 z M 240,200 l 10,0 0,10 -10,0 z M 260,200 l 10,0 0,10 -10,0 z M 270,200 l 10,0 0,10 -10,0 z M 280,200 l 10,0 0,10 -10,0 z M 80,210 l 10,0 0,10 -10,0 z M 90,210 l 10,0 0,10 -10,0 z M 130,210 l 10,0 0,10 -10,0 z M 160,210 l 10,0 0,10 -10,0 z M 170,210 l 10,0 0,10 -10,0 z M 180,210 l 10,0 0,10 -10,0 z M 190,210 l 10,0 0,10 -10,0 z M 200,210 l 10,0 0,10 -10,0 z M 240,210 l 10,0 0,10 -10,0 z M 250,210 l 10,0 0,10 -10,0 z M 260,210 l 10,0 0,10 -10,0 z M 270,210 l 10,0 0,10 -10,0 z M 280,210 l 10,0 0,10 -10,0 z M 0,220 l 10,0 0,10 -10,0 z M 10,220 l 10,0 0,10 -10,0 z M 20,220 l 10,0 0,10 -10,0 z M 30,220 l 10,0 0,10 -10,0 z M 40,220 l 10,0 0,10 -10,0 z M 50,220 l 10,0 0,10 -10,0 z M 60,220 l 10,0 0,10 -10,0 z M 80,220 l 10,0 0,10 -10,0 z M 100,220 l 10,0 0,10 -10,0 z M 110,220 l 10,0 0,10 -10,0 z M 120,220 l 10,0 0,10 -10,0 z M 130,220 l 10,0 0,10 -10,0 z M 140,220 l 10,0 0,10 -10,0 z M 150,220 l 10,0 0,10 -10,0 z M 160,220 l 10,0 0,10 -10,0 z M 170,220 l 10,0 0,10 -10,0 z M 190,220 l 10,0 0,10 -10,0 z M 200,220 l 10,0 0,10 -10,0 z M 220,220 l 10,0 0,10 -10,0 z M 240,220 l 10,0 0,10 -10,0 z M 250,220 l 10,0 0,10 -10,0 z M 260,220 l 10,0 0,10 -10,0 z M 0,230 l 10,0 0,10 -10,0 z M 60,230 l 10,0 0,10 -10,0 z M 90,230 l 10,0 0,10 -10,0 z M 100,230 l 10,0 0,10 -10,0 z M 110,230 l 10,0 0,10 -10,0 z M 140,230 l 10,0 0,10 -10,0 z M 160,230 l 10,0 0,10 -10,0 z M 180,230 l 10,0 0,10 -10,0 z M 190,230 l 10,0 0,10 -10,0 z M 200,230 l 10,0 0,10 -10,0 z M 240,230 l 10,0 0,10 -10,0 z M 270,230 l 10,0 0,10 -10,0 z M 280,230 l 10,0 0,10 -10,0 z M 0,240 l 10,0 0,10 -10,0 z M 20,240 l 10,0 0,10 -10,0 z M 30,240 l 10,0 0,10 -10,0 z M 40,240 l 10,0 0,10 -10,0 z M 60,240 l 10,0 0,10 -10,0 z M 80,240 l 10,0 0,10 -10,0 z M 90,240 l 10,0 0,10 -10,0 z M 110,240 l 10,0 0,10 -10,0 z M 170,240 l 10,0 0,10 -10,0 z M 200,240 l 10,0 0,10 -10,0 z M 210,240 l 10,0 0,10 -10,0 z M 220,240 l 10,0 0,10 -10,0 z M 230,240 l 10,0 0,10 -10,0 z M 240,240 l 10,0 0,10 -10,0 z M 260,240 l 10,0 0,10 -10,0 z M 270,240 l 10,0 0,10 -10,0 z M 280,240 l 10,0 0,10 -10,0 z M 0,250 l 10,0 0,10 -10,0 z M 20,250 l 10,0 0,10 -10,0 z M 30,250 l 10,0 0,10 -10,0 z M 40,250 l 10,0 0,10 -10,0 z M 60,250 l 10,0 0,10 -10,0 z M 80,250 l 10,0 0,10 -10,0 z M 90,250 l 10,0 0,10 -10,0 z M 100,250 l 10,0 0,10 -10,0 z M 120,250 l 10,0 0,10 -10,0 z M 130,250 l 10,0 0,10 -10,0 z M 170,250 l 10,0 0,10 -10,0 z M 180,250 l 10,0 0,10 -10,0 z M 190,250 l 10,0 0,10 -10,0 z M 200,250 l 10,0 0,10 -10,0 z M 250,250 l 10,0 0,10 -10,0 z M 260,250 l 10,0 0,10 -10,0 z M 270,250 l 10,0 0,10 -10,0 z M 280,250 l 10,0 0,10 -10,0 z M 0,260 l 10,0 0,10 -10,0 z M 20,260 l 10,0 0,10 -10,0 z M 30,260 l 10,0 0,10 -10,0 z M 40,260 l 10,0 0,10 -10,0 z M 60,260 l 10,0 0,10 -10,0 z M 80,260 l 10,0 0,10 -10,0 z M 90,260 l 10,0 0,10 -10,0 z M 130,260 l 10,0 0,10 -10,0 z M 140,260 l 10,0 0,10 -10,0 z M 150,260 l 10,0 0,10 -10,0 z M 160,260 l 10,0 0,10 -10,0 z M 180,260 l 10,0 0,10 -10,0 z M 190,260 l 10,0 0,10 -10,0 z M 210,260 l 10,0 0,10 -10,0 z M 220,260 l 10,0 0,10 -10,0 z M 230,260 l 10,0 0,10 -10,0 z M 240,260 l 10,0 0,10 -10,0 z M 250,260 l 10,0 0,10 -10,0 z M 260,260 l 10,0 0,10 -10,0 z M 270,260 l 10,0 0,10 -10,0 z M 0,270 l 10,0 0,10 -10,0 z M 60,270 l 10,0 0,10 -10,0 z M 80,270 l 10,0 0,10 -10,0 z M 90,270 l 10,0 0,10 -10,0 z M 100,270 l 10,0 0,10 -10,0 z M 120,270 l 10,0 0,10 -10,0 z M 130,270 l 10,0 0,10 -10,0 z M 160,270 l 10,0 0,10 -10,0 z M 200,270 l 10,0 0,10 -10,0 z M 220,270 l 10,0 0,10 -10,0 z M 230,270 l 10,0 0,10 -10,0 z M 250,270 l 10,0 0,10 -10,0 z M 270,270 l 10,0 0,10 -10,0 z M 0,280 l 10,0 0,10 -10,0 z M 10,280 l 10,0 0,10 -10,0 z M 20,280 l 10,0 0,10 -10,0 z M 30,280 l 10,0 0,10 -10,0 z M 40,280 l 10,0 0,10 -10,0 z M 50,280 l 10,0 0,10 -10,0 z M 60,280 l 10,0 0,10 -10,0 z M 80,280 l 10,0 0,10 -10,0 z M 120,280 l 10,0 0,10 -10,0 z M 140,280 l 10,0 0,10 -10,0 z M 170,280 l 10,0 0,10 -10,0 z M 190,280 l 10,0 0,10 -10,0 z M 210,280 l 10,0 0,10 -10,0 z M 220,280 l 10,0 0,10 -10,0 z M 240,280 l 10,0 0,10 -10,0 z M 250,280 l 10,0 0,10 -10,0 z M 260,280 l 10,0 0,10 -10,0 z" />
+          </svg>
+        </a>
+
+      </div>
+
+      <!-- FOOTER NOTE -->
+      <div class="flex items-center justify-between text-[9px] text-slate-500 font-medium mt-3 px-1">
+        <span>© 2026 Sambarang Production</span>
+        <span class="flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Serverless & Zero Subscription Fee
+        </span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SCRIPT FOR BROADCAST MESSAGE COPY -->
+  <script>
+    function copyBroadcastMessage() {
+      const msg = `📢 *RESMI DIRILIS: KEUANGANKU PRO (v2.1)* 🚀\n\n` +
+        `Aplikasi Financial Planner & Buku Kas Modern yang bisa dibuka di HP Android, iPhone, Laptop Windows, dan Mac secara bersamaan dengan *Sinkronisasi Otomatis*!\n\n` +
+        `✨ *Fitur Unggulan:* \n` +
+        `• 📱 *Multi-Device Auto-Sync*: Input di HP, langsung otomatis muncul di laptop beberapa detik kemudian.\n` +
+        `• 🔒 *100% Privat*: Data tersimpan aman di Google Drive pribadi Anda sendiri (bebas intip & tanpa pihak ketiga).\n` +
+        `• 📎 *Upload Bukti Transaksi*: Lampirkan struk / bukti transfer (JPG, PNG, HEIC iPhone, PDF) dengan kompresi otomatis.\n` +
+        `• 📊 *Evaluasi Anggaran & Zakat*: Fitur Budgeting bulanan, tabungan terencana (Sinking Fund), dan kalkulator Nisab Zakat Mal.\n` +
+        `• ⚡ *Tanpa Perlu Install*: Cukup buka langsung lewat web browser!\n` +
+        `• 🆓 *100% Gratis Selamanya*: Tanpa biaya langganan.\n\n` +
+        `📲 *Mulai Gunakan Sekarang di Browser Anda:* \n` +
+        `https://sambarangpro.github.io/keuanganku/\n\n` +
+        `_Dibuat dengan cinta oleh Sambarang Production._`;
+
+      navigator.clipboard.writeText(msg).then(() => {
+        const btn = document.getElementById('btn-copy-bc');
+        const oldHtml = btn.innerHTML;
+        btn.innerHTML = `<span class="material-symbols-outlined text-sm text-emerald-400">done</span> Tersalin!`;
+        setTimeout(() => { btn.innerHTML = oldHtml; }, 2500);
+      }).catch(() => {
+        alert("Broadcast teks siap dibagikan!");
+      });
+    }
+  </script>
+</body>
+</html>

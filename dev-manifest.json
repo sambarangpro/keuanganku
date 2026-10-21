@@ -1,0 +1,39 @@
+{
+  "name": "Keuanganku PRO - Dev Portal",
+  "short_name": "Dev Portal",
+  "description": "Master License & Device Management Center for Keuanganku PRO by Sambarang Production",
+  "start_url": "./dev-dashboard.html",
+  "id": "keuanganku-dev-portal-v1",
+  "scope": "./dev-dashboard.html",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#020617",
+  "theme_color": "#090d16",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["finance", "productivity", "utilities"]
+}
