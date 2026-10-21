@@ -2010,11 +2010,17 @@
         let pinParam = params.get("pin");
         let isPair = params.get("pair") === "1";
         let masterParam = params.get("masterUrl");
+        let cloudParam = params.get("cloudUrl");
 
         if (masterParam && masterParam.startsWith("http") && !masterParam.includes("YOUR_SCRIPT_ID")) {
           localStorage.setItem("KEUANGANKU_MASTER_SERVER_URL", masterParam);
           localStorage.setItem("KEUANGANKU_DEV_API_URL", masterParam);
           localStorage.setItem("KEUANGANKU_CUSTOM_LICENSE_URL", masterParam);
+        }
+
+        if (cloudParam && cloudParam.startsWith("http")) {
+          globalData.cloudUrl = cloudParam.trim();
+          localStorage.setItem("KEUANGANKU_CLOUD_URL", cloudParam.trim());
         }
 
         if (tokenParam) {
@@ -2039,7 +2045,7 @@
               window.history.replaceState({}, document.title, window.location.pathname);
             }
             setTimeout(() => {
-              processAutoPairing(tokenClean, pinParam ? pinParam.trim() : '', masterParam ? masterParam.trim() : '');
+              processAutoPairing(tokenClean, pinParam ? pinParam.trim() : '', masterParam ? masterParam.trim() : '', cloudParam ? cloudParam.trim() : '');
             }, 350);
           }
         }
@@ -2083,7 +2089,9 @@
       if (!apiUrl || !apiUrl.startsWith("http") || apiUrl.includes("YOUR_SCRIPT_ID")) return;
 
       try {
-        let resp = await fetch(`${apiUrl}?action=verify_status&token=${encodeURIComponent(token)}&deviceId=${encodeURIComponent(devId)}&_t=${Date.now()}`);
+        let activeCloud = (globalData.cloudUrl && globalData.cloudUrl.startsWith("http")) ? globalData.cloudUrl : (localStorage.getItem("KEUANGANKU_CLOUD_URL") || "");
+        let cloudQuery = activeCloud ? `&cloudUrl=${encodeURIComponent(activeCloud)}` : "";
+        let resp = await fetch(`${apiUrl}?action=verify_status&token=${encodeURIComponent(token)}&deviceId=${encodeURIComponent(devId)}${cloudQuery}&_t=${Date.now()}`);
         let res = await resp.json();
 
         if (res && res.success && res.active === false) {
@@ -2101,6 +2109,20 @@
             err.classList.remove('hidden');
           }
         } else if (res && res.success && res.active === true) {
+          // Sinkronisasi otomatis URL Cloud jika server menyediakannya dan lokal belum memilikinya
+          if (res.cloudUrl && res.cloudUrl.startsWith("http")) {
+            let hasLocalCloud = globalData.cloudUrl && globalData.cloudUrl.startsWith("http");
+            let localTxCount = (globalData.recentHistory || []).length;
+            if (!hasLocalCloud || localTxCount === 0) {
+              globalData.cloudUrl = res.cloudUrl;
+              localStorage.setItem("KEUANGANKU_CLOUD_URL", res.cloudUrl);
+              saveStorageData();
+              if (typeof autoPullDatabaseFromCloud === 'function') {
+                autoPullDatabaseFromCloud(res.cloudUrl);
+              }
+            }
+          }
+
           // Update status PIN & Device Count jika diubah di perangkat lain
           let lic = getSavedLicense();
           let needsUpdate = false;
@@ -2830,11 +2852,24 @@
             localStorage.setItem("KEUANGANKU_DEV_API_URL", s.masterUrl);
             localStorage.setItem("KEUANGANKU_CUSTOM_LICENSE_URL", s.masterUrl);
           }
+          if (s.cloudUrl && s.cloudUrl.startsWith("http")) {
+            globalData.cloudUrl = s.cloudUrl;
+            localStorage.setItem("KEUANGANKU_CLOUD_URL", s.cloudUrl);
+            saveStorageData();
+          }
 
           sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
 
           playSuccessSound();
           showSyncToast("🎉 Berhasil Ditautkan dari HP Utama!");
+
+          // Otomatis tarik database dari Cloud ke perangkat baru
+          if (globalData.cloudUrl && globalData.cloudUrl.startsWith("http")) {
+            showSyncToast("⚡ Mengunduh database transaksi dari Cloud...");
+            if (typeof autoPullDatabaseFromCloud === 'function') {
+              autoPullDatabaseFromCloud(globalData.cloudUrl);
+            }
+          }
 
           let statusText = document.getElementById('splash-pair-status-text');
           if (statusText) statusText.innerHTML = `<span class="text-emerald-300 font-bold">✓ Terverifikasi! Membuka aplikasi...</span>`;
@@ -2890,6 +2925,7 @@
 
       try {
         let pinToUse = (lic.pinStatus === 'USING_TOKEN') ? lic.token : (globalData.appPin || globalData.ownerPassword || '');
+        let cloudUrlToShare = (globalData.cloudUrl && globalData.cloudUrl.startsWith("http")) ? globalData.cloudUrl : (localStorage.getItem("KEUANGANKU_CLOUD_URL") || "");
         let res = await callClientLicenseApi({
           action: 'authorize_pair_session',
           sessionId: sessionId,
@@ -2897,7 +2933,8 @@
           targetDeviceName: devName,
           token: lic.token,
           pin: pinToUse,
-          masterUrl: getMasterLicenseServerUrl()
+          masterUrl: getMasterLicenseServerUrl(),
+          cloudUrl: cloudUrlToShare
         });
 
         if (res && res.success) {
@@ -2973,6 +3010,10 @@
       }
       if (masterUrl && masterUrl.startsWith("http") && !masterUrl.includes("YOUR_SCRIPT_ID")) {
         pairUrl.searchParams.set("masterUrl", masterUrl);
+      }
+      let cloudUrlToShare = (globalData.cloudUrl && globalData.cloudUrl.startsWith("http")) ? globalData.cloudUrl : (localStorage.getItem("KEUANGANKU_CLOUD_URL") || "");
+      if (cloudUrlToShare && cloudUrlToShare.startsWith("http")) {
+        pairUrl.searchParams.set("cloudUrl", cloudUrlToShare);
       }
 
       let qrString = pairUrl.toString();
@@ -3238,15 +3279,18 @@
           let token = urlObj.searchParams.get("token") || "";
           let pin = urlObj.searchParams.get("pin") || "";
           let masterUrl = urlObj.searchParams.get("masterUrl") || "";
-          return { token: token.trim().toUpperCase(), pin: pin.trim(), masterUrl: masterUrl.trim() };
+          let cloudUrl = urlObj.searchParams.get("cloudUrl") || "";
+          return { token: token.trim().toUpperCase(), pin: pin.trim(), masterUrl: masterUrl.trim(), cloudUrl: cloudUrl.trim() };
         } catch(e) {
           let matchToken = trimmed.match(/[?&]token=([^&]+)/i);
           let matchPin = trimmed.match(/[?&]pin=([^&]+)/i);
           let matchMaster = trimmed.match(/[?&]masterUrl=([^&]+)/i);
+          let matchCloud = trimmed.match(/[?&]cloudUrl=([^&]+)/i);
           return {
             token: matchToken ? decodeURIComponent(matchToken[1]).toUpperCase() : "",
             pin: matchPin ? decodeURIComponent(matchPin[1]) : "",
-            masterUrl: matchMaster ? decodeURIComponent(matchMaster[1]) : ""
+            masterUrl: matchMaster ? decodeURIComponent(matchMaster[1]) : "",
+            cloudUrl: matchCloud ? decodeURIComponent(matchCloud[1]) : ""
           };
         }
       }
@@ -3258,7 +3302,8 @@
           return {
             token: (data.token || "").toUpperCase(),
             pin: data.pin || "",
-            masterUrl: data.masterUrl || ""
+            masterUrl: data.masterUrl || "",
+            cloudUrl: data.cloudUrl || ""
           };
         } catch(e) {}
       }
@@ -3266,7 +3311,7 @@
       // Kasus 3: Token polos (PRO-XXXX-XXXX-XXXX)
       let clean = trimmed.toUpperCase().replace(/[^A-Z0-9-]/g, '');
       if (clean.startsWith("PRO-") || clean.length >= 10) {
-        return { token: clean, pin: "", masterUrl: "" };
+        return { token: clean, pin: "", masterUrl: "", cloudUrl: "" };
       }
 
       return null;
@@ -3291,11 +3336,11 @@
       }
 
       if (parsed.token) {
-        await processAutoPairing(parsed.token, parsed.pin, parsed.masterUrl);
+        await processAutoPairing(parsed.token, parsed.pin, parsed.masterUrl, parsed.cloudUrl);
       }
     }
 
-    async function processAutoPairing(token, pin = "", masterUrl = "") {
+    async function processAutoPairing(token, pin = "", masterUrl = "", cloudUrl = "") {
       let devId = getOrCreateDeviceId();
       let devName = detectDeviceName();
 
@@ -3303,6 +3348,11 @@
         localStorage.setItem("KEUANGANKU_MASTER_SERVER_URL", masterUrl);
         localStorage.setItem("KEUANGANKU_DEV_API_URL", masterUrl);
         localStorage.setItem("KEUANGANKU_CUSTOM_LICENSE_URL", masterUrl);
+      }
+
+      if (cloudUrl && cloudUrl.startsWith("http")) {
+        globalData.cloudUrl = cloudUrl.trim();
+        localStorage.setItem("KEUANGANKU_CLOUD_URL", cloudUrl.trim());
       }
 
       let tokenInp = document.getElementById('license-input-token');
@@ -3318,7 +3368,8 @@
           token: token,
           pin: pin,
           deviceId: devId,
-          deviceName: devName
+          deviceName: devName,
+          cloudUrl: (globalData.cloudUrl || localStorage.getItem("KEUANGANKU_CLOUD_URL") || "")
         });
 
         if (res.isBurned) {
@@ -3350,6 +3401,15 @@
             saveStorageData();
           }
 
+          // Sinkronisasi cloudUrl dari server jika lokal belum memilikinya
+          if (res.data.cloudUrl && res.data.cloudUrl.startsWith("http")) {
+            if (!globalData.cloudUrl || !globalData.cloudUrl.startsWith("http")) {
+              globalData.cloudUrl = res.data.cloudUrl;
+              localStorage.setItem("KEUANGANKU_CLOUD_URL", res.data.cloudUrl);
+              saveStorageData();
+            }
+          }
+
           sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
 
           let splashScreen = document.getElementById('splash-screen');
@@ -3365,6 +3425,14 @@
 
           playSuccessSound();
           showSyncToast("🎉 Perangkat Berhasil Terhubung Otomatis!");
+
+          // Otomatis tarik database dari Cloud ke perangkat baru jika ada cloudUrl
+          if (globalData.cloudUrl && globalData.cloudUrl.startsWith("http")) {
+            showSyncToast("⚡ Mengunduh database transaksi dari Cloud...");
+            if (typeof autoPullDatabaseFromCloud === 'function') {
+              autoPullDatabaseFromCloud(globalData.cloudUrl);
+            }
+          }
 
           // Tawaran Download / Pasang PWA ke Layar Utama
           setTimeout(() => {
@@ -3816,7 +3884,10 @@
           let isCloudNewer = false;
 
           // Cek mana yang benar-benar lebih baru dan lebih lengkap
-          if (cloudUpdated > localUpdated && cloudTxCount >= localTxCount) {
+          if (localTxCount === 0 && (!localStorage.getItem("KEUANGANKU_DB_V21") || cloudTxCount > 0 || (cloudData.accounts && cloudData.accounts.length > 0))) {
+            // Perangkat baru / lokal masih kosong atau belum ada transaksi, utamakan Cloud!
+            isCloudNewer = true;
+          } else if (cloudUpdated > localUpdated && cloudTxCount >= localTxCount) {
             isCloudNewer = true;
           } else if (localUpdated > cloudUpdated && localTxCount >= cloudTxCount) {
             isCloudNewer = false;
@@ -4039,6 +4110,34 @@
         alert("BERHASIL! Data aplikasi ini telah di-upload ke Google Spreadsheet Anda.\n\nSilakan cek Google Sheets Anda, sekarang sudah terdapat:\n1. Tab 'Database_Keuangan' (Cadangan Lengkap JSON)\n2. Tab 'Transaksi' (Tabel Riwayat Transaksi Keuangan)\n3. Tab 'Rekening_Saldo' (Tabel Rekening & Saldo Terkini)");
       } catch(e) { alert("Gagal mengupload data. Pastikan koneksi internet lancar dan link Anda benar."); }
       if (btn) btn.innerHTML = originalText;
+    }
+
+    async function autoPullDatabaseFromCloud(targetCloudUrl = '') {
+      let url = targetCloudUrl || globalData.cloudUrl || localStorage.getItem("KEUANGANKU_CLOUD_URL");
+      if (!url || !url.startsWith("http")) return false;
+
+      try {
+        let fetchUrl = url + (url.includes('?') ? '&' : '?') + `_t=${Date.now()}`;
+        let response = await fetch(fetchUrl); 
+        let data = await response.json();
+        if (data && (data.accounts || data.recentHistory)) { 
+          let activePin = globalData.appPin;
+          let activePass = globalData.ownerPassword;
+          globalData = data;
+          globalData.cloudUrl = url;
+          if (activePin) globalData.appPin = activePin;
+          if (activePass) globalData.ownerPassword = activePass;
+          localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(data)); 
+          localStorage.setItem("KEUANGANKU_CLOUD_URL", url);
+          initApp();
+          setSyncStatus('synced', 'Tersinkron');
+          showSyncToast("✓ Database berhasil disinkronkan ke perangkat ini!");
+          return true;
+        }
+      } catch(e) {
+        console.warn("autoPullDatabaseFromCloud error:", e);
+      }
+      return false;
     }
 
     async function forceDownloadFromCloud() {

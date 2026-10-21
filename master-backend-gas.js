@@ -103,6 +103,7 @@ function getTokenColumnIndexes(headers) {
     else if (h.includes("status") && !h.includes("pin")) map.status = c;
     else if (h.includes("created") || h.includes("dibuat") || h.includes("tanggal")) map.createdAt = c;
     else if (h.includes("notes") || h.includes("catatan") || h.includes("keterangan")) map.notes = c;
+    else if (h.includes("cloud") || h.includes("database") || h.includes("sheeturl")) map.cloudUrl = c;
   }
   return map;
 }
@@ -122,9 +123,9 @@ function initSheets() {
     tokensSheet = ss.insertSheet(SHEET_TOKENS);
     tokensSheet.appendRow([
       "Token", "Buyer Name", "Buyer Contact", "Max Devices", 
-      "Device Count", "Used Devices (JSON)", "Status", "PIN Status", "Personal PIN", "Created At", "Notes"
+      "Device Count", "Used Devices (JSON)", "Status", "PIN Status", "Personal PIN", "Created At", "Notes", "Cloud URL"
     ]);
-    tokensSheet.getRange("A1:K1").setFontWeight("bold").setBackground("#1e293b").setFontColor("#ffffff");
+    tokensSheet.getRange("A1:L1").setFontWeight("bold").setBackground("#1e293b").setFontColor("#ffffff");
     tokensSheet.setFrozenRows(1);
   } else {
     // Normalisasi cerdas header & kolom
@@ -151,6 +152,14 @@ function initSheets() {
           }
         }
       }
+    }
+
+    var hasCloudUrl = headers.some(function(h) { 
+      return String(h).toLowerCase().replace(/[^a-z]/g, '').includes("cloud"); 
+    });
+    if (!hasCloudUrl && lastCol > 0) {
+      tokensSheet.getRange(1, lastCol + 1).setValue("Cloud URL");
+      tokensSheet.getRange(1, lastCol + 1).setFontWeight("bold").setBackground("#1e293b").setFontColor("#ffffff");
     }
   }
   
@@ -586,6 +595,12 @@ function validateClientToken(params) {
         }
       }
 
+      var currentCloudUrl = (colMap.cloudUrl !== undefined && data[i][colMap.cloudUrl]) ? String(data[i][colMap.cloudUrl]).trim() : "";
+      if (!currentCloudUrl && params.cloudUrl && colMap.cloudUrl !== undefined) {
+        currentCloudUrl = String(params.cloudUrl).trim();
+        sheet.getRange(i + 1, colMap.cloudUrl + 1).setValue(currentCloudUrl);
+      }
+
       // 3. Cek apakah perangkat sudah ada (Re-login)
       if (existingDevice) {
         existingDevice.lastActive = new Date().toISOString();
@@ -603,7 +618,8 @@ function validateClientToken(params) {
             isPasswordChanged: (pinStatus === "PIN_CHANGED"),
             maxDevices: (pinStatus === "PIN_CHANGED" ? maxDevices : 1),
             deviceCount: devices.length,
-            activatedAt: existingDevice.activatedAt
+            activatedAt: existingDevice.activatedAt,
+            cloudUrl: currentCloudUrl
           }
         };
       }
@@ -645,7 +661,8 @@ function validateClientToken(params) {
           isPasswordChanged: (newPinStatus === "PIN_CHANGED"),
           maxDevices: (newPinStatus === "PIN_CHANGED" ? maxDevices : 1),
           deviceCount: devices.length,
-          activatedAt: newDevObj.activatedAt
+          activatedAt: newDevObj.activatedAt,
+          cloudUrl: currentCloudUrl
         }
       };
     }
@@ -820,6 +837,14 @@ function authorizePairSession(params) {
 
   logEvent("PAIR_SESSION_AUTHORIZED", tokenInput, buyerName, targetDeviceId, targetDeviceName, "Perangkat berhasil ditautkan via Scan HP WhatsApp Style");
 
+  var currentCloudUrl = (colMap.cloudUrl !== undefined && data[foundRow - 1][colMap.cloudUrl]) ? String(data[foundRow - 1][colMap.cloudUrl]).trim() : "";
+  if (params.cloudUrl) {
+    currentCloudUrl = String(params.cloudUrl).trim();
+    if (colMap.cloudUrl !== undefined) {
+      sheet.getRange(foundRow, colMap.cloudUrl + 1).setValue(currentCloudUrl);
+    }
+  }
+
   // Update session di cache Google Apps Script agar PC/iPad langsung otomatis login
   sessionObj.status = "AUTHORIZED";
   sessionObj.licenseData = {
@@ -828,10 +853,12 @@ function authorizePairSession(params) {
     pinStatus: pinStatus,
     isPasswordChanged: (pinStatus === "PIN_CHANGED"),
     maxDevices: maxDevices,
-    deviceCount: devices.length
+    deviceCount: devices.length,
+    cloudUrl: currentCloudUrl
   };
   sessionObj.pin = inputPin || storedPersonalPin || "";
   sessionObj.masterUrl = params.masterUrl || "";
+  sessionObj.cloudUrl = currentCloudUrl;
 
   cache.put(sessionId, JSON.stringify(sessionObj), 300);
 
@@ -933,6 +960,12 @@ function verifyClientStatus(params) {
         return { success: true, active: false, reason: "DEVICE_REMOVED", message: "Perangkat ini telah dilepas dari lisensi." };
       }
 
+      var currentCloudUrl = (colMap.cloudUrl !== undefined && data[i][colMap.cloudUrl]) ? String(data[i][colMap.cloudUrl]).trim() : "";
+      if (!currentCloudUrl && params.cloudUrl && colMap.cloudUrl !== undefined) {
+        currentCloudUrl = String(params.cloudUrl).trim();
+        sheet.getRange(i + 1, colMap.cloudUrl + 1).setValue(currentCloudUrl);
+      }
+
       return { 
         success: true, 
         active: true, 
@@ -940,7 +973,8 @@ function verifyClientStatus(params) {
         pinStatus: pinStatus,
         isPasswordChanged: (pinStatus === "PIN_CHANGED"),
         deviceCount: devices.length,
-        maxDevices: parseInt(data[i][colMap.maxDevices]) || 2
+        maxDevices: parseInt(data[i][colMap.maxDevices]) || 2,
+        cloudUrl: currentCloudUrl
       };
     }
   }
