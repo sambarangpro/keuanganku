@@ -682,7 +682,7 @@
   <!-- ========================================== -->
   <!-- MODAL 5: ACTION SECURITY & DANGER ZONE     -->
   <!-- ========================================== -->
-  <div id="modal-action-confirm" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4">
+  <div id="modal-action-confirm" class="hidden fixed inset-0 z-[70] bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="max-w-md w-full bg-slate-900 border border-slate-700/80 rounded-3xl p-6 shadow-2xl space-y-5 relative">
       <!-- Modal Header -->
       <div class="flex items-center gap-3.5 border-b border-slate-800 pb-3.5">
@@ -1657,35 +1657,8 @@ Copyright © 2026 Sambarang Production`;
       document.getElementById('modal-view-devices').classList.remove('hidden');
     }
 
-    async function handleAdminKickDevice(tokenStr, targetDeviceId, targetDeviceName) {
-      if (!confirm(`Konfirmasi Keluarkan Perangkat:\n\nApakah Anda yakin ingin mengeluarkan perangkat:\n"${targetDeviceName}" dari lisensi ${tokenStr}?\n\nAkses perangkat tersebut akan segera kehilangan otorisasi dan 1 slot kuota lisensi akan dibebaskan.`)) return;
-
-      try {
-        let res = await callDevApi({
-          action: 'admin_deactivate_device',
-          adminPassword: currentAdminPassword,
-          token: tokenStr,
-          targetDeviceId: targetDeviceId
-        });
-
-        if (!res || !res.success) {
-          res = await callDevApi({
-            action: 'deactivate_device',
-            token: tokenStr,
-            targetDeviceId: targetDeviceId
-          });
-        }
-
-        if (res && res.success) {
-          showToast('success', res.message || `Perangkat "${targetDeviceName}" berhasil dikeluarkan.`);
-          await loadDashboardData();
-          openDeviceDetailModal(tokenStr);
-        } else {
-          showToast('error', (res && res.message) ? res.message : 'Gagal mengeluarkan perangkat.');
-        }
-      } catch(err) {
-        showToast('error', 'Koneksi ke server gagal saat mengeluarkan perangkat.');
-      }
+    function handleAdminKickDevice(tokenStr, targetDeviceId, targetDeviceName) {
+      confirmAction('kick_device', tokenStr, { targetDeviceId, targetDeviceName });
     }
 
     // ============================================================
@@ -1837,6 +1810,30 @@ Copyright © 2026 Sambarang Production`;
         inputCont.classList.add('hidden');
         if (chkCont) chkCont.classList.remove('hidden');
         btnExecText.textContent = willBlock ? 'Blokir Lisensi Sekarang' : 'Aktifkan Lisensi Kembali';
+      } else if (type === 'kick_device') {
+        let devName = (extraParam && extraParam.targetDeviceName) ? extraParam.targetDeviceName : 'Perangkat Terpilih';
+        let devId = (extraParam && extraParam.targetDeviceId) ? extraParam.targetDeviceId : '';
+        iconEl.textContent = 'phonelink_erase';
+        iconBox.className = 'w-12 h-12 rounded-2xl bg-rose-500/20 border border-rose-500/40 text-rose-400 flex items-center justify-center shrink-0';
+        btnExec.className = 'px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 shadow-lg shadow-rose-600/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5 cursor-pointer';
+
+        titleEl.textContent = '⚠️ YAKIN KELUARKAN PERANGKAT INI?';
+        subtitleEl.textContent = 'Konfirmasi Pemutusan Akses Perangkat Pengguna';
+        warnBox.className = 'p-3.5 rounded-2xl bg-rose-950/30 border border-rose-500/30 text-rose-300 text-xs space-y-1.5 leading-relaxed';
+        warnBox.innerHTML = `
+          <div class="font-bold flex items-center gap-1.5 text-white">
+            <span class="material-symbols-outlined text-sm text-rose-400">devices</span>
+            Perangkat Target: <span class="text-cyan-300">${escapeHtml(devName)}</span>
+          </div>
+          <p>Apakah Anda benar-benar yakin ingin mengeluarkan perangkat ini?</p>
+          <ul class="list-disc pl-4 space-y-0.5 text-slate-300 text-[11px]">
+            <li>Akses perangkat ini akan <b>segera dicabut (logout otomatis)</b> saat aplikasi dibuka.</li>
+            <li>1 slot kuota lisensi pengguna akan dibebaskan kembali di server.</li>
+          </ul>
+        `;
+        inputCont.classList.add('hidden');
+        if (chkCont) chkCont.classList.remove('hidden');
+        btnExecText.textContent = 'Ya, Yakin Keluarkan Perangkat';
       }
 
       modal.classList.remove('hidden');
@@ -1894,6 +1891,31 @@ Copyright © 2026 Sambarang Production`;
             token: tokenStr,
             status: extraParam
           });
+        } else if (type === 'kick_device') {
+          let devId = (extraParam && extraParam.targetDeviceId) ? extraParam.targetDeviceId : '';
+          let devName = (extraParam && extraParam.targetDeviceName) ? extraParam.targetDeviceName : 'Perangkat';
+          res = await callDevApi({
+            action: 'admin_deactivate_device',
+            adminPassword: currentAdminPassword,
+            token: tokenStr,
+            targetDeviceId: devId
+          });
+          if (!res || !res.success) {
+            res = await callDevApi({
+              action: 'deactivate_device',
+              token: tokenStr,
+              targetDeviceId: devId
+            });
+          }
+          if (res && res.success) {
+            showToast('success', res.message || `Perangkat "${devName}" berhasil dikeluarkan.`);
+            closeModal('modal-action-confirm');
+            await loadDashboardData();
+            if (activeDetailToken && activeDetailToken.token === tokenStr) {
+              openDeviceDetailModal(tokenStr);
+            }
+            return;
+          }
         }
 
         if (res && res.success) {

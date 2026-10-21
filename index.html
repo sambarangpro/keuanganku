@@ -598,6 +598,51 @@
     </div>
   </div>
 
+  <!-- ========================================== -->
+  <!-- MODAL: KONFIRMASI KELUARKAN PERANGKAT (YAKIN?) -->
+  <!-- ========================================== -->
+  <div id="modal-confirm-device-action" class="fixed inset-0 bg-black/85 backdrop-blur-md z-[85] flex items-center justify-center hidden p-4 overflow-y-auto">
+    <div class="bg-slate-900 border border-slate-700/80 rounded-3xl max-w-sm sm:max-w-md w-full p-6 space-y-4 shadow-2xl relative text-slate-100 my-auto">
+      <div class="flex items-center gap-3.5 border-b border-slate-800 pb-3.5">
+        <div id="device-confirm-icon-box" class="w-12 h-12 rounded-2xl bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center shrink-0">
+          <span id="device-confirm-icon" class="material-symbols-outlined text-2xl">phonelink_erase</span>
+        </div>
+        <div>
+          <h3 id="device-confirm-title" class="font-extrabold text-base text-white">Yakin Ingin Mengeluarkan?</h3>
+          <p id="device-confirm-subtitle" class="text-xs text-slate-400">Konfirmasi pemutusan perangkat</p>
+        </div>
+      </div>
+
+      <!-- Detail Box -->
+      <div class="p-3.5 bg-slate-950 border border-slate-800 rounded-2xl space-y-2 text-xs">
+        <div class="flex items-center justify-between">
+          <span class="text-slate-400">Nama Perangkat:</span>
+          <span id="device-confirm-name" class="font-bold text-white text-right truncate max-w-[180px]"></span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-slate-400">Tindakan:</span>
+          <span id="device-confirm-action-badge" class="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500/20 text-rose-300 border border-rose-500/40">KELUARKAN</span>
+        </div>
+      </div>
+
+      <!-- Warning description -->
+      <div id="device-confirm-desc" class="p-3.5 bg-rose-950/30 border border-rose-500/30 rounded-2xl text-xs text-rose-300 leading-relaxed space-y-1">
+        <!-- Injected via JS -->
+      </div>
+
+      <!-- Buttons -->
+      <div class="flex items-center justify-end gap-2.5 pt-2">
+        <button type="button" onclick="closeDeviceConfirmModal()" class="px-4 py-2.5 rounded-xl border border-slate-700 hover:bg-slate-800 text-xs text-slate-300 font-semibold transition-all cursor-pointer">
+          Batal
+        </button>
+        <button type="button" id="btn-device-confirm-exec" onclick="executeDeviceConfirmAction()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 text-white text-xs font-bold shadow-lg shadow-rose-600/30 flex items-center gap-1.5 transition-all cursor-pointer">
+          <span class="material-symbols-outlined text-sm">check</span>
+          <span id="btn-device-confirm-text">Ya, Yakin Keluarkan</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- HEADER -->
   <header class="bg-surface/90 backdrop-blur-md border-b border-outline-variant fixed top-0 w-full z-40 h-16 shadow-sm">
     <div class="w-full max-w-7xl 2xl:max-w-[1600px] mx-auto h-full flex justify-between items-center px-4 sm:px-6 lg:px-8 xl:px-10">
@@ -2362,28 +2407,8 @@
       }
     }
 
-    async function handleDeactivateCurrentDevice() {
-      let lic = getSavedLicense();
-      if (!lic || !lic.token) return;
-
-      if (!confirm(`Konfirmasi Pelepasan Lisensi:\n\nApakah Anda yakin ingin melepas lisensi ${lic.token} dari perangkat ini?\n\nSetelah dilepas, aplikasi di perangkat ini akan terkunci kembali dan kuota slot perangkat Anda di server akan dibebaskan sehingga bisa dipakai di HP/Laptop lain.`)) {
-        return;
-      }
-
-      let devId = getOrCreateDeviceId();
-
-      try {
-        await callClientLicenseApi({
-          action: 'deactivate_device',
-          token: lic.token,
-          deviceId: devId
-        });
-      } catch(e) {}
-
-      localStorage.removeItem("KEUANGANKU_LICENSE_DATA");
-      sessionStorage.removeItem("KEUANGANKU_PIN_PASSED");
-      alert("Lisensi berhasil dilepas dari perangkat ini.");
-      location.reload();
+    function handleDeactivateCurrentDevice() {
+      openDeviceConfirmModal('current', getOrCreateDeviceId(), detectDeviceName());
     }
 
     // ============================================================
@@ -2524,65 +2549,143 @@
       `;
     }
 
-    async function handleDeactivateSpecificDevice(targetDeviceId, targetDeviceName) {
+    // ============================================================
+    // SISTEM KONFIRMASI KEPUTUSAN KELUARKAN PERANGKAT (POP UP YAKIN)
+    // ============================================================
+
+    let pendingDeviceAction = null;
+
+    function openDeviceConfirmModal(type, targetDeviceId, targetDeviceName) {
+      pendingDeviceAction = { type, targetDeviceId, targetDeviceName };
+      let modal = document.getElementById('modal-confirm-device-action');
+      let titleEl = document.getElementById('device-confirm-title');
+      let subEl = document.getElementById('device-confirm-subtitle');
+      let nameEl = document.getElementById('device-confirm-name');
+      let descEl = document.getElementById('device-confirm-desc');
+      let btnText = document.getElementById('btn-device-confirm-text');
+      let actionBadge = document.getElementById('device-confirm-action-badge');
+
+      if (!modal) return;
+      nameEl.textContent = targetDeviceName || '-';
+
+      if (type === 'single') {
+        titleEl.textContent = 'Yakin Ingin Mengeluarkan Perangkat?';
+        subEl.textContent = 'Konfirmasi pemutusan perangkat pengguna lain';
+        actionBadge.textContent = 'KELUARKAN PERANGKAT';
+        descEl.innerHTML = `
+          <p class="font-bold">Apakah Anda yakin ingin mengeluarkan perangkat ini?</p>
+          <p>Perangkat <b>${escapeHtml(targetDeviceName)}</b> akan segera dikeluarkan (logout otomatis) saat aplikasi dibuka. Kuota 1 slot lisensi Anda akan dibebaskan kembali.</p>
+        `;
+        btnText.textContent = 'Ya, Yakin Keluarkan';
+      } else if (type === 'all_others') {
+        titleEl.textContent = 'Yakin Keluarkan Semua Perangkat Lain?';
+        subEl.textContent = 'Keluarkan semua HP & Laptop lain yang terhubung';
+        actionBadge.textContent = 'LOGOUT SEMUA PERANGKAT LAIN';
+        descEl.innerHTML = `
+          <p class="font-bold">Peringatan: Seluruh perangkat lain akan diputuskan!</p>
+          <p>Semua HP atau Laptop lain yang saat ini terhubung ke lisensi Anda akan <b>segera logout otomatis</b>. Hanya perangkat ini yang akan tetap aktif.</p>
+        `;
+        btnText.textContent = 'Ya, Yakin Keluarkan Semua';
+      } else if (type === 'current') {
+        titleEl.textContent = 'Yakin Ingin Keluar dari Perangkat Ini?';
+        subEl.textContent = 'Melepas lisensi dari HP/Laptop ini';
+        actionBadge.textContent = 'KELUAR DARI PERANGKAT INI';
+        descEl.innerHTML = `
+          <p class="font-bold">Aplikasi di perangkat ini akan terkunci kembali.</p>
+          <p>Slot kuota lisensi Anda di server akan dibebaskan sehingga dapat digunakan untuk login di perangkat lain.</p>
+        `;
+        btnText.textContent = 'Ya, Yakin Keluar';
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeDeviceConfirmModal() {
+      let modal = document.getElementById('modal-confirm-device-action');
+      if (modal) modal.classList.add('hidden');
+      pendingDeviceAction = null;
+    }
+
+    async function executeDeviceConfirmAction() {
+      if (!pendingDeviceAction) return;
+      let { type, targetDeviceId, targetDeviceName } = pendingDeviceAction;
       let lic = getSavedLicense();
       if (!lic || !lic.token) return;
 
-      let confirmMsg = `Konfirmasi Keluarkan Perangkat:\n\nApakah Anda yakin ingin mengeluarkan perangkat:\n"${targetDeviceName}"?\n\nPerangkat tersebut akan segera kehilangan akses (logout otomatis) dan slot kuota lisensi Anda di server akan dibebaskan.`;
-      if (!confirm(confirmMsg)) return;
+      let btn = document.getElementById('btn-device-confirm-exec');
+      let origHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<span class="material-symbols-outlined text-sm animate-spin">progress_activity</span> Memproses...`;
 
       try {
-        let res = await callClientLicenseApi({
-          action: 'deactivate_device',
-          token: lic.token,
-          targetDeviceId: targetDeviceId,
-          deviceId: targetDeviceId,
-          currentDeviceId: getOrCreateDeviceId()
-        });
+        if (type === 'single') {
+          let res = await callClientLicenseApi({
+            action: 'deactivate_device',
+            token: lic.token,
+            targetDeviceId: targetDeviceId,
+            deviceId: targetDeviceId,
+            currentDeviceId: getOrCreateDeviceId()
+          });
 
-        if (res && res.success) {
-          alert(`Sukses: Perangkat "${targetDeviceName}" berhasil dikeluarkan dari lisensi Anda.`);
-          loadConnectedDevices(false);
-          if (lic.deviceCount && lic.deviceCount > 1) {
-            lic.deviceCount--;
+          if (res && res.success) {
+            closeDeviceConfirmModal();
+            loadConnectedDevices(false);
+            if (lic.deviceCount && lic.deviceCount > 1) {
+              lic.deviceCount--;
+              localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(lic));
+              updateSetupLicenseDisplay(lic);
+            }
+            alert(`Sukses: Perangkat "${targetDeviceName}" berhasil dikeluarkan dari lisensi Anda.`);
+          } else {
+            alert((res && res.message) ? res.message : "Gagal mengeluarkan perangkat.");
+          }
+        } else if (type === 'all_others') {
+          let res = await callClientLicenseApi({
+            action: 'deactivate_device',
+            token: lic.token,
+            targetDeviceId: 'ALL_OTHERS',
+            currentDeviceId: getOrCreateDeviceId()
+          });
+
+          if (res && res.success) {
+            closeDeviceConfirmModal();
+            loadConnectedDevices(false);
+            lic.deviceCount = 1;
             localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(lic));
             updateSetupLicenseDisplay(lic);
+            alert("Semua perangkat lain berhasil dikeluarkan dari akun lisensi Anda!");
+          } else {
+            alert((res && res.message) ? res.message : "Gagal memproses permintaan.");
           }
-        } else {
-          alert((res && res.message) ? res.message : "Gagal mengeluarkan perangkat.");
+        } else if (type === 'current') {
+          try {
+            await callClientLicenseApi({
+              action: 'deactivate_device',
+              token: lic.token,
+              deviceId: getOrCreateDeviceId()
+            });
+          } catch(e) {}
+
+          localStorage.removeItem("KEUANGANKU_LICENSE_DATA");
+          sessionStorage.removeItem("KEUANGANKU_PIN_PASSED");
+          closeDeviceConfirmModal();
+          alert("Lisensi berhasil dilepas dari perangkat ini.");
+          location.reload();
         }
-      } catch(e) {
-        alert("Gagal menghubungi server. Pastikan Anda memiliki koneksi internet.");
+      } catch(err) {
+        alert("Gagal menghubungi server. Pastikan ada koneksi internet: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
       }
     }
 
-    async function handleDeactivateAllOtherDevices() {
-      let lic = getSavedLicense();
-      if (!lic || !lic.token) return;
+    function handleDeactivateSpecificDevice(targetDeviceId, targetDeviceName) {
+      openDeviceConfirmModal('single', targetDeviceId, targetDeviceName);
+    }
 
-      let confirmMsg = `PENTING: Keluarkan Semua Perangkat Lain?\n\nSemua perangkat HP atau Laptop lain yang terhubung ke lisensi ${lic.token} akan langsung dikeluarkan (logout otomatis).\n\nHanya perangkat ini yang akan tetap aktif. Apakah Anda yakin?`;
-      if (!confirm(confirmMsg)) return;
-
-      try {
-        let res = await callClientLicenseApi({
-          action: 'deactivate_device',
-          token: lic.token,
-          targetDeviceId: 'ALL_OTHERS',
-          currentDeviceId: getOrCreateDeviceId()
-        });
-
-        if (res && res.success) {
-          alert("Semua perangkat lain berhasil dikeluarkan dari akun lisensi Anda!");
-          loadConnectedDevices(false);
-          lic.deviceCount = 1;
-          localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(lic));
-          updateSetupLicenseDisplay(lic);
-        } else {
-          alert((res && res.message) ? res.message : "Gagal memproses permintaan.");
-        }
-      } catch(e) {
-        alert("Gagal menghubungi server. Pastikan ada koneksi internet.");
-      }
+    function handleDeactivateAllOtherDevices() {
+      openDeviceConfirmModal('all_others', 'ALL_OTHERS', 'Semua Perangkat Lain');
     }
 
     // ==============================================================================
