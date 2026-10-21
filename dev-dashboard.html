@@ -190,6 +190,10 @@
             <span class="material-symbols-outlined text-sm">install_mobile</span>
             <span class="hidden sm:inline">Pasang App</span>
           </button>
+          <button onclick="promptRestoreMasterAccount()" title="Pulihkan / Daftarkan Lisensi Akun Utama Pemilik (Muh Akbar)" class="px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer">
+            <span class="material-symbols-outlined text-sm text-amber-400">shield_person</span>
+            <span class="hidden sm:inline">👑 Pulihkan Master</span>
+          </button>
           <button onclick="openCreateTokenModal()" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-blue-500/20 active:scale-95 transition-all">
             <span class="material-symbols-outlined text-sm">add</span>
             <span>Buat Token Baru</span>
@@ -323,6 +327,28 @@
               <option value="BLOCKED">🔴 Hanya Diblokir</option>
             </select>
           </div>
+        </div>
+
+        <!-- BANNER PERINGATAN PEMULIHAN AKUN MASTER (JIKA TIDAK DITEMUKAN) -->
+        <div id="master-account-alert" class="hidden m-4 p-4 rounded-2xl bg-gradient-to-r from-amber-950/60 via-slate-900 to-amber-900/30 border border-amber-500/50 shadow-xl shadow-amber-500/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div class="flex items-center gap-3.5">
+            <div class="w-11 h-11 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-300 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-2xl text-amber-400">shield_person</span>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-black text-amber-300">AKUN MASTER PEMILIK BELUM TERDAFTAR</span>
+                <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40">PERLU PEMULIHAN</span>
+              </div>
+              <p class="text-[11px] text-slate-300 mt-0.5 leading-relaxed">
+                Token lisensi akun utama Anda (<span class="font-mono text-cyan-300 font-bold select-all">PRO-S8GF-HQT5-CNVE</span> atas nama <b class="text-white">Muh Akbar</b>) saat ini tidak ada di database Google Sheets Tokens. Pulihkan sekarang agar HP & PC pribadi Anda dapat terhubung kembali.
+              </p>
+            </div>
+          </div>
+          <button onclick="promptRestoreMasterAccount()" class="px-4 py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-amber-500/25 flex items-center gap-1.5 shrink-0 transition-all cursor-pointer">
+            <span class="material-symbols-outlined text-base font-bold">restore</span>
+            <span>👑 Pulihkan Akun Master Sekarang</span>
+          </button>
         </div>
 
         <!-- 1. TAB KONTEN: DAFTAR TOKENS -->
@@ -653,6 +679,137 @@
     </div>
   </div>
 
+  <!-- ========================================== -->
+  <!-- MODAL 5: ACTION SECURITY & DANGER ZONE     -->
+  <!-- ========================================== -->
+  <div id="modal-action-confirm" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-slate-900 border border-slate-700/80 rounded-3xl p-6 shadow-2xl space-y-5 relative">
+      <!-- Modal Header -->
+      <div class="flex items-center gap-3.5 border-b border-slate-800 pb-3.5">
+        <div id="sec-confirm-icon-box" class="w-12 h-12 rounded-2xl bg-rose-500/20 border border-rose-500/40 text-rose-400 flex items-center justify-center shrink-0">
+          <span id="sec-confirm-icon" class="material-symbols-outlined text-2xl">warning</span>
+        </div>
+        <div>
+          <h3 id="sec-confirm-title" class="text-sm font-extrabold text-white">Konfirmasi Keamanan Tindakan</h3>
+          <p id="sec-confirm-subtitle" class="text-[11px] text-slate-400">Verifikasi otoritas pengembang</p>
+        </div>
+      </div>
+
+      <!-- Account Info Card -->
+      <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800/80 space-y-2 text-xs">
+        <div class="flex items-center justify-between">
+          <span class="text-slate-400 font-medium">Pembeli:</span>
+          <span id="sec-confirm-buyer" class="font-bold text-white flex items-center gap-1.5"></span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-slate-400 font-medium">Token Lisensi:</span>
+          <span id="sec-confirm-token" class="font-mono-data font-bold text-cyan-300"></span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-slate-400 font-medium">Perangkat Aktif:</span>
+          <span id="sec-confirm-devices" class="text-amber-400 font-mono-data font-semibold"></span>
+        </div>
+      </div>
+
+      <!-- Warning description box -->
+      <div id="sec-confirm-warn-box" class="p-3.5 rounded-2xl bg-rose-950/30 border border-rose-500/30 text-rose-300 text-xs space-y-1.5 leading-relaxed">
+        <!-- Injected via confirmAction JS -->
+      </div>
+
+      <!-- Verification text input (HAPUS / HAPUS AKUN MASTER) -->
+      <div id="sec-confirm-input-container" class="space-y-1.5 hidden">
+        <label id="sec-confirm-input-label" class="text-[11px] font-semibold text-slate-300">
+          Ketik kata konfirmasi di bawah:
+        </label>
+        <input type="text" id="sec-confirm-input" oninput="validateDangerConfirmInput()" autocomplete="off" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-rose-500 font-mono transition-all">
+      </div>
+
+      <!-- Checkbox Confirmation (for reset devices / status toggle) -->
+      <div id="sec-confirm-chk-container" class="space-y-1.5 hidden">
+        <label class="flex items-start gap-2.5 cursor-pointer select-none">
+          <input type="checkbox" id="sec-confirm-chk" onchange="validateDangerConfirmInput()" class="w-4 h-4 mt-0.5 rounded bg-slate-950 border border-slate-700 text-blue-600 focus:ring-0 cursor-pointer">
+          <span class="text-xs text-slate-300 leading-snug">Saya memahami konsekuensi tindakan ini terhadap akses perangkat pengguna.</span>
+        </label>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center justify-end gap-2.5 pt-2">
+        <button type="button" onclick="closeModal('modal-action-confirm')" class="px-4 py-2 border border-slate-700 rounded-xl text-xs text-slate-300 hover:bg-slate-800 transition-all cursor-pointer">
+          Batalkan
+        </button>
+        <button type="button" id="sec-confirm-btn-exec" onclick="executeDangerAction()" class="px-5 py-2.5 rounded-xl text-xs font-bold text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5 cursor-pointer">
+          <span class="material-symbols-outlined text-sm">check</span>
+          <span id="sec-confirm-btn-text">Lanjutkan Tindakan</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL 6: RESTORE MASTER OWNER ACCOUNT      -->
+  <!-- ========================================== -->
+  <div id="modal-restore-master" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-slate-900 border border-amber-500/50 rounded-3xl p-6 shadow-2xl shadow-amber-500/10 space-y-5 relative">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-xl">shield_person</span>
+          </div>
+          <div>
+            <h2 class="text-sm font-extrabold text-white">Pulihkan Akun Master Pemilik</h2>
+            <p class="text-[11px] text-slate-400">Pendaftaran Ulang Lisensi Pemilik Resmi</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modal-restore-master')" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2.5 text-xs">
+        <div class="flex items-center justify-between">
+          <span class="text-slate-400">Nama Pemilik:</span>
+          <span class="font-bold text-white">Muh Akbar</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-slate-400">Kode Token:</span>
+          <span class="font-mono-data font-bold text-cyan-300 select-all">PRO-S8GF-HQT5-CNVE</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-slate-400">Kontak Terdaftar:</span>
+          <span class="font-mono-data text-emerald-400">087788197916</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-slate-400">Kuota Perangkat:</span>
+          <span class="font-bold text-amber-400">10 Perangkat (Multi-Device Bebas)</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-slate-400">Status Awal:</span>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">AKTIF (Bersih)</span>
+        </div>
+      </div>
+
+      <div class="p-3.5 rounded-2xl bg-blue-950/30 border border-blue-500/30 text-blue-300 text-xs space-y-1.5 leading-relaxed">
+        <div class="font-bold flex items-center gap-1.5 text-cyan-300">
+          <span class="material-symbols-outlined text-sm">lightbulb</span>
+          Setelah Pemulihan Selesai:
+        </div>
+        <p>1. Token lisensi <b>PRO-S8GF-HQT5-CNVE</b> akan segera didaftarkan kembali ke Google Sheets Tokens Anda.</p>
+        <p>2. Anda dapat langsung membuka aplikasi <b>KeuanganKu</b> di HP atau PC dan masuk menggunakan token atau scan QR code.</p>
+        <p>3. Seluruh 134 catatan transaksi keuangan & saldo bank Anda <b>100% aman dan tidak terhapus</b> karena tersimpan di Google Sheets Keuangan Anda.</p>
+      </div>
+
+      <div class="flex items-center justify-end gap-2.5 pt-2">
+        <button type="button" onclick="closeModal('modal-restore-master')" class="px-4 py-2 border border-slate-700 rounded-xl text-xs text-slate-300 hover:bg-slate-800 transition-all cursor-pointer">
+          Batal
+        </button>
+        <button type="button" id="btn-exec-restore-master" onclick="executeRestoreMasterAccount()" class="px-5 py-2.5 rounded-xl text-xs font-black text-slate-950 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 shadow-lg shadow-amber-500/25 flex items-center gap-1.5 cursor-pointer">
+          <span class="material-symbols-outlined text-sm font-black">restore</span>
+          <span>Daftarkan & Pulihkan Sekarang</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- TOAST NOTIFICATION -->
   <div id="toast-container" class="fixed bottom-5 right-5 z-50 pointer-events-none space-y-2"></div>
 
@@ -900,9 +1057,36 @@
       }
     }
 
+    // Helper untuk mendeteksi apakah token ini akun master pemilik
+    function isMasterAccount(t) {
+      if (!t) return false;
+      let tok = String(t.token || '').trim().toUpperCase();
+      let name = String(t.buyerName || '').trim().toLowerCase();
+      let notes = String(t.notes || '').trim().toLowerCase();
+      return tok === 'PRO-S8GF-HQT5-CNVE' || 
+             tok === 'PRO-W9J2-RAYM-3KKL' || 
+             name.includes('akbar') || 
+             notes.includes('owner') || 
+             notes.includes('pemilik') || 
+             notes.includes('developer');
+    }
+
+    function checkMasterAccountStatus(tokens) {
+      let masterAlert = document.getElementById('master-account-alert');
+      if (!masterAlert) return;
+      let hasMaster = (tokens || []).some(t => isMasterAccount(t));
+      if (!hasMaster) {
+        masterAlert.classList.remove('hidden');
+      } else {
+        masterAlert.classList.add('hidden');
+      }
+    }
+
     function renderTokensTable(list) {
       let tbody = document.getElementById('tokens-table-body');
       tbody.innerHTML = '';
+
+      checkMasterAccountStatus(cachedTokens);
 
       if (!list || list.length === 0) {
         tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500">Belum ada token lisensi. Klik <b>Buat Token Baru</b> di pojok kanan atas untuk membuat lisensi pembeli pertama Anda.</td></tr>`;
@@ -910,10 +1094,13 @@
       }
 
       list.forEach((t) => {
+        let isMaster = isMasterAccount(t);
         let isBlocked = t.status === 'BLOCKED';
         let statusBadge = isBlocked 
           ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-500/20 text-rose-400 border border-rose-500/40 whitespace-nowrap">DIBLOKIR</span>`
-          : `<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 whitespace-nowrap">AKTIF</span>`;
+          : (isMaster 
+              ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 whitespace-nowrap shadow-sm">👑 MASTER AKTIF</span>`
+              : `<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 whitespace-nowrap">AKTIF</span>`);
 
         // PIN & Token Status Badge (Ringkas & Informatif dengan Tooltip)
         let effPinStatus = getEffectivePinStatus(t);
@@ -928,9 +1115,11 @@
           pinBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700 whitespace-nowrap" title="Belum pernah digunakan login"><span class="material-symbols-outlined text-xs">schedule</span> Belum Dipakai</span>`;
         }
 
-        let allowedDevices = (t.pinStatus === 'PIN_CHANGED') ? t.maxDevices : 1;
+        let allowedDevices = isMaster ? Math.max(t.maxDevices || 10, 10) : ((t.pinStatus === 'PIN_CHANGED') ? t.maxDevices : 1);
         let deviceLimitText = '';
-        if (t.pinStatus === 'PIN_CHANGED') {
+        if (isMaster) {
+          deviceLimitText = `${t.deviceCount} / ${allowedDevices} Device (Master)`;
+        } else if (t.pinStatus === 'PIN_CHANGED') {
           deviceLimitText = `${t.deviceCount} / ${t.maxDevices} Device`;
         } else if (t.deviceCount > 1) {
           deviceLimitText = `${t.deviceCount} Device (Token)`;
@@ -948,9 +1137,16 @@
         let waUrl = cleanContact ? `https://wa.me/${cleanContact}` : '#';
 
         tbody.innerHTML += `
-          <tr class="hover:bg-slate-800/40 transition-colors border-b border-slate-800/60">
+          <tr class="hover:bg-slate-800/40 transition-colors border-b ${isMaster ? 'border-amber-500/40 bg-amber-500/[0.04]' : 'border-slate-800/60'}">
             <td class="p-3 sm:px-4">
-              <div class="font-bold text-white text-xs leading-snug">${escapeHtml(t.buyerName)}</div>
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="font-bold text-white text-xs leading-snug">${escapeHtml(t.buyerName)}</span>
+                ${isMaster ? `
+                  <span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[9px] font-black bg-gradient-to-r from-amber-500/25 to-yellow-500/20 text-amber-300 border border-amber-500/50 shadow-sm" title="Akun Utama Pemilik Sambarang (Terlindungi)">
+                    <span class="material-symbols-outlined text-[10px]">shield_person</span> OWNER / MASTER
+                  </span>
+                ` : ''}
+              </div>
               <div class="text-[10px] text-slate-400 flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
                 ${cleanContact ? `<a href="${waUrl}" target="_blank" class="text-emerald-400 hover:underline inline-flex items-center gap-0.5 font-mono-data"><span class="material-symbols-outlined text-[10px]">chat</span> ${escapeHtml(cleanContact)}</a>` : ''}
                 ${detectedEmail ? `<a href="mailto:${escapeHtml(detectedEmail)}" class="text-blue-400 hover:underline inline-flex items-center gap-0.5 font-mono-data"><span class="material-symbols-outlined text-[10px]">mail</span> ${escapeHtml(detectedEmail)}</a>` : (!cleanContact ? '<span class="text-slate-600">Kontak: -</span>' : '')}
@@ -994,20 +1190,26 @@
                   <span class="material-symbols-outlined text-sm">rocket_launch</span>
                   <span class="hidden 2xl:inline text-[10px] font-bold">Uji</span>
                 </a>
-                <button type="button" onclick="openDeviceDetailModal('${t.token}')" title="🔍 Lihat Rincian Perangkat Terhubung" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-400 transition-colors">
+                <button type="button" onclick="openDeviceDetailModal('${t.token}')" title="🔍 Lihat Rincian Perangkat Terhubung" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-400 transition-colors cursor-pointer">
                   <span class="material-symbols-outlined text-sm">devices</span>
                 </button>
-                <button type="button" onclick="resetTokenDevices('${t.token}')" title="Reset Perangkat (Bebaskan Slot)" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 transition-colors">
+                <button type="button" onclick="confirmAction('reset_devices', '${t.token}')" title="Reset Perangkat (Bebaskan Slot)" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 transition-colors cursor-pointer">
                   <span class="material-symbols-outlined text-sm">restart_alt</span>
                 </button>
-                <button type="button" onclick="reactivateToken('${t.token}')" title="Aktifkan Ulang Token (Reset PIN jika pembeli lupa)" class="p-1.5 rounded-lg bg-slate-800 hover:bg-blue-900/60 text-blue-400 transition-colors">
+                <button type="button" onclick="confirmAction('reactivate_token', '${t.token}')" title="Aktifkan Ulang Token (Reset PIN jika pembeli lupa)" class="p-1.5 rounded-lg bg-slate-800 hover:bg-blue-900/60 text-blue-400 transition-colors cursor-pointer">
                   <span class="material-symbols-outlined text-sm">key_vertical</span>
                 </button>
-                <button type="button" onclick="toggleTokenStatus('${t.token}', '${isBlocked ? 'ACTIVE' : 'BLOCKED'}')" title="${isBlocked ? 'Buka Blokir' : 'Blokir Lisensi'}" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 ${isBlocked ? 'text-emerald-400' : 'text-rose-400'} transition-colors">
-                  <span class="material-symbols-outlined text-sm">${isBlocked ? 'check_circle' : 'block'}</span>
-                </button>
-                <button type="button" onclick="deleteTokenPermanent('${t.token}')" title="Hapus Lisensi Permanen" class="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-900/50 text-slate-500 hover:text-rose-400 transition-colors">
-                  <span class="material-symbols-outlined text-sm">delete</span>
+                ${isMaster ? `
+                  <button type="button" onclick="alertMasterProtected('block')" title="Akun Master Terlindungi (Tidak dapat diblokir)" class="p-1.5 rounded-lg bg-slate-800 text-slate-600 opacity-60 cursor-not-allowed">
+                    <span class="material-symbols-outlined text-sm">shield</span>
+                  </button>
+                ` : `
+                  <button type="button" onclick="confirmAction('toggle_status', '${t.token}', '${isBlocked ? 'ACTIVE' : 'BLOCKED'}')" title="${isBlocked ? 'Buka Blokir' : 'Blokir Lisensi'}" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 ${isBlocked ? 'text-emerald-400' : 'text-rose-400'} transition-colors cursor-pointer">
+                    <span class="material-symbols-outlined text-sm">${isBlocked ? 'check_circle' : 'block'}</span>
+                  </button>
+                `}
+                <button type="button" onclick="confirmAction('delete_token', '${t.token}')" title="${isMaster ? 'Akun Master Terlindungi (Proteksi Keamanan Ganda)' : 'Hapus Lisensi Permanen'}" class="p-1.5 rounded-lg ${isMaster ? 'bg-amber-500/10 hover:bg-rose-900/60 text-amber-400 hover:text-rose-400 border border-amber-500/40' : 'bg-slate-800 hover:bg-rose-900/50 text-slate-500 hover:text-rose-400'} transition-colors cursor-pointer">
+                  <span class="material-symbols-outlined text-sm">${isMaster ? 'shield_lock' : 'delete'}</span>
                 </button>
               </div>
             </td>
@@ -1448,8 +1650,8 @@ Copyright © 2026 Sambarang Production`;
       }
 
       document.getElementById('btn-modal-reset-all').onclick = () => {
-        resetTokenDevices(t.token);
         closeModal('modal-view-devices');
+        confirmAction('reset_devices', t.token);
       };
 
       document.getElementById('modal-view-devices').classList.remove('hidden');
@@ -1486,86 +1688,298 @@ Copyright © 2026 Sambarang Production`;
       }
     }
 
-    async function resetTokenDevices(tokenStr) {
-      if (!confirm(`PENTING: Reset seluruh perangkat untuk token ${tokenStr}?\nPengguna lama harus mengaktivasi ulang perangkatnya jika kuota dibebaskan.`)) return;
+    // ============================================================
+    // SISTEM KEAMANAN TINDAKAN & DANGER ZONE CONFIRMATION
+    // ============================================================
 
-      try {
-        let res = await callDevApi({
-          action: 'admin_reset_devices',
-          adminPassword: currentAdminPassword,
-          token: tokenStr
-        });
-        if (res.success) {
-          showToast('success', res.message);
-          loadDashboardData();
-        } else {
-          showToast('error', res.message);
-        }
-      } catch(e) {
-        showToast('error', 'Gagal mereset perangkat');
+    let pendingDangerAction = null;
+
+    function alertMasterProtected(actionType) {
+      if (actionType === 'block') {
+        showToast('error', '⛔ Akun Master Pemilik terlindungi secara mutlak dan tidak dapat diblokir demi keamanan operasional.');
       }
     }
 
-    async function reactivateToken(tokenStr) {
-      if (!confirm(`KONFIRMASI AKTIFKAN ULANG TOKEN:\n\nApakah Anda ingin mengaktifkan kembali token ${tokenStr}?\n\n• PIN Pribadi lama akan dihapus\n• Token bawaan akan aktif kembali (tidak hangus lagi)\n• Seluruh perangkat terdaftar akan direset\n\nLanjutkan?`)) return;
+    function confirmAction(type, tokenStr, extraParam) {
+      let t = cachedTokens.find(item => item.token === tokenStr);
+      if (!t) return;
 
-      try {
-        let res = await callDevApi({
-          action: 'admin_reactivate_token',
-          adminPassword: currentAdminPassword,
-          token: tokenStr
-        });
-        if (res.success) {
-          showToast('success', res.message);
-          loadDashboardData();
+      let isMaster = isMasterAccount(t);
+      pendingDangerAction = { type, tokenStr, extraParam, tokenObj: t, isMaster };
+
+      let modal = document.getElementById('modal-action-confirm');
+      let titleEl = document.getElementById('sec-confirm-title');
+      let subtitleEl = document.getElementById('sec-confirm-subtitle');
+      let iconEl = document.getElementById('sec-confirm-icon');
+      let iconBox = document.getElementById('sec-confirm-icon-box');
+      let buyerEl = document.getElementById('sec-confirm-buyer');
+      let tokenEl = document.getElementById('sec-confirm-token');
+      let devicesEl = document.getElementById('sec-confirm-devices');
+      let warnBox = document.getElementById('sec-confirm-warn-box');
+      let inputCont = document.getElementById('sec-confirm-input-container');
+      let inputLabel = document.getElementById('sec-confirm-input-label');
+      let inputEl = document.getElementById('sec-confirm-input');
+      let chkCont = document.getElementById('sec-confirm-chk-container');
+      let chkEl = document.getElementById('sec-confirm-chk');
+      let btnExec = document.getElementById('sec-confirm-btn-exec');
+      let btnExecText = document.getElementById('sec-confirm-btn-text');
+
+      buyerEl.innerHTML = escapeHtml(t.buyerName) + (isMaster ? ' <span class="text-amber-300 font-black text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 border border-amber-500/40">👑 OWNER MASTER</span>' : '');
+      tokenEl.textContent = t.token;
+      let devCount = parseInt(t.deviceCount) || (Array.isArray(t.usedDevices) ? t.usedDevices.length : 0);
+      devicesEl.textContent = `${devCount} Perangkat Terhubung`;
+
+      inputEl.value = '';
+      if (chkEl) chkEl.checked = false;
+      btnExec.disabled = true;
+
+      if (type === 'delete_token') {
+        iconEl.textContent = isMaster ? 'shield_lock' : 'delete_forever';
+        iconBox.className = 'w-12 h-12 rounded-2xl bg-rose-500/20 border border-rose-500/40 text-rose-400 flex items-center justify-center shrink-0';
+        btnExec.className = 'px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 shadow-lg shadow-rose-600/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5 cursor-pointer';
+
+        if (isMaster) {
+          titleEl.textContent = '⛔ PERINGATAN KETAT: HAPUS AKUN MASTER PEMILIK';
+          subtitleEl.textContent = 'Akun ini adalah lisensi pribadi utama pengembang / pemilik';
+          warnBox.className = 'p-3.5 rounded-2xl bg-rose-950/40 border border-rose-500/50 text-rose-300 text-xs space-y-1.5 leading-relaxed';
+          warnBox.innerHTML = `
+            <div class="font-black text-amber-300 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-sm">warning</span>
+              PERINGATAN KRITIS: HP & PC ANDA AKAN SEGERA LOGOUT!
+            </div>
+            <p>Akun ini adalah akun utama pemilik (<b>${escapeHtml(t.buyerName)}</b>). Jika dihapus:</p>
+            <ul class="list-disc pl-4 space-y-0.5 text-slate-300 text-[11px]">
+              <li>Seluruh perangkat HP, Laptop, dan PC Anda akan <b>seketika logout</b> dari KeuanganKu.</li>
+              <li>Akses lisensi akan terputus sampai token ini dipulihkan kembali.</li>
+            </ul>
+            <p class="text-[11px] text-amber-300 font-semibold mt-1">Demi keamanan ganda, Anda wajib mengetik teks verifikasi persis di bawah ini:</p>
+          `;
+          inputCont.classList.remove('hidden');
+          inputLabel.innerHTML = 'Ketik kalimat: <span class="text-rose-400 font-bold select-all font-mono">HAPUS AKUN MASTER</span> di bawah:';
+          inputEl.placeholder = 'Ketik HAPUS AKUN MASTER...';
+          btnExecText.textContent = 'Ya, Hapus Akun Master Permanen';
         } else {
-          showToast('error', res.message);
+          titleEl.textContent = '⚠️ KONFIRMASI HAPUS LISENSI PERMANEN';
+          subtitleEl.textContent = 'Tindakan ini menghapus lisensi pengguna dari Google Sheets';
+          warnBox.className = 'p-3.5 rounded-2xl bg-rose-950/30 border border-rose-500/30 text-rose-300 text-xs space-y-1.5 leading-relaxed';
+          warnBox.innerHTML = `
+            <div class="font-bold text-rose-300 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-sm">warning</span>
+              LISENSI AKAN DIHAPUS DARI GOOGLE SHEETS
+            </div>
+            <p>Lisensi akan dihapus permanen. Konsekuensi langsung:</p>
+            <ul class="list-disc pl-4 space-y-0.5 text-slate-300 text-[11px]">
+              <li>Seluruh <b>${devCount} perangkat pembeli</b> akan langsung logout dan kehilangan akses.</li>
+              <li>Pembeli tidak dapat lagi masuk menggunakan token ini.</li>
+            </ul>
+          `;
+          inputCont.classList.remove('hidden');
+          inputLabel.innerHTML = 'Ketik kata: <span class="text-rose-400 font-bold select-all font-mono">HAPUS</span> di bawah:';
+          inputEl.placeholder = 'Ketik HAPUS...';
+          btnExecText.textContent = 'Hapus Lisensi Sekarang';
         }
-      } catch(e) {
-        showToast('error', 'Gagal mengaktifkan kembali token.');
+        if (chkCont) chkCont.classList.add('hidden');
+      } else if (type === 'reset_devices') {
+        iconEl.textContent = 'restart_alt';
+        iconBox.className = 'w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center shrink-0';
+        btnExec.className = 'px-5 py-2.5 rounded-xl text-xs font-bold text-slate-950 bg-amber-400 hover:bg-amber-300 shadow-lg shadow-amber-500/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5 cursor-pointer';
+
+        titleEl.textContent = isMaster ? '⚠️ RESET SEMUA PERANGKAT AKUN MASTER' : '🔄 RESET SEMUA PERANGKAT LISENSI';
+        subtitleEl.textContent = `Mengosongkan kuota perangkat (${devCount} perangkat aktif saat ini)`;
+        warnBox.className = 'p-3.5 rounded-2xl bg-amber-950/30 border border-amber-500/30 text-amber-300 text-xs space-y-1.5 leading-relaxed';
+        warnBox.innerHTML = `
+          <div class="font-bold flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-sm">devices</span>
+            SELURUH PERANGKAT TERHUBUNG AKAN DILOGOUT
+          </div>
+          <p>Tindakan ini akan mengosongkan daftar perangkat (${devCount} perangkat). Pengguna ${isMaster ? '(termasuk HP & PC Anda sendiri)' : ''} harus melakukan aktivasi ulang saat membuka aplikasi.</p>
+        `;
+        inputCont.classList.add('hidden');
+        if (chkCont) chkCont.classList.remove('hidden');
+        btnExecText.textContent = 'Ya, Reset Seluruh Perangkat';
+      } else if (type === 'reactivate_token') {
+        iconEl.textContent = 'lock_reset';
+        iconBox.className = 'w-12 h-12 rounded-2xl bg-blue-500/20 border border-blue-500/40 text-cyan-400 flex items-center justify-center shrink-0';
+        btnExec.className = 'px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-500/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5 cursor-pointer';
+
+        titleEl.textContent = '🔑 AKTIFKAN ULANG TOKEN (RESET PIN)';
+        subtitleEl.textContent = 'Kembalikan hak akses ke token bawaan jika pembeli lupa PIN';
+        warnBox.className = 'p-3.5 rounded-2xl bg-blue-950/30 border border-blue-500/30 text-cyan-300 text-xs space-y-1.5 leading-relaxed';
+        warnBox.innerHTML = `
+          <div class="font-bold flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-sm">info</span>
+            PIN PRIBADI LAMA AKAN DIHAPUS DARI SERVER
+          </div>
+          <p>Token bawaan akan aktif kembali sebagai kata sandi login awal. Seluruh perangkat aktif (${devCount} perangkat) akan dibersihkan agar pembeli dapat login ulang dari awal.</p>
+        `;
+        inputCont.classList.add('hidden');
+        if (chkCont) chkCont.classList.remove('hidden');
+        btnExecText.textContent = 'Aktifkan Ulang & Reset PIN';
+      } else if (type === 'toggle_status') {
+        let willBlock = extraParam === 'BLOCKED';
+        iconEl.textContent = willBlock ? 'block' : 'check_circle';
+        iconBox.className = willBlock 
+          ? 'w-12 h-12 rounded-2xl bg-rose-500/20 border border-rose-500/40 text-rose-400 flex items-center justify-center shrink-0'
+          : 'w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center shrink-0';
+        btnExec.className = willBlock
+          ? 'px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 shadow-lg shadow-rose-600/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5 cursor-pointer'
+          : 'px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 shadow-lg shadow-emerald-500/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5 cursor-pointer';
+
+        titleEl.textContent = willBlock ? '🚫 BLOKIR LISENSI PENGGUNA' : '✅ BUKA BLOKIR / AKTIFKAN LISENSI';
+        subtitleEl.textContent = willBlock ? 'Mencegah pembeli masuk ke dalam aplikasi' : 'Mengembalikan hak akses pembeli ke aplikasi';
+        warnBox.className = willBlock
+          ? 'p-3.5 rounded-2xl bg-rose-950/30 border border-rose-500/30 text-rose-300 text-xs space-y-1.5 leading-relaxed'
+          : 'p-3.5 rounded-2xl bg-emerald-950/30 border border-emerald-500/30 text-emerald-300 text-xs space-y-1.5 leading-relaxed';
+        warnBox.innerHTML = willBlock
+          ? `<p>Status lisensi akan diubah menjadi <b>BLOCKED</b>. Seluruh perangkat yang mencoba login atau sinkronisasi akan langsung ditolak oleh server.</p>`
+          : `<p>Status lisensi akan diaktifkan kembali menjadi <b>ACTIVE</b>. Pengguna dapat login dan menyinkronkan data seperti biasa.</p>`;
+
+        inputCont.classList.add('hidden');
+        if (chkCont) chkCont.classList.remove('hidden');
+        btnExecText.textContent = willBlock ? 'Blokir Lisensi Sekarang' : 'Aktifkan Lisensi Kembali';
+      }
+
+      modal.classList.remove('hidden');
+      if (!inputCont.classList.contains('hidden')) {
+        setTimeout(() => inputEl.focus(), 100);
       }
     }
 
-    async function toggleTokenStatus(tokenStr, newStatus) {
-      let actText = newStatus === 'BLOCKED' ? 'MEMBLOKIR' : 'MENGAKTIFKAN KEMBALI';
-      if (!confirm(`Konfirmasi: Apakah Anda ingin ${actText} token ${tokenStr}?`)) return;
+    function validateDangerConfirmInput() {
+      if (!pendingDangerAction) return;
+      let btnExec = document.getElementById('sec-confirm-btn-exec');
+      let inputVal = (document.getElementById('sec-confirm-input').value || '').trim();
+      let chkEl = document.getElementById('sec-confirm-chk');
 
-      try {
-        let res = await callDevApi({
-          action: 'admin_toggle_status',
-          adminPassword: currentAdminPassword,
-          token: tokenStr,
-          status: newStatus
-        });
-        if (res.success) {
-          showToast('success', res.message);
-          loadDashboardData();
-        } else {
-          showToast('error', res.message);
-        }
-      } catch(e) {
-        showToast('error', 'Gagal mengubah status');
+      if (pendingDangerAction.type === 'delete_token') {
+        let expected = pendingDangerAction.isMaster ? 'HAPUS AKUN MASTER' : 'HAPUS';
+        btnExec.disabled = (inputVal !== expected);
+      } else {
+        btnExec.disabled = chkEl ? !chkEl.checked : false;
       }
     }
 
-    async function deleteTokenPermanent(tokenStr) {
-      if (!confirm(`PERINGATAN KERAS:\nHapus permanen lisensi ${tokenStr}?\nTindakan ini tidak dapat dibatalkan.`)) return;
+    async function executeDangerAction() {
+      if (!pendingDangerAction) return;
+      let { type, tokenStr, extraParam } = pendingDangerAction;
+      let btnExec = document.getElementById('sec-confirm-btn-exec');
+      let origText = btnExec.innerHTML;
+      btnExec.disabled = true;
+      btnExec.innerHTML = `<span class="material-symbols-outlined text-sm animate-spin">progress_activity</span> Memproses...`;
+
+      try {
+        let res = null;
+        if (type === 'delete_token') {
+          res = await callDevApi({
+            action: 'admin_delete_token',
+            adminPassword: currentAdminPassword,
+            token: tokenStr
+          });
+        } else if (type === 'reset_devices') {
+          res = await callDevApi({
+            action: 'admin_reset_devices',
+            adminPassword: currentAdminPassword,
+            token: tokenStr
+          });
+        } else if (type === 'reactivate_token') {
+          res = await callDevApi({
+            action: 'admin_reactivate_token',
+            adminPassword: currentAdminPassword,
+            token: tokenStr
+          });
+        } else if (type === 'toggle_status') {
+          res = await callDevApi({
+            action: 'admin_toggle_status',
+            adminPassword: currentAdminPassword,
+            token: tokenStr,
+            status: extraParam
+          });
+        }
+
+        if (res && res.success) {
+          showToast('success', res.message || 'Tindakan berhasil diselesaikan.');
+          closeModal('modal-action-confirm');
+          await loadDashboardData();
+        } else {
+          showToast('error', (res && res.message) ? res.message : 'Gagal mengeksekusi tindakan.');
+        }
+      } catch(err) {
+        showToast('error', 'Terjadi kesalahan komunikasi dengan server: ' + err.message);
+      } finally {
+        btnExec.disabled = false;
+        btnExec.innerHTML = origText;
+      }
+    }
+
+    // ============================================================
+    // PEMULIHAN AKUN MASTER DEVELOPER / PEMILIK (MUH AKBAR)
+    // ============================================================
+
+    function promptRestoreMasterAccount() {
+      let modal = document.getElementById('modal-restore-master');
+      if (modal) {
+        modal.classList.remove('hidden');
+      }
+    }
+
+    async function executeRestoreMasterAccount() {
+      if (!currentAdminPassword) {
+        showToast('error', 'Silakan login developer terlebih dahulu.');
+        return;
+      }
+
+      const masterToken = 'PRO-S8GF-HQT5-CNVE';
+      const masterOwner = 'Muh Akbar';
+      const masterContact = '087788197916';
+      const maxDevices = 10;
+      const notes = 'Akun Utama Pemilik Sambarang (Owner)';
+
+      let btn = document.getElementById('btn-exec-restore-master');
+      let origText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<span class="material-symbols-outlined text-sm animate-spin">progress_activity</span> Mendaftarkan ke Google Sheets...`;
 
       try {
         let res = await callDevApi({
-          action: 'admin_delete_token',
+          action: 'admin_generate_token',
           adminPassword: currentAdminPassword,
-          token: tokenStr
+          buyerName: masterOwner,
+          buyerContact: masterContact,
+          maxDevices: maxDevices,
+          notes: notes,
+          customToken: masterToken
         });
-        if (res.success) {
-          showToast('success', res.message);
-          loadDashboardData();
+
+        if (res && res.success) {
+          showToast('success', '🎉 ALHAMDULILLAH! Akun Master (Muh Akbar) berhasil dipulihkan!');
+          closeModal('modal-restore-master');
+          await loadDashboardData();
         } else {
-          showToast('error', res.message);
+          showToast('error', (res && res.message) ? res.message : 'Gagal memulihkan akun master.');
         }
-      } catch(e) {
-        showToast('error', 'Gagal menghapus token');
+      } catch(err) {
+        showToast('error', 'Koneksi gagal saat memulihkan akun: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = origText;
       }
+    }
+
+    // Fungsi wrapper untuk kompatibilitas tombol
+    function resetTokenDevices(tokenStr) {
+      confirmAction('reset_devices', tokenStr);
+    }
+
+    function reactivateToken(tokenStr) {
+      confirmAction('reactivate_token', tokenStr);
+    }
+
+    function toggleTokenStatus(tokenStr, newStatus) {
+      confirmAction('toggle_status', tokenStr, newStatus);
+    }
+
+    function deleteTokenPermanent(tokenStr) {
+      confirmAction('delete_token', tokenStr);
     }
 
     // ============================================================
