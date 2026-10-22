@@ -1194,7 +1194,11 @@
                     <div class="flex items-center gap-1.5 flex-wrap">
                       <button type="button" onclick="openPrimaryDeviceScannerModal()" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-cyan-500/25 active:scale-95 transition-all cursor-pointer" title="Buka Kamera HP untuk Scan Barcode di Layar PC / iPad (WhatsApp Web Style)">
                         <span class="material-symbols-outlined text-sm">photo_camera</span>
-                        <span class="text-[11px]">Tautkan Perangkat (Scan QR di PC / iPad)</span>
+                        <span class="text-[11px]">Scan QR di PC / iPad</span>
+                      </button>
+                      <button type="button" onclick="openPairDeviceModal()" class="px-3 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 text-xs font-bold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer" title="Tampilkan Barcode Lisensi di Layar Ini (untuk di-scan oleh HP ke-2, ke-3, dst)">
+                        <span class="material-symbols-outlined text-sm">qr_code_2</span>
+                        <span class="text-[11px]">Tampilkan Barcode Lisensi</span>
                       </button>
                       <label class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/30 text-xs font-bold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer" title="Upload file foto barcode (cocok bila kamera buram atau tidak ada webcam)">
                         <span class="material-symbols-outlined text-sm">upload_file</span>
@@ -3961,6 +3965,17 @@
       let backupCloudUrl = localStorage.getItem("KEUANGANKU_CLOUD_URL");
       if ((!globalData.cloudUrl || !globalData.cloudUrl.startsWith("http")) && backupCloudUrl) {
         globalData.cloudUrl = backupCloudUrl;
+      }
+      // Auto-recovery cerdas khusus akun pemilik/developer Muh Akbar jika cloudUrl belum terisi di perangkat baru
+      if (!globalData.cloudUrl || !globalData.cloudUrl.startsWith("http")) {
+        let lic = getSavedLicense();
+        if (lic) {
+          let name = (lic.buyerName || '').toLowerCase();
+          let tok = (lic.token || '').toUpperCase();
+          if (name.includes('akbar') || tok === 'PRO-S8GF-HQT5-CNVE' || tok === 'PRO-W9J2-RAYM-3KKL') {
+            globalData.cloudUrl = "https://script.google.com/macros/s/AKfycbx51Rbmg0U7en7wdOywpe_YAO4cBs2kjy_7cNW_kQN-xcdQUFeatePPzoiAMrS9BPaTAw/exec";
+          }
+        }
       }
       if (globalData.cloudUrl) {
         localStorage.setItem("KEUANGANKU_CLOUD_URL", globalData.cloudUrl);
