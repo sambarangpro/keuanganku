@@ -547,6 +547,10 @@ function handleRequest(params) {
         result = adminSaveSalesSettings(params);
         break;
 
+      case "admin_set_order_mode":
+        result = adminSetOrderMode(params);
+        break;
+
       // -------------------------------------------------------------
       // API SINKRONISASI DATA KEUANGAN PENGGUNA
       // -------------------------------------------------------------
@@ -1339,8 +1343,17 @@ function adminGetData(params) {
         var ordColMap = getOrderColumnIndexes(ordData[0]);
         for (var o = 1; o < ordData.length; o++) {
           if (!ordData[o][0]) continue;
+          var noteStr = String(ordData[o][ordColMap.notes] || '');
+          var mU = noteStr.match(/Kode Unik:\s*([0-9]{1,4})/i);
+          var mSeq = noteStr.match(/Urutan\s*#?([0-9]+)/i);
+          var itemSeq = mSeq ? parseInt(mSeq[1], 10) : o;
+          var uCode = mU ? mU[1] : String(((itemSeq - 1) % 99) + 1);
+          if (uCode && uCode.length === 1) uCode = "0" + uCode;
+
           ordersList.unshift({
             orderId: String(ordData[o][ordColMap.orderId] || ''),
+            orderSeq: itemSeq,
+            uniqueCode: uCode,
             timestamp: String(ordData[o][ordColMap.timestamp] || ''),
             buyerName: String(ordData[o][ordColMap.buyerName] || ''),
             whatsapp: String(ordData[o][ordColMap.whatsapp] || ''),
@@ -1352,7 +1365,7 @@ function adminGetData(params) {
             paymentProof: (ordColMap.paymentProof !== undefined && ordData[o][ordColMap.paymentProof]) ? String(ordData[o][ordColMap.paymentProof] || '') : '',
             status: String(ordData[o][ordColMap.status] || 'PENDING').trim().toUpperCase(),
             token: String(ordData[o][ordColMap.token] || ''),
-            notes: String(ordData[o][ordColMap.notes] || ''),
+            notes: noteStr,
             updatedAt: String(ordData[o][ordColMap.updatedAt] || '')
           });
         }
@@ -1628,11 +1641,27 @@ function adminAddOrder(params) {
   }
 
   var nowStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
+  var salesSettings = getStoredSalesSettings();
+  var orderMode = salesSettings.orderMode || "TESTING";
+  var launchSeqOffset = parseInt(salesSettings.launchSeqOffset, 10) || 0;
+
+  var lastRow = sheet.getLastRow();
+  var rawSeq = Math.max(1, lastRow);
+  var orderSeq = (launchSeqOffset > 0 && rawSeq >= launchSeqOffset) ? Math.max(1, rawSeq - launchSeqOffset + 1) : rawSeq;
+  var computedUniqueCode = ((orderSeq - 1) % 99) + 1;
+  var uniqueCode = parseInt(params.uniqueCode, 10) || computedUniqueCode;
+  var uCodePadded = (uniqueCode < 10 ? "0" : "") + uniqueCode;
+
   var orderId = (params.orderId || "").trim();
   if (!orderId) {
     var dateCompact = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyyMMdd");
-    var randDigits = Math.floor(100 + Math.random() * 900);
-    orderId = "ORD-" + dateCompact + "-" + randDigits;
+    orderId = "ORD-" + dateCompact + "-" + uCodePadded;
+  }
+
+  var fullNotes = notes;
+  var modeTag = (orderMode === "TESTING") ? "[UJI COBA] " : "";
+  if (!fullNotes.includes("Kode Unik")) {
+    fullNotes = (fullNotes ? fullNotes + " | " : "") + modeTag + "Kode Unik: " + uCodePadded + " (Urutan #" + orderSeq + ")";
   }
 
   var tokenGenerated = "";
@@ -1676,7 +1705,7 @@ function adminAddOrder(params) {
       paymentProof,
       status,
       tokenGenerated,
-      notes,
+      fullNotes,
       nowStr
     ]);
   } else {
@@ -1693,7 +1722,7 @@ function adminAddOrder(params) {
       paymentMethod,
       status,
       tokenGenerated,
-      notes + (paymentProof ? " [Bukti: " + paymentProof + "]" : ""),
+      fullNotes + (paymentProof ? " [Bukti: " + paymentProof + "]" : ""),
       nowStr
     ]);
   }
@@ -1705,6 +1734,8 @@ function adminAddOrder(params) {
     message: "Pemesanan berhasil dicatat!",
     order: {
       orderId: orderId,
+      orderSeq: orderSeq,
+      uniqueCode: uCodePadded,
       timestamp: nowStr,
       buyerName: buyerName,
       whatsapp: whatsapp,
@@ -1716,7 +1747,7 @@ function adminAddOrder(params) {
       paymentProof: paymentProof,
       status: status,
       token: tokenGenerated,
-      notes: notes,
+      notes: fullNotes,
       updatedAt: nowStr
     }
   };
@@ -1923,6 +1954,8 @@ function adminProcessOrderLicense(params) {
 
 function getDefaultSalesSettings() {
   return {
+    orderMode: "TESTING", // "TESTING" (v0.1) | "LIVE" (v1.0)
+    launchSeqOffset: 0,
     sellerWhatsApp: "628123456789",
     orderFormUrl: "https://sambarangpro.github.io/keuanganku/pesan.html",
     packages: [
@@ -1959,6 +1992,9 @@ function getStoredSalesSettings() {
 
 function getPublicCatalog(params) {
   var settings = getStoredSalesSettings();
+  var orderMode = settings.orderMode || "TESTING";
+  var launchSeqOffset = parseInt(settings.launchSeqOffset, 10) || 0;
+
   var publicVouchers = (settings.vouchers || []).filter(function(v) {
     return String(v.status || "ACTIVE").toUpperCase() === "ACTIVE";
   }).map(function(v) {
@@ -1975,13 +2011,37 @@ function getPublicCatalog(params) {
     };
   });
 
+  // Hitung nomor urut antrean orderan berikutnya & kode unik 2 digit
+  var nextOrderSeq = 1;
+  try {
+    var ss = getSpreadsheet();
+    if (ss) {
+      var sheet = ss.getSheetByName(SHEET_ORDERS);
+      if (sheet) {
+        var lastRow = sheet.getLastRow();
+        var rawSeq = Math.max(1, lastRow); // Baris 1 header, baris 2 order #1
+        if (launchSeqOffset > 0 && rawSeq >= launchSeqOffset) {
+          nextOrderSeq = Math.max(1, rawSeq - launchSeqOffset + 1);
+        } else {
+          nextOrderSeq = rawSeq;
+        }
+      }
+    }
+  } catch(e) {}
+  var nextUniqueCode = ((nextOrderSeq - 1) % 99) + 1;
+
   return {
     success: true,
+    orderMode: orderMode,
+    launchSeqOffset: launchSeqOffset,
+    appVersion: (orderMode === "LIVE") ? "v1.0" : "v0.1",
     packages: settings.packages || [],
     vouchers: publicVouchers,
     paymentAccounts: settings.paymentAccounts || [],
     sellerWhatsApp: settings.sellerWhatsApp || "",
-    orderFormUrl: settings.orderFormUrl || ""
+    orderFormUrl: settings.orderFormUrl || "",
+    nextOrderSeq: nextOrderSeq,
+    nextUniqueCode: nextUniqueCode
   };
 }
 
@@ -1995,7 +2055,6 @@ function submitPublicOrder(params) {
   var paymentMethod = (params.paymentMethod || "Transfer BCA").trim();
   var paymentProof = (params.paymentProof || "").trim();
   var voucherCode = (params.voucherCode || "").trim().toUpperCase();
-  var uniqueCode = parseInt(params.uniqueCode) || 0;
   var notes = (params.notes || "").trim();
 
   if (!buyerName) return { success: false, message: "Nama pemesan wajib diisi." };
@@ -2008,17 +2067,26 @@ function submitPublicOrder(params) {
     sheet = ss.getSheetByName(SHEET_ORDERS);
   }
 
+  var salesSettings = getStoredSalesSettings();
+  var orderMode = salesSettings.orderMode || "TESTING";
+  var launchSeqOffset = parseInt(salesSettings.launchSeqOffset, 10) || 0;
+
   var nowStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
   var dateCompact = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyyMMdd");
-  var randDigits = Math.floor(100 + Math.random() * 900);
-  var orderId = "ORD-" + dateCompact + "-" + randDigits;
+  var lastRow = sheet.getLastRow();
+  var rawSeq = Math.max(1, lastRow);
+  var orderSeq = (launchSeqOffset > 0 && rawSeq >= launchSeqOffset) ? Math.max(1, rawSeq - launchSeqOffset + 1) : rawSeq;
+  var computedUniqueCode = ((orderSeq - 1) % 99) + 1;
+  var uniqueCode = parseInt(params.uniqueCode, 10) || computedUniqueCode;
+  var uCodePadded = (uniqueCode < 10 ? "0" : "") + uniqueCode;
+  var orderId = (params.orderId && !params.orderId.includes("NaN")) ? params.orderId : ("ORD-" + dateCompact + "-" + uCodePadded);
 
   var fullNotes = notes;
+  var modeTag = (orderMode === "TESTING") ? "[UJI COBA] " : "";
   if (voucherCode) {
     fullNotes = (fullNotes ? fullNotes + " | " : "") + "Voucher: " + voucherCode;
     // Auto increment voucher usedCount if matched
     try {
-      var salesSettings = getStoredSalesSettings();
       if (salesSettings && Array.isArray(salesSettings.vouchers)) {
         var foundVoucher = null;
         for (var vi = 0; vi < salesSettings.vouchers.length; vi++) {
@@ -2034,8 +2102,8 @@ function submitPublicOrder(params) {
       }
     } catch(errVoucher) {}
   }
-  if (uniqueCode) {
-    fullNotes = (fullNotes ? fullNotes + " | " : "") + "Kode Unik: " + uniqueCode;
+  if (!fullNotes.includes("Kode Unik")) {
+    fullNotes = (fullNotes ? fullNotes + " | " : "") + modeTag + "Kode Unik: " + uCodePadded + " (Urutan #" + orderSeq + ")";
   }
 
   var lastCol = sheet.getLastColumn();
@@ -2083,11 +2151,12 @@ function submitPublicOrder(params) {
     success: true,
     message: "Pesanan Anda berhasil dikirim!",
     orderId: orderId,
+    orderSeq: orderSeq,
     timestamp: nowStr,
     buyerName: buyerName,
     package: pkg,
     price: price,
-    uniqueCode: uniqueCode,
+    uniqueCode: uCodePadded,
     paymentMethod: paymentMethod
   };
 }
@@ -2107,6 +2176,8 @@ function adminSaveSalesSettings(params) {
   } catch(e) {}
   if (params.sellerWhatsApp !== undefined) current.sellerWhatsApp = String(params.sellerWhatsApp).trim();
   if (params.orderFormUrl !== undefined) current.orderFormUrl = String(params.orderFormUrl).trim();
+  if (params.orderMode !== undefined) current.orderMode = String(params.orderMode).trim().toUpperCase();
+  if (params.launchSeqOffset !== undefined) current.launchSeqOffset = parseInt(params.launchSeqOffset, 10) || 0;
 
   PropertiesService.getScriptProperties().setProperty("KEUANGANKU_SALES_SETTINGS", JSON.stringify(current));
   logEvent("SALES_SETTINGS_UPDATED", "-", "Developer", "-", "-", "Pengaturan paket, voucher, dan rekening pembayaran diperbarui.");
@@ -2115,5 +2186,35 @@ function adminSaveSalesSettings(params) {
     success: true,
     message: "Pengaturan katalog penjualan & voucher berhasil disimpan!",
     salesSettings: current
+  };
+}
+
+function adminSetOrderMode(params) {
+  if (!checkAdminAuth(params.adminPassword)) return { success: false, message: "Akses ditolak." };
+  var mode = String(params.orderMode || "TESTING").toUpperCase();
+  var current = getStoredSalesSettings();
+  current.orderMode = mode;
+
+  var ss = getSpreadsheet();
+  var sheet = ss ? ss.getSheetByName(SHEET_ORDERS) : null;
+  var lastRow = sheet ? sheet.getLastRow() : 1;
+
+  if (params.resetSeq || mode === "LIVE") {
+    current.launchSeqOffset = lastRow; // Simpan offset baris terakhir saat ini agar order berikutnya mulai dari #1
+  } else if (mode === "TESTING" && params.resetSeqOffset) {
+    current.launchSeqOffset = 0;
+  }
+
+  PropertiesService.getScriptProperties().setProperty("KEUANGANKU_SALES_SETTINGS", JSON.stringify(current));
+  logEvent("ORDER_MODE_CHANGED", "-", "Developer", "-", "-", "Mode pemesanan disetel ke " + mode + " (Launch Offset: " + (current.launchSeqOffset || 0) + ")");
+
+  return {
+    success: true,
+    message: (mode === "LIVE") 
+      ? "🚀 Mode Launching Resmi (v1.0) Aktif! Urutan kode unik pembayaran berikutnya otomatis dimulai dari antrean pertama (#1 / +01)." 
+      : "🧪 Mode Uji Coba Pemesanan (v0.1) Aktif.",
+    salesSettings: current,
+    nextOrderSeq: 1,
+    nextUniqueCode: 1
   };
 }

@@ -708,7 +708,7 @@
         <span class="material-symbols-outlined text-primary" style="font-size: 26px;">account_balance_wallet</span>
         <h1 id="header-brand-title" class="font-headline-md text-sm sm:text-base md:text-lg font-bold text-primary flex items-center gap-1.5 leading-none">
           <span>KEUANGANKU</span>
-          <span class="text-[8px] sm:text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 tracking-normal font-sans">v1.0</span>
+          <span class="text-[10px] sm:text-[11px] font-bold text-primary/75 tracking-tight font-sans">v0.1</span>
         </h1>
       </div>
 
@@ -739,10 +739,9 @@
           <span class="text-[11px] font-bold hidden sm:inline">Instal App</span>
         </button>
 
-        <!-- TOMBOL & INDIKATOR SINKRONISASI OTOMATIS -->
-        <button id="header-sync-btn" onclick="syncWithCloud(true)" title="Status Sinkronisasi Cloud (Klik untuk sinkron sekarang)" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-surface-container dark:bg-slate-800 border border-outline-variant/60 hover:border-primary active:scale-95 transition-all shadow-sm">
+        <!-- TOMBOL & INDIKATOR SINKRONISASI OTOMATIS (Cukup Animasi Icon Saja) -->
+        <button id="header-sync-btn" onclick="syncWithCloud(true)" title="Status Sinkronisasi Cloud (Klik untuk sinkron sekarang)" class="p-2 rounded-xl bg-surface-container dark:bg-slate-800 border border-outline-variant/60 hover:border-primary active:scale-95 transition-all shadow-sm flex items-center justify-center">
           <span id="header-sync-icon" class="material-symbols-outlined text-base text-green-500">cloud_done</span>
-          <span id="header-sync-text" class="text-[11px] font-medium hidden sm:inline text-on-surface-variant">Tersinkron</span>
         </button>
 
         <button onclick="toggleDarkMode()" class="p-2 rounded-full hover:bg-surface-container transition-colors flex items-center gap-1 text-xs font-bold" title="Ubah Tema Gelap/Terang">
@@ -1423,7 +1422,7 @@
                     <h2 class="font-headline-md text-headline-md font-bold text-on-surface">Pembaruan Versi Aplikasi</h2>
                   </div>
                   <span class="px-2.5 py-0.5 bg-cyan-100 dark:bg-cyan-950 text-cyan-700 dark:text-cyan-300 text-[10px] font-extrabold rounded-full border border-cyan-200 dark:border-cyan-800">
-                    VERSI AKTIF: v4.9
+                    VERSI AKTIF: v0.1 (Uji Coba)
                   </span>
                 </div>
                 <p class="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
@@ -3969,29 +3968,29 @@
       let btn = document.getElementById('header-sync-btn');
       let icon = document.getElementById('header-sync-icon');
       let txt = document.getElementById('header-sync-text');
-      if (!icon || !txt) return;
+      if (!icon) return;
 
       icon.className = "material-symbols-outlined text-base transition-transform";
       if (status === 'syncing') {
         icon.classList.add('animate-spin', 'text-blue-500');
         icon.textContent = 'sync';
-        txt.textContent = text || 'Sinkronisasi...';
+        if (txt) txt.textContent = text || 'Sinkronisasi...';
         if (btn) btn.title = "Sedang menyinkronkan data dengan Cloud...";
       } else if (status === 'synced') {
         icon.classList.add('text-green-500');
         icon.textContent = 'cloud_done';
-        txt.textContent = text || 'Tersinkron';
+        if (txt) txt.textContent = text || 'Tersinkron';
         let timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
         if (btn) btn.title = `Tersinkronisasi (${timeStr}). Klik untuk cek ulang sekarang.`;
       } else if (status === 'offline') {
         icon.classList.add('text-gray-400');
         icon.textContent = 'cloud_off';
-        txt.textContent = text || 'Cloud Nonaktif';
+        if (txt) txt.textContent = text || 'Cloud Nonaktif';
         if (btn) btn.title = "Kunci Cloud belum diisi. Klik untuk membuka Setup.";
       } else if (status === 'error') {
         icon.classList.add('text-amber-500');
         icon.textContent = 'cloud_sync';
-        txt.textContent = text || 'Coba Lagi';
+        if (txt) txt.textContent = text || 'Coba Lagi';
         if (btn) btn.title = "Gagal terhubung ke Cloud. Klik untuk mencoba sinkronkan lagi.";
       }
     }
@@ -6604,7 +6603,7 @@
             if (statusText) {
               statusText.classList.remove('text-cyan-500');
               statusText.classList.add('text-emerald-500');
-              statusText.innerHTML = "✅ <b>Aplikasi Anda sudah versi paling baru (v4.9)!</b> Seluruh fitur telah mutakhir.";
+              statusText.innerHTML = "✅ <b>Aplikasi Anda sudah versi paling baru (v0.1)!</b> Seluruh fitur telah mutakhir.";
             }
             showSyncToast("✓ Aplikasi sudah versi paling baru!");
           }

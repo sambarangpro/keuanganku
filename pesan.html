@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Formulir Pemesanan Resmi - Keuanganku PRO</title>
   
-  <meta name="description" content="Pesan Lisensi Resmi Keuanganku PRO v1.0 - Aplikasi Keuangan Multi-Device Tanpa Langganan Bulanan.">
+  <meta name="description" content="Pesan Lisensi Resmi Keuanganku PRO v0.1 (Uji Coba) - Aplikasi Keuangan Multi-Device Tanpa Langganan Bulanan.">
   <meta name="theme-color" content="#020617">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -75,7 +75,7 @@
         <div class="min-w-0">
           <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
             <h1 class="text-xs sm:text-base font-extrabold text-white tracking-tight truncate leading-none">KEUANGANKU PRO</h1>
-            <span class="px-1.5 py-0.5 rounded-full text-[8px] sm:text-[9px] font-black bg-blue-500/20 text-blue-300 border border-blue-500/30 whitespace-nowrap">v1.0 RESMI</span>
+            <span id="header-version-badge" class="px-1.5 py-0.5 rounded-full text-[8px] sm:text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/30 whitespace-nowrap">v0.1 UJI COBA</span>
           </div>
           <p class="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 truncate">Sambarang Production • Form Pemesanan</p>
         </div>
@@ -95,7 +95,7 @@
       <div class="relative z-10 space-y-2">
         <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[11px] font-bold">
           <span class="material-symbols-outlined text-xs">verified</span>
-          <span>Lisensi Resmi Seumur Hidup (Lifetime)</span>
+          <span id="hero-status-tag">Masa Uji Coba Lisensi (v0.1 BETA)</span>
         </div>
         <h2 class="text-xl sm:text-2xl font-black text-white leading-tight">
           Formulir Pemesanan Lisensi Resmi Keuanganku PRO
@@ -291,10 +291,10 @@
           </div>
           <div id="summary-unique-row" class="flex items-center justify-between py-2 text-amber-300 border-t border-slate-800/80">
             <div class="flex items-center gap-1.5">
-              <span class="font-semibold">Kode Unik Verifikasi:</span>
-              <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">Otomatis</span>
+              <span class="font-semibold">Kode Unik (Urutan Order):</span>
+              <span id="summary-seq-badge" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">Urutan #1</span>
             </div>
-            <span id="summary-unique-code" class="font-bold font-mono-data">+ Rp 0</span>
+            <span id="summary-unique-code" class="font-bold font-mono-data">+ Rp 01</span>
           </div>
           <div class="flex items-center justify-between pt-3 border-t-2 border-slate-800">
             <div>
@@ -310,11 +310,11 @@
         <!-- Edukasi Kode Unik -->
         <div class="p-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-xs space-y-1 text-slate-300">
           <div class="flex items-center gap-1.5 font-bold text-amber-300 text-xs">
-            <span class="material-symbols-outlined text-sm text-amber-400">verified</span>
-            <span>Verifikasi Otomatis Lebih Cepat</span>
+            <span class="material-symbols-outlined text-sm text-amber-400">format_list_numbered</span>
+            <span>Verifikasi Otomatis Berdasarkan Urutan Pemesanan</span>
           </div>
           <p class="text-[11px] leading-relaxed text-slate-300">
-            Mohon lakukan transfer <b class="text-white font-bold">persis sesuai Total Transfer di atas</b> (termasuk 2 digit kode unik). Kode unik ini membedakan transaksi Anda dari pemesan lain agar konfirmasi akun dan lisensi dapat diproses secara instan.
+            Mohon lakukan transfer <b class="text-white font-bold">persis sesuai Total Transfer di atas</b> (termasuk 2 digit kode urutan <span class="font-mono text-amber-300 font-bold" id="info-unique-code">+Rp 01</span>). Kode unik ini menandai nomor antrean order Anda agar admin & sistem bank dapat langsung mengenali pembayaran Anda secara instan tanpa tertukar!
           </p>
         </div>
 
@@ -363,8 +363,12 @@
           <span id="succ-pkg-name" class="font-semibold text-slate-200">-</span>
         </div>
         <div class="flex items-center justify-between">
+          <span class="text-slate-400">Nomor Antrean Order:</span>
+          <span id="succ-order-seq" class="font-bold text-amber-300 font-mono-data">Urutan #1</span>
+        </div>
+        <div class="flex items-center justify-between">
           <span class="text-slate-400">Kode Unik Verifikasi:</span>
-          <span id="succ-unique-code" class="font-bold text-amber-300 font-mono-data">+0</span>
+          <span id="succ-unique-code" class="font-bold text-amber-300 font-mono-data">+01</span>
         </div>
         <div class="flex items-center justify-between border-t border-slate-800 pt-2">
           <span class="text-slate-400 font-bold">Total Pembayaran:</span>
@@ -411,6 +415,8 @@
 
     // Default Fallback Catalog jika offline / sebelum API merespons
     const DEFAULT_CATALOG = {
+      orderMode: "TESTING", // "TESTING" (v0.1) | "LIVE" (v1.0)
+      appVersion: "v0.1",
       sellerWhatsApp: "628123456789",
       packages: [
         { id: "pkg-personal", name: "PRO Personal (1 Perangkat)", devices: 1, price: "Rp 99.000", priceNum: 99000, description: "Untuk penggunaan pribadi di 1 HP atau 1 Laptop. Akses seumur hidup.", popular: false },
@@ -434,12 +440,13 @@
     let selectedPackage = null;
     let appliedVoucher = null;
     let selectedPaymentMethod = "Transfer BCA";
+    let currentOrderSeq = 1;
     let currentUniqueCode = null;
 
     function getOrderUniqueCode() {
       if (!currentUniqueCode) {
-        // Angka unik maksimal 2 digit (antara 11 sampai 99)
-        let code = Math.floor(11 + Math.random() * 88);
+        // Sesuaikan dengan nomor urutan antrean orderan (maksimal 2 digit: 1 sampai 99)
+        let code = ((currentOrderSeq - 1) % 99) + 1;
         currentUniqueCode = code;
       }
       return currentUniqueCode;
@@ -461,10 +468,35 @@
         clearTimeout(timeoutId);
         let res = await resp.json();
         if (res && res.success) {
+          if (res.orderMode) catalog.orderMode = res.orderMode;
+          if (res.appVersion) catalog.appVersion = res.appVersion;
+
+          // Perbarui badge versi & status antrean
+          let isLive = (catalog.orderMode === 'LIVE');
+          let vBadge = document.getElementById('header-version-badge');
+          if (vBadge) {
+            vBadge.className = isLive 
+              ? "px-1.5 py-0.5 rounded-full text-[8px] sm:text-[9px] font-black bg-blue-500/20 text-blue-300 border border-blue-500/30 whitespace-nowrap"
+              : "px-1.5 py-0.5 rounded-full text-[8px] sm:text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/30 whitespace-nowrap";
+            vBadge.textContent = isLive ? "v1.0 RESMI" : "v0.1 UJI COBA";
+          }
+          let heroTag = document.getElementById('hero-status-tag');
+          if (heroTag) {
+            heroTag.textContent = isLive ? "Lisensi Resmi Seumur Hidup (v1.0 Lifetime)" : "Masa Uji Coba Lisensi (v0.1 BETA)";
+          }
+
           if (Array.isArray(res.packages) && res.packages.length > 0) catalog.packages = res.packages;
           if (Array.isArray(res.vouchers)) catalog.vouchers = res.vouchers;
           if (Array.isArray(res.paymentAccounts) && res.paymentAccounts.length > 0) catalog.paymentAccounts = res.paymentAccounts;
           if (res.sellerWhatsApp) catalog.sellerWhatsApp = res.sellerWhatsApp;
+          if (res.nextOrderSeq) {
+            currentOrderSeq = Number(res.nextOrderSeq) || 1;
+          }
+          if (res.nextUniqueCode) {
+            currentUniqueCode = Number(res.nextUniqueCode);
+          } else if (currentOrderSeq) {
+            currentUniqueCode = ((currentOrderSeq - 1) % 99) + 1;
+          }
 
           renderPackages();
           renderPaymentAccounts();
@@ -472,6 +504,8 @@
             let found = catalog.packages.find(p => p.id === selectedPackage.id);
             if (found) selectPackage(found);
             else selectDefaultPackage();
+          } else {
+            updateOrderSummary();
           }
         }
       } catch(e) {
@@ -658,6 +692,7 @@
 
       let baseAfterDiscount = Math.max(0, pkgPriceNum - discountAmount);
       let uniqueCode = (baseAfterDiscount > 0) ? getOrderUniqueCode() : 0;
+      let uCodePadded = String(uniqueCode).padStart(2, '0');
       let finalPrice = baseAfterDiscount + uniqueCode;
 
       document.getElementById('summary-pkg-name').textContent = selectedPackage.name;
@@ -674,7 +709,15 @@
 
       let uCodeEl = document.getElementById('summary-unique-code');
       if (uCodeEl) {
-        uCodeEl.textContent = '+ Rp ' + uniqueCode.toLocaleString('id-ID');
+        uCodeEl.textContent = '+ Rp ' + uCodePadded;
+      }
+      let seqBadgeEl = document.getElementById('summary-seq-badge');
+      if (seqBadgeEl) {
+        seqBadgeEl.textContent = 'Urutan #' + currentOrderSeq;
+      }
+      let infoCodeEl = document.getElementById('info-unique-code');
+      if (infoCodeEl) {
+        infoCodeEl.textContent = '+Rp ' + uCodePadded;
       }
 
       document.getElementById('summary-total-price').textContent = 'Rp ' + finalPrice.toLocaleString('id-ID');
@@ -772,6 +815,7 @@
       }
       let baseAfterDiscount = Math.max(0, pkgPriceNum - discountAmount);
       let uniqueCode = (baseAfterDiscount > 0) ? getOrderUniqueCode() : 0;
+      let uCodePadded = String(uniqueCode).padStart(2, '0');
       let finalPrice = baseAfterDiscount + uniqueCode;
       let finalPriceFormatted = 'Rp ' + finalPrice.toLocaleString('id-ID');
 
@@ -780,15 +824,15 @@
       btn.disabled = true;
       btn.innerHTML = `<span class="material-symbols-outlined text-base animate-spin">progress_activity</span> Mengirim Pemesanan...`;
 
-      // Buat Order ID
+      // Buat Order ID rapi berdasarkan urutan kode unik: ORD-YYYYMMDD-XX
       let d = new Date();
       let dateCompact = d.getFullYear() + ('0' + (d.getMonth() + 1)).slice(-2) + ('0' + d.getDate()).slice(-2);
-      let randDigits = Math.floor(100 + Math.random() * 900);
-      let orderId = "ORD-" + dateCompact + "-" + randDigits;
+      let orderId = "ORD-" + dateCompact + "-" + uCodePadded;
 
       let payload = {
         action: 'submit_public_order',
         orderId: orderId,
+        orderSeq: currentOrderSeq,
         buyerName: buyerName,
         whatsapp: whatsapp,
         email: email,
@@ -799,7 +843,7 @@
         paymentMethod: selectedPaymentMethod,
         paymentProof: paymentProof,
         voucherCode: appliedVoucher ? appliedVoucher.code : '',
-        notes: (notes ? notes + " | " : "") + "Kode Unik: " + uniqueCode
+        notes: (notes ? notes + " | " : "") + "Kode Unik: " + uCodePadded + " (Urutan #" + currentOrderSeq + ")"
       };
 
       try {
@@ -814,6 +858,7 @@
         clearTimeout(timeoutId);
         let res = await resp.json();
         if (res && res.orderId) orderId = res.orderId;
+        if (res && res.orderSeq) currentOrderSeq = res.orderSeq;
         if (appliedVoucher) {
           appliedVoucher.usedCount = (Number(appliedVoucher.usedCount) || 0) + 1;
         }
@@ -832,12 +877,12 @@
       let waMessage = 
         "Halo Admin *Keuanganku PRO*, saya ingin mengonfirmasi pemesanan lisensi resmi:\n\n" +
         "🆔 *ID Pemesanan:* `" + orderId + "`\n" +
+        "🔢 *Nomor Antrean:* Urutan #" + currentOrderSeq + " (Kode: +" + uCodePadded + ")\n" +
         "👤 *Nama Pemesan:* " + buyerName + "\n" +
         "📧 *Email Penerima Akun:* " + email + "\n" +
         "📱 *WhatsApp:* " + whatsapp + "\n" +
-        "📦 *Paket:* " + selectedPackage.name + " (" + selectedPackage.devices + " Perangkat)\n" +
+        "📦 *Paket:* " + selectedPackage.name + " (" + selectedPackage.devices + " Perangkat)" + (catalog.orderMode === 'LIVE' ? " - v1.0" : " [v0.1 Uji Coba]") + "\n" +
         "💰 *Total Transfer:* " + finalPriceFormatted + " *(Tepat hingga 2 digit terakhir)*\n" +
-        "🔢 *Kode Unik Verifikasi:* +" + uniqueCode + (appliedVoucher ? " (Voucher: " + appliedVoucher.code + ")" : "") + "\n" +
         "💳 *Pembayaran via:* " + selectedPaymentMethod + "\n" +
         "📎 *Bukti Bayar:* " + (paymentProof || "Terlampir di chat ini") + "\n" +
         (notes ? "📝 *Catatan:* " + notes + "\n" : "") + "\n" +
@@ -850,7 +895,9 @@
       document.getElementById('succ-buyer-name').textContent = buyerName;
       if (document.getElementById('succ-buyer-email')) document.getElementById('succ-buyer-email').textContent = email;
       document.getElementById('succ-pkg-name').textContent = selectedPackage.name;
-      if (document.getElementById('succ-unique-code')) document.getElementById('succ-unique-code').textContent = '+' + uniqueCode;
+      if (document.getElementById('succ-order-seq')) document.getElementById('succ-order-seq').textContent = 'Urutan #' + currentOrderSeq;
+      if (document.getElementById('succ-unique-code')) document.getElementById('succ-unique-code').textContent = '+' + uCodePadded;
+      document.getElementById('succ-total-price').textContent = finalPriceFormatted;
       document.getElementById('succ-total-price').textContent = finalPriceFormatted;
       if (document.getElementById('btn-copy-total-amount')) document.getElementById('btn-copy-total-amount').textContent = finalPriceFormatted;
       let btnWa = document.getElementById('btn-open-wa');
