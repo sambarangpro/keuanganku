@@ -380,8 +380,8 @@
         { id: "pkg-master", name: "PRO Developer Master (10 Perangkat)", devices: 10, price: "Rp 499.000", priceNum: 499000, description: "Akses maksimal hingga 10 perangkat untuk profesional / multi-kantor.", popular: false }
       ],
       vouchers: [
-        { code: "BERKAH30", type: "fixed", value: 30000, minPrice: 99000, maxUses: 50, usedCount: 12, status: "ACTIVE", description: "Diskon Berkah Rp 30.000" },
-        { code: "PROMOAKBAR", type: "percent", value: 20, minPrice: 99000, maxUses: 100, usedCount: 35, status: "ACTIVE", description: "Diskon Peluncuran 20%" }
+        { code: "BERKAH30", type: "fixed", value: 30000, minPrice: 99000, targetPackage: "ALL", maxUses: 50, usedCount: 12, status: "ACTIVE", description: "Diskon Berkah Rp 30.000" },
+        { code: "PROMOAKBAR", type: "percent", value: 20, minPrice: 99000, targetPackage: "pkg-multi", maxUses: 100, usedCount: 35, status: "ACTIVE", description: "Diskon Peluncuran 20% Khusus Multi-Device" }
       ],
       paymentAccounts: [
         { bank: "Transfer BCA", accountNo: "1234567890", accountName: "Muh Akbar", notes: "Konfirmasi cepat" },
@@ -546,9 +546,22 @@
         return;
       }
 
+      // Cek apakah voucher khusus untuk paket tertentu
+      let targetPkg = v.targetPackage || 'ALL';
+      if (targetPkg !== 'ALL' && targetPkg !== selectedPackage.id && targetPkg !== selectedPackage.name) {
+        let reqPkg = (catalog.packages || []).find(p => p.id === targetPkg || p.name === targetPkg);
+        let reqName = reqPkg ? reqPkg.name : targetPkg;
+        showVoucherMsg('error', `Maaf, voucher "${code}" hanya berlaku khusus untuk paket "${reqName}".`);
+        appliedVoucher = null;
+        updateOrderSummary();
+        return;
+      }
+
       appliedVoucher = v;
       let sisaKuota = (maxUses > 0) ? ` (Sisa kuota: ${maxUses - usedCount} kupon)` : '';
-      showVoucherMsg('success', `🎉 Voucher "${code}" aktif! ${v.description || 'Potongan harga berhasil diterapkan.'}${sisaKuota}`);
+      let reqPkg = (targetPkg !== 'ALL') ? (catalog.packages || []).find(p => p.id === targetPkg || p.name === targetPkg) : null;
+      let pkgBadge = reqPkg ? ` [Khusus: ${reqPkg.name}]` : '';
+      showVoucherMsg('success', `🎉 Voucher "${code}" aktif! ${v.description || 'Potongan harga berhasil diterapkan.'}${pkgBadge}${sisaKuota}`);
       updateOrderSummary();
     }
 
@@ -571,6 +584,20 @@
 
       let pkgPriceNum = selectedPackage.priceNum || parseInt(String(selectedPackage.price).replace(/[^0-9]/g, '')) || 0;
       let discountAmount = 0;
+
+      // Validasi kembali voucher jika user berganti paket lisensi
+      if (appliedVoucher) {
+        let targetPkg = appliedVoucher.targetPackage || 'ALL';
+        if (targetPkg !== 'ALL' && targetPkg !== selectedPackage.id && targetPkg !== selectedPackage.name) {
+          let reqPkg = (catalog.packages || []).find(p => p.id === targetPkg || p.name === targetPkg);
+          let reqName = reqPkg ? reqPkg.name : targetPkg;
+          showVoucherMsg('error', `Voucher "${appliedVoucher.code}" dibatalkan karena hanya berlaku khusus untuk paket "${reqName}".`);
+          appliedVoucher = null;
+        } else if (appliedVoucher.minPrice && pkgPriceNum < appliedVoucher.minPrice) {
+          showVoucherMsg('error', `Voucher "${appliedVoucher.code}" dibatalkan karena memerlukan minimal belanja Rp ${appliedVoucher.minPrice.toLocaleString('id-ID')}.`);
+          appliedVoucher = null;
+        }
+      }
 
       if (appliedVoucher) {
         if (appliedVoucher.type === 'percent') {

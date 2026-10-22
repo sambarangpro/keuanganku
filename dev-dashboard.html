@@ -612,6 +612,7 @@
                     <th class="p-3 whitespace-nowrap">Tipe Diskon</th>
                     <th class="p-3 whitespace-nowrap">Nilai Potongan</th>
                     <th class="p-3 whitespace-nowrap">Min. Belanja</th>
+                    <th class="p-3 whitespace-nowrap">Berlaku Paket</th>
                     <th class="p-3 whitespace-nowrap">Batas Kuota Pengguna</th>
                     <th class="p-3">Keterangan Promo</th>
                     <th class="p-3 text-center whitespace-nowrap">Status</th>
@@ -1217,6 +1218,13 @@
               <option value="INACTIVE">🔴 Nonaktif (Kedaluwarsa)</option>
             </select>
           </div>
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Berlaku Khusus Paket:</label>
+          <select id="voucher-target-package" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white outline-none focus:border-amber-400">
+            <option value="ALL">🌐 Semua Paket (Bebas Digunakan)</option>
+          </select>
+          <p class="text-[10px] text-slate-500 mt-1">Pilih paket tertentu jika promo ini dibatasi hanya untuk paket lisensi tersebut</p>
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
@@ -3880,8 +3888,8 @@ Copyright © 2026 Sambarang Production`;
           { id: "pkg-master", name: "PRO Developer Master (10 Perangkat)", devices: 10, price: "Rp 499.000", priceNum: 499000, description: "Akses maksimal hingga 10 perangkat untuk profesional / kantor cabang.", popular: false }
         ],
         vouchers: [
-          { code: "BERKAH30", type: "fixed", value: 30000, minPrice: 99000, maxUses: 50, usedCount: 12, status: "ACTIVE", description: "Diskon Berkah Ramadhan Rp 30.000" },
-          { code: "PROMOAKBAR", type: "percent", value: 20, minPrice: 99000, maxUses: 100, usedCount: 35, status: "ACTIVE", description: "Diskon Spesial 20%" }
+          { code: "BERKAH30", type: "fixed", value: 30000, minPrice: 99000, targetPackage: "ALL", maxUses: 50, usedCount: 12, status: "ACTIVE", description: "Diskon Berkah Ramadhan Rp 30.000" },
+          { code: "PROMOAKBAR", type: "percent", value: 20, minPrice: 99000, targetPackage: "pkg-multi", maxUses: 100, usedCount: 35, status: "ACTIVE", description: "Diskon Spesial 20% Khusus Multi-Device" }
         ],
         paymentAccounts: [
           { bank: "Transfer BCA", accountNo: "1234567890", accountName: "Muh Akbar", notes: "Konfirmasi transfer cepat" },
@@ -4123,7 +4131,7 @@ Copyright © 2026 Sambarang Production`;
 
       let list = (cachedSalesSettings && Array.isArray(cachedSalesSettings.vouchers)) ? cachedSalesSettings.vouchers : [];
       if (list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-slate-500 font-sans">Belum ada kode voucher diskon. Klik <b>Buat Voucher Baru</b> di atas untuk membuat promo.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-slate-500 font-sans">Belum ada kode voucher diskon. Klik <b>Buat Voucher Baru</b> di atas untuk membuat promo.</td></tr>`;
         return;
       }
 
@@ -4139,6 +4147,17 @@ Copyright © 2026 Sambarang Production`;
         let minDisplay = (v.minPrice && v.minPrice > 0)
           ? `<span class="font-mono-data text-slate-300 text-xs">Rp ${Number(v.minPrice).toLocaleString('id-ID')}</span>`
           : `<span class="text-slate-500 text-xs font-semibold">Tanpa Min.</span>`;
+
+        let targetPkg = v.targetPackage || 'ALL';
+        let targetPkgDisplay = '';
+        if (targetPkg === 'ALL') {
+          targetPkgDisplay = `<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-800 text-slate-300 border border-slate-700">🌐 Semua Paket</span>`;
+        } else {
+          let pkgs = (cachedSalesSettings && Array.isArray(cachedSalesSettings.packages)) ? cachedSalesSettings.packages : getDefaultSalesSettingsFallback().packages;
+          let foundP = pkgs.find(p => p.id === targetPkg || p.name === targetPkg);
+          let pName = foundP ? foundP.name : targetPkg;
+          targetPkgDisplay = `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 whitespace-nowrap">📦 ${escapeHtml(pName)}</span>`;
+        }
 
         let maxUses = Number(v.maxUses) || 0;
         let usedCount = Number(v.usedCount) || 0;
@@ -4208,6 +4227,9 @@ Copyright © 2026 Sambarang Production`;
             ${minDisplay}
           </td>
           <td class="p-3 whitespace-nowrap">
+            ${targetPkgDisplay}
+          </td>
+          <td class="p-3 whitespace-nowrap">
             ${quotaDisplay}
           </td>
           <td class="p-3 text-slate-300 max-w-xs text-xs">
@@ -4240,9 +4262,22 @@ Copyright © 2026 Sambarang Production`;
       let valInp = document.getElementById('voucher-value');
       let minInp = document.getElementById('voucher-min-price');
       let stInp = document.getElementById('voucher-status');
+      let targetPkgInp = document.getElementById('voucher-target-package');
       let maxUsesInp = document.getElementById('voucher-max-uses');
       let usedCountInp = document.getElementById('voucher-used-count');
       let descInp = document.getElementById('voucher-desc');
+
+      // Populate opsi target package
+      if (targetPkgInp) {
+        targetPkgInp.innerHTML = `<option value="ALL">🌐 Semua Paket (Bebas Digunakan)</option>`;
+        let pkgs = (cachedSalesSettings && Array.isArray(cachedSalesSettings.packages)) ? cachedSalesSettings.packages : getDefaultSalesSettingsFallback().packages;
+        pkgs.forEach(p => {
+          let opt = document.createElement('option');
+          opt.value = p.id;
+          opt.textContent = `📦 ${p.name} (${p.price})`;
+          targetPkgInp.appendChild(opt);
+        });
+      }
 
       if (idx >= 0) {
         let v = cachedSalesSettings.vouchers[idx];
@@ -4254,6 +4289,7 @@ Copyright © 2026 Sambarang Production`;
         valInp.value = v.value || 0;
         minInp.value = v.minPrice || 0;
         stInp.value = v.status || 'ACTIVE';
+        if (targetPkgInp) targetPkgInp.value = v.targetPackage || 'ALL';
         if (maxUsesInp) maxUsesInp.value = (v.maxUses !== undefined && v.maxUses !== null) ? v.maxUses : 0;
         if (usedCountInp) usedCountInp.value = Number(v.usedCount) || 0;
         descInp.value = v.description || v.desc || '';
@@ -4265,6 +4301,7 @@ Copyright © 2026 Sambarang Production`;
         valInp.value = 30000;
         minInp.value = 0;
         stInp.value = "ACTIVE";
+        if (targetPkgInp) targetPkgInp.value = 'ALL';
         if (maxUsesInp) maxUsesInp.value = 0;
         if (usedCountInp) usedCountInp.value = 0;
         descInp.value = "";
@@ -4282,6 +4319,8 @@ Copyright © 2026 Sambarang Production`;
       let val = Number(document.getElementById('voucher-value').value) || 0;
       let minPrice = Number(document.getElementById('voucher-min-price').value) || 0;
       let status = document.getElementById('voucher-status').value;
+      let targetPkgInp = document.getElementById('voucher-target-package');
+      let targetPackage = targetPkgInp ? (targetPkgInp.value || 'ALL') : 'ALL';
       let maxUses = Math.max(0, parseInt(document.getElementById('voucher-max-uses').value, 10) || 0);
       let usedCount = Math.max(0, parseInt(document.getElementById('voucher-used-count').value, 10) || 0);
       let desc = document.getElementById('voucher-desc').value.trim();
@@ -4299,6 +4338,7 @@ Copyright © 2026 Sambarang Production`;
         type,
         value: val,
         minPrice,
+        targetPackage,
         maxUses,
         usedCount,
         status,
