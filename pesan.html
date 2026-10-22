@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Formulir Pemesanan Resmi - Keuanganku PRO</title>
+  
+  <meta name="description" content="Pesan Lisensi Resmi Keuanganku PRO v1.0 - Aplikasi Keuangan Multi-Device Tanpa Langganan Bulanan.">
+  <meta name="theme-color" content="#090d16">
+
+  <!-- Favicon & Touch Icons -->
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="icon-48.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
+  <!-- Fonts & Material Symbols -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+  <!-- Tailwind CSS via allowlisted CDN -->
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #020617;
+      color: #f8fafc;
+    }
+    .font-mono-data {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #090d16;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 4px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-blue-600 selection:text-white">
+
+  <!-- Top Ambient Glow -->
+  <div class="fixed top-0 left-1/2 -translate-x-1/2 w-[600px] h-64 bg-blue-600/15 rounded-full blur-3xl pointer-events-none z-0"></div>
+
+  <!-- Header & Brand Bar -->
+  <header class="relative z-10 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md sticky top-0 px-4 py-3 sm:py-4">
+    <div class="max-w-3xl mx-auto flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <!-- Logo -->
+        <img src="icon-96.png" alt="Logo Keuanganku" class="w-10 h-10 rounded-2xl shadow-lg shadow-blue-500/20 object-contain">
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-sm sm:text-base font-extrabold text-white tracking-tight">KEUANGANKU PRO</h1>
+            <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-blue-500/20 text-blue-300 border border-blue-500/30">v1.0 RESMI</span>
+          </div>
+          <p class="text-[11px] text-slate-400">Sambarang Production • Form Pemesanan Lisensi</p>
+        </div>
+      </div>
+      <a href="index.html" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-semibold border border-slate-800 flex items-center gap-1.5 transition-all">
+        <span class="material-symbols-outlined text-sm">open_in_browser</span>
+        <span class="hidden sm:inline">Buka Aplikasi</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Content Form -->
+  <main class="relative z-10 flex-1 max-w-3xl mx-auto w-full p-4 sm:p-6 space-y-6">
+
+    <!-- Hero Card Banner -->
+    <div class="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-blue-950/60 via-slate-900 to-indigo-950/40 border border-blue-500/30 shadow-2xl relative overflow-hidden">
+      <div class="relative z-10 space-y-2">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[11px] font-bold">
+          <span class="material-symbols-outlined text-xs">verified</span>
+          <span>Lisensi Resmi Seumur Hidup (Lifetime)</span>
+        </div>
+        <h2 class="text-xl sm:text-2xl font-black text-white leading-tight">
+          Formulir Pemesanan Lisensi Resmi Keuanganku PRO
+        </h2>
+        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-2xl">
+          Kelola uang pribadi dan usaha Anda dengan rapi, aman di Google Drive Anda sendiri, serta sinkron otomatis di seluruh HP, Tablet, dan Laptop. <b>Sekali beli, bebas pakai selamanya tanpa biaya langganan bulanan!</b>
+        </p>
+      </div>
+    </div>
+
+    <form id="public-order-form" onsubmit="handlePublicOrderSubmit(event)" class="space-y-6">
+
+      <!-- ========================================== -->
+      <!-- LANGKAH 1: PILIH PAKET LISENSI             -->
+      <!-- ========================================== -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 space-y-4 shadow-xl">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-blue-600/20 text-blue-400 flex items-center justify-center font-bold text-xs">
+              1
+            </div>
+            <div>
+              <h3 class="font-extrabold text-white text-sm sm:text-base">Pilih Paket Lisensi</h3>
+              <p class="text-[11px] text-slate-400">Pilih kuota perangkat yang sesuai dengan kebutuhan Anda</p>
+            </div>
+          </div>
+          <span class="text-[11px] font-bold text-cyan-400 flex items-center gap-1">
+            <span class="material-symbols-outlined text-xs">devices</span> Kuota Multi-Perangkat
+          </span>
+        </div>
+
+        <!-- Dynamic Package Grid -->
+        <div id="package-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+          <!-- Rendered via JavaScript -->
+          <div class="p-6 text-center text-slate-500 col-span-2">
+            <span class="material-symbols-outlined animate-spin text-2xl text-blue-400">progress_activity</span>
+            <p class="text-xs mt-2">Memuat paket lisensi resmi...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- LANGKAH 2: DATA PEMESAN                    -->
+      <!-- ========================================== -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 space-y-4 shadow-xl">
+        <div class="flex items-center gap-2.5 border-b border-slate-800 pb-3">
+          <div class="w-8 h-8 rounded-xl bg-blue-600/20 text-blue-400 flex items-center justify-center font-bold text-xs">
+            2
+          </div>
+          <div>
+            <h3 class="font-extrabold text-white text-sm sm:text-base">Data Pemesan / Pemilik Lisensi</h3>
+            <p class="text-[11px] text-slate-400">Nama Anda akan tercatat secara resmi di database lisensi</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">
+              Nama Lengkap Anda: <span class="text-rose-400">*</span>
+            </label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3 top-2.5 text-slate-500 text-base">person</span>
+              <input type="text" id="buyer-name" required placeholder="Contoh: Budi Santoso"
+                class="w-full pl-9 pr-3.5 py-2.5 bg-slate-950 border border-slate-700 focus:border-blue-500 rounded-xl text-white placeholder-slate-500 outline-none transition-all">
+            </div>
+            <p class="text-[10px] text-slate-500 mt-1">Akan tertera di informasi lisensi akun Anda.</p>
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">
+              Nomor WhatsApp Aktif: <span class="text-rose-400">*</span>
+            </label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3 top-2.5 text-emerald-500 text-base">call</span>
+              <input type="tel" id="buyer-wa" required placeholder="Contoh: 08123456789"
+                class="w-full pl-9 pr-3.5 py-2.5 bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl text-white placeholder-slate-500 outline-none transition-all font-mono-data">
+            </div>
+            <p class="text-[10px] text-slate-500 mt-1">Kode token lisensi akan dikirimkan ke nomor ini.</p>
+          </div>
+
+          <div class="sm:col-span-2">
+            <label class="block font-semibold text-slate-300 mb-1">
+              Alamat Email (Opsional):
+            </label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3 top-2.5 text-slate-500 text-base">mail</span>
+              <input type="email" id="buyer-email" placeholder="contoh@gmail.com (opsional)"
+                class="w-full pl-9 pr-3.5 py-2.5 bg-slate-950 border border-slate-700 focus:border-blue-500 rounded-xl text-white placeholder-slate-500 outline-none transition-all">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- LANGKAH 3: KLAIM KODE VOUCHER              -->
+      <!-- ========================================== -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 space-y-4 shadow-xl">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-xs">
+              3
+            </div>
+            <div>
+              <h3 class="font-extrabold text-white text-sm sm:text-base">Punya Kode Voucher / Promo?</h3>
+              <p class="text-[11px] text-slate-400">Masukkan kode promo untuk mendapatkan potongan harga spesial</p>
+            </div>
+          </div>
+          <span class="material-symbols-outlined text-amber-400 text-xl">sell</span>
+        </div>
+
+        <div class="space-y-2">
+          <div class="flex items-center gap-2">
+            <div class="relative flex-1">
+              <span class="material-symbols-outlined absolute left-3 top-2.5 text-amber-400 text-base">local_offer</span>
+              <input type="text" id="voucher-input" placeholder="Masukkan kode kupon diskon..."
+                class="w-full pl-9 pr-3.5 py-2.5 bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl text-white uppercase font-mono-data font-bold placeholder-slate-500 text-xs outline-none transition-all">
+            </div>
+            <button type="button" onclick="applyVoucher()" class="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer shrink-0">
+              Gunakan Voucher
+            </button>
+          </div>
+          <div id="voucher-msg-box" class="hidden p-3 rounded-xl text-xs font-semibold"></div>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- LANGKAH 4: METODE PEMBAYARAN               -->
+      <!-- ========================================== -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 space-y-4 shadow-xl">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">
+              4
+            </div>
+            <div>
+              <h3 class="font-extrabold text-white text-sm sm:text-base">Instruksi Rekening Pembayaran</h3>
+              <p class="text-[11px] text-slate-400">Pilih bank / e-wallet tujuan transfer pembayaran</p>
+            </div>
+          </div>
+          <span class="material-symbols-outlined text-emerald-400 text-xl">payments</span>
+        </div>
+
+        <!-- Dynamic Accounts List -->
+        <div id="payment-accounts-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+          <!-- Rendered via JS -->
+        </div>
+
+        <!-- Bukti Pembayaran -->
+        <div class="pt-3 border-t border-slate-800/80 space-y-3 text-xs">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">
+              Lampirkan Bukti Transfer (Link / Catatan):
+            </label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3 top-2.5 text-cyan-400 text-base">attach_file</span>
+              <input type="text" id="payment-proof" placeholder="Link screenshot Google Drive / Foto struk / No. Ref..."
+                class="w-full pl-9 pr-3.5 py-2.5 bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl text-white placeholder-slate-500 outline-none transition-all">
+            </div>
+            <p class="text-[10px] text-slate-400 mt-1">Anda juga dapat melampirkan foto struk langsung di chat WhatsApp nanti.</p>
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Catatan Tambahan (Opsional):</label>
+            <input type="text" id="buyer-notes" placeholder="Nama pemilik rekening pengirim, dll"
+              class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white placeholder-slate-500 outline-none text-xs">
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- RINGKASAN TAGIHAN & SUBMIT                 -->
+      <!-- ========================================== -->
+      <div class="bg-gradient-to-br from-slate-900 to-slate-950 border-2 border-blue-500/40 rounded-3xl p-5 sm:p-6 space-y-4 shadow-2xl">
+        <h3 class="font-extrabold text-white text-sm sm:text-base flex items-center gap-2">
+          <span class="material-symbols-outlined text-blue-400">receipt</span>
+          <span>Ringkasan Tagihan Pemesanan</span>
+        </h3>
+
+        <div class="space-y-2 text-xs divide-y divide-slate-800">
+          <div class="flex items-center justify-between pb-2">
+            <span class="text-slate-400">Paket Lisensi:</span>
+            <span id="summary-pkg-name" class="font-bold text-white">-</span>
+          </div>
+          <div class="flex items-center justify-between py-2">
+            <span class="text-slate-400">Harga Normal Paket:</span>
+            <span id="summary-pkg-price" class="font-bold text-slate-200 font-mono-data">Rp 0</span>
+          </div>
+          <div id="summary-discount-row" class="hidden flex items-center justify-between py-2 text-emerald-400">
+            <span>Potongan Voucher (<span id="summary-voucher-code">-</span>):</span>
+            <span id="summary-voucher-disc" class="font-bold font-mono-data">- Rp 0</span>
+          </div>
+          <div class="flex items-center justify-between pt-3">
+            <div>
+              <span class="text-sm font-black text-white block">TOTAL HARGA:</span>
+              <span class="text-[10px] text-slate-400">Sekali bayar seumur hidup</span>
+            </div>
+            <div id="summary-total-price" class="text-xl sm:text-2xl font-black text-emerald-400 font-mono-data">
+              Rp 0
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" id="btn-submit-order" class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-blue-600 hover:from-emerald-400 hover:to-blue-500 text-slate-950 font-black text-sm sm:text-base shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-98">
+          <span class="material-symbols-outlined text-xl">send</span>
+          <span>Kirim Pemesanan & Konfirmasi via WhatsApp</span>
+        </button>
+
+        <p class="text-[11px] text-slate-400 text-center flex items-center justify-center gap-1.5 pt-1">
+          <span class="material-symbols-outlined text-sm text-emerald-400">verified_user</span>
+          <span>Transaksi Anda terlindungi langsung oleh Sambarang Production.</span>
+        </p>
+      </div>
+
+    </form>
+
+  </main>
+
+  <!-- Modal Konfirmasi Berhasil -->
+  <div id="modal-order-success" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-slate-900 border border-slate-700 rounded-3xl p-6 sm:p-7 shadow-2xl text-center space-y-4 relative">
+      <div class="w-16 h-16 rounded-3xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 mx-auto flex items-center justify-center shadow-lg shadow-emerald-500/20">
+        <span class="material-symbols-outlined text-3xl">check_circle</span>
+      </div>
+
+      <div>
+        <h3 class="text-lg font-black text-white">Pemesanan Berhasil Dikirim!</h3>
+        <p class="text-xs text-slate-300 mt-1">Data pemesanan Anda telah tersimpan di sistem kami.</p>
+      </div>
+
+      <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 text-left text-xs space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-slate-400">ID Pemesanan:</span>
+          <span id="succ-order-id" class="font-mono-data font-bold text-cyan-300">ORD-...</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-slate-400">Nama Pemesan:</span>
+          <span id="succ-buyer-name" class="font-bold text-white">-</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-slate-400">Paket Lisensi:</span>
+          <span id="succ-pkg-name" class="font-semibold text-slate-200">-</span>
+        </div>
+        <div class="flex items-center justify-between border-t border-slate-800 pt-2">
+          <span class="text-slate-400 font-bold">Total Pembayaran:</span>
+          <span id="succ-total-price" class="font-bold text-emerald-400 font-mono-data text-sm">Rp 0</span>
+        </div>
+      </div>
+
+      <div class="space-y-2 pt-2">
+        <a id="btn-open-wa" href="#" target="_blank" class="w-full py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 transition-all">
+          <span class="material-symbols-outlined text-lg">chat</span>
+          <span>Buka WhatsApp & Konfirmasi ke Admin</span>
+        </a>
+        <button onclick="window.location.reload()" class="w-full py-2.5 text-slate-400 hover:text-white font-semibold text-xs">
+          Tutup & Buat Pemesanan Lain
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800/80 bg-slate-950 py-4 px-4 text-center text-xs text-slate-500 relative z-10 mt-6">
+    <div class="max-w-3xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+      <p>Keuanganku PRO • Copyright © 2026 Sambarang Production</p>
+      <p class="text-[11px] text-slate-400">Penyedia Software Keuangan Pribadi & Usaha Berkah</p>
+    </div>
+  </footer>
+
+  <!-- SCRIPT LOGIKA FORM PEMESANAN -->
+  <script>
+    // URL Backend Google Apps Script (Sama dengan Dev Portal & Aplikasi)
+    const DEFAULT_API_URL = "https://script.google.com/macros/s/AKfycbz_uR9fWl6W7hG0xQ3qTfJ1e_d1J_XwZ3k/exec";
+    let apiUrl = localStorage.getItem("KEUANGANKU_DEV_API_URL") || DEFAULT_API_URL;
+
+    // Default Fallback Catalog jika offline / sebelum API merespons
+    const DEFAULT_CATALOG = {
+      sellerWhatsApp: "628123456789",
+      packages: [
+        { id: "pkg-personal", name: "PRO Personal (1 Perangkat)", devices: 1, price: "Rp 99.000", priceNum: 99000, description: "Untuk penggunaan pribadi di 1 HP atau 1 Laptop. Akses seumur hidup.", popular: false },
+        { id: "pkg-multi", name: "PRO Multi-Device (3 Perangkat)", devices: 3, price: "Rp 149.000", priceNum: 149000, description: "Paling Populer! Sinkronisasi otomatis di HP, Laptop, dan Tablet secara hening.", popular: true },
+        { id: "pkg-bisnis", name: "PRO Bisnis (5 Perangkat)", devices: 5, price: "Rp 249.000", priceNum: 249000, description: "Solusi hemat untuk keluarga / tim usaha kecil hingga 5 perangkat bersama.", popular: false },
+        { id: "pkg-master", name: "PRO Developer Master (10 Perangkat)", devices: 10, price: "Rp 499.000", priceNum: 499000, description: "Akses maksimal hingga 10 perangkat untuk profesional / multi-kantor.", popular: false }
+      ],
+      vouchers: [
+        { code: "BERKAH30", type: "fixed", value: 30000, minPrice: 99000, description: "Diskon Berkah Rp 30.000" },
+        { code: "PROMOAKBAR", type: "percent", value: 20, minPrice: 99000, description: "Diskon Peluncuran 20%" }
+      ],
+      paymentAccounts: [
+        { bank: "Transfer BCA", accountNo: "1234567890", accountName: "Muh Akbar", notes: "Konfirmasi cepat" },
+        { bank: "Transfer Mandiri", accountNo: "1234567890123", accountName: "Muh Akbar", notes: "Bank Mandiri" },
+        { bank: "Transfer BRI", accountNo: "123456789012345", accountName: "Muh Akbar", notes: "Bank BRI" },
+        { bank: "QRIS / DANA", accountNo: "08123456789", accountName: "Muh Akbar", notes: "Scan QRIS / E-Wallet" }
+      ]
+    };
+
+    let catalog = DEFAULT_CATALOG;
+    let selectedPackage = null;
+    let appliedVoucher = null;
+    let selectedPaymentMethod = "Transfer BCA";
+
+    // Inisialisasi Halaman
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadCatalogData();
+      renderPackages();
+      renderPaymentAccounts();
+      selectDefaultPackage();
+    });
+
+    async function loadCatalogData() {
+      try {
+        let resp = await fetch(`${apiUrl}?action=get_public_catalog&_t=${Date.now()}`);
+        let res = await resp.json();
+        if (res && res.success) {
+          if (Array.isArray(res.packages) && res.packages.length > 0) catalog.packages = res.packages;
+          if (Array.isArray(res.vouchers)) catalog.vouchers = res.vouchers;
+          if (Array.isArray(res.paymentAccounts) && res.paymentAccounts.length > 0) catalog.paymentAccounts = res.paymentAccounts;
+          if (res.sellerWhatsApp) catalog.sellerWhatsApp = res.sellerWhatsApp;
+        }
+      } catch(e) {
+        console.log("Menggunakan katalog lokal bawaan:", e);
+      }
+    }
+
+    function renderPackages() {
+      let grid = document.getElementById('package-grid');
+      grid.innerHTML = '';
+
+      catalog.packages.forEach((pkg, idx) => {
+        let isPopular = !!pkg.popular;
+        let card = document.createElement('div');
+        card.id = `pkg-card-${pkg.id}`;
+        card.onclick = () => selectPackage(pkg);
+        card.className = `p-4 rounded-2xl border transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between ${
+          isPopular ? 'bg-blue-950/30 border-blue-500/50 hover:border-blue-400' : 'bg-slate-950/60 border-slate-800 hover:border-slate-700'
+        }`;
+
+        card.innerHTML = `
+          ${isPopular ? `
+            <div class="absolute top-0 right-0 bg-gradient-to-l from-amber-500 to-orange-500 text-slate-950 font-black text-[9px] px-2.5 py-0.5 rounded-bl-xl shadow-sm uppercase tracking-wider">
+              ⭐ Paling Populer
+            </div>
+          ` : ''}
+          <div>
+            <div class="flex items-center gap-2">
+              <input type="radio" name="package-radio" id="radio-${pkg.id}" class="text-blue-600 focus:ring-0">
+              <h4 class="font-bold text-white text-sm">${escapeHtml(pkg.name)}</h4>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1.5 leading-relaxed">${escapeHtml(pkg.description || '')}</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
+            <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded bg-blue-500/10 text-blue-300 border border-blue-500/20">
+              <span class="material-symbols-outlined text-xs">devices</span>
+              <span>${pkg.devices} Perangkat</span>
+            </span>
+            <span class="font-mono-data font-extrabold text-sm text-emerald-400">${pkg.price}</span>
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+    }
+
+    function selectDefaultPackage() {
+      if (catalog.packages.length > 0) {
+        let pop = catalog.packages.find(p => p.popular) || catalog.packages[0];
+        selectPackage(pop);
+      }
+    }
+
+    function selectPackage(pkg) {
+      selectedPackage = pkg;
+
+      // Update Radio & visual styles
+      catalog.packages.forEach(p => {
+        let card = document.getElementById(`pkg-card-${p.id}`);
+        let rad = document.getElementById(`radio-${p.id}`);
+        if (card) {
+          if (p.id === pkg.id) {
+            card.classList.add('ring-2', 'ring-blue-500', 'bg-blue-950/40');
+            if (rad) rad.checked = true;
+          } else {
+            card.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-950/40');
+            if (rad) rad.checked = false;
+          }
+        }
+      });
+
+      updateOrderSummary();
+    }
+
+    function applyVoucher() {
+      let codeInput = document.getElementById('voucher-input');
+      let msgBox = document.getElementById('voucher-msg-box');
+      let code = (codeInput ? codeInput.value : '').trim().toUpperCase();
+
+      if (!code) {
+        showVoucherMsg('error', 'Silakan ketikkan kode kupon voucher.');
+        appliedVoucher = null;
+        updateOrderSummary();
+        return;
+      }
+
+      if (!selectedPackage) {
+        showVoucherMsg('error', 'Silakan pilih paket lisensi terlebih dahulu.');
+        return;
+      }
+
+      let v = (catalog.vouchers || []).find(item => item.code.toUpperCase() === code);
+      if (!v) {
+        showVoucherMsg('error', `Kode voucher "${code}" tidak ditemukan atau sudah berakhir.`);
+        appliedVoucher = null;
+        updateOrderSummary();
+        return;
+      }
+
+      let pkgPriceNum = selectedPackage.priceNum || parseInt(String(selectedPackage.price).replace(/[^0-9]/g, '')) || 0;
+      if (v.minPrice && pkgPriceNum < v.minPrice) {
+        showVoucherMsg('error', `Voucher ini hanya berlaku untuk pembelian minimal Rp ${v.minPrice.toLocaleString('id-ID')}.`);
+        appliedVoucher = null;
+        updateOrderSummary();
+        return;
+      }
+
+      appliedVoucher = v;
+      showVoucherMsg('success', `🎉 Voucher "${code}" aktif! ${v.description || 'Potongan harga berhasil diterapkan.'}`);
+      updateOrderSummary();
+    }
+
+    function showVoucherMsg(type, text) {
+      let box = document.getElementById('voucher-msg-box');
+      if (!box) return;
+      box.classList.remove('hidden', 'bg-emerald-500/10', 'text-emerald-300', 'border-emerald-500/30', 'bg-rose-500/10', 'text-rose-300', 'border-rose-500/30');
+      box.classList.add('border');
+
+      if (type === 'success') {
+        box.classList.add('bg-emerald-500/10', 'text-emerald-300', 'border-emerald-500/30');
+      } else {
+        box.classList.add('bg-rose-500/10', 'text-rose-300', 'border-rose-500/30');
+      }
+      box.textContent = text;
+    }
+
+    function updateOrderSummary() {
+      if (!selectedPackage) return;
+
+      let pkgPriceNum = selectedPackage.priceNum || parseInt(String(selectedPackage.price).replace(/[^0-9]/g, '')) || 0;
+      let discountAmount = 0;
+
+      if (appliedVoucher) {
+        if (appliedVoucher.type === 'percent') {
+          discountAmount = Math.round((pkgPriceNum * appliedVoucher.value) / 100);
+        } else {
+          discountAmount = appliedVoucher.value;
+        }
+      }
+
+      let finalPrice = Math.max(0, pkgPriceNum - discountAmount);
+
+      document.getElementById('summary-pkg-name').textContent = selectedPackage.name;
+      document.getElementById('summary-pkg-price').textContent = 'Rp ' + pkgPriceNum.toLocaleString('id-ID');
+
+      let discRow = document.getElementById('summary-discount-row');
+      if (discountAmount > 0) {
+        discRow.classList.remove('hidden');
+        document.getElementById('summary-voucher-code').textContent = appliedVoucher.code;
+        document.getElementById('summary-voucher-disc').textContent = '- Rp ' + discountAmount.toLocaleString('id-ID');
+      } else {
+        discRow.classList.add('hidden');
+      }
+
+      document.getElementById('summary-total-price').textContent = 'Rp ' + finalPrice.toLocaleString('id-ID');
+    }
+
+    function renderPaymentAccounts() {
+      let list = document.getElementById('payment-accounts-list');
+      list.innerHTML = '';
+
+      catalog.paymentAccounts.forEach((acc, idx) => {
+        let isDefault = (idx === 0);
+        let card = document.createElement('div');
+        card.id = `pay-card-${idx}`;
+        card.onclick = () => selectPaymentMethod(acc.bank, idx);
+        card.className = `p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
+          isDefault ? 'bg-slate-900 border-emerald-500/50 ring-1 ring-emerald-500' : 'bg-slate-950 border-slate-800 hover:border-slate-700'
+        }`;
+
+        card.innerHTML = `
+          <div class="space-y-0.5">
+            <span class="font-extrabold text-white text-xs block">${escapeHtml(acc.bank)}</span>
+            <span class="font-mono-data text-xs text-cyan-300 select-all block">${escapeHtml(acc.accountNo)}</span>
+            <span class="text-[10px] text-slate-400 block">a.n ${escapeHtml(acc.accountName)}</span>
+          </div>
+          <button type="button" onclick="event.stopPropagation(); copyAccountNo('${escapeHtml(acc.accountNo)}')" title="Salin nomor rekening"
+            class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-all">
+            <span class="material-symbols-outlined text-xs">content_copy</span>
+            <span>Salin</span>
+          </button>
+        `;
+
+        list.appendChild(card);
+      });
+    }
+
+    function selectPaymentMethod(bankName, idx) {
+      selectedPaymentMethod = bankName;
+      catalog.paymentAccounts.forEach((acc, i) => {
+        let c = document.getElementById(`pay-card-${i}`);
+        if (c) {
+          if (i === idx) {
+            c.className = 'p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 bg-slate-900 border-emerald-500/50 ring-1 ring-emerald-500';
+          } else {
+            c.className = 'p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 bg-slate-950 border-slate-800 hover:border-slate-700';
+          }
+        }
+      });
+    }
+
+    function copyAccountNo(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        alert("Nomor rekening tersalin ke clipboard: " + text);
+      }).catch(() => {
+        prompt("Salin nomor rekening:", text);
+      });
+    }
+
+    async function handlePublicOrderSubmit(e) {
+      e.preventDefault();
+      if (!selectedPackage) {
+        alert("Harap pilih salah satu paket lisensi.");
+        return;
+      }
+
+      let buyerName = document.getElementById('buyer-name').value.trim();
+      let whatsapp = document.getElementById('buyer-wa').value.trim();
+      let email = document.getElementById('buyer-email').value.trim();
+      let paymentProof = document.getElementById('payment-proof').value.trim();
+      let notes = document.getElementById('buyer-notes').value.trim();
+
+      let pkgPriceNum = selectedPackage.priceNum || parseInt(String(selectedPackage.price).replace(/[^0-9]/g, '')) || 0;
+      let discountAmount = 0;
+      if (appliedVoucher) {
+        if (appliedVoucher.type === 'percent') {
+          discountAmount = Math.round((pkgPriceNum * appliedVoucher.value) / 100);
+        } else {
+          discountAmount = appliedVoucher.value;
+        }
+      }
+      let finalPrice = Math.max(0, pkgPriceNum - discountAmount);
+      let finalPriceFormatted = 'Rp ' + finalPrice.toLocaleString('id-ID');
+
+      let btn = document.getElementById('btn-submit-order');
+      let origHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<span class="material-symbols-outlined text-base animate-spin">progress_activity</span> Mengirim Pemesanan...`;
+
+      // Buat Order ID
+      let d = new Date();
+      let dateCompact = d.getFullYear() + ('0' + (d.getMonth() + 1)).slice(-2) + ('0' + d.getDate()).slice(-2);
+      let randDigits = Math.floor(100 + Math.random() * 900);
+      let orderId = "ORD-" + dateCompact + "-" + randDigits;
+
+      let payload = {
+        action: 'submit_public_order',
+        orderId: orderId,
+        buyerName: buyerName,
+        whatsapp: whatsapp,
+        email: email,
+        package: selectedPackage.name,
+        maxDevices: selectedPackage.devices,
+        price: finalPriceFormatted,
+        paymentMethod: selectedPaymentMethod,
+        paymentProof: paymentProof,
+        voucherCode: appliedVoucher ? appliedVoucher.code : '',
+        notes: notes
+      };
+
+      try {
+        let resp = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        let res = await resp.json();
+        if (res && res.orderId) orderId = res.orderId;
+      } catch(err) {
+        console.log("Menggunakan fallback lokal:", err);
+      }
+
+      // Format Pesan WhatsApp Konfirmasi ke Admin
+      let sellerWa = (catalog.sellerWhatsApp || '628123456789').replace(/[^0-9]/g, '');
+      if (sellerWa.startsWith('0')) sellerWa = '62' + sellerWa.slice(1);
+
+      let waMessage = 
+        "Halo Admin *Keuanganku PRO*, saya ingin mengonfirmasi pemesanan lisensi resmi:\n\n" +
+        "🆔 *ID Pemesanan:* `" + orderId + "`\n" +
+        "👤 *Nama Pemesan:* " + buyerName + "\n" +
+        "📱 *WhatsApp:* " + whatsapp + "\n" +
+        "📦 *Paket:* " + selectedPackage.name + " (" + selectedPackage.devices + " Perangkat)\n" +
+        "💰 *Total Bayar:* " + finalPriceFormatted + (appliedVoucher ? " (Voucher: " + appliedVoucher.code + ")" : "") + "\n" +
+        "💳 *Pembayaran via:* " + selectedPaymentMethod + "\n" +
+        "📎 *Bukti Bayar:* " + (paymentProof || "Terlampir di chat ini") + "\n" +
+        (notes ? "📝 *Catatan:* " + notes + "\n" : "") + "\n" +
+        "Mohon diverifikasi dan diterbitkan token lisensi akun saya. Terima kasih! 🙏✨";
+
+      let waUrl = `https://wa.me/${sellerWa}?text=${encodeURIComponent(waMessage)}`;
+
+      // Update Modal Sukses
+      document.getElementById('succ-order-id').textContent = orderId;
+      document.getElementById('succ-buyer-name').textContent = buyerName;
+      document.getElementById('succ-pkg-name').textContent = selectedPackage.name;
+      document.getElementById('succ-total-price').textContent = finalPriceFormatted;
+      document.getElementById('btn-open-wa').href = waUrl;
+
+      document.getElementById('modal-order-success').classList.remove('hidden');
+
+      btn.disabled = false;
+      btn.innerHTML = origHtml;
+
+      // Buka WA langsung
+      setTimeout(() => {
+        window.open(waUrl, '_blank');
+      }, 500);
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+  </script>
+</body>
+</html>

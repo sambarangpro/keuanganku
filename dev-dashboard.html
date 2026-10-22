@@ -332,6 +332,12 @@
                 Daftar Pemesanan (<span id="tab-order-count">0</span>)
               </span>
             </button>
+            <button onclick="switchTab('sales')" id="tab-btn-sales" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+              <span class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm">sell</span>
+                Katalog & Voucher
+              </span>
+            </button>
             <button onclick="switchTab('logs')" id="tab-btn-logs" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
               <span class="flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-sm">history</span>
@@ -506,7 +512,183 @@
           </div>
         </div>
 
-        <!-- 3. TAB KONTEN: AUDIT LOGS -->
+        <!-- 3. TAB KONTEN: KATALOG PENJUALAN, HARGA & VOUCHER -->
+        <div id="tab-content-sales" class="hidden p-4 sm:p-6 space-y-6">
+
+          <!-- BANNER: LINK FORMULIR PEMESANAN PUBLIK -->
+          <div class="p-5 rounded-3xl bg-gradient-to-r from-blue-950/60 via-slate-900 to-indigo-950/40 border border-blue-500/40 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="flex items-start gap-3.5">
+              <div class="w-12 h-12 rounded-2xl bg-blue-600/20 border border-blue-500/30 text-blue-400 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-2xl">public</span>
+              </div>
+              <div class="space-y-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <h3 class="font-extrabold text-white text-sm sm:text-base">Link Formulir Pemesanan Online (Publik)</h3>
+                  <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">ONLINE & AKTIF</span>
+                </div>
+                <p class="text-xs text-slate-300 max-w-2xl leading-relaxed">
+                  Bagikan tautan ini kepada calon pembeli via WhatsApp, Bio Instagram, TikTok, atau website Anda. Pembeli dapat memilih paket, klaim kode voucher, melakukan transfer, dan pesanan otomatis masuk ke dashboard ini!
+                </p>
+                <div class="flex items-center gap-2 pt-1">
+                  <span class="text-[11px] font-mono-data text-cyan-300 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-700/80 truncate max-w-xs sm:max-w-md select-all" id="display-order-form-url">
+                    https://sambarangpro.github.io/keuanganku/pesan.html
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 shrink-0 self-end md:self-center flex-wrap">
+              <button onclick="copyOrderFormLink()" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/25 flex items-center gap-1.5 transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-sm">content_copy</span>
+                <span>Salin Link</span>
+              </button>
+              <a href="pesan.html" target="_blank" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/30 font-bold text-xs rounded-xl flex items-center gap-1.5 transition-all">
+                <span class="material-symbols-outlined text-sm">open_in_new</span>
+                <span>Buka Form</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- BAGIAN 1: DAFTAR PAKET LISENSI & HARGA -->
+          <div class="bg-slate-950/70 border border-slate-800 rounded-3xl p-5 sm:p-6 space-y-4 shadow-sm">
+            <div class="flex items-center justify-between border-b border-slate-800/80 pb-3 flex-wrap gap-2">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-blue-600/15 border border-blue-500/30 text-blue-400 flex items-center justify-center">
+                  <span class="material-symbols-outlined text-lg">inventory_2</span>
+                </div>
+                <div>
+                  <h4 class="font-bold text-white text-sm">Katalog Paket Lisensi & Harga Jual</h4>
+                  <p class="text-[11px] text-slate-400">Atur paket lisensi yang ditampilkan di formulir pemesanan publik dan modal pesanan</p>
+                </div>
+              </div>
+              <button onclick="openPackageModal()" class="px-3.5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md shadow-blue-500/20 transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-sm">add</span>
+                <span>Tambah Paket Baru</span>
+              </button>
+            </div>
+
+            <div class="overflow-x-auto custom-scroll border border-slate-800 rounded-2xl">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-slate-950 text-slate-400 font-semibold border-b border-slate-800">
+                  <tr>
+                    <th class="p-3 whitespace-nowrap">Nama Paket</th>
+                    <th class="p-3 text-center whitespace-nowrap">Kuota Perangkat</th>
+                    <th class="p-3 whitespace-nowrap">Harga Jual</th>
+                    <th class="p-3">Deskripsi Fitur</th>
+                    <th class="p-3 text-center whitespace-nowrap">Highlight Populer</th>
+                    <th class="p-3 sm:px-4 text-right whitespace-nowrap">Tindakan</th>
+                  </tr>
+                </thead>
+                <tbody id="packages-table-body" class="divide-y divide-slate-800/60 font-sans">
+                  <!-- Rendered via JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- BAGIAN 2: MANAJEMEN KODE VOUCHER / KUPON DISKON -->
+          <div class="bg-slate-950/70 border border-slate-800 rounded-3xl p-5 sm:p-6 space-y-4 shadow-sm">
+            <div class="flex items-center justify-between border-b border-slate-800/80 pb-3 flex-wrap gap-2">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center">
+                  <span class="material-symbols-outlined text-lg">local_activity</span>
+                </div>
+                <div>
+                  <h4 class="font-bold text-white text-sm">Manajemen Kode Voucher & Kupon Diskon</h4>
+                  <p class="text-[11px] text-slate-400">Buat kupon potongan harga (nominal tetap Rp atau persentase %) untuk kampanye promosi</p>
+                </div>
+              </div>
+              <button onclick="openVoucherModal()" class="px-3.5 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md shadow-amber-500/20 transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-sm">add</span>
+                <span>Buat Voucher Baru</span>
+              </button>
+            </div>
+
+            <div class="overflow-x-auto custom-scroll border border-slate-800 rounded-2xl">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-slate-950 text-slate-400 font-semibold border-b border-slate-800">
+                  <tr>
+                    <th class="p-3 whitespace-nowrap">Kode Kupon</th>
+                    <th class="p-3 whitespace-nowrap">Tipe Diskon</th>
+                    <th class="p-3 whitespace-nowrap">Nilai Potongan</th>
+                    <th class="p-3 whitespace-nowrap">Min. Belanja</th>
+                    <th class="p-3">Keterangan Promo</th>
+                    <th class="p-3 text-center whitespace-nowrap">Status</th>
+                    <th class="p-3 sm:px-4 text-right whitespace-nowrap">Tindakan</th>
+                  </tr>
+                </thead>
+                <tbody id="vouchers-table-body" class="divide-y divide-slate-800/60 font-sans">
+                  <!-- Rendered via JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- BAGIAN 3: REKENING PEMBAYARAN PEMBELI & WHATSAPP ADMIN -->
+          <div class="bg-slate-950/70 border border-slate-800 rounded-3xl p-5 sm:p-6 space-y-4 shadow-sm">
+            <div class="flex items-center justify-between border-b border-slate-800/80 pb-3 flex-wrap gap-2">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center">
+                  <span class="material-symbols-outlined text-lg">account_balance</span>
+                </div>
+                <div>
+                  <h4 class="font-bold text-white text-sm">Rekening Pembayaran & Kontak WhatsApp Admin</h4>
+                  <p class="text-[11px] text-slate-400">Daftar rekening tujuan transfer pembeli dan nomor WhatsApp yang menerima konfirmasi pesanan</p>
+                </div>
+              </div>
+              <button onclick="openAccountModal()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-emerald-500/30 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-sm">add</span>
+                <span>Tambah Rekening</span>
+              </button>
+            </div>
+
+            <!-- WhatsApp Penerima Notifikasi -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div>
+                <label class="block font-semibold text-slate-300 mb-1">Nomor WhatsApp Admin (Penerima Notifikasi Order):</label>
+                <div class="relative">
+                  <span class="material-symbols-outlined absolute left-3 top-2.5 text-emerald-400 text-base">call</span>
+                  <input type="tel" id="setting-seller-wa" placeholder="08123456789 atau 628..."
+                    class="w-full pl-9 pr-3.5 py-2.5 bg-slate-950 border border-slate-700 focus:border-emerald-400 rounded-xl text-white font-mono-data text-xs outline-none transition-all">
+                </div>
+                <p class="text-[10px] text-slate-500 mt-1">Saat pembeli klik "Kirim Pesanan", WhatsApp akan otomatis membuka chat ke nomor ini.</p>
+              </div>
+
+              <div>
+                <label class="block font-semibold text-slate-300 mb-1">URL Form Pemesanan Publik:</label>
+                <input type="text" id="setting-order-form-url" placeholder="https://sambarangpro.github.io/keuanganku/pesan.html"
+                  class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl text-cyan-300 font-mono-data text-xs outline-none transition-all">
+                <p class="text-[10px] text-slate-500 mt-1">Dapat disesuaikan jika Anda menggunakan custom domain.</p>
+              </div>
+            </div>
+
+            <!-- Tabel Rekening Bank -->
+            <div class="overflow-x-auto custom-scroll border border-slate-800 rounded-2xl pt-2">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-slate-950 text-slate-400 font-semibold border-b border-slate-800">
+                  <tr>
+                    <th class="p-3 whitespace-nowrap">Bank / E-Wallet</th>
+                    <th class="p-3 whitespace-nowrap">Nomor Rekening</th>
+                    <th class="p-3 whitespace-nowrap">Atas Nama</th>
+                    <th class="p-3">Catatan</th>
+                    <th class="p-3 sm:px-4 text-right whitespace-nowrap">Tindakan</th>
+                  </tr>
+                </thead>
+                <tbody id="accounts-table-body" class="divide-y divide-slate-800/60 font-sans">
+                  <!-- Rendered via JavaScript -->
+                </tbody>
+              </table>
+            </div>
+
+            <div class="flex items-center justify-end pt-3">
+              <button onclick="saveSalesSettingsToServer()" id="btn-save-sales-settings" class="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-500/25 flex items-center gap-1.5 cursor-pointer transition-all active:scale-95">
+                <span class="material-symbols-outlined text-sm">save</span>
+                <span>Simpan Seluruh Pengaturan Penjualan</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
         <div id="tab-content-logs" class="hidden p-4 sm:p-6 space-y-3">
           <div class="flex items-center justify-between text-xs text-slate-400 pb-2">
             <span>Riwayat 30 Aktivitas Terakhir (Aktivasi, Validasi, & Blokir)</span>
@@ -893,6 +1075,173 @@
           <button type="submit" id="btn-update-order" class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold shadow-md shadow-blue-500/20 flex items-center gap-1.5 cursor-pointer">
             <span class="material-symbols-outlined text-sm">check</span>
             <span>Perbarui Pemesanan</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: TAMBAH / EDIT PAKET LISENSI         -->
+  <!-- ========================================== -->
+  <div id="modal-package" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-slate-900 border border-slate-700 rounded-3xl p-6 shadow-2xl space-y-4 relative">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-blue-400">inventory_2</span>
+          <h2 id="modal-pkg-title" class="text-base font-extrabold text-white">Tambah Paket Lisensi</h2>
+        </div>
+        <button onclick="closeModal('modal-package')" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+      </div>
+      <form onsubmit="handleSavePackage(event)" class="space-y-3.5 text-xs">
+        <input type="hidden" id="pkg-edit-id">
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Nama Paket Lisensi: <span class="text-rose-400">*</span></label>
+          <input type="text" id="pkg-name" required placeholder="Contoh: PRO Multi-Device (3 Perangkat)"
+            class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white outline-none focus:border-blue-500">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Maksimal Perangkat: <span class="text-rose-400">*</span></label>
+            <input type="number" id="pkg-devices" min="1" max="100" value="3" required
+              class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white outline-none focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Harga Jual (Rp): <span class="text-rose-400">*</span></label>
+            <input type="text" id="pkg-price" required placeholder="Contoh: Rp 149.000"
+              class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-emerald-400 font-bold font-mono-data outline-none focus:border-blue-500">
+          </div>
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Deskripsi Fitur:</label>
+          <textarea id="pkg-desc" rows="2" placeholder="Keunggulan paket ini yang tampil di formulir pemesanan..."
+            class="w-full px-3.5 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white outline-none focus:border-blue-500"></textarea>
+        </div>
+        <div class="p-3 bg-blue-950/30 border border-blue-500/30 rounded-xl flex items-center gap-2.5">
+          <input type="checkbox" id="pkg-popular" class="rounded text-blue-600 focus:ring-blue-500 cursor-pointer">
+          <label for="pkg-popular" class="text-slate-300 cursor-pointer">
+            <strong class="text-white">Tandai sebagai Paket Paling Populer</strong> (Tampil badge bintang di form publik)
+          </label>
+        </div>
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+          <button type="button" onclick="closeModal('modal-package')" class="px-4 py-2 rounded-xl text-slate-400 hover:text-white font-semibold cursor-pointer">Batal</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold flex items-center gap-1.5 shadow-md shadow-blue-500/20 cursor-pointer">
+            <span class="material-symbols-outlined text-sm">save</span>
+            <span>Simpan Paket</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: TAMBAH / EDIT VOUCHER               -->
+  <!-- ========================================== -->
+  <div id="modal-voucher" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-slate-900 border border-slate-700 rounded-3xl p-6 shadow-2xl space-y-4 relative">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-amber-400">local_activity</span>
+          <h2 id="modal-voucher-title" class="text-base font-extrabold text-white">Buat Kode Voucher Baru</h2>
+        </div>
+        <button onclick="closeModal('modal-voucher')" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+      </div>
+      <form onsubmit="handleSaveVoucher(event)" class="space-y-3.5 text-xs">
+        <input type="hidden" id="voucher-edit-idx" value="-1">
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Kode Voucher / Kupon: <span class="text-rose-400">*</span></label>
+          <input type="text" id="voucher-code" required placeholder="Contoh: BERKAH30"
+            class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-amber-300 font-mono-data font-bold uppercase outline-none focus:border-amber-400">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Tipe Potongan:</label>
+            <select id="voucher-type" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white outline-none focus:border-amber-400">
+              <option value="fixed">Nominal Tetap (Rp)</option>
+              <option value="percent">Persentase (%)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Nilai Potongan: <span class="text-rose-400">*</span></label>
+            <input type="number" id="voucher-value" required min="1" placeholder="30000 atau 20"
+              class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white font-mono-data font-bold outline-none focus:border-amber-400">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Min. Pembelian (Rp):</label>
+            <input type="number" id="voucher-min-price" value="0" placeholder="0 jika bebas"
+              class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white font-mono-data outline-none focus:border-amber-400">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Status Kupon:</label>
+            <select id="voucher-status" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white outline-none focus:border-amber-400">
+              <option value="ACTIVE">🟢 Aktif (Bisa Digunakan)</option>
+              <option value="INACTIVE">🔴 Nonaktif (Kedaluwarsa)</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Keterangan Promo:</label>
+          <input type="text" id="voucher-desc" placeholder="Contoh: Diskon berkah Ramadhan Rp 30.000"
+            class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white outline-none focus:border-amber-400">
+        </div>
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+          <button type="button" onclick="closeModal('modal-voucher')" class="px-4 py-2 rounded-xl text-slate-400 hover:text-white font-semibold cursor-pointer">Batal</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold flex items-center gap-1.5 shadow-md shadow-amber-500/20 cursor-pointer">
+            <span class="material-symbols-outlined text-sm">save</span>
+            <span>Simpan Voucher</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: TAMBAH / EDIT REKENING              -->
+  <!-- ========================================== -->
+  <div id="modal-account" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-slate-900 border border-slate-700 rounded-3xl p-6 shadow-2xl space-y-4 relative">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-emerald-400">account_balance</span>
+          <h2 id="modal-account-title" class="text-base font-extrabold text-white">Tambah Rekening Pembayaran</h2>
+        </div>
+        <button onclick="closeModal('modal-account')" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+      </div>
+      <form onsubmit="handleSaveAccount(event)" class="space-y-3.5 text-xs">
+        <input type="hidden" id="account-edit-idx" value="-1">
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Nama Bank / Dompet Digital: <span class="text-rose-400">*</span></label>
+          <input type="text" id="acc-bank" required placeholder="Contoh: Transfer BCA / QRIS / DANA"
+            class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white outline-none focus:border-emerald-400">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Nomor Rekening / No. HP E-Wallet: <span class="text-rose-400">*</span></label>
+          <input type="text" id="acc-number" required placeholder="Contoh: 1234567890"
+            class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-cyan-300 font-mono-data font-bold outline-none focus:border-emerald-400">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Atas Nama (Pemilik): <span class="text-rose-400">*</span></label>
+          <input type="text" id="acc-holder" required placeholder="Contoh: Muh Akbar"
+            class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white outline-none focus:border-emerald-400">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Catatan Tambahan (Opsional):</label>
+          <input type="text" id="acc-notes" placeholder="Contoh: Konfirmasi transfer cepat"
+            class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white outline-none focus:border-emerald-400">
+        </div>
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+          <button type="button" onclick="closeModal('modal-account')" class="px-4 py-2 rounded-xl text-slate-400 hover:text-white font-semibold cursor-pointer">Batal</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5 shadow-md shadow-emerald-500/20 cursor-pointer">
+            <span class="material-symbols-outlined text-sm">save</span>
+            <span>Simpan Rekening</span>
           </button>
         </div>
       </form>
@@ -1380,6 +1729,7 @@
     let currentApiUrl = "";
     let cachedTokens = [];
     let cachedOrders = [];
+    let cachedSalesSettings = null;
     let activeDetailToken = null;
     let deferredDevPrompt = null;
 
@@ -1605,11 +1955,30 @@
           }
         }
 
+        // Load & Cache Sales Settings (Katalog, Voucher, Rekening)
+        if (res.salesSettings && typeof res.salesSettings === 'object') {
+          cachedSalesSettings = res.salesSettings;
+          localStorage.setItem('KEUANGANKU_DEV_SALES_SETTINGS', JSON.stringify(cachedSalesSettings));
+        } else {
+          try {
+            cachedSalesSettings = JSON.parse(localStorage.getItem('KEUANGANKU_DEV_SALES_SETTINGS') || 'null');
+          } catch(e) {
+            cachedSalesSettings = null;
+          }
+        }
+        if (!cachedSalesSettings) {
+          cachedSalesSettings = getDefaultSalesSettingsFallback();
+        }
+
         try {
           renderTokensTable(cachedTokens);
           renderLogsTable(res.recentLogs || []);
           renderOrdersTable(cachedOrders);
           updateOrdersStats(cachedOrders);
+          renderPackagesTable();
+          renderVouchersTable();
+          renderPaymentAccountsTable();
+          initSalesTab();
         } catch(renderErr) {
           console.error("Gagal merender data tabel:", renderErr);
         }
@@ -1857,6 +2226,7 @@
     function switchTab(tab) {
       let tokensTab = document.getElementById('tab-content-tokens');
       let ordersTab = document.getElementById('tab-content-orders');
+      let salesTab = document.getElementById('tab-content-sales');
       let logsTab = document.getElementById('tab-content-logs');
       let settingsTab = document.getElementById('tab-content-settings');
 
@@ -1865,6 +2235,7 @@
 
       let btnTokens = document.getElementById('tab-btn-tokens');
       let btnOrders = document.getElementById('tab-btn-orders');
+      let btnSales = document.getElementById('tab-btn-sales');
       let btnLogs = document.getElementById('tab-btn-logs');
       let btnSettings = document.getElementById('tab-btn-settings');
 
@@ -1874,6 +2245,7 @@
       // Hide all tabs & filters
       if (tokensTab) tokensTab.classList.add('hidden');
       if (ordersTab) ordersTab.classList.add('hidden');
+      if (salesTab) salesTab.classList.add('hidden');
       if (logsTab) logsTab.classList.add('hidden');
       if (settingsTab) settingsTab.classList.add('hidden');
 
@@ -1882,6 +2254,7 @@
 
       if (btnTokens) btnTokens.className = inactiveClass;
       if (btnOrders) btnOrders.className = inactiveClass;
+      if (btnSales) btnSales.className = inactiveClass;
       if (btnLogs) btnLogs.className = inactiveClass;
       if (btnSettings) btnSettings.className = inactiveClass;
 
@@ -1894,6 +2267,10 @@
         if (ordersFilterBar) ordersFilterBar.classList.remove('hidden');
         if (btnOrders) btnOrders.className = activeClass;
         filterOrdersTable();
+      } else if (tab === 'sales') {
+        if (salesTab) salesTab.classList.remove('hidden');
+        if (btnSales) btnSales.className = activeClass;
+        initSalesTab();
       } else if (tab === 'logs') {
         if (logsTab) logsTab.classList.remove('hidden');
         if (btnLogs) btnLogs.className = activeClass;
@@ -2111,11 +2488,11 @@
     }
 
     function openCreateOrderModal() {
+      populateOrderPackageDropdown();
       document.getElementById('modal-create-order').classList.remove('hidden');
       document.getElementById('order-buyer-name').value = '';
       document.getElementById('order-buyer-wa').value = '';
       if (document.getElementById('order-buyer-email')) document.getElementById('order-buyer-email').value = '';
-      document.getElementById('order-package').value = 'PRO Multi-Device (3 Perangkat)';
       onOrderPackageChange();
       if (document.getElementById('order-payment-proof')) document.getElementById('order-payment-proof').value = '';
       document.getElementById('order-notes').value = '';
@@ -3341,6 +3718,621 @@ Copyright © 2026 Sambarang Production`;
 
     function deleteTokenPermanent(tokenStr) {
       confirmAction('delete_token', tokenStr);
+    }
+
+    // ============================================================
+    // MANAJEMEN PENJUALAN: KATALOG PAKET, VOUCHER & REKENING
+    // ============================================================
+
+    function getDefaultSalesSettingsFallback() {
+      return {
+        sellerWhatsApp: "081234567890",
+        orderFormUrl: "https://sambarangpro.github.io/keuanganku/pesan.html",
+        packages: [
+          { id: "pkg-personal", name: "PRO Personal (1 Perangkat)", devices: 1, price: "Rp 99.000", priceNum: 99000, description: "Akses selamanya untuk 1 HP Android atau Laptop. Fitur lengkap tanpa batas.", popular: false },
+          { id: "pkg-multi", name: "PRO Multi-Device (3 Perangkat)", devices: 3, price: "Rp 149.000", priceNum: 149000, description: "Paling Populer! Sinkronisasi otomatis antar 3 perangkat (HP, Laptop, Tablet).", popular: true },
+          { id: "pkg-bisnis", name: "PRO Bisnis (5 Perangkat)", devices: 5, price: "Rp 249.000", priceNum: 249000, description: "Solusi hemat untuk keluarga atau tim usaha kecil hingga 5 perangkat bersama.", popular: false },
+          { id: "pkg-master", name: "PRO Developer Master (10 Perangkat)", devices: 10, price: "Rp 499.000", priceNum: 499000, description: "Akses maksimal hingga 10 perangkat untuk profesional / kantor cabang.", popular: false }
+        ],
+        vouchers: [
+          { code: "BERKAH30", type: "fixed", value: 30000, minPrice: 99000, status: "ACTIVE", description: "Diskon Berkah Ramadhan Rp 30.000" },
+          { code: "PROMOAKBAR", type: "percent", value: 20, minPrice: 99000, status: "ACTIVE", description: "Diskon Spesial 20%" }
+        ],
+        paymentAccounts: [
+          { bank: "Transfer BCA", accountNo: "1234567890", accountName: "Muh Akbar", notes: "Konfirmasi transfer cepat" },
+          { bank: "Transfer Mandiri", accountNo: "1234567890123", accountName: "Muh Akbar", notes: "Bank Mandiri" },
+          { bank: "Transfer BRI", accountNo: "123456789012345", accountName: "Muh Akbar", notes: "Bank BRI" },
+          { bank: "QRIS / DANA / GoPay", accountNo: "08123456789", accountName: "Muh Akbar", notes: "Scan QRIS / E-Wallet instant" }
+        ]
+      };
+    }
+
+    function populateOrderPackageDropdown() {
+      let sel = document.getElementById('order-package');
+      if (!sel) return;
+      let pkgs = (cachedSalesSettings && Array.isArray(cachedSalesSettings.packages) && cachedSalesSettings.packages.length > 0)
+        ? cachedSalesSettings.packages
+        : getDefaultSalesSettingsFallback().packages;
+
+      let currentVal = sel.value;
+      sel.innerHTML = '';
+      pkgs.forEach((p) => {
+        let opt = document.createElement('option');
+        opt.value = p.name;
+        opt.setAttribute('data-devices', p.devices);
+        opt.setAttribute('data-price', p.price);
+        opt.textContent = `${p.name} - ${p.price}`;
+        sel.appendChild(opt);
+      });
+
+      let optCustom = document.createElement('option');
+      optCustom.value = 'CUSTOM';
+      optCustom.setAttribute('data-devices', '2');
+      optCustom.setAttribute('data-price', '');
+      optCustom.textContent = 'Custom / Manual...';
+      sel.appendChild(optCustom);
+
+      if (currentVal && [...sel.options].some(o => o.value === currentVal)) {
+        sel.value = currentVal;
+      } else if (sel.options.length > 0) {
+        let popIdx = pkgs.findIndex(p => p.popular);
+        sel.selectedIndex = popIdx >= 0 ? popIdx : 0;
+      }
+    }
+
+    function initSalesTab() {
+      if (!cachedSalesSettings) {
+        cachedSalesSettings = getDefaultSalesSettingsFallback();
+      }
+
+      let waInp = document.getElementById('setting-seller-wa');
+      let urlInp = document.getElementById('setting-order-form-url');
+      let urlDisp = document.getElementById('display-order-form-url');
+
+      if (waInp && !waInp.value) {
+        waInp.value = cachedSalesSettings.sellerWhatsApp || '08123456789';
+      }
+      if (urlInp && !urlInp.value) {
+        urlInp.value = cachedSalesSettings.orderFormUrl || 'https://sambarangpro.github.io/keuanganku/pesan.html';
+      }
+      if (urlDisp) {
+        urlDisp.textContent = (urlInp && urlInp.value) ? urlInp.value : (cachedSalesSettings.orderFormUrl || 'https://sambarangpro.github.io/keuanganku/pesan.html');
+      }
+
+      renderPackagesTable();
+      renderVouchersTable();
+      renderPaymentAccountsTable();
+    }
+
+    function copyOrderFormLink() {
+      let urlInput = document.getElementById('setting-order-form-url');
+      let url = (urlInput && urlInput.value) ? urlInput.value.trim() : (cachedSalesSettings && cachedSalesSettings.orderFormUrl) || 'https://sambarangpro.github.io/keuanganku/pesan.html';
+      copyText(url, "Link Formulir Pemesanan berhasil disalin ke clipboard!");
+    }
+
+    // --- PACKAGES CRUD ---
+    function renderPackagesTable() {
+      let tbody = document.getElementById('packages-table-body');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      let list = (cachedSalesSettings && Array.isArray(cachedSalesSettings.packages)) ? cachedSalesSettings.packages : [];
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-500 font-sans">Belum ada paket lisensi yang terdaftar. Klik <b>Tambah Paket Baru</b> di atas.</td></tr>`;
+        return;
+      }
+
+      list.forEach((p) => {
+        let tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-900/60 transition-colors";
+        let popularBadge = p.popular
+          ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 inline-flex items-center gap-1 shadow-sm"><span class="material-symbols-outlined text-xs">star</span> POPULER</span>`
+          : `<span class="text-slate-600 text-xs">-</span>`;
+
+        tr.innerHTML = `
+          <td class="p-3">
+            <div class="font-bold text-white text-xs">${escapeHtml(p.name)}</div>
+            <div class="text-[10px] text-slate-500 font-mono-data">ID: ${escapeHtml(p.id)}</div>
+          </td>
+          <td class="p-3 text-center whitespace-nowrap">
+            <span class="px-2.5 py-1 rounded-xl text-xs font-bold font-mono-data bg-cyan-950/60 text-cyan-300 border border-cyan-500/30">
+              ${p.devices} Device
+            </span>
+          </td>
+          <td class="p-3 whitespace-nowrap">
+            <span class="font-bold font-mono-data text-emerald-400 text-xs">${escapeHtml(p.price)}</span>
+          </td>
+          <td class="p-3 text-slate-300 max-w-xs text-xs">
+            ${escapeHtml(p.description || p.desc || '-')}
+          </td>
+          <td class="p-3 text-center whitespace-nowrap">
+            ${popularBadge}
+          </td>
+          <td class="p-3 sm:px-4 text-right whitespace-nowrap">
+            <div class="flex items-center justify-end gap-1.5">
+              <button onclick="openPackageModal('${escapeHtml(p.id)}')" class="p-1.5 rounded-lg text-slate-400 hover:text-blue-400 hover:bg-blue-950/40 transition-colors cursor-pointer" title="Edit Paket">
+                <span class="material-symbols-outlined text-base">edit</span>
+              </button>
+              <button onclick="deletePackage('${escapeHtml(p.id)}')" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 transition-colors cursor-pointer" title="Hapus Paket">
+                <span class="material-symbols-outlined text-base">delete</span>
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function openPackageModal(id = null) {
+      let modal = document.getElementById('modal-package');
+      let title = document.getElementById('modal-pkg-title');
+      let editId = document.getElementById('pkg-edit-id');
+      let nameInp = document.getElementById('pkg-name');
+      let devInp = document.getElementById('pkg-devices');
+      let priceInp = document.getElementById('pkg-price');
+      let descInp = document.getElementById('pkg-desc');
+      let popInp = document.getElementById('pkg-popular');
+
+      if (id) {
+        let pkg = (cachedSalesSettings && cachedSalesSettings.packages) ? cachedSalesSettings.packages.find(p => p.id === id) : null;
+        if (!pkg) return;
+        title.textContent = "Edit Paket Lisensi";
+        editId.value = pkg.id;
+        nameInp.value = pkg.name || '';
+        devInp.value = pkg.devices || 1;
+        priceInp.value = pkg.price || '';
+        descInp.value = pkg.description || pkg.desc || '';
+        popInp.checked = !!pkg.popular;
+      } else {
+        title.textContent = "Tambah Paket Lisensi";
+        editId.value = "";
+        nameInp.value = "";
+        devInp.value = 3;
+        priceInp.value = "Rp 149.000";
+        descInp.value = "";
+        popInp.checked = false;
+      }
+
+      modal.classList.remove('hidden');
+      nameInp.focus();
+    }
+
+    async function handleSavePackage(e) {
+      e.preventDefault();
+      let editId = document.getElementById('pkg-edit-id').value.trim();
+      let name = document.getElementById('pkg-name').value.trim();
+      let devices = parseInt(document.getElementById('pkg-devices').value) || 1;
+      let price = document.getElementById('pkg-price').value.trim();
+      let desc = document.getElementById('pkg-desc').value.trim();
+      let popular = document.getElementById('pkg-popular').checked;
+      let priceNum = parseInt(price.replace(/[^0-9]/g, '')) || 0;
+
+      if (!name || !price) {
+        showToast('error', 'Nama paket dan harga harus diisi!');
+        return;
+      }
+
+      if (!cachedSalesSettings) cachedSalesSettings = getDefaultSalesSettingsFallback();
+      if (!Array.isArray(cachedSalesSettings.packages)) cachedSalesSettings.packages = [];
+
+      // If popular checked, uncheck popular for others
+      if (popular) {
+        cachedSalesSettings.packages.forEach(p => p.popular = false);
+      }
+
+      if (editId) {
+        let idx = cachedSalesSettings.packages.findIndex(p => p.id === editId);
+        if (idx >= 0) {
+          cachedSalesSettings.packages[idx] = {
+            id: editId,
+            name,
+            devices,
+            price,
+            priceNum,
+            description: desc,
+            popular
+          };
+          showToast('success', `Paket "${name}" berhasil diperbarui!`);
+        }
+      } else {
+        let newId = 'pkg-' + Date.now().toString(36);
+        cachedSalesSettings.packages.push({
+          id: newId,
+          name,
+          devices,
+          price,
+          priceNum,
+          description: desc,
+          popular
+        });
+        showToast('success', `Paket baru "${name}" berhasil ditambahkan!`);
+      }
+
+      localStorage.setItem('KEUANGANKU_DEV_SALES_SETTINGS', JSON.stringify(cachedSalesSettings));
+      closeModal('modal-package');
+      renderPackagesTable();
+      populateOrderPackageDropdown();
+      saveSalesSettingsToServer(true);
+    }
+
+    async function deletePackage(id) {
+      if (!cachedSalesSettings || !Array.isArray(cachedSalesSettings.packages)) return;
+      let pkg = cachedSalesSettings.packages.find(p => p.id === id);
+      if (!pkg) return;
+
+      if (!confirm(`Hapus paket lisensi "${pkg.name}"?\nPaket ini tidak akan muncul lagi di form pemesanan.`)) return;
+
+      cachedSalesSettings.packages = cachedSalesSettings.packages.filter(p => p.id !== id);
+      localStorage.setItem('KEUANGANKU_DEV_SALES_SETTINGS', JSON.stringify(cachedSalesSettings));
+      renderPackagesTable();
+      populateOrderPackageDropdown();
+      showToast('info', `Paket "${pkg.name}" telah dihapus.`);
+      saveSalesSettingsToServer(true);
+    }
+
+    // --- VOUCHERS CRUD ---
+    function renderVouchersTable() {
+      let tbody = document.getElementById('vouchers-table-body');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      let list = (cachedSalesSettings && Array.isArray(cachedSalesSettings.vouchers)) ? cachedSalesSettings.vouchers : [];
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-500 font-sans">Belum ada kode voucher diskon. Klik <b>Buat Voucher Baru</b> di atas untuk membuat promo.</td></tr>`;
+        return;
+      }
+
+      list.forEach((v, idx) => {
+        let tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-900/60 transition-colors";
+        let isAct = String(v.status || 'ACTIVE').toUpperCase() === 'ACTIVE';
+
+        let discountDisplay = v.type === 'percent'
+          ? `<span class="font-bold text-amber-400 font-mono-data text-xs">${v.value}% OFF</span>`
+          : `<span class="font-bold text-emerald-400 font-mono-data text-xs">-Rp ${Number(v.value).toLocaleString('id-ID')}</span>`;
+
+        let minDisplay = (v.minPrice && v.minPrice > 0)
+          ? `<span class="font-mono-data text-slate-300 text-xs">Rp ${Number(v.minPrice).toLocaleString('id-ID')}</span>`
+          : `<span class="text-slate-500 text-xs font-semibold">Tanpa Min.</span>`;
+
+        let statusBadge = isAct
+          ? `<button onclick="toggleVoucherStatus(${idx})" class="px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 cursor-pointer hover:bg-emerald-500/30 transition-all inline-flex items-center gap-1">🟢 AKTIF</button>`
+          : `<button onclick="toggleVoucherStatus(${idx})" class="px-2.5 py-1 rounded-full text-[10px] font-black bg-rose-500/20 text-rose-400 border border-rose-500/40 cursor-pointer hover:bg-rose-500/30 transition-all inline-flex items-center gap-1">🔴 NONAKTIF</button>`;
+
+        tr.innerHTML = `
+          <td class="p-3">
+            <span class="px-2.5 py-1 bg-amber-500/15 border border-amber-500/30 text-amber-300 font-mono-data font-black rounded-lg text-xs select-all">
+              ${escapeHtml(v.code)}
+            </span>
+          </td>
+          <td class="p-3 text-slate-300 text-xs whitespace-nowrap">
+            ${v.type === 'percent' ? 'Persentase (%)' : 'Nominal Tetap (Rp)'}
+          </td>
+          <td class="p-3 whitespace-nowrap">
+            ${discountDisplay}
+          </td>
+          <td class="p-3 whitespace-nowrap">
+            ${minDisplay}
+          </td>
+          <td class="p-3 text-slate-300 max-w-xs text-xs">
+            ${escapeHtml(v.description || v.desc || '-')}
+          </td>
+          <td class="p-3 text-center whitespace-nowrap">
+            ${statusBadge}
+          </td>
+          <td class="p-3 sm:px-4 text-right whitespace-nowrap">
+            <div class="flex items-center justify-end gap-1.5">
+              <button onclick="openVoucherModal(${idx})" class="p-1.5 rounded-lg text-slate-400 hover:text-amber-400 hover:bg-amber-950/40 transition-colors cursor-pointer" title="Edit Voucher">
+                <span class="material-symbols-outlined text-base">edit</span>
+              </button>
+              <button onclick="deleteVoucher(${idx})" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 transition-colors cursor-pointer" title="Hapus Voucher">
+                <span class="material-symbols-outlined text-base">delete</span>
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function openVoucherModal(idx = -1) {
+      let modal = document.getElementById('modal-voucher');
+      let title = document.getElementById('modal-voucher-title');
+      let editIdx = document.getElementById('voucher-edit-idx');
+      let codeInp = document.getElementById('voucher-code');
+      let typeInp = document.getElementById('voucher-type');
+      let valInp = document.getElementById('voucher-value');
+      let minInp = document.getElementById('voucher-min-price');
+      let stInp = document.getElementById('voucher-status');
+      let descInp = document.getElementById('voucher-desc');
+
+      if (idx >= 0) {
+        let v = cachedSalesSettings.vouchers[idx];
+        if (!v) return;
+        title.textContent = "Edit Kode Voucher";
+        editIdx.value = idx;
+        codeInp.value = v.code || '';
+        typeInp.value = v.type || 'fixed';
+        valInp.value = v.value || 0;
+        minInp.value = v.minPrice || 0;
+        stInp.value = v.status || 'ACTIVE';
+        descInp.value = v.description || v.desc || '';
+      } else {
+        title.textContent = "Buat Kode Voucher Baru";
+        editIdx.value = -1;
+        codeInp.value = "";
+        typeInp.value = "fixed";
+        valInp.value = 30000;
+        minInp.value = 0;
+        stInp.value = "ACTIVE";
+        descInp.value = "";
+      }
+
+      modal.classList.remove('hidden');
+      codeInp.focus();
+    }
+
+    async function handleSaveVoucher(e) {
+      e.preventDefault();
+      let editIdx = parseInt(document.getElementById('voucher-edit-idx').value);
+      let code = document.getElementById('voucher-code').value.trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '');
+      let type = document.getElementById('voucher-type').value;
+      let val = Number(document.getElementById('voucher-value').value) || 0;
+      let minPrice = Number(document.getElementById('voucher-min-price').value) || 0;
+      let status = document.getElementById('voucher-status').value;
+      let desc = document.getElementById('voucher-desc').value.trim();
+
+      if (!code || val <= 0) {
+        showToast('error', 'Kode voucher dan nilai potongan harus valid!');
+        return;
+      }
+
+      if (!cachedSalesSettings) cachedSalesSettings = getDefaultSalesSettingsFallback();
+      if (!Array.isArray(cachedSalesSettings.vouchers)) cachedSalesSettings.vouchers = [];
+
+      let voucherData = {
+        code,
+        type,
+        value: val,
+        minPrice,
+        status,
+        description: desc
+      };
+
+      if (editIdx >= 0 && editIdx < cachedSalesSettings.vouchers.length) {
+        cachedSalesSettings.vouchers[editIdx] = voucherData;
+        showToast('success', `Voucher "${code}" berhasil diperbarui!`);
+      } else {
+        cachedSalesSettings.vouchers.push(voucherData);
+        showToast('success', `Voucher baru "${code}" berhasil dibuat!`);
+      }
+
+      localStorage.setItem('KEUANGANKU_DEV_SALES_SETTINGS', JSON.stringify(cachedSalesSettings));
+      closeModal('modal-voucher');
+      renderVouchersTable();
+      saveSalesSettingsToServer(true);
+    }
+
+    function toggleVoucherStatus(idx) {
+      if (!cachedSalesSettings || !Array.isArray(cachedSalesSettings.vouchers)) return;
+      let v = cachedSalesSettings.vouchers[idx];
+      if (!v) return;
+
+      v.status = (v.status === 'ACTIVE') ? 'INACTIVE' : 'ACTIVE';
+      localStorage.setItem('KEUANGANKU_DEV_SALES_SETTINGS', JSON.stringify(cachedSalesSettings));
+      renderVouchersTable();
+      showToast('info', `Status voucher "${v.code}" diubah menjadi ${v.status}.`);
+      saveSalesSettingsToServer(true);
+    }
+
+    function deleteVoucher(idx) {
+      if (!cachedSalesSettings || !Array.isArray(cachedSalesSettings.vouchers)) return;
+      let v = cachedSalesSettings.vouchers[idx];
+      if (!v) return;
+
+      if (!confirm(`Hapus kode voucher "${v.code}"?`)) return;
+
+      cachedSalesSettings.vouchers.splice(idx, 1);
+      localStorage.setItem('KEUANGANKU_DEV_SALES_SETTINGS', JSON.stringify(cachedSalesSettings));
+      renderVouchersTable();
+      showToast('info', `Kode voucher "${v.code}" telah dihapus.`);
+      saveSalesSettingsToServer(true);
+    }
+
+    // --- REKENING PEMBAYARAN CRUD ---
+    function renderPaymentAccountsTable() {
+      let tbody = document.getElementById('accounts-table-body');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      let list = (cachedSalesSettings && Array.isArray(cachedSalesSettings.paymentAccounts)) ? cachedSalesSettings.paymentAccounts : [];
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500 font-sans">Belum ada rekening pembayaran. Klik <b>Tambah Rekening</b> di atas.</td></tr>`;
+        return;
+      }
+
+      list.forEach((acc, idx) => {
+        let tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-900/60 transition-colors";
+        let noStr = acc.accountNo || acc.number || '-';
+        let nameStr = acc.accountName || acc.holder || '-';
+
+        tr.innerHTML = `
+          <td class="p-3">
+            <div class="font-extrabold text-white text-xs">${escapeHtml(acc.bank)}</div>
+          </td>
+          <td class="p-3 whitespace-nowrap">
+            <span class="font-mono-data text-cyan-300 font-bold text-xs select-all bg-slate-950 px-2 py-1 rounded-lg border border-slate-800">
+              ${escapeHtml(noStr)}
+            </span>
+          </td>
+          <td class="p-3 whitespace-nowrap">
+            <span class="text-white text-xs font-semibold">${escapeHtml(nameStr)}</span>
+          </td>
+          <td class="p-3 text-slate-300 max-w-xs text-xs">
+            ${escapeHtml(acc.notes || '-')}
+          </td>
+          <td class="p-3 sm:px-4 text-right whitespace-nowrap">
+            <div class="flex items-center justify-end gap-1.5">
+              <button onclick="openAccountModal(${idx})" class="p-1.5 rounded-lg text-slate-400 hover:text-emerald-400 hover:bg-emerald-950/40 transition-colors cursor-pointer" title="Edit Rekening">
+                <span class="material-symbols-outlined text-base">edit</span>
+              </button>
+              <button onclick="deleteAccount(${idx})" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 transition-colors cursor-pointer" title="Hapus Rekening">
+                <span class="material-symbols-outlined text-base">delete</span>
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function openAccountModal(idx = -1) {
+      let modal = document.getElementById('modal-account');
+      let title = document.getElementById('modal-account-title');
+      let editIdx = document.getElementById('account-edit-idx');
+      let bankInp = document.getElementById('acc-bank');
+      let numInp = document.getElementById('acc-number');
+      let holderInp = document.getElementById('acc-holder');
+      let notesInp = document.getElementById('acc-notes');
+
+      if (idx >= 0) {
+        let acc = cachedSalesSettings.paymentAccounts[idx];
+        if (!acc) return;
+        title.textContent = "Edit Rekening Pembayaran";
+        editIdx.value = idx;
+        bankInp.value = acc.bank || '';
+        numInp.value = acc.accountNo || acc.number || '';
+        holderInp.value = acc.accountName || acc.holder || '';
+        notesInp.value = acc.notes || '';
+      } else {
+        title.textContent = "Tambah Rekening Pembayaran";
+        editIdx.value = -1;
+        bankInp.value = "";
+        numInp.value = "";
+        holderInp.value = "";
+        notesInp.value = "";
+      }
+
+      modal.classList.remove('hidden');
+      bankInp.focus();
+    }
+
+    async function handleSaveAccount(e) {
+      e.preventDefault();
+      let editIdx = parseInt(document.getElementById('account-edit-idx').value);
+      let bank = document.getElementById('acc-bank').value.trim();
+      let number = document.getElementById('acc-number').value.trim();
+      let holder = document.getElementById('acc-holder').value.trim();
+      let notes = document.getElementById('acc-notes').value.trim();
+
+      if (!bank || !number || !holder) {
+        showToast('error', 'Bank, nomor rekening, dan nama pemilik harus diisi!');
+        return;
+      }
+
+      if (!cachedSalesSettings) cachedSalesSettings = getDefaultSalesSettingsFallback();
+      if (!Array.isArray(cachedSalesSettings.paymentAccounts)) cachedSalesSettings.paymentAccounts = [];
+
+      let accountData = {
+        bank,
+        accountNo: number,
+        accountName: holder,
+        notes
+      };
+
+      if (editIdx >= 0 && editIdx < cachedSalesSettings.paymentAccounts.length) {
+        cachedSalesSettings.paymentAccounts[editIdx] = accountData;
+        showToast('success', `Rekening "${bank}" berhasil diperbarui!`);
+      } else {
+        cachedSalesSettings.paymentAccounts.push(accountData);
+        showToast('success', `Rekening "${bank}" berhasil ditambahkan!`);
+      }
+
+      localStorage.setItem('KEUANGANKU_DEV_SALES_SETTINGS', JSON.stringify(cachedSalesSettings));
+      closeModal('modal-account');
+      renderPaymentAccountsTable();
+      saveSalesSettingsToServer(true);
+    }
+
+    function deleteAccount(idx) {
+      if (!cachedSalesSettings || !Array.isArray(cachedSalesSettings.paymentAccounts)) return;
+      let acc = cachedSalesSettings.paymentAccounts[idx];
+      if (!acc) return;
+
+      if (!confirm(`Hapus rekening pembayaran "${acc.bank} - ${acc.accountNo || acc.number}"?`)) return;
+
+      cachedSalesSettings.paymentAccounts.splice(idx, 1);
+      localStorage.setItem('KEUANGANKU_DEV_SALES_SETTINGS', JSON.stringify(cachedSalesSettings));
+      renderPaymentAccountsTable();
+      showToast('info', `Rekening "${acc.bank}" telah dihapus.`);
+      saveSalesSettingsToServer(true);
+    }
+
+    // --- SAVE ALL SALES SETTINGS TO SERVER ---
+    async function saveSalesSettingsToServer(isSilent = false) {
+      if (!cachedSalesSettings) {
+        cachedSalesSettings = getDefaultSalesSettingsFallback();
+      }
+
+      let waInp = document.getElementById('setting-seller-wa');
+      let urlInp = document.getElementById('setting-order-form-url');
+      let urlDisp = document.getElementById('display-order-form-url');
+
+      if (waInp && waInp.value) {
+        cachedSalesSettings.sellerWhatsApp = waInp.value.trim();
+      }
+      if (urlInp && urlInp.value) {
+        cachedSalesSettings.orderFormUrl = urlInp.value.trim();
+        if (urlDisp) urlDisp.textContent = cachedSalesSettings.orderFormUrl;
+      }
+
+      localStorage.setItem('KEUANGANKU_DEV_SALES_SETTINGS', JSON.stringify(cachedSalesSettings));
+
+      let btn = document.getElementById('btn-save-sales-settings');
+      let origBtnHtml = btn ? btn.innerHTML : '';
+      if (!isSilent && btn) {
+        btn.innerHTML = `<span class="material-symbols-outlined text-sm animate-spin">progress_activity</span> <span>Menyimpan ke Cloud...</span>`;
+        btn.disabled = true;
+      }
+
+      try {
+        let payload = {
+          action: "admin_save_sales_settings",
+          adminPassword: currentAdminPassword,
+          sellerWhatsApp: cachedSalesSettings.sellerWhatsApp,
+          orderFormUrl: cachedSalesSettings.orderFormUrl,
+          packages: cachedSalesSettings.packages,
+          vouchers: cachedSalesSettings.vouchers,
+          paymentAccounts: cachedSalesSettings.paymentAccounts
+        };
+
+        let resp = await fetch(currentApiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payload)
+        });
+        let res = await resp.json();
+
+        if (res.success) {
+          if (!isSilent) {
+            showToast('success', '✅ Seluruh pengaturan penjualan & katalog berhasil disimpan ke Cloud Apps Script!');
+          }
+        } else {
+          if (!isSilent) {
+            showToast('error', res.message || 'Gagal menyimpan ke server Apps Script.');
+          }
+        }
+      } catch(err) {
+        if (!isSilent) {
+          showToast('info', 'Tersimpan secara lokal di browser. Pastikan Apps Script aktif dan terhubung untuk sinkronisasi cloud.');
+        }
+      }
+
+      if (!isSilent && btn) {
+        btn.innerHTML = origBtnHtml;
+        btn.disabled = false;
+      }
     }
 
     // ============================================================

@@ -533,6 +533,21 @@ function handleRequest(params) {
         break;
 
       // -------------------------------------------------------------
+      // API KATALOG PENJUALAN, VOUCHER & FORM PEMESANAN PUBLIK
+      // -------------------------------------------------------------
+      case "get_public_catalog":
+        result = getPublicCatalog(params);
+        break;
+
+      case "submit_public_order":
+        result = submitPublicOrder(params);
+        break;
+
+      case "admin_save_sales_settings":
+        result = adminSaveSalesSettings(params);
+        break;
+
+      // -------------------------------------------------------------
       // API SINKRONISASI DATA KEUANGAN PENGGUNA
       // -------------------------------------------------------------
       case "get_financial_data":
@@ -1360,7 +1375,8 @@ function adminGetData(params) {
     },
     tokens: tokensList,
     orders: ordersList,
-    recentLogs: recentLogs
+    recentLogs: recentLogs,
+    salesSettings: getStoredSalesSettings()
   };
 }
 
@@ -1850,5 +1866,180 @@ function adminProcessOrderLicense(params) {
     token: tokenToUse,
     orderId: orderId,
     waMessage: waMessage
+  };
+}
+
+// ============================================================
+// MANAJEMEN KATALOG PAKET, VOUCHER & PENJUALAN
+// ============================================================
+
+function getDefaultSalesSettings() {
+  return {
+    sellerWhatsApp: "628123456789",
+    orderFormUrl: "https://sambarangpro.github.io/keuanganku/pesan.html",
+    packages: [
+      { id: "pkg-personal", name: "PRO Personal (1 Perangkat)", devices: 1, price: "Rp 99.000", priceNum: 99000, description: "Untuk penggunaan pribadi di 1 HP atau 1 Laptop. Akses seumur hidup.", popular: false },
+      { id: "pkg-multi", name: "PRO Multi-Device (3 Perangkat)", devices: 3, price: "Rp 149.000", priceNum: 149000, description: "Paling Populer! Sinkronisasi otomatis di HP, Laptop, dan Tablet secara hening.", popular: true },
+      { id: "pkg-bisnis", name: "PRO Bisnis (5 Perangkat)", devices: 5, price: "Rp 249.000", priceNum: 249000, description: "Solusi hemat untuk keluarga / tim usaha kecil hingga 5 perangkat bersama.", popular: false },
+      { id: "pkg-master", name: "PRO Developer Master (10 Perangkat)", devices: 10, price: "Rp 499.000", priceNum: 499000, description: "Akses maksimal hingga 10 perangkat untuk profesional / multi-kantor.", popular: false }
+    ],
+    vouchers: [
+      { code: "BERKAH30", type: "fixed", value: 30000, minPrice: 99000, status: "ACTIVE", description: "Diskon Spesial Berkah Rp 30.000" },
+      { code: "PROMOAKBAR", type: "percent", value: 20, minPrice: 99000, status: "ACTIVE", description: "Diskon Peluncuran 20%" }
+    ],
+    paymentAccounts: [
+      { bank: "Transfer BCA", accountNo: "1234567890", accountName: "Muh Akbar", notes: "Konfirmasi transfer cepat" },
+      { bank: "Transfer Mandiri", accountNo: "1234567890123", accountName: "Muh Akbar", notes: "Bank Mandiri" },
+      { bank: "Transfer BRI", accountNo: "123456789012345", accountName: "Muh Akbar", notes: "Bank BRI" },
+      { bank: "QRIS / DANA", accountNo: "08123456789", accountName: "Muh Akbar", notes: "Scan QRIS / Transfer E-Wallet" }
+    ]
+  };
+}
+
+function getStoredSalesSettings() {
+  try {
+    var raw = PropertiesService.getScriptProperties().getProperty("KEUANGANKU_SALES_SETTINGS");
+    if (raw) {
+      var parsed = JSON.parse(raw);
+      if (parsed && Array.isArray(parsed.packages) && parsed.packages.length > 0) {
+        return parsed;
+      }
+    }
+  } catch(e) {}
+  return getDefaultSalesSettings();
+}
+
+function getPublicCatalog(params) {
+  var settings = getStoredSalesSettings();
+  var publicVouchers = (settings.vouchers || []).filter(function(v) {
+    return String(v.status || "ACTIVE").toUpperCase() === "ACTIVE";
+  }).map(function(v) {
+    return {
+      code: String(v.code || "").toUpperCase(),
+      type: v.type || "fixed",
+      value: Number(v.value) || 0,
+      minPrice: Number(v.minPrice) || 0,
+      description: v.description || ""
+    };
+  });
+
+  return {
+    success: true,
+    packages: settings.packages || [],
+    vouchers: publicVouchers,
+    paymentAccounts: settings.paymentAccounts || [],
+    sellerWhatsApp: settings.sellerWhatsApp || "",
+    orderFormUrl: settings.orderFormUrl || ""
+  };
+}
+
+function submitPublicOrder(params) {
+  var buyerName = (params.buyerName || "").trim();
+  var whatsapp = (params.whatsapp || "").trim();
+  var email = (params.email || "").trim();
+  var pkg = (params.package || "PRO Personal (1 Perangkat)").trim();
+  var maxDevices = parseInt(params.maxDevices) || 1;
+  var price = (params.price || "Rp 99.000").trim();
+  var paymentMethod = (params.paymentMethod || "Transfer BCA").trim();
+  var paymentProof = (params.paymentProof || "").trim();
+  var voucherCode = (params.voucherCode || "").trim().toUpperCase();
+  var notes = (params.notes || "").trim();
+
+  if (!buyerName) return { success: false, message: "Nama pemesan wajib diisi." };
+  if (!whatsapp) return { success: false, message: "Nomor WhatsApp aktif wajib diisi." };
+
+  var ss = getSpreadsheet();
+  var sheet = ss.getSheetByName(SHEET_ORDERS);
+  if (!sheet) {
+    initSheets();
+    sheet = ss.getSheetByName(SHEET_ORDERS);
+  }
+
+  var nowStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
+  var dateCompact = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyyMMdd");
+  var randDigits = Math.floor(100 + Math.random() * 900);
+  var orderId = "ORD-" + dateCompact + "-" + randDigits;
+
+  var fullNotes = notes;
+  if (voucherCode) {
+    fullNotes = (fullNotes ? fullNotes + " | " : "") + "Voucher: " + voucherCode;
+  }
+
+  var lastCol = sheet.getLastColumn();
+  var ordHeaders = lastCol > 0 ? sheet.getRange(1, 1, 1, lastCol).getValues()[0] : [];
+  var ordColMap = getOrderColumnIndexes(ordHeaders);
+
+  if (ordHeaders.length >= 14 || (ordColMap.paymentProof !== undefined && ordColMap.paymentProof === 9)) {
+    sheet.appendRow([
+      orderId,
+      nowStr,
+      buyerName,
+      whatsapp,
+      email,
+      pkg,
+      maxDevices,
+      price,
+      paymentMethod,
+      paymentProof,
+      "PENDING",
+      "", // token belum terbit
+      fullNotes,
+      nowStr
+    ]);
+  } else {
+    sheet.appendRow([
+      orderId,
+      nowStr,
+      buyerName,
+      whatsapp,
+      email,
+      pkg,
+      maxDevices,
+      price,
+      paymentMethod,
+      "PENDING",
+      "",
+      fullNotes + (paymentProof ? " [Bukti: " + paymentProof + "]" : ""),
+      nowStr
+    ]);
+  }
+
+  logEvent("PUBLIC_ORDER_SUBMITTED", "-", buyerName, "-", "-", "Pesanan online masuk: " + orderId + " (" + pkg + " - " + price + ")");
+
+  return {
+    success: true,
+    message: "Pesanan Anda berhasil dikirim!",
+    orderId: orderId,
+    timestamp: nowStr,
+    buyerName: buyerName,
+    package: pkg,
+    price: price,
+    paymentMethod: paymentMethod
+  };
+}
+
+function adminSaveSalesSettings(params) {
+  if (!checkAdminAuth(params.adminPassword)) return { success: false, message: "Akses ditolak." };
+
+  var current = getStoredSalesSettings();
+  try {
+    if (params.packages) current.packages = typeof params.packages === 'string' ? JSON.parse(params.packages) : params.packages;
+  } catch(e) {}
+  try {
+    if (params.vouchers) current.vouchers = typeof params.vouchers === 'string' ? JSON.parse(params.vouchers) : params.vouchers;
+  } catch(e) {}
+  try {
+    if (params.paymentAccounts) current.paymentAccounts = typeof params.paymentAccounts === 'string' ? JSON.parse(params.paymentAccounts) : params.paymentAccounts;
+  } catch(e) {}
+  if (params.sellerWhatsApp !== undefined) current.sellerWhatsApp = String(params.sellerWhatsApp).trim();
+  if (params.orderFormUrl !== undefined) current.orderFormUrl = String(params.orderFormUrl).trim();
+
+  PropertiesService.getScriptProperties().setProperty("KEUANGANKU_SALES_SETTINGS", JSON.stringify(current));
+  logEvent("SALES_SETTINGS_UPDATED", "-", "Developer", "-", "-", "Pengaturan paket, voucher, dan rekening pembayaran diperbarui.");
+
+  return {
+    success: true,
+    message: "Pengaturan katalog penjualan & voucher berhasil disimpan!",
+    salesSettings: current
   };
 }
