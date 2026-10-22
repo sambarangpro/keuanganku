@@ -1147,96 +1147,104 @@
                 </div>
               </section>
 
-              <!-- LISENSI RESMI & DEVICE STATUS -->
-              <section class="bg-gradient-to-r from-slate-900 to-slate-950 border border-cyan-500/30 rounded-2xl p-5 sm:p-6 shadow-sm space-y-3 text-white">
+              <!-- LISENSI RESMI & DEVICE STATUS (MODERN ROYAL BLUE & SLATE THEME) -->
+              <section class="bg-slate-900/90 border border-slate-800 hover:border-slate-700/80 rounded-2xl p-5 sm:p-6 shadow-xl space-y-4 text-white transition-all">
                 <div class="flex items-center justify-between flex-wrap gap-2">
-                  <div class="flex items-center gap-2 cursor-pointer select-none" onclick="handleSecretDevTap()" title="Lisensi Resmi Keuanganku PRO">
-                    <span class="material-symbols-outlined text-cyan-400 text-xl">verified_user</span>
-                    <h2 class="font-headline-md text-headline-md font-bold text-white">Lisensi Resmi Keuanganku PRO</h2>
+                  <div class="flex items-center gap-2.5 cursor-pointer select-none" onclick="handleSecretDevTap()" title="Lisensi Resmi Keuanganku PRO">
+                    <div class="w-8 h-8 rounded-xl bg-blue-600/15 border border-blue-500/30 text-blue-400 flex items-center justify-center">
+                      <span class="material-symbols-outlined text-lg">verified_user</span>
+                    </div>
+                    <h2 class="font-headline-md text-base sm:text-lg font-bold text-white tracking-tight">Lisensi Resmi Keuanganku PRO</h2>
                   </div>
-                  <span id="setup-license-badge" class="px-2.5 py-0.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] font-extrabold rounded-full flex items-center gap-1">
+                  <span id="setup-license-badge" class="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-extrabold rounded-full flex items-center gap-1.5 shadow-sm">
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> TERAKTIVASI (RESMI)
                   </span>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-slate-950/80 p-3.5 rounded-xl border border-slate-800">
-                  <div>
-                    <p class="text-[10px] text-slate-400 font-semibold">Kode Lisensi Anda:</p>
-                    <p id="setup-license-token" class="font-mono-data font-bold text-cyan-300 text-sm mt-0.5 select-all">-</p>
+
+                <!-- 4 Kolom Info Lisensi -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-slate-950/60 p-4 rounded-xl border border-slate-800/80">
+                  <div class="space-y-0.5">
+                    <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Kode Lisensi Anda</p>
+                    <p id="setup-license-token" class="font-mono-data font-bold text-blue-400 text-sm select-all">-</p>
                   </div>
-                  <div>
-                    <p class="text-[10px] text-slate-400 font-semibold">Pemilik Lisensi:</p>
-                    <p id="setup-license-owner" class="font-bold text-slate-200 mt-0.5">-</p>
+                  <div class="space-y-0.5">
+                    <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Pemilik Lisensi</p>
+                    <p id="setup-license-owner" class="font-bold text-slate-100 text-sm">-</p>
                   </div>
-                  <div>
-                    <p class="text-[10px] text-slate-400 font-semibold">Status PIN & Proteksi:</p>
-                    <p id="setup-license-pin-status" class="font-bold mt-0.5 text-amber-400">-</p>
+                  <div class="space-y-0.5">
+                    <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Status PIN & Proteksi</p>
+                    <p id="setup-license-pin-status" class="font-semibold text-emerald-400 flex items-center gap-1 text-xs">-</p>
                   </div>
-                  <div>
-                    <p class="text-[10px] text-slate-400 font-semibold">Status Kuota:</p>
-                    <p id="setup-license-quota" class="font-mono-data text-emerald-400 font-bold mt-0.5">-</p>
+                  <div class="space-y-0.5">
+                    <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Status Kuota Perangkat</p>
+                    <p id="setup-license-quota" class="font-mono-data text-blue-400 font-bold text-xs mt-0.5">-</p>
                   </div>
                 </div>
-                <!-- DAFTAR PERANGKAT TERHUBUNG & KICKOUT REMOTELY -->
-                <div class="mt-2 pt-4 border-t border-slate-800 space-y-3">
+
+                <!-- DAFTAR PERANGKAT TERHUBUNG -->
+                <div class="mt-2 pt-4 border-t border-slate-800/80 space-y-3">
                   <div class="flex items-center justify-between flex-wrap gap-2">
-                    <div class="flex items-center gap-2">
-                      <div class="w-8 h-8 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 flex items-center justify-center">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-8 h-8 rounded-xl bg-blue-600/15 border border-blue-500/30 text-blue-400 flex items-center justify-center">
                         <span class="material-symbols-outlined text-base">devices</span>
                       </div>
                       <div>
                         <h3 class="font-bold text-white text-xs sm:text-sm flex items-center gap-2">
                           <span>Daftar Perangkat Terhubung</span>
-                          <span id="connected-devices-badge" class="px-2 py-0.5 rounded-full text-[10px] font-mono-data font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">1 Perangkat</span>
+                          <span id="connected-devices-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-mono-data font-bold bg-blue-500/15 text-blue-300 border border-blue-500/30">1 Perangkat</span>
                         </h3>
                         <p class="text-[10px] text-slate-400">Kelola dan cabut akses perangkat dari jarak jauh</p>
                       </div>
                     </div>
-                    <div class="flex items-center gap-1.5 flex-wrap">
-                      <button type="button" onclick="openPrimaryDeviceScannerModal()" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-cyan-500/25 active:scale-95 transition-all cursor-pointer" title="Buka Kamera HP untuk Scan Barcode di Layar PC / iPad (WhatsApp Web Style)">
-                        <span class="material-symbols-outlined text-sm">photo_camera</span>
-                        <span class="text-[11px]">Scan QR di PC / iPad</span>
-                      </button>
-                      <button type="button" onclick="openPairDeviceModal()" class="px-3 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 text-xs font-bold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer" title="Tampilkan Barcode Lisensi di Layar Ini (untuk di-scan oleh HP ke-2, ke-3, dst)">
-                        <span class="material-symbols-outlined text-sm">qr_code_2</span>
-                        <span class="text-[11px]">Tampilkan Barcode Lisensi</span>
-                      </button>
-                      <label class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/30 text-xs font-bold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer" title="Upload file foto barcode (cocok bila kamera buram atau tidak ada webcam)">
-                        <span class="material-symbols-outlined text-sm">upload_file</span>
-                        <span class="text-[11px]">Upload Foto Barcode</span>
-                        <input type="file" accept="image/*" onchange="handleDirectQrUpload(this)" class="hidden">
-                      </label>
-                      <button type="button" onclick="loadConnectedDevices(true)" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer" title="Perbarui daftar perangkat terhubung">
-                        <span id="btn-refresh-devices-icon" class="material-symbols-outlined text-sm">refresh</span>
-                        <span class="text-[11px]">Segarkan</span>
-                      </button>
-                      <button type="button" id="btn-kick-all-others" onclick="handleDeactivateAllOtherDevices()" class="hidden px-2.5 py-1.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer" title="Keluarkan semua perangkat lain jika ada HP/Laptop hilang atau lupa logout">
-                        <span class="material-symbols-outlined text-sm">phonelink_erase</span>
-                        <span class="text-[11px] font-bold">Keluarkan Perangkat Lain</span>
-                      </button>
-                    </div>
                   </div>
 
-                  <div class="p-3 bg-slate-950/60 border border-slate-800/80 rounded-xl text-[11px] text-slate-400 flex items-start gap-2">
-                    <span class="material-symbols-outlined text-cyan-400 text-sm shrink-0 mt-0.5">shield</span>
-                    <p>Jika ada HP atau Laptop Anda yang <b>hilang</b> atau <b>lupa keluar (logout)</b>, Anda dapat mengklik tombol <b>Keluarkan</b> di bawah untuk mencabut akses perangkat tersebut seketika dan membebaskan kuota slot lisensi.</p>
+                  <!-- Baris Tombol Aksi Seragam & Senada (Royal Blue & Slate) -->
+                  <div class="flex items-center gap-2 flex-wrap pt-1">
+                    <button type="button" onclick="openPrimaryDeviceScannerModal()" class="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-blue-600/25 active:scale-95 transition-all cursor-pointer" title="Buka Kamera HP untuk Scan Barcode di Layar PC / iPad (WhatsApp Web Style)">
+                      <span class="material-symbols-outlined text-base">photo_camera</span>
+                      <span class="text-[11px]">Scan QR di PC / iPad</span>
+                    </button>
+                    <button type="button" onclick="openPairDeviceModal()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-blue-200 hover:text-white border border-blue-500/30 hover:border-blue-500/50 text-xs font-semibold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer" title="Tampilkan Barcode Lisensi di Layar Ini (untuk di-scan oleh HP ke-2, ke-3, dst)">
+                      <span class="material-symbols-outlined text-base text-blue-400">qr_code_2</span>
+                      <span class="text-[11px]">Tampilkan Barcode Lisensi</span>
+                    </button>
+                    <label class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 hover:border-slate-600 text-xs font-semibold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer" title="Upload file foto barcode (cocok bila kamera buram atau tidak ada webcam)">
+                      <span class="material-symbols-outlined text-base text-slate-400">upload_file</span>
+                      <span class="text-[11px]">Upload Foto Barcode</span>
+                      <input type="file" accept="image/*" onchange="handleDirectQrUpload(this)" class="hidden">
+                    </label>
+                    <button type="button" onclick="loadConnectedDevices(true)" class="px-3 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer" title="Perbarui daftar perangkat terhubung">
+                      <span id="btn-refresh-devices-icon" class="material-symbols-outlined text-base">refresh</span>
+                      <span class="text-[11px]">Segarkan</span>
+                    </button>
+                    <button type="button" id="btn-kick-all-others" onclick="handleDeactivateAllOtherDevices()" class="hidden px-3.5 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 hover:text-rose-200 border border-rose-500/30 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer" title="Keluarkan semua perangkat lain jika ada HP/Laptop hilang atau lupa logout">
+                      <span class="material-symbols-outlined text-base">phonelink_erase</span>
+                      <span class="text-[11px] font-bold">Keluarkan Perangkat Lain</span>
+                    </button>
+                  </div>
+
+                  <!-- Banner Info Lembut -->
+                  <div class="p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl text-[11px] text-blue-200/90 flex items-start gap-2.5">
+                    <span class="material-symbols-outlined text-blue-400 text-base shrink-0 mt-0.5">info</span>
+                    <p class="leading-relaxed">Jika ada HP atau Laptop Anda yang <b>hilang</b> atau <b>lupa keluar (logout)</b>, Anda dapat mengklik tombol <b>Keluarkan</b> di bawah untuk mencabut akses perangkat tersebut seketika dan membebaskan kuota slot lisensi.</p>
                   </div>
 
                   <!-- List Kontainer Perangkat -->
                   <div id="connected-devices-list" class="space-y-2 pt-1">
                     <div class="p-4 text-center text-slate-500 text-xs">
-                      <span class="material-symbols-outlined text-2xl animate-spin text-cyan-400">progress_activity</span>
+                      <span class="material-symbols-outlined text-2xl animate-spin text-blue-400">progress_activity</span>
                       <p class="mt-1">Memuat daftar perangkat terhubung...</p>
                     </div>
                   </div>
                 </div>
 
                 <!-- Action Footer -->
-                <div class="flex flex-col sm:flex-row items-center justify-between gap-2 pt-3 border-t border-slate-800">
-                  <button onclick="handleDeactivateCurrentDevice()" class="w-full sm:w-auto px-3.5 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-2.5 pt-3 border-t border-slate-800/80">
+                  <button onclick="handleDeactivateCurrentDevice()" class="w-full sm:w-auto px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 hover:text-rose-200 border border-rose-500/30 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer">
                     <span class="material-symbols-outlined text-sm">logout</span>
                     Keluar dari Perangkat Ini Saja
                   </button>
-                  <a href="dev-dashboard.html" id="btn-open-dev-dashboard" target="_blank" class="hidden w-full sm:w-auto px-3.5 py-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/40 rounded-xl text-xs font-bold items-center justify-center gap-1.5 transition-all">
+                  <a href="dev-dashboard.html" id="btn-open-dev-dashboard" target="_blank" class="hidden w-full sm:w-auto px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold items-center justify-center gap-1.5 shadow-md shadow-blue-600/20 transition-all cursor-pointer">
                     <span class="material-symbols-outlined text-sm">terminal</span>
                     Buka Developer Dashboard
                   </a>
@@ -2225,33 +2233,41 @@
       if (ownerEl) ownerEl.textContent = lic.buyerName || '-';
 
       let isChanged = (lic.pinStatus === 'PIN_CHANGED');
+      let isOwner = (lic.buyerName || '').toLowerCase().includes('akbar') || (lic.token || '') === 'PRO-S8GF-HQT5-CNVE' || (lic.token || '') === 'PRO-W9J2-RAYM-3KKL';
+      let currentDevCount = lic.deviceCount || 1;
+      let maxDevicesAllowed = isOwner ? Math.max(currentDevCount, 3) : (lic.maxDevices || 2);
+
       if (pinStatusEl) {
         if (isChanged) {
-          pinStatusEl.className = "font-bold mt-0.5 text-emerald-400 flex items-center gap-1";
-          pinStatusEl.innerHTML = `<span class="material-symbols-outlined text-xs">verified</span> PIN Pribadi Aktif (Token Hangus 🔥)`;
+          pinStatusEl.className = "font-semibold text-emerald-400 flex items-center gap-1.5 text-xs";
+          pinStatusEl.innerHTML = `<span class="material-symbols-outlined text-sm">lock</span> PIN Pribadi Aktif (Aman)`;
         } else {
-          pinStatusEl.className = "font-bold mt-0.5 text-amber-400 flex items-center gap-1";
-          pinStatusEl.innerHTML = `<span class="material-symbols-outlined text-xs">key</span> Token Bawaan (Akses 1 Device)`;
+          pinStatusEl.className = "font-semibold text-amber-400 flex items-center gap-1.5 text-xs";
+          pinStatusEl.innerHTML = `<span class="material-symbols-outlined text-sm">key</span> Token Bawaan (Akses 1 Perangkat)`;
         }
       }
 
       if (quotaEl) {
         if (isChanged) {
-          quotaEl.className = "font-mono-data text-emerald-400 font-bold mt-0.5";
-          quotaEl.textContent = `${lic.deviceCount || 1} / ${lic.maxDevices || 2} Perangkat Digunakan`;
+          quotaEl.className = "font-mono-data text-blue-400 font-bold text-xs mt-0.5 flex items-center gap-1";
+          if (isOwner) {
+            quotaEl.innerHTML = `<span class="material-symbols-outlined text-sm text-blue-400">devices</span> ${currentDevCount} Perangkat (Akses Master)`;
+          } else {
+            quotaEl.innerHTML = `<span class="material-symbols-outlined text-sm text-blue-400">devices</span> ${currentDevCount} / ${maxDevicesAllowed} Perangkat Digunakan`;
+          }
         } else {
-          quotaEl.className = "font-mono-data text-amber-400 font-bold mt-0.5";
-          quotaEl.textContent = `1 Perangkat (Terkunci Sebelum Ganti PIN)`;
+          quotaEl.className = "font-mono-data text-amber-400 font-semibold text-xs mt-0.5 flex items-center gap-1";
+          quotaEl.innerHTML = `<span class="material-symbols-outlined text-sm text-amber-400">lock</span> 1 Perangkat (Terkunci Sebelum Buat PIN)`;
         }
       }
 
       if (badgeEl) {
         if (isChanged) {
-          badgeEl.className = "px-2.5 py-0.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] font-extrabold rounded-full flex items-center gap-1";
+          badgeEl.className = "px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-extrabold rounded-full flex items-center gap-1.5 shadow-sm";
           badgeEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> TERAKTIVASI (PIN PRIBADI)`;
         } else {
-          badgeEl.className = "px-2.5 py-0.5 bg-amber-500/20 text-amber-400 border border-amber-500/40 text-[10px] font-extrabold rounded-full flex items-center gap-1";
-          badgeEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span> MASIH TOKEN BAWAAN (1 DEVICE)`;
+          badgeEl.className = "px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/30 text-[10px] font-extrabold rounded-full flex items-center gap-1.5 shadow-sm";
+          badgeEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span> TOKEN BAWAAN (1 PERANGKAT)`;
         }
       }
       updateDevDashboardButtonVisibility(lic);
@@ -2523,20 +2539,20 @@
               let actTime = String(d.activatedAt || d.lastActive || '').substring(0, 16).replace('T', ' ') || 'Baru Saja';
 
               listEl.innerHTML += `
-                <div class="p-3.5 bg-slate-950 border ${isCurrent ? 'border-cyan-500/40 bg-gradient-to-r from-slate-950 to-cyan-950/20' : 'border-slate-800'} rounded-2xl flex items-center justify-between gap-3 text-xs transition-all hover:border-slate-700">
+                <div class="p-3.5 bg-slate-950/70 border ${isCurrent ? 'border-blue-500/40 bg-gradient-to-r from-slate-950 to-blue-950/20 shadow-sm' : 'border-slate-800/80 hover:border-slate-700'} rounded-2xl flex items-center justify-between gap-3 text-xs transition-all">
                   <div class="flex items-center gap-3 min-w-0">
-                    <div class="w-10 h-10 rounded-xl ${isCurrent ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' : 'bg-slate-900 text-slate-400 border border-slate-800'} flex items-center justify-center shrink-0">
+                    <div class="w-10 h-10 rounded-xl ${isCurrent ? 'bg-blue-600/15 text-blue-400 border border-blue-500/30' : 'bg-slate-800 text-slate-400 border border-slate-700'} flex items-center justify-center shrink-0">
                       <span class="material-symbols-outlined text-xl">${icon}</span>
                     </div>
                     <div class="min-w-0">
                       <div class="flex items-center gap-2 flex-wrap">
                         <span class="font-bold text-white text-xs truncate max-w-[180px] sm:max-w-xs">${escapeHtml(devName)}</span>
                         ${isCurrent 
-                          ? `<span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span> PERANGKAT INI</span>` 
-                          : `<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-slate-800 text-slate-400 border border-slate-700">ONLINE</span>`}
+                          ? `<span class="px-2.5 py-0.5 rounded-full text-[9px] font-extrabold bg-blue-500/15 text-blue-300 border border-blue-500/30 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></span> PERANGKAT INI</span>` 
+                          : `<span class="px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> AKTIF</span>`}
                       </div>
-                      <p class="text-[10px] text-slate-400 font-mono-data mt-0.5 flex items-center gap-1">
-                        <span class="material-symbols-outlined text-[11px] text-slate-500">schedule</span>
+                      <p class="text-[10px] text-slate-400 font-mono-data mt-0.5 flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[12px] text-slate-500">schedule</span>
                         Diaktivasi: ${escapeHtml(actTime)}
                         <span class="text-slate-600">•</span>
                         <span class="text-slate-500" title="${escapeHtml(d.deviceId)}">ID: ${escapeHtml(d.deviceId.substring(0, 8))}...</span>
@@ -2546,12 +2562,12 @@
 
                   <div class="shrink-0">
                     ${isCurrent 
-                      ? `<button type="button" onclick="handleDeactivateCurrentDevice()" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-slate-800 hover:border-rose-500/30 text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer" title="Keluar dari akun lisensi di perangkat ini">
-                           <span class="material-symbols-outlined text-xs">logout</span>
+                      ? `<button type="button" onclick="handleDeactivateCurrentDevice()" class="px-3.5 py-2 rounded-xl bg-slate-800/80 hover:bg-rose-500/15 text-slate-300 hover:text-rose-300 border border-slate-700 hover:border-rose-500/30 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer" title="Keluar dari akun lisensi di perangkat ini">
+                           <span class="material-symbols-outlined text-sm">logout</span>
                            <span class="hidden sm:inline">Keluar</span>
                          </button>`
-                      : `<button type="button" onclick="handleDeactivateSpecificDevice('${escapeHtml(d.deviceId)}', '${escapeHtml(devName)}')" class="px-3 py-1.5 rounded-xl bg-rose-500/15 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/30 text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer" title="Keluarkan perangkat ini dari akun lisensi (logout otomatis)">
-                           <span class="material-symbols-outlined text-xs">phonelink_erase</span>
+                      : `<button type="button" onclick="handleDeactivateSpecificDevice('${escapeHtml(d.deviceId)}', '${escapeHtml(devName)}')" class="px-3.5 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/25 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer" title="Keluarkan perangkat ini dari akun lisensi (logout otomatis)">
+                           <span class="material-symbols-outlined text-sm">phonelink_erase</span>
                            <span>Keluarkan</span>
                          </button>`}
                   </div>
@@ -2576,21 +2592,21 @@
     function renderFallbackCurrentDevice(listEl, currentDevName, currentDevId) {
       if (!listEl) return;
       listEl.innerHTML = `
-        <div class="p-3.5 bg-slate-950 border border-cyan-500/40 rounded-2xl flex items-center justify-between gap-3 text-xs">
+        <div class="p-3.5 bg-slate-950/80 border border-blue-500/40 rounded-2xl flex items-center justify-between gap-3 text-xs">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center shrink-0">
+            <div class="w-10 h-10 rounded-xl bg-blue-600/15 text-blue-400 border border-blue-500/30 flex items-center justify-center shrink-0">
               <span class="material-symbols-outlined text-xl">devices</span>
             </div>
             <div>
               <div class="flex items-center gap-2">
                 <span class="font-bold text-white text-xs">${escapeHtml(currentDevName)}</span>
-                <span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">PERANGKAT INI</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[9px] font-extrabold bg-blue-500/15 text-blue-300 border border-blue-500/30 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></span> PERANGKAT INI</span>
               </div>
-              <p class="text-[10px] text-slate-500 font-mono-data mt-0.5">ID: ${escapeHtml(currentDevId.substring(0, 10))}...</p>
+              <p class="text-[10px] text-slate-400 font-mono-data mt-0.5">ID: ${escapeHtml(currentDevId.substring(0, 10))}...</p>
             </div>
           </div>
-          <button type="button" onclick="handleDeactivateCurrentDevice()" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-slate-800 text-xs font-semibold flex items-center gap-1 transition-all">
-            <span class="material-symbols-outlined text-xs">logout</span>
+          <button type="button" onclick="handleDeactivateCurrentDevice()" class="px-3.5 py-2 rounded-xl bg-slate-800/80 hover:bg-rose-500/15 text-slate-300 hover:text-rose-300 border border-slate-700 hover:border-rose-500/30 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer">
+            <span class="material-symbols-outlined text-sm">logout</span>
             <span>Keluar</span>
           </button>
         </div>
