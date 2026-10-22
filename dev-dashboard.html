@@ -988,8 +988,8 @@
           <div>
             <div class="flex items-center justify-between mb-1">
               <label class="block font-semibold text-slate-300">Nominal Pembayaran:</label>
-              <button type="button" onclick="randomizeOrderUniqueCode()" class="text-[10px] text-amber-300 hover:text-amber-200 font-bold flex items-center gap-0.5 cursor-pointer" title="Acak 3 digit kode unik pada nominal transfer">
-                <span class="material-symbols-outlined text-xs">shuffle</span> +Kode Unik
+              <button type="button" onclick="randomizeOrderUniqueCode()" class="text-[10px] text-amber-300 hover:text-amber-200 font-bold flex items-center gap-0.5 cursor-pointer" title="Acak 2 digit kode unik pada nominal transfer">
+                <span class="material-symbols-outlined text-xs">shuffle</span> +Kode Unik (2 Digit)
               </button>
             </div>
             <input type="text" id="order-price" value="Rp 149.000" required placeholder="Rp 149.000"
@@ -2642,13 +2642,13 @@
         else {
           let numDigits = String(o.price || '').replace(/[^0-9]/g, '');
           if (numDigits.length >= 4) {
-            let last3 = parseInt(numDigits.slice(-3), 10);
-            if (last3 > 0 && last3 < 1000) code = String(last3);
+            let last2 = parseInt(numDigits.slice(-2), 10);
+            if (last2 > 0) code = String(last2);
           }
         }
       }
       if (!code) return '';
-      return `<div class="mt-0.5"><span class="px-1.5 py-0.5 rounded text-[9px] font-mono-data font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30" title="3 Digit Kode Unik Verifikasi Pembayaran">Kode: +${escapeHtml(String(code))}</span></div>`;
+      return `<div class="mt-0.5"><span class="px-1.5 py-0.5 rounded text-[9px] font-mono-data font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30" title="Maksimal 2 Digit Kode Unik Verifikasi Pembayaran">Kode: +${escapeHtml(String(code))}</span></div>`;
     }
 
     function randomizeOrderUniqueCode() {
@@ -2658,9 +2658,9 @@
       let num = parseInt(val, 10) || 0;
       if (num <= 0) return;
       let base = Math.floor(num / 1000) * 1000;
-      let uCode = Math.floor(100 + Math.random() * 890);
+      let uCode = Math.floor(10 + Math.random() * 90);
       inp.value = 'Rp ' + (base + uCode).toLocaleString('id-ID');
-      showToast('info', 'Kode unik +' + uCode + ' diterapkan ke nominal pembayaran!');
+      showToast('info', 'Kode unik 2 digit (+' + uCode + ') diterapkan ke nominal pembayaran!');
     }
 
     function filterOrdersTable() {

@@ -299,7 +299,7 @@
           <div class="flex items-center justify-between pt-3 border-t-2 border-slate-800">
             <div>
               <span class="text-sm font-black text-white block">TOTAL TRANSFER:</span>
-              <span class="text-[10px] text-amber-400 font-medium">Wajib tepat hingga 3 digit terakhir</span>
+              <span class="text-[10px] text-amber-400 font-medium">Wajib tepat hingga 2 digit terakhir</span>
             </div>
             <div id="summary-total-price" class="text-xl sm:text-2xl font-black text-emerald-400 font-mono-data">
               Rp 0
@@ -314,7 +314,7 @@
             <span>Verifikasi Otomatis Lebih Cepat</span>
           </div>
           <p class="text-[11px] leading-relaxed text-slate-300">
-            Mohon lakukan transfer <b class="text-white font-bold">persis sesuai Total Transfer di atas</b> (termasuk 3 digit kode unik). Kode unik ini membedakan transaksi Anda dari pemesan lain agar konfirmasi akun dan lisensi dapat diproses secara instan.
+            Mohon lakukan transfer <b class="text-white font-bold">persis sesuai Total Transfer di atas</b> (termasuk 2 digit kode unik). Kode unik ini membedakan transaksi Anda dari pemesan lain agar konfirmasi akun dan lisensi dapat diproses secara instan.
           </p>
         </div>
 
@@ -438,8 +438,8 @@
 
     function getOrderUniqueCode() {
       if (!currentUniqueCode) {
-        let code = Math.floor(100 + Math.random() * 890);
-        if (code % 100 === 0) code += Math.floor(11 + Math.random() * 80);
+        // Angka unik maksimal 2 digit (antara 11 sampai 99)
+        let code = Math.floor(11 + Math.random() * 88);
         currentUniqueCode = code;
       }
       return currentUniqueCode;
@@ -836,7 +836,7 @@
         "📧 *Email Penerima Akun:* " + email + "\n" +
         "📱 *WhatsApp:* " + whatsapp + "\n" +
         "📦 *Paket:* " + selectedPackage.name + " (" + selectedPackage.devices + " Perangkat)\n" +
-        "💰 *Total Transfer:* " + finalPriceFormatted + " *(Tepat hingga 3 digit terakhir)*\n" +
+        "💰 *Total Transfer:* " + finalPriceFormatted + " *(Tepat hingga 2 digit terakhir)*\n" +
         "🔢 *Kode Unik Verifikasi:* +" + uniqueCode + (appliedVoucher ? " (Voucher: " + appliedVoucher.code + ")" : "") + "\n" +
         "💳 *Pembayaran via:* " + selectedPaymentMethod + "\n" +
         "📎 *Bukti Bayar:* " + (paymentProof || "Terlampir di chat ini") + "\n" +
