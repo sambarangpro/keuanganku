@@ -2,11 +2,13 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Formulir Pemesanan Resmi - Keuanganku PRO</title>
   
   <meta name="description" content="Pesan Lisensi Resmi Keuanganku PRO v1.0 - Aplikasi Keuangan Multi-Device Tanpa Langganan Bulanan.">
-  <meta name="theme-color" content="#090d16">
+  <meta name="theme-color" content="#020617">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
   <!-- Favicon & Touch Icons -->
   <link rel="icon" type="image/x-icon" href="favicon.ico">
@@ -23,6 +25,9 @@
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
+    :root {
+      --sat: env(safe-area-inset-top, 0px);
+    }
     body {
       font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       background-color: #020617;
@@ -45,36 +50,45 @@
     .custom-scroll::-webkit-scrollbar-thumb:hover {
       background: #334155;
     }
+
+    /* Safe Area Notch & Anti-Leak Header */
+    .pesan-header {
+      padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
+      background-color: #020617 !important;
+    }
   </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between selection:bg-blue-600 selection:text-white">
+<body class="min-h-screen flex flex-col justify-between selection:bg-blue-600 selection:text-white bg-slate-950">
+
+  <!-- Status Bar Solid Cover Strip (Cegah bocor di balik jam/notif) -->
+  <div class="fixed top-0 left-0 right-0 h-[env(safe-area-inset-top,0px)] bg-[#020617] z-[60] pointer-events-none"></div>
 
   <!-- Top Ambient Glow -->
-  <div class="fixed top-0 left-1/2 -translate-x-1/2 w-[600px] h-64 bg-blue-600/15 rounded-full blur-3xl pointer-events-none z-0"></div>
+  <div class="fixed top-0 left-1/2 -translate-x-1/2 w-[600px] h-64 bg-blue-600/10 rounded-full blur-3xl pointer-events-none z-0"></div>
 
-  <!-- Header & Brand Bar -->
-  <header class="relative z-10 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md sticky top-0 px-4 py-3 sm:py-4">
+  <!-- Header & Brand Bar (High Z-Index & 100% Solid Background) -->
+  <header class="pesan-header sticky top-0 z-50 border-b border-slate-800/90 shadow-xl shadow-black/50 px-4 pb-3 sm:pb-3.5">
     <div class="max-w-3xl mx-auto flex items-center justify-between gap-3">
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
         <!-- Logo -->
-        <img src="icon-96.png" alt="Logo Keuanganku" class="w-10 h-10 rounded-2xl shadow-lg shadow-blue-500/20 object-contain">
-        <div>
-          <div class="flex items-center gap-2">
-            <h1 class="text-sm sm:text-base font-extrabold text-white tracking-tight">KEUANGANKU PRO</h1>
-            <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-blue-500/20 text-blue-300 border border-blue-500/30">v1.0 RESMI</span>
+        <img src="icon-96.png" alt="Logo Keuanganku" class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl shadow-lg shadow-blue-500/20 object-contain shrink-0">
+        <div class="min-w-0">
+          <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+            <h1 class="text-xs sm:text-base font-extrabold text-white tracking-tight truncate leading-none">KEUANGANKU PRO</h1>
+            <span class="px-1.5 py-0.5 rounded-full text-[8px] sm:text-[9px] font-black bg-blue-500/20 text-blue-300 border border-blue-500/30 whitespace-nowrap">v1.0 RESMI</span>
           </div>
-          <p class="text-[11px] text-slate-400">Sambarang Production • Form Pemesanan Lisensi</p>
+          <p class="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 truncate">Sambarang Production • Form Pemesanan</p>
         </div>
       </div>
-      <a href="index.html" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-semibold border border-slate-800 flex items-center gap-1.5 transition-all">
+      <a href="index.html" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-[11px] sm:text-xs font-semibold border border-slate-700/80 flex items-center gap-1.5 transition-all shrink-0 shadow-sm active:scale-95">
         <span class="material-symbols-outlined text-sm">open_in_browser</span>
         <span class="hidden sm:inline">Buka Aplikasi</span>
       </a>
     </div>
   </header>
 
-  <!-- Main Content Form -->
-  <main class="relative z-10 flex-1 max-w-3xl mx-auto w-full p-4 sm:p-6 space-y-6">
+  <!-- Main Content Form (Stacking Context normal di bawah header z-50) -->
+  <main class="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 py-5 sm:py-6 space-y-6">
 
     <!-- Hero Card Banner -->
     <div class="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-blue-950/60 via-slate-900 to-indigo-950/40 border border-blue-500/30 shadow-2xl relative overflow-hidden">

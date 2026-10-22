@@ -2,7 +2,7 @@
 <html lang="id" class="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Developer Portal - Keuanganku PRO License Manager</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
@@ -182,8 +182,8 @@
   <!-- 2. MAIN DASHBOARD VIEW                     -->
   <!-- ========================================== -->
   <div id="dashboard-screen" class="hidden flex-1 flex flex-col">
-    <!-- Navbar Header -->
-    <header class="sticky top-0 z-40 bg-slate-950/90 backdrop-blur-md border-b border-slate-800 px-4 sm:px-6 lg:px-8 py-3.5">
+    <!-- Navbar Header (Safe Area Notch Support & 100% Solid Anti-Leak) -->
+    <header class="sticky top-0 z-40 bg-slate-950 border-b border-slate-800 px-4 sm:px-6 lg:px-8 pb-3.5 pt-[max(0.875rem,env(safe-area-inset-top,0px))] shadow-md">
       <div class="w-full max-w-[1720px] 2xl:max-w-[1850px] mx-auto flex items-center justify-between gap-4">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-400 text-white flex items-center justify-center shadow shadow-blue-500/30 shrink-0">

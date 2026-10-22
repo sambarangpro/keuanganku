@@ -2,14 +2,14 @@
 <html class="light" lang="id">
 <head>
   <meta charset="utf-8"/>
-  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
   <title>KEUANGANKU - Financial Planner Pro</title>
   
   <link rel="manifest" href="manifest.json"/>
   <meta name="theme-color" content="#2563eb"/>
   <meta name="mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
   <meta name="apple-mobile-web-app-title" content="KEUANGANKU"/>
   
   <link rel="shortcut icon" href="favicon.ico"/>
@@ -55,6 +55,46 @@
     }
   </script>
   <style>
+    :root {
+      --sat: env(safe-area-inset-top, 0px);
+      --sab: env(safe-area-inset-bottom, 0px);
+    }
+
+    /* Fixed Status Bar Solid Strip (Mencegah teks bocor di baris jam/baterai gadget) */
+    .app-status-bar-fill {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: env(safe-area-inset-top, 0px);
+      background-color: #ffffff;
+      z-index: 55;
+      pointer-events: none;
+    }
+    html.dark .app-status-bar-fill {
+      background-color: #090d16;
+    }
+
+    /* Header Safe Area & Solid Anti-Bleed */
+    .app-header-safe {
+      padding-top: env(safe-area-inset-top, 0px);
+      height: calc(3.85rem + env(safe-area-inset-top, 0px));
+      background-color: #ffffff !important;
+    }
+    html.dark .app-header-safe {
+      background-color: #090d16 !important;
+    }
+
+    /* Main Container Offset */
+    .app-main-safe {
+      margin-top: calc(4.35rem + env(safe-area-inset-top, 0px)) !important;
+    }
+
+    /* Bottom Nav Safe Area */
+    .bottom-nav-safe {
+      padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px)) !important;
+    }
+
     .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
     
     /* Hilangkan ikon mata hitam bawaan browser (Microsoft Edge) agar tidak dobel */
@@ -658,12 +698,18 @@
     </div>
   </div>
 
-  <!-- HEADER -->
-  <header class="bg-surface/90 backdrop-blur-md border-b border-outline-variant fixed top-0 w-full z-40 h-16 shadow-sm">
-    <div class="w-full max-w-7xl 2xl:max-w-[1600px] mx-auto h-full flex justify-between items-center px-4 sm:px-6 lg:px-8 xl:px-10">
-      <div class="flex items-center gap-2 sm:gap-3 cursor-pointer" onclick="navTo('dashboard')" title="Kembali ke Dashboard">
-        <span class="material-symbols-outlined text-primary" style="font-size: 28px;">account_balance_wallet</span>
-        <h1 id="header-brand-title" class="font-headline-md text-sm sm:text-base md:text-lg font-bold text-primary flex items-center gap-1.5">KEUANGANKU <span class="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 tracking-normal font-sans">v1.0</span></h1>
+  <!-- FIXED STATUS BAR COVER (Mencegah teks bocor di baris jam/baterai HP) -->
+  <div class="app-status-bar-fill"></div>
+
+  <!-- HEADER (Safe Area Notch Support & 100% Solid Anti-Leak) -->
+  <header class="app-header-safe fixed top-0 left-0 w-full z-40 border-b border-outline-variant/80 shadow-sm transition-all duration-200">
+    <div class="w-full max-w-7xl 2xl:max-w-[1600px] mx-auto h-full flex justify-between items-center px-3 sm:px-6 lg:px-8 xl:px-10">
+      <div class="flex items-center gap-2 sm:gap-3 cursor-pointer shrink-0" onclick="navTo('dashboard')" title="Kembali ke Dashboard">
+        <span class="material-symbols-outlined text-primary" style="font-size: 26px;">account_balance_wallet</span>
+        <h1 id="header-brand-title" class="font-headline-md text-sm sm:text-base md:text-lg font-bold text-primary flex items-center gap-1.5 leading-none">
+          <span>KEUANGANKU</span>
+          <span class="text-[8px] sm:text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 tracking-normal font-sans">v1.0</span>
+        </h1>
       </div>
 
       <!-- DESKTOP NAVIGATION TABS (TAMPIL PADA LAYAR LAPTOP / PC) -->
@@ -744,7 +790,7 @@
     <span class="material-symbols-outlined" id="icon-mask-balance-fab" style="font-size: 26px;">visibility_off</span>
   </button>
 
-  <main class="mt-20 pb-24 md:pb-12 px-4 sm:px-6 lg:px-8 xl:px-10 max-w-7xl 2xl:max-w-[1600px] mx-auto space-y-6">
+  <main class="app-main-safe pb-28 md:pb-12 px-3.5 sm:px-6 lg:px-8 xl:px-10 max-w-7xl 2xl:max-w-[1600px] mx-auto space-y-6">
 
     <!-- PAGE 1: DASHBOARD -->
     <div id="page-dashboard" class="space-y-6">
@@ -1974,7 +2020,7 @@
 
   </main>
 
-  <nav class="md:hidden fixed bottom-0 left-0 w-full z-40 flex justify-around items-center py-2 bg-surface/95 backdrop-blur-md border-t border-outline-variant shadow-lg">
+  <nav class="md:hidden fixed bottom-0 left-0 w-full z-40 flex justify-around items-center pt-2 bottom-nav-safe bg-surface/98 dark:bg-slate-900/98 backdrop-blur-xl border-t border-outline-variant shadow-lg">
     <button onclick="navTo('dashboard')" id="nav-dash" class="flex flex-col items-center text-primary px-4 py-1 font-bold"><span class="material-symbols-outlined">dashboard</span><span class="font-label-caps text-[10px] mt-0.5">Dashboard</span></button>
     <button onclick="navTo('transaksi')" id="nav-tx" class="flex flex-col items-center text-on-surface-variant px-4 py-1 hover:text-primary"><span class="material-symbols-outlined">receipt_long</span><span class="font-label-caps text-[10px] mt-0.5">Transaksi</span></button>
     
