@@ -101,7 +101,7 @@
       </div>
 
       <!-- 1. VIEW WHATSAPP WEB STYLE (PC/iPad TAMPILKAN QR, HP UTAMA SCAN) -->
-      <div id="splash-qr-pair-section" class="pt-1 space-y-3">
+      <div id="splash-qr-pair-section" class="pt-1 space-y-3 hidden">
         <!-- Kotak QR Code -->
         <div class="relative w-[190px] h-[190px] mx-auto bg-white p-2 rounded-2xl shadow-xl border-2 border-white/40 flex items-center justify-center">
           <div id="splash-qrcode-container" class="w-full h-full flex items-center justify-center"></div>
@@ -137,28 +137,37 @@
           </ol>
         </div>
 
-        <!-- Tombol Beralih ke Masuk PIN / Token -->
-        <button type="button" onclick="switchSplashView('pin')" class="w-full py-2.5 bg-white/10 hover:bg-white/20 text-blue-200 hover:text-white font-semibold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all border border-white/15 cursor-pointer">
+        <!-- Tombol Beralih ke Masuk PIN -->
+        <button type="button" onclick="switchSplashView('pin')" class="w-full py-2.5 bg-white text-primary hover:bg-blue-50 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 shadow transition-all cursor-pointer">
           <span class="material-symbols-outlined text-sm">dialpad</span>
-          <span>Atau Masuk dengan PIN / Token Lisensi</span>
+          <span>← Kembali ke Masuk PIN</span>
         </button>
       </div>
 
-      <!-- 2. VIEW MASUK MANUAL (PIN / TOKEN) -->
-      <div id="bumper-pin-section" class="pt-2 space-y-2.5 hidden">
+      <!-- 2. VIEW MASUK MANUAL (PIN / TOKEN) - UTAMA UNTUK PENGGUNA SEHARI-HARI -->
+      <div id="bumper-pin-section" class="pt-2 space-y-2.5">
         <div class="relative">
-          <input type="password" id="bumper-pin-input" placeholder="Masukkan PIN atau Token Lisensi" maxlength="35" onkeyup="if(event.key === 'Enter') verifyBumperPin()" class="w-full py-2.5 pl-3 pr-10 bg-white/10 border border-white/30 rounded-xl text-center text-white placeholder-blue-200 text-sm font-mono-data outline-none tracking-widest focus:border-white">
-          <button type="button" onclick="toggleBumperPinVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-blue-200 hover:text-white" title="Lihat PIN">
+          <input type="password" id="bumper-pin-input" placeholder="Masukkan PIN Pribadi atau Token" maxlength="35" onkeyup="if(event.key === 'Enter') verifyBumperPin()" class="w-full py-2.5 pl-3 pr-10 bg-white/10 border border-white/30 rounded-xl text-center text-white placeholder-blue-200 text-sm font-mono-data outline-none tracking-widest focus:border-white">
+          <button type="button" onclick="toggleBumperPinVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-blue-200 hover:text-white cursor-pointer" title="Lihat PIN">
             <span class="material-symbols-outlined text-lg" id="bumper-eye-icon">visibility</span>
           </button>
         </div>
+
+        <!-- Opsi Ingatkan Saya -->
+        <div class="flex items-center justify-between text-xs text-blue-200 px-1">
+          <label class="flex items-center gap-2 cursor-pointer select-none">
+            <input type="checkbox" id="bumper-remember-pin" class="w-4 h-4 rounded text-blue-600 focus:ring-0 cursor-pointer accent-blue-500">
+            <span class="text-[11px] font-medium text-blue-100">Ingatkan saya di perangkat ini</span>
+          </label>
+        </div>
+
         <button id="btn-bumper-login" onclick="verifyBumperPin()" class="w-full py-2.5 bg-white text-primary font-bold rounded-xl text-xs hover:bg-blue-50 shadow transition-all cursor-pointer">MASUK APLIKASI</button>
         <p id="bumper-error-msg" class="text-[11px] text-red-200 font-semibold leading-relaxed hidden">PIN Salah! Coba lagi.</p>
         
         <div class="pt-2 border-t border-white/10 space-y-2">
-          <button type="button" onclick="switchSplashView('qr')" class="w-full py-2.5 bg-white/15 hover:bg-white/25 text-cyan-200 hover:text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-all border border-white/20 shadow-sm cursor-pointer" title="Tampilkan Barcode untuk di-scan dari HP Utama">
+          <button type="button" onclick="switchSplashView('qr')" class="w-full py-2 bg-white/10 hover:bg-white/20 text-cyan-200 hover:text-white font-semibold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all border border-white/15 cursor-pointer" title="Tautkan Perangkat Baru via Scan Barcode">
             <span class="material-symbols-outlined text-base text-cyan-300">qr_code_2</span>
-            <span>Tampilkan Barcode (Scan via HP)</span>
+            <span>Perangkat Baru? Tautkan via Barcode (QR)</span>
           </button>
         </div>
       </div>
@@ -2079,12 +2088,17 @@
       } else {
         if (splashScreen) splashScreen.classList.remove('hidden');
 
-        // Jika perangkat belum teraktivasi (PC / iPad / HP baru), otomatis tampilkan mode QR Code WhatsApp style!
-        if (!license || !license.token) {
-          switchSplashView('qr');
-        } else {
-          // Jika perangkat sudah teraktivasi, buka dalam mode PIN biasa
-          switchSplashView('pin');
+        // Selalu prioritaskan tampilan Masuk PIN untuk pengguna sehari-hari
+        switchSplashView('pin');
+
+        // Cek apakah opsi "Ingatkan Saya" aktif
+        let isRemember = localStorage.getItem("KEUANGANKU_REMEMBER_PIN") === "true";
+        let remCheck = document.getElementById('bumper-remember-pin');
+        let pinInp = document.getElementById('bumper-pin-input');
+        if (remCheck) remCheck.checked = isRemember;
+        if (isRemember && pinInp) {
+          let savedPin = localStorage.getItem("KEUANGANKU_SAVED_PIN");
+          if (savedPin) pinInp.value = savedPin;
         }
       }
 
@@ -3695,6 +3709,14 @@
       let isSavedTokenValid = (lic && lic.pinStatus === 'USING_TOKEN' && lic.token && (upperInput === lic.token.toUpperCase() || cleanInput === lic.token.replace(/[^A-Z0-9]/g, '').toUpperCase()));
 
       if (isSavedTokenValid || (isPinValid && lic) || (isPassValid && lic)) {
+        let remCheck = document.getElementById('bumper-remember-pin');
+        if (remCheck && remCheck.checked) {
+          localStorage.setItem("KEUANGANKU_REMEMBER_PIN", "true");
+          localStorage.setItem("KEUANGANKU_SAVED_PIN", pinInput);
+        } else {
+          localStorage.removeItem("KEUANGANKU_REMEMBER_PIN");
+          localStorage.removeItem("KEUANGANKU_SAVED_PIN");
+        }
         let splash = document.getElementById('splash-screen');
         if (splash) { splash.classList.add('opacity-0'); setTimeout(() => splash.classList.add('hidden'), 700); }
         return;

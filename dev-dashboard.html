@@ -487,13 +487,14 @@
                   <th class="p-3 whitespace-nowrap">Pemesan & Kontak</th>
                   <th class="p-3 whitespace-nowrap">Paket Lisensi</th>
                   <th class="p-3 whitespace-nowrap">Nominal & Bayar</th>
+                  <th class="p-3 text-center whitespace-nowrap">Bukti Bayar</th>
                   <th class="p-3 text-center whitespace-nowrap">Status & Lisensi</th>
                   <th class="p-3 sm:px-4 text-right whitespace-nowrap">Tindakan Cepat</th>
                 </tr>
               </thead>
               <tbody id="orders-table-body" class="divide-y divide-slate-800/60 font-sans">
                 <tr>
-                  <td colspan="6" class="p-8 text-center text-slate-500">
+                  <td colspan="7" class="p-8 text-center text-slate-500">
                     <div class="flex flex-col items-center justify-center space-y-2">
                       <span class="material-symbols-outlined text-3xl text-slate-600">receipt_long</span>
                       <p>Belum ada data pemesanan. Klik "Catat Pemesanan" untuk menambahkan pesanan pembeli.</p>
@@ -800,10 +801,16 @@
             </select>
           </div>
           <div>
-            <label class="block font-semibold text-slate-300 mb-1">Catatan / Keterangan:</label>
-            <input type="text" id="order-notes" placeholder="No. ref, nama rekening pengirim, dll"
+            <label class="block font-semibold text-slate-300 mb-1">Bukti Pembayaran (Link Foto / No. Ref):</label>
+            <input type="text" id="order-payment-proof" placeholder="Link bukti transfer / URL screenshot"
               class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
           </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Catatan / Keterangan:</label>
+          <input type="text" id="order-notes" placeholder="Nama rekening pengirim, catatan transaksi, dll"
+            class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
         </div>
 
         <div class="p-3 bg-blue-950/40 border border-blue-500/30 rounded-xl flex items-start gap-2.5">
@@ -859,6 +866,12 @@
             <option value="COMPLETED">🔵 Selesai (Lisensi Terkirim)</option>
             <option value="CANCELLED">🔴 Dibatalkan</option>
           </select>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Bukti Pembayaran (Link Foto / Ref):</label>
+          <input type="text" id="edit-order-payment-proof" placeholder="Link screenshot atau catatan bukti transfer..."
+            class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
         </div>
 
         <div>
@@ -1926,6 +1939,27 @@
       if (tabOrderCount) tabOrderCount.textContent = total;
     }
 
+    function renderPaymentProofCell(proof) {
+      let p = String(proof || '').trim();
+      if (!p || p === '-') {
+        return `<span class="text-slate-500 text-[11px] italic">Belum Ada</span>`;
+      }
+      if (p.startsWith('http://') || p.startsWith('https://')) {
+        return `
+          <a href="${escapeHtml(p)}" target="_blank" rel="noopener noreferrer" title="Buka bukti pembayaran di tab baru"
+            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-500/15 hover:bg-blue-500/25 text-blue-300 border border-blue-500/30 text-[11px] font-bold transition-all shadow-sm">
+            <span class="material-symbols-outlined text-xs">attach_file</span>
+            <span>Lihat Bukti</span>
+          </a>
+        `;
+      }
+      return `
+        <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 text-[11px] font-mono-data max-w-[130px] truncate inline-block" title="${escapeHtml(p)}">
+          ${escapeHtml(p)}
+        </span>
+      `;
+    }
+
     function renderOrdersTable(list) {
       let tbody = document.getElementById('orders-table-body');
       if (!tbody) return;
@@ -1934,7 +1968,7 @@
       if (!list || list.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="6" class="p-8 text-center text-slate-500">
+            <td colspan="7" class="p-8 text-center text-slate-500">
               <div class="flex flex-col items-center justify-center space-y-2">
                 <span class="material-symbols-outlined text-3xl text-slate-600">receipt_long</span>
                 <p>Belum ada data pemesanan yang sesuai.</p>
@@ -2007,6 +2041,11 @@
               <div class="text-[10px] text-slate-400 mt-0.5">${escapeHtml(o.paymentMethod || 'Transfer')}</div>
             </td>
 
+            <!-- Bukti Bayar -->
+            <td class="p-3 text-center whitespace-nowrap">
+              ${renderPaymentProofCell(o.paymentProof)}
+            </td>
+
             <!-- Status & Lisensi -->
             <td class="p-3 text-center whitespace-nowrap">
               <div>${statusBadge}</div>
@@ -2055,6 +2094,7 @@
           String(o.whatsapp || '').toLowerCase().includes(query) ||
           String(o.email || '').toLowerCase().includes(query) ||
           String(o.package || '').toLowerCase().includes(query) ||
+          String(o.paymentProof || '').toLowerCase().includes(query) ||
           String(o.token || '').toLowerCase().includes(query) ||
           String(o.notes || '').toLowerCase().includes(query);
 
@@ -2077,6 +2117,7 @@
       if (document.getElementById('order-buyer-email')) document.getElementById('order-buyer-email').value = '';
       document.getElementById('order-package').value = 'PRO Multi-Device (3 Perangkat)';
       onOrderPackageChange();
+      if (document.getElementById('order-payment-proof')) document.getElementById('order-payment-proof').value = '';
       document.getElementById('order-notes').value = '';
       document.getElementById('order-status').value = 'PAID';
       document.getElementById('order-buyer-name').focus();
@@ -2110,6 +2151,7 @@
       let maxDevices = parseInt(document.getElementById('order-max-devices').value) || 1;
       let price = document.getElementById('order-price').value.trim();
       let paymentMethod = document.getElementById('order-payment-method').value;
+      let paymentProof = (document.getElementById('order-payment-proof') ? document.getElementById('order-payment-proof').value : '').trim();
       let status = document.getElementById('order-status').value;
       let notes = document.getElementById('order-notes').value.trim();
       let autoToken = document.getElementById('order-auto-token').checked;
@@ -2137,6 +2179,7 @@
         maxDevices: maxDevices,
         price: price,
         paymentMethod: paymentMethod,
+        paymentProof: paymentProof,
         status: status,
         notes: notes,
         autoGenerateToken: autoToken
@@ -2154,6 +2197,7 @@
           maxDevices: maxDevices,
           price: price,
           paymentMethod: paymentMethod,
+          paymentProof: paymentProof,
           status: (autoToken && (status === 'PAID' || status === 'COMPLETED')) ? 'COMPLETED' : status,
           token: (res && res.order && res.order.token) ? res.order.token : '',
           notes: notes,
@@ -2199,6 +2243,9 @@
       document.getElementById('edit-order-buyer-name').textContent = o.buyerName + ' (' + (o.whatsapp || '-') + ')';
       document.getElementById('edit-order-details').textContent = o.package + ' • ' + (o.price || 'Rp 0') + ' via ' + (o.paymentMethod || 'Transfer');
       document.getElementById('edit-order-status').value = o.status || 'PENDING';
+      if (document.getElementById('edit-order-payment-proof')) {
+        document.getElementById('edit-order-payment-proof').value = o.paymentProof || '';
+      }
       document.getElementById('edit-order-token').value = o.token || '';
       document.getElementById('edit-order-notes').value = o.notes || '';
 
@@ -2209,6 +2256,7 @@
       e.preventDefault();
       let orderId = document.getElementById('edit-order-id').value;
       let newStatus = document.getElementById('edit-order-status').value;
+      let newPaymentProof = (document.getElementById('edit-order-payment-proof') ? document.getElementById('edit-order-payment-proof').value : '').trim();
       let newToken = document.getElementById('edit-order-token').value.trim();
       let newNotes = document.getElementById('edit-order-notes').value.trim();
 
@@ -2226,11 +2274,13 @@
           adminPassword: currentAdminPassword,
           orderId: orderId,
           status: newStatus,
+          paymentProof: newPaymentProof,
           token: newToken,
           notes: newNotes
         });
 
         o.status = newStatus;
+        o.paymentProof = newPaymentProof;
         o.token = newToken;
         o.notes = newNotes;
         o.updatedAt = new Date().toISOString();

@@ -110,6 +110,50 @@ function getTokenColumnIndexes(headers) {
 }
 
 /**
+ * Pemetaan indeks kolom fleksibel berdasarkan nama header sheet Orders.
+ * Mencegah kesalahan pembacaan jika ada urutan kolom yang bergeser.
+ */
+function getOrderColumnIndexes(headers) {
+  var map = {
+    orderId: 0,
+    timestamp: 1,
+    buyerName: 2,
+    whatsapp: 3,
+    email: 4,
+    package: 5,
+    maxDevices: 6,
+    price: 7,
+    paymentMethod: 8,
+    paymentProof: 9,
+    status: 10,
+    token: 11,
+    notes: 12,
+    updatedAt: 13
+  };
+
+  if (!headers || !headers.length) return map;
+
+  for (var c = 0; c < headers.length; c++) {
+    var h = String(headers[c] || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (h === "orderid" || h === "id" || h.includes("orderid")) map.orderId = c;
+    else if (h.includes("time") || h.includes("waktu") || h.includes("tanggal")) map.timestamp = c;
+    else if (h.includes("buyer") || h.includes("pemesan") || h.includes("nama")) map.buyerName = c;
+    else if (h.includes("wa") || h.includes("whatsapp") || h.includes("hp") || h.includes("kontak")) map.whatsapp = c;
+    else if (h.includes("email")) map.email = c;
+    else if (h.includes("pack") || h.includes("paket")) map.package = c;
+    else if (h.includes("device") || h.includes("perangkat") || h.includes("kuota")) map.maxDevices = c;
+    else if (h.includes("price") || h.includes("harga") || h.includes("nominal")) map.price = c;
+    else if (h.includes("method") || h.includes("metode")) map.paymentMethod = c;
+    else if (h.includes("proof") || h.includes("bukti")) map.paymentProof = c;
+    else if (h.includes("status")) map.status = c;
+    else if (h.includes("token") || h.includes("lisensi")) map.token = c;
+    else if (h.includes("notes") || h.includes("catatan") || h.includes("keterangan")) map.notes = c;
+    else if (h.includes("update") || h.includes("diperbarui")) map.updatedAt = c;
+  }
+  return map;
+}
+
+/**
  * Inisialisasi otomatis struktur sheet jika belum ada atau update kolom
  */
 function initSheets() {
@@ -179,10 +223,24 @@ function initSheets() {
     ordersSheet = ss.insertSheet(SHEET_ORDERS);
     ordersSheet.appendRow([
       "Order ID", "Timestamp", "Buyer Name", "WhatsApp", "Email", 
-      "Package", "Max Devices", "Price", "Payment Method", "Status", "Token", "Notes", "Updated At"
+      "Package", "Max Devices", "Price", "Payment Method", "Payment Proof", "Status", "Token", "Notes", "Updated At"
     ]);
-    ordersSheet.getRange("A1:M1").setFontWeight("bold").setBackground("#0f172a").setFontColor("#38bdf8");
+    ordersSheet.getRange("A1:N1").setFontWeight("bold").setBackground("#0f172a").setFontColor("#38bdf8");
     ordersSheet.setFrozenRows(1);
+  } else {
+    // Cek jika kolom "Payment Proof" belum ada di sheet Orders yang sudah ada
+    var lastColOrd = ordersSheet.getLastColumn();
+    if (lastColOrd > 0) {
+      var ordHeaders = ordersSheet.getRange(1, 1, 1, lastColOrd).getValues()[0];
+      var hasProof = ordHeaders.some(function(h) {
+        return String(h).toLowerCase().replace(/[^a-z]/g, '').includes("proof") || String(h).toLowerCase().replace(/[^a-z]/g, '').includes("bukti");
+      });
+      if (!hasProof) {
+        ordersSheet.insertColumnsBefore(10, 1);
+        ordersSheet.getRange(1, 10).setValue("Payment Proof");
+        ordersSheet.getRange(1, 10).setFontWeight("bold").setBackground("#0f172a").setFontColor("#38bdf8");
+      }
+    }
   }
 }
 
@@ -1263,22 +1321,24 @@ function adminGetData(params) {
     if (ordersSheet) {
       var ordData = ordersSheet.getDataRange().getValues();
       if (ordData && ordData.length > 1) {
+        var ordColMap = getOrderColumnIndexes(ordData[0]);
         for (var o = 1; o < ordData.length; o++) {
           if (!ordData[o][0]) continue;
           ordersList.unshift({
-            orderId: String(ordData[o][0] || ''),
-            timestamp: String(ordData[o][1] || ''),
-            buyerName: String(ordData[o][2] || ''),
-            whatsapp: String(ordData[o][3] || ''),
-            email: String(ordData[o][4] || ''),
-            package: String(ordData[o][5] || ''),
-            maxDevices: parseInt(ordData[o][6]) || 1,
-            price: String(ordData[o][7] || ''),
-            paymentMethod: String(ordData[o][8] || ''),
-            status: String(ordData[o][9] || 'PENDING').trim().toUpperCase(),
-            token: String(ordData[o][10] || ''),
-            notes: String(ordData[o][11] || ''),
-            updatedAt: String(ordData[o][12] || '')
+            orderId: String(ordData[o][ordColMap.orderId] || ''),
+            timestamp: String(ordData[o][ordColMap.timestamp] || ''),
+            buyerName: String(ordData[o][ordColMap.buyerName] || ''),
+            whatsapp: String(ordData[o][ordColMap.whatsapp] || ''),
+            email: String(ordData[o][ordColMap.email] || ''),
+            package: String(ordData[o][ordColMap.package] || ''),
+            maxDevices: parseInt(ordData[o][ordColMap.maxDevices]) || 1,
+            price: String(ordData[o][ordColMap.price] || ''),
+            paymentMethod: String(ordData[o][ordColMap.paymentMethod] || ''),
+            paymentProof: (ordColMap.paymentProof !== undefined && ordData[o][ordColMap.paymentProof]) ? String(ordData[o][ordColMap.paymentProof] || '') : '',
+            status: String(ordData[o][ordColMap.status] || 'PENDING').trim().toUpperCase(),
+            token: String(ordData[o][ordColMap.token] || ''),
+            notes: String(ordData[o][ordColMap.notes] || ''),
+            updatedAt: String(ordData[o][ordColMap.updatedAt] || '')
           });
         }
       }
@@ -1538,6 +1598,7 @@ function adminAddOrder(params) {
   var maxDevices = parseInt(params.maxDevices) || 1;
   var price = (params.price || "Rp 99.000").trim();
   var paymentMethod = (params.paymentMethod || "Transfer BCA").trim();
+  var paymentProof = (params.paymentProof || "").trim();
   var status = (params.status || "PENDING").trim().toUpperCase();
   var notes = (params.notes || "").trim();
 
@@ -1579,21 +1640,47 @@ function adminAddOrder(params) {
     logEvent("TOKEN_ORDER_CREATED", tokenGenerated, buyerName, "-", "-", "Lisensi terbit via pemesanan " + orderId);
   }
 
-  sheet.appendRow([
-    orderId,
-    nowStr,
-    buyerName,
-    whatsapp,
-    email,
-    pkg,
-    maxDevices,
-    price,
-    paymentMethod,
-    status,
-    tokenGenerated,
-    notes,
-    nowStr
-  ]);
+  // Dapatkan peta kolom Orders untuk kompatibilitas versi
+  var lastCol = sheet.getLastColumn();
+  var ordHeaders = lastCol > 0 ? sheet.getRange(1, 1, 1, lastCol).getValues()[0] : [];
+  var ordColMap = getOrderColumnIndexes(ordHeaders);
+
+  // Jika kolom Payment Proof tersedia di sheet Orders
+  if (ordHeaders.length >= 14 || (ordColMap.paymentProof !== undefined && ordColMap.paymentProof === 9)) {
+    sheet.appendRow([
+      orderId,
+      nowStr,
+      buyerName,
+      whatsapp,
+      email,
+      pkg,
+      maxDevices,
+      price,
+      paymentMethod,
+      paymentProof,
+      status,
+      tokenGenerated,
+      notes,
+      nowStr
+    ]);
+  } else {
+    // Fallback sheet lama 13 kolom
+    sheet.appendRow([
+      orderId,
+      nowStr,
+      buyerName,
+      whatsapp,
+      email,
+      pkg,
+      maxDevices,
+      price,
+      paymentMethod,
+      status,
+      tokenGenerated,
+      notes + (paymentProof ? " [Bukti: " + paymentProof + "]" : ""),
+      nowStr
+    ]);
+  }
 
   logEvent("ORDER_CREATED", tokenGenerated || "-", buyerName, "-", "-", "Pemesanan baru dicatat: " + orderId + " (" + pkg + " - " + price + ")");
 
@@ -1610,6 +1697,7 @@ function adminAddOrder(params) {
       maxDevices: maxDevices,
       price: price,
       paymentMethod: paymentMethod,
+      paymentProof: paymentProof,
       status: status,
       token: tokenGenerated,
       notes: notes,
@@ -1639,11 +1727,23 @@ function adminUpdateOrder(params) {
   if (targetRow === -1) return { success: false, message: "Pesanan dengan ID " + orderId + " tidak ditemukan." };
 
   var nowStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
+  var ordColMap = getOrderColumnIndexes(data[0]);
 
-  if (params.status !== undefined) sheet.getRange(targetRow, 10).setValue(String(params.status).trim().toUpperCase());
-  if (params.notes !== undefined) sheet.getRange(targetRow, 12).setValue(String(params.notes).trim());
-  if (params.token !== undefined) sheet.getRange(targetRow, 11).setValue(String(params.token).trim());
-  sheet.getRange(targetRow, 13).setValue(nowStr);
+  if (params.paymentProof !== undefined && ordColMap.paymentProof !== undefined) {
+    sheet.getRange(targetRow, ordColMap.paymentProof + 1).setValue(String(params.paymentProof).trim());
+  }
+  if (params.status !== undefined && ordColMap.status !== undefined) {
+    sheet.getRange(targetRow, ordColMap.status + 1).setValue(String(params.status).trim().toUpperCase());
+  }
+  if (params.notes !== undefined && ordColMap.notes !== undefined) {
+    sheet.getRange(targetRow, ordColMap.notes + 1).setValue(String(params.notes).trim());
+  }
+  if (params.token !== undefined && ordColMap.token !== undefined) {
+    sheet.getRange(targetRow, ordColMap.token + 1).setValue(String(params.token).trim());
+  }
+  if (ordColMap.updatedAt !== undefined) {
+    sheet.getRange(targetRow, ordColMap.updatedAt + 1).setValue(nowStr);
+  }
 
   logEvent("ORDER_UPDATED", "-", orderId, "-", "-", "Status order " + orderId + " diubah menjadi " + params.status);
 
@@ -1694,11 +1794,12 @@ function adminProcessOrderLicense(params) {
 
   if (targetRow === -1) return { success: false, message: "Pesanan " + orderId + " tidak ditemukan." };
 
-  var buyerName = String(orderRowData[2] || "").trim();
-  var whatsapp = String(orderRowData[3] || "").trim();
-  var pkg = String(orderRowData[5] || "PRO Personal").trim();
-  var maxDevices = parseInt(orderRowData[6]) || 1;
-  var existingToken = String(orderRowData[10] || "").trim();
+  var ordColMap = getOrderColumnIndexes(data[0]);
+  var buyerName = String(orderRowData[ordColMap.buyerName] || "").trim();
+  var whatsapp = String(orderRowData[ordColMap.whatsapp] || "").trim();
+  var pkg = String(orderRowData[ordColMap.package] || "PRO Personal").trim();
+  var maxDevices = parseInt(orderRowData[ordColMap.maxDevices]) || 1;
+  var existingToken = String(orderRowData[ordColMap.token] || "").trim();
 
   var tokenToUse = existingToken;
   var nowStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
@@ -1722,9 +1823,9 @@ function adminProcessOrderLicense(params) {
   }
 
   // Update Orders sheet
-  sheet.getRange(targetRow, 10).setValue("COMPLETED");
-  sheet.getRange(targetRow, 11).setValue(tokenToUse);
-  sheet.getRange(targetRow, 13).setValue(nowStr);
+  if (ordColMap.status !== undefined) sheet.getRange(targetRow, ordColMap.status + 1).setValue("COMPLETED");
+  if (ordColMap.token !== undefined) sheet.getRange(targetRow, ordColMap.token + 1).setValue(tokenToUse);
+  if (ordColMap.updatedAt !== undefined) sheet.getRange(targetRow, ordColMap.updatedAt + 1).setValue(nowStr);
 
   logEvent("ORDER_LICENSE_ISSUED", tokenToUse, buyerName, "-", "-", "Lisensi diterbitkan untuk order " + orderId);
 

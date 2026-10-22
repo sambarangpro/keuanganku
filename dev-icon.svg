@@ -1,30 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <defs>
-    <!-- Royal Blue Gradient -->
-    <linearGradient id="userBlueGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#2b65d9" />
-      <stop offset="100%" stop-color="#1f4eb4" />
-    </linearGradient>
-  </defs>
+  <!-- 1. Background Squircle: Single Uniform Royal Blue (Hanya 1 Warna Biru) -->
+  <rect x="16" y="16" width="480" height="480" rx="116" fill="#2563eb" />
 
-  <!-- 1. Outer Squircle: Vibrant Royal Blue -->
-  <rect x="12" y="12" width="488" height="488" rx="118" fill="url(#userBlueGrad)" />
-
-  <!-- 2. Middle Container: Soft Frosted Squircle -->
-  <rect x="74" y="74" width="364" height="364" rx="88" fill="#ffffff" fill-opacity="0.20" stroke="#ffffff" stroke-opacity="0.30" stroke-width="5" />
-
-  <!-- 3. Inner White Wallet Outline -->
-  <!-- Wallet Main Body Outline (Left, Top, Bottom, and Right wall segments) -->
-  <path d="M 350 206 L 350 195 A 40 40 0 0 0 310 155 L 185 155 A 40 40 0 0 0 145 195 L 145 317 A 40 40 0 0 0 185 357 L 310 357 A 40 40 0 0 0 350 317 L 350 306" 
-        fill="none" stroke="#ffffff" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" />
+  <!-- 2. Wallet Icon Vector (Crisp White Outline) -->
+  <!-- Wallet Main Body Outline -->
+  <path d="M 355 206 L 355 185 A 40 40 0 0 0 315 145 L 180 145 A 40 40 0 0 0 140 185 L 140 327 A 40 40 0 0 0 180 367 L 315 367 A 40 40 0 0 0 355 327 L 355 306" 
+        fill="none" stroke="#ffffff" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" />
 
   <!-- Flap Loop Outline -->
-  <rect x="265" y="206" width="105" height="100" rx="26" fill="#4a75d3" fill-opacity="0.35" stroke="#ffffff" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" />
+  <rect x="260" y="206" width="115" height="100" rx="26" fill="#2563eb" stroke="#ffffff" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" />
 
   <!-- Clasp Dot -->
-  <circle cx="317.5" cy="256" r="11" fill="#ffffff" />
+  <circle cx="317.5" cy="256" r="12" fill="#ffffff" />
 
-  <!-- 4. Special Developer Badge Symbol (Bottom-Right) -->
-  <rect x="318" y="412" width="168" height="74" rx="36" fill="#090d16" stroke="#38bdf8" stroke-width="5.5" />
-  <text x="402" y="463" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="#38bdf8" text-anchor="middle">DEV</text>
+  <!-- 3. Special Developer Badge Symbol (Bottom-Right) -->
+  <rect x="316" y="410" width="170" height="76" rx="38" fill="#090d16" stroke="#38bdf8" stroke-width="6" />
+  <text x="401" y="463" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="#38bdf8" text-anchor="middle">DEV</text>
 </svg>
