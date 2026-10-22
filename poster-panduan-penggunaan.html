@@ -345,7 +345,7 @@
           </div>
 
           <p class="text-xs text-slate-400 leading-relaxed">
-            Tidak perlu menghabiskan memori dengan mengunduh ratusan megabyte dari Play Store / App Store. Cukup pasang instan melalui browser:
+            Tidak perlu menghabiskan memori dengan mengunduh ratusan megabyte dari Play Store / App Store. Cukup pasang instan melalui browser ke layar utama (lengkap dengan <b>Ikon Aplikasi Biru Muda Khas KeuanganKu</b>):
           </p>
 
           <div class="step-grid-3 grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
@@ -357,11 +357,11 @@
                 </div>
                 <div class="mt-2 p-2.5 bg-slate-950 rounded-xl border border-slate-800 text-[10px] space-y-1 font-mono-code text-slate-300">
                   <p class="text-slate-400">1. Ketuk titik tiga <b class="text-white">(⋮)</b> kanan atas</p>
-                  <p class="text-emerald-400 font-bold bg-emerald-950/50 p-1 rounded border border-emerald-500/30">➔ "Instal aplikasi" / "Add to Home Screen"</p>
+                  <p class="text-emerald-400 font-bold bg-emerald-950/50 p-1 rounded border border-emerald-500/30">➔ "Instal aplikasi" / "Tambahkan ke Layar Utama"</p>
                 </div>
               </div>
               <div class="p-2 bg-emerald-500/10 rounded-lg text-emerald-300 text-[10px] flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-xs">check</span> Ikon muncul langsung di HP!
+                <span class="material-symbols-outlined text-xs">check</span> Ikon Biru Muda muncul di menu HP!
               </div>
             </div>
 
@@ -389,11 +389,11 @@
                 </div>
                 <div class="mt-2 p-2.5 bg-slate-950 rounded-xl border border-slate-800 text-[10px] space-y-1 font-mono-code text-slate-300">
                   <p class="text-slate-400">1. Lihat kanan bilah alamat URL</p>
-                  <p class="text-cyan-400 font-bold bg-cyan-950/50 p-1 rounded border border-cyan-500/30">➔ Klik ikon komputer/tambah <b class="text-white">(⊕ / 💻)</b></p>
+                  <p class="text-cyan-400 font-bold bg-cyan-950/50 p-1 rounded border border-cyan-500/30">➔ Klik ikon instal <b class="text-white">(💻 / ⊕)</b></p>
                 </div>
               </div>
               <div class="p-2 bg-cyan-500/10 rounded-lg text-cyan-300 text-[10px] flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-xs">check</span> Membuka sebagai aplikasi mandiri PC!
+                <span class="material-symbols-outlined text-xs">check</span> Muncul di Taskbar dengan Ikon Biru Muda!
               </div>
             </div>
           </div>
@@ -646,81 +646,237 @@ function doPost(e) {
 
         <!-- ======================================================== -->
         <!-- LANGKAH 6: SINKRONISASI KE PERANGKAT 2, 3, DST           -->
+        <!-- (OTOMATIS BAWA DATABASE CLOUD & PIN LISENSI)              -->
         <!-- ======================================================== -->
         <div class="print-page-break bg-gradient-to-r from-indigo-950/30 to-purple-950/20 border border-indigo-500/40 rounded-2xl p-5 sm:p-6 space-y-5">
           <div class="flex items-center justify-between flex-wrap gap-2">
             <div class="flex items-center gap-3">
               <span class="w-8 h-8 rounded-xl bg-purple-600 text-white font-extrabold text-sm flex items-center justify-center shrink-0 shadow">6</span>
               <div>
-                <h2 class="text-base font-bold text-white">Menghubungkan ke Perangkat 2, 3, dan Seterusnya</h2>
-                <p class="text-xs text-slate-400">Buka di HP kedua, tablet anak/pasangan, atau laptop kantor secara sinkron</p>
+                <h2 class="text-base font-bold text-white">Menghubungkan ke Perangkat 2, 3, dan Seterusnya (Otomatis Bawa Database)</h2>
+                <p class="text-xs text-slate-400">Buka di Laptop kantor, Tablet, atau HP kedua secara instan tanpa perlu ketik link Cloud lagi!</p>
               </div>
             </div>
-            <span class="px-2.5 py-0.5 bg-purple-500/20 text-purple-300 text-[10px] font-bold rounded-full border border-purple-500/40">🔄 Multi-Perangkat</span>
+            <span class="px-2.5 py-0.5 bg-purple-500/20 text-purple-300 text-[10px] font-bold rounded-full border border-purple-500/40">🔄 Auto-Database Sync</span>
           </div>
 
-          <div class="step-grid grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+          <div class="step-grid grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
             <!-- Left: Step Instructions -->
             <div class="lg:col-span-7 space-y-3 text-xs text-slate-300">
               <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 space-y-3">
-                <!-- METODE A: BARCODE INSTAN (TERCEPAT) -->
+                
+                <!-- METODE A: WHATSAPP WEB STYLE (PALING PRAKTIS) -->
                 <div class="p-3 bg-gradient-to-r from-cyan-950/40 to-blue-950/40 border border-cyan-500/40 rounded-xl space-y-2">
-                  <div class="flex items-center gap-2 text-cyan-300 font-bold text-xs">
-                    <span class="material-symbols-outlined text-base text-cyan-400">qr_code_scanner</span>
-                    <span>CARA TERCEPAT: Scan Barcode Instan (Tanpa Ketik)</span>
+                  <div class="flex items-center justify-between">
+                    <span class="flex items-center gap-1.5 text-cyan-300 font-bold text-xs">
+                      <span class="material-symbols-outlined text-base text-cyan-400">devices</span>
+                      <span>METODE 1: Mirip WhatsApp Web (PC/Laptop Baru Tampilkan Barcode)</span>
+                    </span>
+                    <span class="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 text-[9px] font-black uppercase">Paling Cepat</span>
                   </div>
                   <ol class="text-[11px] text-slate-300 space-y-1.5 list-decimal list-inside leading-relaxed">
-                    <li>Di <b>Perangkat 1 (HP Utama):</b> Buka menu <b>Setup</b> ➔ klik tombol <b class="text-cyan-300">"Hubungkan Perangkat Baru (Barcode)"</b>.</li>
-                    <li>Di <b>Perangkat 2 (HP Baru):</b> Buka <b>Kamera HP bawaan / Google Lens</b> atau buka aplikasi dan klik <b class="text-cyan-300">"Scan Barcode / QR Sekarang"</b>.</li>
-                    <li>Arahkan kamera ke layar barcode HP 1 ➔ <b>Selesai!</b> Perangkat 2 langsung otomatis terhubung, login, dan muncul tawaran instal aplikasi ke layar utama!</li>
+                    <li>Di <b>Laptop / PC / iPad Baru:</b> Buka link <code class="text-cyan-300">https://sambarangpro.github.io/keuanganku/</code>. Di layar pembuka akan langsung muncul <b>Barcode Sesi WhatsApp Web Style</b>.</li>
+                    <li>Di <b>HP Utama Anda:</b> Buka menu <b>Setup</b> ➔ cari bagian <i>Daftar Perangkat Terhubung</i> ➔ klik tombol gradasi <b class="text-cyan-300">"Tautkan Perangkat (Scan QR di PC / iPad)"</b>.</li>
+                    <li>Arahkan kamera HP utama Anda ke barcode di layar PC/Laptop ➔ konfirmasi <b>"Ya / Izinkan"</b>.</li>
+                    <li>👉 <b>Selesai!</b> Seketika layar PC Anda otomatis masuk, login terverifikasi, dan <b>seluruh database transaksi Google Sheets langsung ditarik otomatis</b>!</li>
                   </ol>
                 </div>
 
-                <!-- METODE B: MANUAL -->
-                <div class="pt-1">
-                  <p class="text-[10px] text-slate-400 uppercase tracking-wider font-bold mb-1.5">Atau Cara Manual (Ketik Kode):</p>
-                  <div class="space-y-2 text-[11px] text-slate-400">
-                    <p>• Buka link <code class="text-cyan-300">https://sambarangpro.github.io/keuanganku/</code> di perangkat baru.</p>
-                    <p>• Ketik <b>Token Lisensi</b> Anda ➔ masukkan <b>PIN Pribadi</b> Anda ➔ klik <b>AKTIVASI SEKARANG</b>.</p>
+                <!-- METODE B: BARCODE DI MENU SETUP -->
+                <div class="p-3 bg-slate-950/80 border border-slate-800 rounded-xl space-y-2">
+                  <div class="flex items-center justify-between">
+                    <span class="flex items-center gap-1.5 text-indigo-300 font-bold text-xs">
+                      <span class="material-symbols-outlined text-base text-indigo-400">qr_code_2</span>
+                      <span>METODE 2: Scan Barcode Lisensi dari HP Utama</span>
+                    </span>
                   </div>
+                  <ol class="text-[11px] text-slate-400 space-y-1 list-decimal list-inside leading-relaxed">
+                    <li>Di <b>HP Utama:</b> Masuk menu <b>Setup</b> ➔ klik <b>"Hubungkan Perangkat Baru (Barcode)"</b>.</li>
+                    <li>Di <b>HP Kedua:</b> Buka kamera bawaan HP, Google Lens, atau buka link aplikasi lalu klik <b>Scan Barcode</b>.</li>
+                    <li>Arahkan ke barcode di HP utama. Sistem otomatis login dan mengunduh seluruh transaksi ke HP kedua!</li>
+                  </ol>
                 </div>
 
-                <div class="flex items-start gap-2.5 pt-2 border-t border-slate-800">
-                  <span class="px-2 py-0.5 rounded bg-purple-900 text-purple-200 font-bold text-[10px]">6.3</span>
-                  <div>
-                    <p class="font-bold text-white">Tarik Data dari Cloud & Selesai!</p>
-                    <p class="text-[11px] text-slate-400">Masuk ke menu <b>Setup</b> di perangkat kedua ➔ tempelkan link Web App Google Sheets Anda ➔ klik <b>"PAKSA TARIK DARI CLOUD"</b>. Seluruh catatan transaksi langsung tersinkron rapi!</p>
-                  </div>
+                <!-- METODE C: UNDUH & UPLOAD FOTO BARCODE -->
+                <div class="p-3 bg-purple-950/30 border border-purple-500/30 rounded-xl space-y-1.5 text-[11px] text-slate-300">
+                  <p class="font-bold text-purple-300 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-sm text-purple-400">upload_file</span>
+                    <span>METODE 3: Solusi Tanpa Webcam / Kamera Buram</span>
+                  </p>
+                  <p class="text-slate-400 leading-relaxed">
+                    Jika laptop Anda tidak memiliki webcam, klik <b>"Download Gambar Barcode"</b> di layar PC, kirim fotonya ke HP Anda, lalu di HP Utama klik <b>"Upload Foto Barcode"</b>. Perangkat akan langsung terhubung instan!
+                  </p>
                 </div>
+
               </div>
             </div>
 
-            <!-- Right: Pictorial Mockup (Multi-Device Network + PIN Prompt) -->
+            <!-- Right: Pictorial Mockup (Dual Device Sync) -->
             <div class="lg:col-span-5 bg-slate-950 rounded-2xl p-4 border border-purple-500/40 shadow-xl space-y-3 font-sans">
               <div class="flex items-center justify-between pb-2 border-b border-slate-800 text-[10px]">
                 <span class="font-bold text-purple-300 flex items-center gap-1">
-                  <span class="material-symbols-outlined text-xs">devices</span> Otorisasi Perangkat 2 & 3
+                  <span class="material-symbols-outlined text-xs">cloud_done</span> Auto-Pull Database Cloud
                 </span>
-                <span class="px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[8px] font-bold">Terproteksi</span>
+                <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[8px] font-bold">100% Otomatis</span>
               </div>
-              <div class="bg-slate-900 p-2.5 rounded-xl border border-slate-800 space-y-1.5 text-left text-[10px]">
-                <p class="text-slate-400">Kode Token: <span class="text-cyan-300 font-mono-code">PRO-8A2F-...</span></p>
-                <div class="bg-amber-950/40 border border-amber-500/40 p-1.5 rounded-lg text-amber-300 text-[9px] flex items-center gap-1 font-bold">
-                  <span class="material-symbols-outlined text-xs">local_fire_department</span> Token Hangus - Meminta PIN Pribadi
+              
+              <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-2 text-left text-[11px]">
+                <div class="flex items-center gap-2 text-cyan-300 font-bold">
+                  <span class="material-symbols-outlined text-base">check_circle</span>
+                  <span>Perangkat Baru Terhubung!</span>
                 </div>
-                <div class="space-y-1 mt-1">
-                  <label class="text-[9px] text-slate-400">Ketik PIN Pribadi Anda:</label>
-                  <div class="bg-slate-950 border border-amber-500/60 rounded-lg p-1.5 text-center font-mono-code text-sm font-bold text-amber-300 tracking-widest">
-                    ••••••
-                  </div>
+                <p class="text-slate-400 text-[10px] leading-relaxed">
+                  Begitu barcode terverifikasi, aplikasi secara cerdas membaca link Cloud Google Sheets Anda dan langsung mengunduh:
+                </p>
+                <div class="space-y-1 font-mono-code text-[9px] text-slate-300 bg-slate-950 p-2 rounded-lg border border-slate-800">
+                  <p class="text-emerald-400">✓ Seluruh Rekening & Saldo Real-Time</p>
+                  <p class="text-cyan-400">✓ Catatan Transaksi & Mutasi Keuangan</p>
+                  <p class="text-amber-400">✓ Target Anggaran, Sinking Fund & Cicilan</p>
                 </div>
               </div>
-              <div class="py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-[10px] tracking-wider uppercase rounded-xl flex items-center justify-center gap-1">
-                <span class="material-symbols-outlined text-xs">verified</span> AKTIVASI PERANGKAT 2
+
+              <div class="p-2.5 bg-gradient-to-r from-emerald-600/20 to-cyan-600/20 border border-emerald-500/40 rounded-xl text-emerald-300 text-[10px] flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm text-emerald-400 shrink-0">sync_saved_locally</span>
+                <span><b>Bebas Input Ulang:</b> Tidak perlu copy-paste link Google Sheets manual lagi di perangkat tambahan!</span>
               </div>
-              <div class="p-2 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-300 text-[9px] flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-xs text-emerald-400">cloud_sync</span>
-                <span>Klik <b>"PAKSA TARIK DARI CLOUD"</b> untuk load data!</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ======================================================== -->
+        <!-- LANGKAH 7: PANDUAN FITUR KEUANGAN SEHARI-HARI (LENGKAP) -->
+        <!-- ======================================================== -->
+        <div class="print-page-break bg-slate-950/70 border border-slate-800 rounded-2xl p-5 sm:p-6 space-y-5 hover:border-slate-700 transition-all">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 rounded-xl bg-emerald-600 text-white font-extrabold text-sm flex items-center justify-center shrink-0 shadow">7</span>
+              <div>
+                <h2 class="text-base font-bold text-white">Panduan Menggunakan Fitur Keuangan Sehari-hari</h2>
+                <p class="text-xs text-slate-400">Cara mencatat transaksi, transfer saldo, budgeting, sinking fund, dan kelola utang</p>
+              </div>
+            </div>
+            <span class="px-2.5 py-0.5 bg-emerald-500/20 text-emerald-300 text-[10px] font-bold rounded-full border border-emerald-500/40">💼 Manajemen Kas</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 text-xs">
+            <!-- 1. Catat Transaksi -->
+            <div class="p-4 bg-slate-900 border border-slate-800 rounded-2xl space-y-2 flex flex-col justify-between">
+              <div>
+                <span class="font-bold text-emerald-400 flex items-center gap-1.5 text-xs">
+                  <span class="material-symbols-outlined text-base">add_circle</span> 1. Catat Transaksi Cepat
+                </span>
+                <p class="text-[11px] text-slate-300 mt-1.5 leading-relaxed">
+                  Klik menu <b>Transaksi (+)</b>. Pilih <i>Pengeluaran</i> atau <i>Pemasukan</i>. Masukkan nama transaksi, nominal (otomatis ribuan Rupiah), pilih rekening/dompet asal, dan kategori. Anda juga bisa melampirkan foto nota/struk belanja!
+                </p>
+              </div>
+              <span class="text-[10px] text-slate-500 font-mono-code mt-2">Saldo rekening otomatis terupdate</span>
+            </div>
+
+            <!-- 2. Transfer Antar Rekening -->
+            <div class="p-4 bg-slate-900 border border-slate-800 rounded-2xl space-y-2 flex flex-col justify-between">
+              <div>
+                <span class="font-bold text-cyan-400 flex items-center gap-1.5 text-xs">
+                  <span class="material-symbols-outlined text-base">sync_alt</span> 2. Transfer / Mutasi Saldo
+                </span>
+                <p class="text-[11px] text-slate-300 mt-1.5 leading-relaxed">
+                  Untuk tarik tunai ATM (BSI ➔ Cash) atau Top-Up E-Wallet (BSI ➔ Dana/Gopay), pilih tipe <b>Transfer Antar Akun</b>. Saldo berpindah dengan presisi tanpa merusak hitungan grafik pengeluaran bulanan Anda!
+                </p>
+              </div>
+              <span class="text-[10px] text-slate-500 font-mono-code mt-2">Bebas salah hitung pengeluaran</span>
+            </div>
+
+            <!-- 3. Monitoring Budgeting -->
+            <div class="p-4 bg-slate-900 border border-slate-800 rounded-2xl space-y-2 flex flex-col justify-between">
+              <div>
+                <span class="font-bold text-amber-400 flex items-center gap-1.5 text-xs">
+                  <span class="material-symbols-outlined text-base">pie_chart</span> 3. Anggaran Bulanan (Budget)
+                </span>
+                <p class="text-[11px] text-slate-300 mt-1.5 leading-relaxed">
+                  Di menu <b>Setup</b>, tetapkan batas budget per kategori (Makan, Bensin, Internet, Belanja). Di Dashboard, pantau progress bar indikator: hijau (aman), kuning (waspada), dan merah (melebihi batas anggaran).
+                </p>
+              </div>
+              <span class="text-[10px] text-slate-500 font-mono-code mt-2">Mencegah bocor halus finansial</span>
+            </div>
+
+            <!-- 4. Tabungan & Sinking Fund -->
+            <div class="p-4 bg-slate-900 border border-slate-800 rounded-2xl space-y-2 flex flex-col justify-between">
+              <div>
+                <span class="font-bold text-indigo-400 flex items-center gap-1.5 text-xs">
+                  <span class="material-symbols-outlined text-base">savings</span> 4. Sinking Fund & Impian
+                </span>
+                <p class="text-[11px] text-slate-300 mt-1.5 leading-relaxed">
+                  Alokasikan dana untuk pos pengeluaran terencana besar (misal: Qurban tahunan, Pajak Kendaraan bermotor, Rencana Nikah, atau DP Rumah) lengkap dengan tanggal deadline dan persentase pencapaian.
+                </p>
+              </div>
+              <span class="text-[10px] text-slate-500 font-mono-code mt-2">Target terukur dan terarah</span>
+            </div>
+
+            <!-- 5. Utang & Cicilan -->
+            <div class="p-4 bg-slate-900 border border-slate-800 rounded-2xl space-y-2 flex flex-col justify-between">
+              <div>
+                <span class="font-bold text-rose-400 flex items-center gap-1.5 text-xs">
+                  <span class="material-symbols-outlined text-base">receipt_long</span> 5. Cicilan & Utang Piutang
+                </span>
+                <p class="text-[11px] text-slate-300 mt-1.5 leading-relaxed">
+                  Catat pinjaman atau tagihan cicilan motor/elektronik dengan nominal angsuran rutin per bulan. Setiap kali Anda mencatat pembayaran cicilan, sisa utang akan otomatis berkurang hingga lunas.
+                </p>
+              </div>
+              <span class="text-[10px] text-slate-500 font-mono-code mt-2">Riwayat pelunasan tercatat rapi</span>
+            </div>
+
+            <!-- 6. Backup Manual Offline -->
+            <div class="p-4 bg-slate-900 border border-slate-800 rounded-2xl space-y-2 flex flex-col justify-between">
+              <div>
+                <span class="font-bold text-purple-400 flex items-center gap-1.5 text-xs">
+                  <span class="material-symbols-outlined text-base">save_as</span> 6. Cadangan Manual (.json)
+                </span>
+                <p class="text-[11px] text-slate-300 mt-1.5 leading-relaxed">
+                  Di menu <b>Setup</b> ➔ <i>Cadangan Manual</i>: Klik <b>Download File Cadangan (.json)</b> untuk menyimpan file backup ke flashdisk. Jika ganti HP offline, cukup klik <b>Pulihkan Data</b> dan pilih file tersebut!
+                </p>
+              </div>
+              <span class="text-[10px] text-slate-500 font-mono-code mt-2">Aman 100% tanpa internet</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ======================================================== -->
+        <!-- LANGKAH 8: MANAJEMEN PERANGKAT & KEAMANAN JARAK JAUH    -->
+        <!-- ======================================================== -->
+        <div class="print-page-break bg-slate-950/70 border border-slate-800 rounded-2xl p-5 sm:p-6 space-y-5 hover:border-slate-700 transition-all">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 rounded-xl bg-rose-600 text-white font-extrabold text-sm flex items-center justify-center shrink-0 shadow">8</span>
+              <div>
+                <h2 class="text-base font-bold text-white">Manajemen Perangkat Terhubung & Keamanan Jarak Jauh</h2>
+                <p class="text-xs text-slate-400">Cabut akses jika HP hilang, ganti laptop, atau kuota perangkat lisensi penuh</p>
+              </div>
+            </div>
+            <span class="px-2.5 py-0.5 bg-rose-500/20 text-rose-300 text-[10px] font-bold rounded-full border border-rose-500/40">🛡️ Remote Logout</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-300">
+            <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl space-y-2.5">
+              <span class="font-bold text-rose-400 flex items-center gap-1.5 text-xs">
+                <span class="material-symbols-outlined text-base">phonelink_erase</span> Cabut Akses Perangkat Tertentu
+              </span>
+              <p class="text-[11px] text-slate-300 leading-relaxed">
+                Di menu <b>Setup</b> ➔ <b>Daftar Perangkat Terhubung</b>, Anda bisa melihat perangkat mana saja yang sedang aktif. Jika salah satu HP Anda hilang atau dijual:
+              </p>
+              <ol class="list-decimal list-inside space-y-1 text-[11px] text-slate-400">
+                <li>Klik tombol merah <b>"Keluarkan"</b> di samping nama perangkat yang ingin dicabut.</li>
+                <li>Akan muncul jendela pop-up konfirmasi: <i>"Apakah Anda yakin ingin mengeluarkan perangkat ini?"</i>.</li>
+                <li>Klik <b>Ya, Keluarkan</b> ➔ Seketika akses perangkat tersebut dicabut dan slot kuota lisensi Anda langsung bebas kembali!</li>
+              </ol>
+            </div>
+
+            <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl space-y-2.5">
+              <span class="font-bold text-amber-400 flex items-center gap-1.5 text-xs">
+                <span class="material-symbols-outlined text-base">help_center</span> Pemecahan Masalah Cepat (Troubleshooting)
+              </span>
+              <div class="space-y-2 text-[11px] text-slate-400">
+                <p>• <b>Data di perangkat baru masih kosong?</b> Buka menu <b>Setup</b> ➔ klik tombol merah <b>"PAKSA TARIK DARI CLOUD"</b>. Seketika data Google Sheets akan terunduh.</p>
+                <p>• <b>Ikon di taskbar laptop masih logo lama?</b> Copot (*uninstall*) aplikasi KeuanganKu lama dari laptop ➔ buka kembali di browser ➔ klik <b>Instal</b> kembali agar Windows mengambil logo Biru Muda yang baru.</p>
+                <p>• <b>Koneksi Cloud bertuliskan "Koneksi Terganggu"?</b> Pastikan saat deploy Apps Script Anda memilih <i>"Who has access: Anyone (Siapa saja)"</i>.</p>
               </div>
             </div>
           </div>
