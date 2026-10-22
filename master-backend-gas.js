@@ -413,6 +413,10 @@ function handleRequest(params) {
         result = adminLogin(params);
         break;
 
+      case "admin_change_password":
+        result = adminChangePassword(params);
+        break;
+
       case "admin_get_data":
         result = adminGetData(params);
         break;
@@ -1099,8 +1103,32 @@ function deactivateClientDevice(params) {
 // LOGIKA DEVELOPER / ADMIN DASHBOARD
 // ==============================================================================
 
+function getActiveAdminPassword() {
+  try {
+    var storedPass = PropertiesService.getScriptProperties().getProperty("DEV_PORTAL_PASSWORD");
+    if (storedPass && String(storedPass).trim()) {
+      return String(storedPass).trim();
+    }
+  } catch(e) {}
+  return MASTER_ADMIN_PASSWORD;
+}
+
 function checkAdminAuth(password) {
-  return (password && String(password).trim() === MASTER_ADMIN_PASSWORD);
+  var effectivePass = getActiveAdminPassword();
+  return (password && String(password).trim() === effectivePass);
+}
+
+function adminChangePassword(params) {
+  if (!checkAdminAuth(params.adminPassword)) {
+    return { success: false, message: "Kata sandi lama yang Anda masukkan salah!" };
+  }
+  var newPass = (params.newAdminPassword || "").trim();
+  if (!newPass || newPass.length < 4) {
+    return { success: false, message: "Kata sandi baru minimal 4 karakter." };
+  }
+  PropertiesService.getScriptProperties().setProperty("DEV_PORTAL_PASSWORD", newPass);
+  logEvent("ADMIN_PASSWORD_CHANGED", "-", "Developer", "-", "-", "Password Developer Portal berhasil diperbarui.");
+  return { success: true, message: "Kata sandi Dev Portal berhasil diperbarui!" };
 }
 
 function adminLogin(params) {

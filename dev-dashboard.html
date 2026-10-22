@@ -319,7 +319,7 @@
       <div class="bg-slate-900 border border-slate-800 rounded-3xl shadow-xl overflow-hidden">
         <!-- Tabs Header & Search Filter Bar -->
         <div class="p-4 sm:p-6 border-b border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 flex-wrap">
             <button onclick="switchTab('tokens')" id="tab-btn-tokens" class="px-4 py-2 rounded-xl text-xs font-bold transition-all bg-blue-600 text-white shadow-md shadow-blue-500/20">
               <span class="flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-sm">vpn_key</span>
@@ -330,6 +330,12 @@
               <span class="flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-sm">history</span>
                 Audit Aktivitas & Device
+              </span>
+            </button>
+            <button onclick="switchTab('settings')" id="tab-btn-settings" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+              <span class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm">settings</span>
+                Pengaturan Dev Portal
               </span>
             </button>
           </div>
@@ -424,6 +430,144 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+        </div>
+
+        <!-- 3. TAB KONTEN: PENGATURAN DEV PORTAL -->
+        <div id="tab-content-settings" class="hidden p-4 sm:p-8 space-y-6">
+          <div class="max-w-4xl space-y-6">
+
+            <!-- Card 1: Kata Sandi Dev Portal -->
+            <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-5 sm:p-6 space-y-4 shadow-sm">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3 flex-wrap gap-2">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-lg">password</span>
+                  </div>
+                  <div>
+                    <h3 class="font-bold text-white text-sm">Kata Sandi Dev Portal</h3>
+                    <p class="text-[11px] text-slate-400">Kelola kata sandi yang digunakan untuk masuk ke Developer Dashboard ini</p>
+                  </div>
+                </div>
+                <span class="px-2.5 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/30 text-[10px] font-bold rounded-full">
+                  Master Password
+                </span>
+              </div>
+
+              <!-- Sandi Saat Ini -->
+              <div class="p-4 bg-slate-900/90 border border-slate-800 rounded-xl space-y-2">
+                <p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Kata Sandi Aktif Saat Ini</p>
+                <div class="flex items-center gap-2.5">
+                  <div class="relative flex-1">
+                    <input type="password" id="dev-current-pass-display" readonly value="" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700/80 rounded-xl font-mono-data text-xs text-amber-300 font-bold tracking-wider select-all outline-none">
+                  </div>
+                  <button type="button" onclick="toggleViewCurrentDevPass()" class="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer" title="Tampilkan/Sembunyikan Sandi">
+                    <span id="btn-icon-eye-dev" class="material-symbols-outlined text-sm">visibility</span>
+                    <span id="btn-text-eye-dev" class="hidden sm:inline">Lihat</span>
+                  </button>
+                  <button type="button" onclick="copyCurrentDevPass()" class="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/30 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer" title="Salin Sandi ke Clipboard">
+                    <span class="material-symbols-outlined text-sm">content_copy</span>
+                    <span class="hidden sm:inline">Salin</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Formulir Ganti Sandi Baru -->
+              <form onsubmit="handleDevChangePassword(event)" class="space-y-4 pt-2">
+                <h4 class="font-bold text-white text-xs flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-sm text-cyan-400">key</span>
+                  <span>Formulir Ganti Kata Sandi Dev Portal</span>
+                </h4>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label class="block text-[11px] font-semibold text-slate-300 mb-1">Sandi Lama Saat Ini:</label>
+                    <input type="password" id="setting-old-pass" required placeholder="Masukkan sandi lama"
+                      class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all font-mono-data">
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-semibold text-slate-300 mb-1">Sandi Baru:</label>
+                    <input type="password" id="setting-new-pass" required minlength="4" placeholder="Minimal 4 karakter"
+                      class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all font-mono-data">
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-semibold text-slate-300 mb-1">Konfirmasi Sandi Baru:</label>
+                    <input type="password" id="setting-confirm-pass" required minlength="4" placeholder="Ketik ulang sandi baru"
+                      class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all font-mono-data">
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between flex-wrap gap-2 pt-1">
+                  <p id="dev-change-pass-msg" class="text-xs font-semibold hidden"></p>
+                  <button type="submit" id="btn-save-dev-pass" class="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-500/25 flex items-center gap-2 cursor-pointer transition-all active:scale-95">
+                    <span class="material-symbols-outlined text-sm">save</span>
+                    <span>Simpan Kata Sandi Baru</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Card 2: Server Lisensi & Google Sheet Database -->
+            <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-5 sm:p-6 space-y-4 shadow-sm">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3 flex-wrap gap-2">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-9 h-9 rounded-xl bg-blue-600/15 border border-blue-500/30 text-blue-400 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-lg">cloud_sync</span>
+                  </div>
+                  <div>
+                    <h3 class="font-bold text-white text-sm">Server Lisensi & Database Google Sheets</h3>
+                    <p class="text-[11px] text-slate-400">Backend server Google Apps Script dan spreadsheet yang terhubung</p>
+                  </div>
+                </div>
+                <span class="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold rounded-full flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Terhubung
+                </span>
+              </div>
+
+              <div class="space-y-3 text-xs">
+                <div>
+                  <label class="block text-[11px] font-semibold text-slate-300 mb-1">URL Web App Master Lisensi (Google Apps Script):</label>
+                  <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                    <input type="text" id="setting-server-url" readonly class="w-full flex-1 px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-xs text-cyan-300 font-mono-data select-all outline-none">
+                    <button type="button" onclick="copyMasterServerUrl()" class="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl font-bold flex items-center gap-1.5 transition-all cursor-pointer shrink-0">
+                      <span class="material-symbols-outlined text-sm">content_copy</span>
+                      <span class="hidden sm:inline">Salin</span>
+                    </button>
+                    <button type="button" onclick="testServerConnection()" class="px-3.5 py-2.5 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/40 rounded-xl font-bold flex items-center gap-1.5 transition-all cursor-pointer shrink-0">
+                      <span class="material-symbols-outlined text-sm">wifi_protected_setup</span>
+                      <span class="hidden sm:inline">Tes Koneksi</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="p-3 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-between flex-wrap gap-2">
+                  <div>
+                    <p class="font-semibold text-white">Google Spreadsheet Database:</p>
+                    <p class="text-[11px] text-slate-400">Database Lisensi Keuanganku PRO (Sheets: Tokens & Logs)</p>
+                  </div>
+                  <a href="https://docs.google.com/spreadsheets/d/1782VpWnlNbE2K7xdI5rbeTubRCBLn3vlOsdONksRdcs/edit" target="_blank" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/30 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all">
+                    <span class="material-symbols-outlined text-sm">table_chart</span>
+                    <span>Buka Spreadsheet di Google Drive</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 3: Sesi & Logout -->
+            <div class="p-4 bg-slate-950/60 border border-slate-800 rounded-2xl flex items-center justify-between flex-wrap gap-3">
+              <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-slate-400 text-xl">admin_panel_settings</span>
+                <div>
+                  <p class="text-xs font-bold text-white">Sesi Developer Portal Aktif</p>
+                  <p class="text-[10px] text-slate-400">Anda dapat keluar kapan saja untuk mengunci kembali dashboard ini.</p>
+                </div>
+              </div>
+              <button type="button" onclick="handleAdminLogout()" class="px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 hover:text-white border border-rose-500/30 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-sm">logout</span>
+                <span>Keluar dari Dev Portal</span>
+              </button>
+            </div>
+
           </div>
         </div>
       </div>
@@ -1036,6 +1180,7 @@
           document.getElementById('login-screen').classList.add('hidden');
           document.getElementById('dashboard-screen').classList.remove('hidden');
           loadDashboardData();
+          initSettingsTab();
           if (isAuto) {
             showToast('success', '⚡ Auto-Login Berhasil! Selamat datang di Developer Portal.');
           }
@@ -1101,6 +1246,7 @@
         // Update Backend URL indicator
         let urlDisp = document.getElementById('dev-backend-url-display');
         if (urlDisp) urlDisp.textContent = currentApiUrl || 'URL Backend belum diatur';
+        initSettingsTab();
 
         // Hitung statistik real-time dari data token secara cerdas & akurat
         let totalTokens = cachedTokens.length;
@@ -1379,25 +1525,223 @@
     function switchTab(tab) {
       let tokensTab = document.getElementById('tab-content-tokens');
       let logsTab = document.getElementById('tab-content-logs');
+      let settingsTab = document.getElementById('tab-content-settings');
       let filterBar = document.getElementById('tokens-filter-bar');
 
       let btnTokens = document.getElementById('tab-btn-tokens');
       let btnLogs = document.getElementById('tab-btn-logs');
+      let btnSettings = document.getElementById('tab-btn-settings');
+
+      const activeClass = "px-4 py-2 rounded-xl text-xs font-bold transition-all bg-blue-600 text-white shadow-md shadow-blue-500/20";
+      const inactiveClass = "px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition-all";
 
       if (tab === 'tokens') {
-        tokensTab.classList.remove('hidden');
-        logsTab.classList.add('hidden');
-        filterBar.classList.remove('hidden');
+        if (tokensTab) tokensTab.classList.remove('hidden');
+        if (logsTab) logsTab.classList.add('hidden');
+        if (settingsTab) settingsTab.classList.add('hidden');
+        if (filterBar) filterBar.classList.remove('hidden');
 
-        btnTokens.className = "px-4 py-2 rounded-xl text-xs font-bold transition-all bg-blue-600 text-white shadow-md shadow-blue-500/20";
-        btnLogs.className = "px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition-all";
+        if (btnTokens) btnTokens.className = activeClass;
+        if (btnLogs) btnLogs.className = inactiveClass;
+        if (btnSettings) btnSettings.className = inactiveClass;
+      } else if (tab === 'logs') {
+        if (tokensTab) tokensTab.classList.add('hidden');
+        if (logsTab) logsTab.classList.remove('hidden');
+        if (settingsTab) settingsTab.classList.add('hidden');
+        if (filterBar) filterBar.classList.add('hidden');
+
+        if (btnTokens) btnTokens.className = inactiveClass;
+        if (btnLogs) btnLogs.className = activeClass;
+        if (btnSettings) btnSettings.className = inactiveClass;
+      } else if (tab === 'settings') {
+        if (tokensTab) tokensTab.classList.add('hidden');
+        if (logsTab) logsTab.classList.add('hidden');
+        if (settingsTab) settingsTab.classList.remove('hidden');
+        if (filterBar) filterBar.classList.add('hidden');
+
+        if (btnTokens) btnTokens.className = inactiveClass;
+        if (btnLogs) btnLogs.className = inactiveClass;
+        if (btnSettings) btnSettings.className = activeClass;
+
+        initSettingsTab();
+      }
+    }
+
+    // ============================================================
+    // PENGATURAN DEV PORTAL
+    // ============================================================
+
+    function initSettingsTab() {
+      let passDisplay = document.getElementById('dev-current-pass-display');
+      if (passDisplay) {
+        passDisplay.value = currentAdminPassword || '';
+      }
+      let serverUrlDisplay = document.getElementById('setting-server-url');
+      if (serverUrlDisplay) {
+        serverUrlDisplay.value = currentApiUrl || '';
+      }
+      let oldPassInput = document.getElementById('setting-old-pass');
+      if (oldPassInput && !oldPassInput.value && currentAdminPassword) {
+        oldPassInput.value = currentAdminPassword;
+      }
+      let msg = document.getElementById('dev-change-pass-msg');
+      if (msg) {
+        msg.classList.add('hidden');
+        msg.textContent = '';
+      }
+    }
+
+    function toggleViewCurrentDevPass() {
+      let passDisplay = document.getElementById('dev-current-pass-display');
+      let icon = document.getElementById('btn-icon-eye-dev');
+      let text = document.getElementById('btn-text-eye-dev');
+      if (!passDisplay) return;
+
+      if (passDisplay.type === 'password') {
+        passDisplay.type = 'text';
+        if (icon) icon.textContent = 'visibility_off';
+        if (text) text.textContent = 'Sembunyi';
       } else {
-        tokensTab.classList.add('hidden');
-        logsTab.classList.remove('hidden');
-        filterBar.classList.add('hidden');
+        passDisplay.type = 'password';
+        if (icon) icon.textContent = 'visibility';
+        if (text) text.textContent = 'Lihat';
+      }
+    }
 
-        btnLogs.className = "px-4 py-2 rounded-xl text-xs font-bold transition-all bg-blue-600 text-white shadow-md shadow-blue-500/20";
-        btnTokens.className = "px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition-all";
+    function copyCurrentDevPass() {
+      let pass = currentAdminPassword || (document.getElementById('dev-current-pass-display') ? document.getElementById('dev-current-pass-display').value : '');
+      if (!pass) {
+        showToast('error', 'Kata sandi belum tersedia.');
+        return;
+      }
+      copyText(pass, 'Kata sandi Dev Portal berhasil disalin!');
+    }
+
+    function copyMasterServerUrl() {
+      let url = currentApiUrl || (document.getElementById('setting-server-url') ? document.getElementById('setting-server-url').value : '');
+      if (!url) {
+        showToast('error', 'URL Server belum tersedia.');
+        return;
+      }
+      copyText(url, 'URL Web App Master Apps Script berhasil disalin!');
+    }
+
+    async function testServerConnection() {
+      if (!currentApiUrl) {
+        showToast('error', 'URL server belum diatur.');
+        return;
+      }
+      showToast('info', 'Menguji koneksi ke Master Server...');
+      try {
+        let res = await callDevApi({
+          action: 'admin_login',
+          adminPassword: currentAdminPassword
+        });
+        if (res && res.success) {
+          showToast('success', '🟢 Server Aktif & Google Sheets Terhubung Normal!');
+        } else {
+          showToast('error', 'Respon server: ' + (res && res.message ? res.message : 'Gagal otentikasi'));
+        }
+      } catch(err) {
+        showToast('error', 'Koneksi gagal: ' + err.message);
+      }
+    }
+
+    async function handleDevChangePassword(e) {
+      e.preventDefault();
+      let oldPass = (document.getElementById('setting-old-pass').value || '').trim();
+      let newPass = (document.getElementById('setting-new-pass').value || '').trim();
+      let confirmPass = (document.getElementById('setting-confirm-pass').value || '').trim();
+      let msg = document.getElementById('dev-change-pass-msg');
+      let btn = document.getElementById('btn-save-dev-pass');
+
+      if (!oldPass) {
+        showToast('error', 'Masukkan kata sandi lama.');
+        return;
+      }
+      if (oldPass !== currentAdminPassword) {
+        if (msg) {
+          msg.textContent = 'Kata sandi lama yang Anda masukkan tidak sesuai!';
+          msg.className = 'text-xs font-semibold text-rose-400 block';
+        }
+        showToast('error', 'Kata sandi lama tidak sesuai!');
+        return;
+      }
+      if (!newPass || newPass.length < 4) {
+        if (msg) {
+          msg.textContent = 'Kata sandi baru minimal 4 karakter.';
+          msg.className = 'text-xs font-semibold text-rose-400 block';
+        }
+        showToast('error', 'Kata sandi baru minimal 4 karakter.');
+        return;
+      }
+      if (newPass !== confirmPass) {
+        if (msg) {
+          msg.textContent = 'Konfirmasi kata sandi baru tidak cocok!';
+          msg.className = 'text-xs font-semibold text-rose-400 block';
+        }
+        showToast('error', 'Konfirmasi kata sandi baru tidak cocok!');
+        return;
+      }
+      if (newPass === oldPass) {
+        if (msg) {
+          msg.textContent = 'Kata sandi baru tidak boleh sama dengan kata sandi lama!';
+          msg.className = 'text-xs font-semibold text-amber-400 block';
+        }
+        showToast('error', 'Kata sandi baru tidak boleh sama dengan kata sandi lama.');
+        return;
+      }
+
+      let origBtnText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<span class="material-symbols-outlined text-sm animate-spin">progress_activity</span> Menyimpan...`;
+
+      try {
+        let res = await callDevApi({
+          action: 'admin_change_password',
+          adminPassword: oldPass,
+          newAdminPassword: newPass
+        });
+
+        if (res && res.success) {
+          currentAdminPassword = newPass;
+
+          // Perbarui storage jika sedang diingat
+          if (localStorage.getItem("KEUANGANKU_DEV_REMEMBER") === "true" || localStorage.getItem("KEUANGANKU_DEV_SAVED_PASS")) {
+            localStorage.setItem("KEUANGANKU_DEV_SAVED_PASS", newPass);
+          }
+          sessionStorage.setItem("KEUANGANKU_DEV_PASS", newPass);
+
+          // Update display & input
+          let passDisplay = document.getElementById('dev-current-pass-display');
+          if (passDisplay) passDisplay.value = newPass;
+          document.getElementById('setting-old-pass').value = newPass;
+          document.getElementById('setting-new-pass').value = '';
+          document.getElementById('setting-confirm-pass').value = '';
+
+          if (msg) {
+            msg.textContent = '✅ Kata sandi Dev Portal berhasil diperbarui & disimpan!';
+            msg.className = 'text-xs font-semibold text-emerald-400 block';
+          }
+          showToast('success', '🎉 Kata sandi Dev Portal berhasil diperbarui!');
+        } else {
+          let errText = (res && res.message) ? res.message : 'Gagal memperbarui kata sandi.';
+          if (msg) {
+            msg.textContent = '❌ ' + errText;
+            msg.className = 'text-xs font-semibold text-rose-400 block';
+          }
+          showToast('error', errText);
+        }
+      } catch(err) {
+        let errText = 'Koneksi gagal saat mengubah sandi: ' + err.message;
+        if (msg) {
+          msg.textContent = '❌ ' + errText;
+          msg.className = 'text-xs font-semibold text-rose-400 block';
+        }
+        showToast('error', errText);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = origBtnText;
       }
     }
 

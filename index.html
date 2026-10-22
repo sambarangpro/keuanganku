@@ -4049,7 +4049,27 @@
     }
     
     function isOwnerDevice() {
-      return !!(globalData && globalData.cloudUrl && typeof globalData.cloudUrl === 'string' && globalData.cloudUrl.trim().startsWith("http"));
+      // HANYA akun resmi Pemilik / Developer (Muh Akbar & Sambarang Production)
+      // Pengguna/klien biasa TIDAK AKAN PERNAH mendapatkan akses fitur eksklusif ini!
+      let lic = (typeof getSavedLicense === 'function') ? getSavedLicense() : null;
+      if (lic) {
+        let name = (lic.buyerName || '').toLowerCase();
+        let tok = (lic.token || '').toUpperCase();
+        if (name.includes('akbar') || name.includes('sambarang') || tok === 'PRO-S8GF-HQT5-CNVE' || tok === 'PRO-W9J2-RAYM-3KKL') {
+          return true;
+        }
+      }
+      // Cek apakah terhubung ke Cloud Script pribadi milik Muh Akbar
+      if (globalData && globalData.cloudUrl && typeof globalData.cloudUrl === 'string') {
+        if (globalData.cloudUrl.includes("AKfycbx51Rbmg0U7en7wdOywpe_YAO4cBs2kjy_7cNW_kQN-xcdQUFeatePPzoiAMrS9BPaTAw")) {
+          return true;
+        }
+      }
+      // Cek jika sesi dev portal pernah login sah di perangkat ini
+      if (localStorage.getItem("KEUANGANKU_DEV_SAVED_PASS") || localStorage.getItem("KEUANGANKU_DEV_MODE") === "true") {
+        return true;
+      }
+      return false;
     }
 
     let devTapCount = 0;
@@ -4069,28 +4089,7 @@
     }
 
     function isDevOrOwner(lic) {
-      // 1. Cek jika sesi dev portal pernah dibuka di perangkat ini
-      if (localStorage.getItem("KEUANGANKU_DEV_API_URL") || localStorage.getItem("KEUANGANKU_DEV_SAVED_PASS")) {
-        return true;
-      }
-      // 2. Cek perangkat pemilik (terhubung cloud pribadi)
-      if (typeof isOwnerDevice === 'function' && isOwnerDevice()) {
-        return true;
-      }
-      // 3. Cek data lisensi (khusus akun Muh Akbar atau token master resmi)
-      if (!lic && typeof getSavedLicense === 'function') lic = getSavedLicense();
-      if (lic) {
-        let name = (lic.buyerName || '').toLowerCase();
-        let tok = (lic.token || '').toUpperCase();
-        if (name.includes('akbar') || tok === 'PRO-S8GF-HQT5-CNVE') {
-          return true;
-        }
-      }
-      // 4. Cek override rahasia (ketukan 5x)
-      if (localStorage.getItem("KEUANGANKU_DEV_MODE") === "true") {
-        return true;
-      }
-      return false;
+      return isOwnerDevice();
     }
 
     function updateDevDashboardButtonVisibility(lic) {
