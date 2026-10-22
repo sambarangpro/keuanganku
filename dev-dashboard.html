@@ -954,16 +954,16 @@
               class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
           </div>
           <div>
-            <label class="block font-semibold text-slate-300 mb-1">Nomor WhatsApp / HP: <span class="text-rose-400">*</span></label>
-            <input type="tel" id="order-buyer-wa" required placeholder="08123456789"
-              class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
+            <label class="block font-semibold text-slate-300 mb-1">Email / Gmail Pemesan (Utama): <span class="text-rose-400">*</span></label>
+            <input type="email" id="order-buyer-email" required placeholder="pembeli@gmail.com"
+              class="w-full px-3.5 py-2.5 bg-slate-950 border border-blue-500/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono-data">
           </div>
         </div>
 
         <div>
-          <label class="block font-semibold text-slate-300 mb-1">Email Pemesan (Opsional):</label>
-          <input type="email" id="order-buyer-email" placeholder="contoh@gmail.com"
-            class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
+          <label class="block font-semibold text-slate-300 mb-1">Nomor WhatsApp / HP (Opsional / Sekunder):</label>
+          <input type="tel" id="order-buyer-wa" placeholder="08123456789"
+            class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono-data">
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1330,26 +1330,29 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1">
-              <span class="material-symbols-outlined text-xs text-emerald-400">chat</span>
-              <span>Nomor WhatsApp:</span>
+            <label class="block text-xs font-semibold text-slate-300 mb-1 flex items-center justify-between">
+              <span class="flex items-center gap-1">
+                <span class="material-symbols-outlined text-xs text-blue-400">mail</span>
+                <span>Email / Gmail Pembeli:</span>
+              </span>
+              <span class="text-[9px] text-amber-400 font-bold">Utama</span>
             </label>
-            <input type="tel" id="gen-buyer-contact" placeholder="08123456789 / 62812..."
-              class="w-full px-3 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-blue-500">
+            <input type="email" id="gen-buyer-email" placeholder="pembeli@gmail.com"
+              class="w-full px-3 py-2.5 bg-slate-950 border border-blue-500/50 rounded-xl text-xs text-white focus:outline-none focus:border-blue-500 font-mono-data">
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-300 mb-1 flex items-center justify-between">
               <span class="flex items-center gap-1">
-                <span class="material-symbols-outlined text-xs text-blue-400">mail</span>
-                <span>Email Pembeli:</span>
+                <span class="material-symbols-outlined text-xs text-emerald-400">chat</span>
+                <span>Nomor WhatsApp:</span>
               </span>
-              <span class="text-[9px] text-slate-500 font-normal">Opsional</span>
+              <span class="text-[9px] text-slate-500 font-normal">Sekunder</span>
             </label>
-            <input type="email" id="gen-buyer-email" placeholder="pembeli@gmail.com"
-              class="w-full px-3 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-blue-500">
+            <input type="tel" id="gen-buyer-contact" placeholder="08123456789 / 62812..."
+              class="w-full px-3 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-blue-500 font-mono-data">
           </div>
         </div>
-        <p class="text-[10px] text-slate-500 -mt-2">Digunakan untuk format pengiriman pesan akun lisensi resmi via WhatsApp atau Email.</p>
+        <p class="text-[10px] text-slate-500 -mt-2">Digunakan untuk format pengiriman pesan akun lisensi resmi via Gmail (Utama) atau WhatsApp.</p>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
@@ -1448,42 +1451,25 @@
         <span>Buka & Uji Masuk di Keuanganku PRO</span>
       </a>
 
-      <!-- Channel Switcher Tabs (WhatsApp vs Email) -->
+      <!-- Channel Switcher Tabs (Gmail/Email UTAMA vs WhatsApp) -->
       <div class="space-y-3 pt-1 border-t border-slate-800">
         <div class="flex items-center gap-1.5 p-1 bg-slate-950 rounded-2xl border border-slate-800">
-          <button type="button" id="tab-channel-wa" onclick="switchSendChannel('wa')" class="flex-1 py-2 rounded-xl text-xs font-bold transition-all bg-emerald-600 text-white flex items-center justify-center gap-1.5 shadow">
-            <span class="material-symbols-outlined text-sm">chat</span>
-            <span>Kirim via WhatsApp</span>
-          </button>
-          <button type="button" id="tab-channel-email" onclick="switchSendChannel('email')" class="flex-1 py-2 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-white flex items-center justify-center gap-1.5">
+          <button type="button" id="tab-channel-email" onclick="switchSendChannel('email')" class="flex-1 py-2 rounded-xl text-xs font-bold transition-all bg-blue-600 text-white flex items-center justify-center gap-1.5 shadow">
             <span class="material-symbols-outlined text-sm">mail</span>
-            <span>Kirim via Email</span>
+            <span>Kirim via Gmail / Email (Utama)</span>
+          </button>
+          <button type="button" id="tab-channel-wa" onclick="switchSendChannel('wa')" class="flex-1 py-2 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-white flex items-center justify-center gap-1.5">
+            <span class="material-symbols-outlined text-sm">chat</span>
+            <span>Kirim via WhatsApp (Sekunder)</span>
           </button>
         </div>
 
-        <!-- 1. PANEL WHATSAPP -->
-        <div id="channel-panel-wa" class="space-y-3">
-          <div class="flex items-center justify-between text-xs text-slate-400">
-            <label class="font-semibold text-slate-300">Format Pesan WhatsApp:</label>
-            <span id="succ-wa-target-hint" class="font-mono-data text-[10px] text-emerald-400"></span>
-          </div>
-          <textarea id="succ-wa-text" rows="7" readonly class="w-full p-3 bg-slate-950 border border-slate-800 rounded-2xl text-[11px] font-mono-data text-slate-300 focus:outline-none custom-scroll"></textarea>
-          <div class="grid grid-cols-2 gap-2">
-            <button type="button" onclick="copyGeneratedWaMsg()" class="py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer">
-              <span class="material-symbols-outlined text-sm">content_copy</span> Salin Pesan WA
-            </button>
-            <a id="succ-wa-link" href="#" target="_blank" class="py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/20 transition-all">
-              <span class="material-symbols-outlined text-sm">send</span> Buka Chat WA
-            </a>
-          </div>
-        </div>
-
-        <!-- 2. PANEL EMAIL (keuangankupro@gmail.com) -->
-        <div id="channel-panel-email" class="hidden space-y-3">
+        <!-- 1. PANEL EMAIL / GMAIL (UTAMA) -->
+        <div id="channel-panel-email" class="space-y-3">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div>
               <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Kirim Ke (Email Pembeli):</label>
-              <input type="email" id="succ-email-to" oninput="updateEmailMailtoLink()" placeholder="pembeli@gmail.com" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-blue-500">
+              <input type="email" id="succ-email-to" oninput="updateEmailMailtoLink()" placeholder="pembeli@gmail.com" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-blue-500 font-mono-data font-semibold">
             </div>
             <div>
               <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Email Pengirim Resmi:</label>
@@ -1501,12 +1487,32 @@
             <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Isi Pesan Email Akun Lisensi:</label>
             <textarea id="succ-email-text" oninput="updateEmailMailtoLink()" rows="7" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-2xl text-[11px] font-mono-data text-slate-300 focus:outline-none custom-scroll"></textarea>
           </div>
-          <div class="grid grid-cols-2 gap-2">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <button type="button" onclick="copyGeneratedEmailMsg()" class="py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer">
-              <span class="material-symbols-outlined text-sm">content_copy</span> Salin Teks Email
+              <span class="material-symbols-outlined text-sm">content_copy</span> Salin Teks
             </button>
+            <a id="succ-gmail-web-link" href="#" target="_blank" class="py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-lg shadow-rose-600/25 transition-all">
+              <span class="material-symbols-outlined text-sm">outgoing_mail</span> Buka di Gmail Web
+            </a>
             <a id="succ-email-link" href="#" target="_blank" class="py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-lg shadow-blue-600/25 transition-all">
-              <span class="material-symbols-outlined text-sm">mail</span> Buka Email Client
+              <span class="material-symbols-outlined text-sm">mail</span> Default Email App
+            </a>
+          </div>
+        </div>
+
+        <!-- 2. PANEL WHATSAPP (SEKUNDER) -->
+        <div id="channel-panel-wa" class="hidden space-y-3">
+          <div class="flex items-center justify-between text-xs text-slate-400">
+            <label class="font-semibold text-slate-300">Format Pesan WhatsApp:</label>
+            <span id="succ-wa-target-hint" class="font-mono-data text-[10px] text-emerald-400"></span>
+          </div>
+          <textarea id="succ-wa-text" rows="7" readonly class="w-full p-3 bg-slate-950 border border-slate-800 rounded-2xl text-[11px] font-mono-data text-slate-300 focus:outline-none custom-scroll"></textarea>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" onclick="copyGeneratedWaMsg()" class="py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer">
+              <span class="material-symbols-outlined text-sm">content_copy</span> Salin Pesan WA
+            </button>
+            <a id="succ-wa-link" href="#" target="_blank" class="py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/20 transition-all">
+              <span class="material-symbols-outlined text-sm">send</span> Buka Chat WA
             </a>
           </div>
         </div>
@@ -2286,13 +2292,13 @@
             </td>
             <td class="p-3 sm:px-4 text-right whitespace-nowrap">
               <div class="flex items-center justify-end gap-1">
+                <button type="button" onclick="showBuyerEmailModal('${t.token}', '${escapeHtml(t.buyerName)}', ${t.maxDevices || 3}, '${escapeHtml(contactStr)}', '${escapeHtml(detectedEmail)}')" title="✉️ Format & Kirim via Gmail / Email (keuangankupro@gmail.com)" class="p-1.5 px-2 rounded-lg bg-blue-600/25 hover:bg-blue-600 text-blue-300 hover:text-white transition-all flex items-center gap-1 border border-blue-500/40 text-xs font-semibold cursor-pointer">
+                  <span class="material-symbols-outlined text-sm">mail</span>
+                  <span class="hidden 2xl:inline text-[10px] font-bold">Email</span>
+                </button>
                 <button type="button" onclick="showBuyerWaModal('${t.token}', '${escapeHtml(t.buyerName)}', ${t.maxDevices || 3}, '${escapeHtml(contactStr)}', '${escapeHtml(detectedEmail)}')" title="💬 Format Pesan WhatsApp" class="p-1.5 px-2 rounded-lg bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white transition-all flex items-center gap-1 border border-emerald-500/30 text-xs font-semibold cursor-pointer">
                   <span class="material-symbols-outlined text-sm">chat</span>
                   <span class="hidden 2xl:inline text-[10px] font-bold">WA</span>
-                </button>
-                <button type="button" onclick="showBuyerEmailModal('${t.token}', '${escapeHtml(t.buyerName)}', ${t.maxDevices || 3}, '${escapeHtml(contactStr)}', '${escapeHtml(detectedEmail)}')" title="✉️ Format & Kirim via Email (keuangankupro@gmail.com)" class="p-1.5 px-2 rounded-lg bg-blue-600/20 hover:bg-blue-600 text-cyan-300 hover:text-white transition-all flex items-center gap-1 border border-blue-500/30 text-xs font-semibold cursor-pointer">
-                  <span class="material-symbols-outlined text-sm">mail</span>
-                  <span class="hidden 2xl:inline text-[10px] font-bold">Email</span>
                 </button>
                 <a href="index.html?token=${encodeURIComponent(t.token)}&masterUrl=${encodeURIComponent(currentApiUrl)}" target="_blank" title="🚀 Uji Masuk di Aplikasi (Tab Baru)" class="p-1.5 px-2 rounded-lg bg-blue-600/20 hover:bg-blue-600 text-cyan-300 hover:text-white transition-all flex items-center gap-1 border border-blue-500/30 text-xs font-semibold">
                   <span class="material-symbols-outlined text-sm">rocket_launch</span>
@@ -2549,11 +2555,18 @@
             <!-- Pemesan & Kontak -->
             <td class="p-3 whitespace-nowrap">
               <div class="font-bold text-white text-xs">${escapeHtml(o.buyerName || '-')}</div>
-              <div class="flex items-center gap-1.5 text-[11px] text-slate-300 mt-0.5">
-                <span class="material-symbols-outlined text-xs text-emerald-400">call</span>
+              ${o.email ? `
+                <div class="flex items-center gap-1.5 text-[11px] text-blue-300 font-mono-data font-semibold mt-0.5" title="Email Utama Pengiriman Akun">
+                  <span class="material-symbols-outlined text-xs text-blue-400">mail</span>
+                  <span>${escapeHtml(o.email)}</span>
+                </div>
+              ` : `
+                <div class="text-[10px] text-amber-400 mt-0.5">Email belum diisi</div>
+              `}
+              <div class="flex items-center gap-1.5 text-[10px] text-slate-400 mt-0.5">
+                <span class="material-symbols-outlined text-[10px] text-emerald-400">call</span>
                 <span>${escapeHtml(o.whatsapp || '-')}</span>
               </div>
-              ${o.email ? `<div class="text-[10px] text-slate-500">${escapeHtml(o.email)}</div>` : ''}
             </td>
 
             <!-- Paket & Kuota -->
@@ -2592,7 +2605,11 @@
                     <span class="hidden sm:inline">Terbitkan</span>
                   </button>
                 ` : ''}
-                <button type="button" onclick="sendOrderWhatsApp('${escapeHtml(o.orderId)}')" title="Kirim Chat / Lisensi ke WhatsApp"
+                <button type="button" onclick="sendOrderEmail('${escapeHtml(o.orderId)}')" title="✉️ Kirim Akun & Lisensi via Gmail / Email (Utama)"
+                  class="p-1.5 rounded-lg bg-blue-600/25 hover:bg-blue-600/40 text-blue-300 border border-blue-500/40 transition-colors cursor-pointer">
+                  <span class="material-symbols-outlined text-sm">mail</span>
+                </button>
+                <button type="button" onclick="sendOrderWhatsApp('${escapeHtml(o.orderId)}')" title="💬 Kirim Chat / Konfirmasi via WhatsApp"
                   class="p-1.5 rounded-lg bg-emerald-700/20 hover:bg-emerald-700/40 text-emerald-400 border border-emerald-600/30 transition-colors cursor-pointer">
                   <span class="material-symbols-outlined text-sm">chat</span>
                 </button>
@@ -2748,10 +2765,16 @@
           await loadDashboardData();
         }
 
-        // Tawarkan langsung kirim ke WhatsApp jika ada nomor WA
-        if (whatsapp) {
+        // Tawarkan pengiriman via Gmail / Email sebagai prioritas utama
+        if (email) {
           setTimeout(() => {
-            if (confirm("Pemesanan berhasil disimpan!\n\nApakah Anda ingin langsung membuka WhatsApp untuk mengirim konfirmasi / lisensi ke " + buyerName + "?")) {
+            if (confirm("Pemesanan berhasil disimpan!\n\nApakah Anda ingin membuka Gmail / Email untuk mengirimkan lisensi ke " + buyerName + " (" + email + ")?")) {
+              sendOrderEmail(createdOrder.orderId);
+            }
+          }, 300);
+        } else if (whatsapp) {
+          setTimeout(() => {
+            if (confirm("Pemesanan berhasil disimpan!\n\nApakah Anda ingin membuka WhatsApp untuk mengirim konfirmasi ke " + buyerName + "?")) {
               sendOrderWhatsApp(createdOrder.orderId);
             }
           }, 300);
@@ -2889,17 +2912,33 @@
           filterOrdersTable();
           updateOrdersStats(cachedOrders);
 
-          showToast('success', '🎉 Lisensi resmi berhasil diterbitkan: ' + tokenGenerated);
-
-          if (confirm("Lisensi resmi berhasil dibuat!\n🔑 Token: " + tokenGenerated + "\n\nBuka WhatsApp untuk langsung mengirimkan lisensi ke " + o.buyerName + "?")) {
-            sendOrderWhatsApp(orderId);
+          if (res && res.emailSent) {
+            showToast('success', '🎉 Lisensi terbit & email akun otomatis terkirim ke ' + (o.email || o.buyerName) + '!');
+          } else {
+            showToast('success', '🎉 Lisensi resmi berhasil diterbitkan: ' + tokenGenerated);
           }
+
+          // Buka modal pengiriman lisensi dengan kanal Gmail / Email sebagai prioritas utama
+          sendOrderEmail(orderId);
         } else {
           showToast('error', (res && res.message) ? res.message : 'Gagal menerbitkan lisensi.');
         }
       } catch(err) {
         showToast('error', 'Koneksi gagal: ' + err.message);
       }
+    }
+
+    function sendOrderEmail(orderId) {
+      let o = cachedOrders.find(item => item.orderId === orderId);
+      if (!o) return;
+
+      showSuccessCreatedModal({
+        token: o.token || '(Belum diterbitkan)',
+        buyerName: o.buyerName,
+        maxDevices: o.maxDevices || 1,
+        buyerContact: o.whatsapp || '',
+        buyerEmail: o.email || ''
+      }, 'email');
     }
 
     function sendOrderWhatsApp(orderId) {
@@ -3353,6 +3392,12 @@ Copyright © 2026 Sambarang Production`;
       if (linkEl) {
         linkEl.href = mailto;
       }
+
+      let gmailWeb = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(toEmail)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      let gmailWebEl = document.getElementById('succ-gmail-web-link');
+      if (gmailWebEl) {
+        gmailWebEl.href = gmailWeb;
+      }
     }
 
     function copyGeneratedEmailMsg() {
@@ -3361,7 +3406,7 @@ Copyright © 2026 Sambarang Production`;
     }
 
     function showSuccessCreatedModal(t, defaultChannel) {
-      if (!defaultChannel) defaultChannel = 'wa';
+      if (!defaultChannel) defaultChannel = 'email';
       document.getElementById('succ-token-code').textContent = t.token;
 
       let fullWaMsg = generateBuyerWaMessage(t.token, t.buyerName, t.maxDevices);

@@ -1813,6 +1813,7 @@ function adminProcessOrderLicense(params) {
   var ordColMap = getOrderColumnIndexes(data[0]);
   var buyerName = String(orderRowData[ordColMap.buyerName] || "").trim();
   var whatsapp = String(orderRowData[ordColMap.whatsapp] || "").trim();
+  var email = (ordColMap.email !== undefined && orderRowData[ordColMap.email]) ? String(orderRowData[ordColMap.email]).trim() : "";
   var pkg = String(orderRowData[ordColMap.package] || "PRO Personal").trim();
   var maxDevices = parseInt(orderRowData[ordColMap.maxDevices]) || 1;
   var existingToken = String(orderRowData[ordColMap.token] || "").trim();
@@ -1826,7 +1827,7 @@ function adminProcessOrderLicense(params) {
     tokSheet.appendRow([
       tokenToUse,
       buyerName,
-      whatsapp,
+      whatsapp + (email ? " | " + email : ""),
       maxDevices,
       0,
       JSON.stringify([]),
@@ -1845,10 +1846,53 @@ function adminProcessOrderLicense(params) {
 
   logEvent("ORDER_LICENSE_ISSUED", tokenToUse, buyerName, "-", "-", "Lisensi diterbitkan untuk order " + orderId);
 
+  // Kirim Akun & Lisensi via Gmail / Email (Prioritas Utama)
+  var emailSent = false;
+  var emailSubject = "Aktivasi Akun & Lisensi Resmi KEUANGANKU PRO - " + tokenToUse;
+  var emailBody = 
+    "Kepada Yth. " + buyerName + ",\n\n" +
+    "Terima kasih atas pesanan dan kepercayaan Anda menggunakan aplikasi resmi KEUANGANKU PRO!\n" +
+    "Akun dan lisensi resmi Anda telah aktif dengan rincian sebagai berikut:\n\n" +
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" +
+    "• ID PEMESANAN       : " + orderId + "\n" +
+    "• KODE LISENSI RESMI : " + tokenToUse + "\n" +
+    "• PAKET LISENSI      : " + pkg + "\n" +
+    "• KUOTA PERANGKAT    : Maksimal " + maxDevices + " Perangkat (HP / Laptop / PC)\n" +
+    "• STATUS LISENSI     : AKTIF (Akses Penuh / Lifetime)\n" +
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n" +
+    "LANGKAH MUDAH AKTIVASI:\n" +
+    "1. Buka aplikasi Keuanganku PRO di browser HP atau Laptop:\n" +
+    "   https://sambarangpro.github.io/keuanganku/\n\n" +
+    "2. Masukkan Kode Lisensi di atas (" + tokenToUse + ") pada kolom Token Pembelian, lalu klik AKTIVASI SEKARANG.\n\n" +
+    "3. Panduan Penggunaan Lengkap Bergambar & Setup Cloud:\n" +
+    "   https://sambarangpro.github.io/keuanganku/poster-panduan-penggunaan.html\n\n" +
+    "Simpan email ini dengan baik sebagai bukti kepemilikan lisensi resmi Anda.\n" +
+    "Jika membutuhkan bantuan teknis atau konsultasi, Anda dapat langsung membalas email ini.\n\n" +
+    "Selamat mengelola keuangan pribadi & usaha dengan rapi, akurat, dan berkah! 🙏✨\n\n" +
+    "Salam hormat,\n" +
+    "Tim Official KEUANGANKU PRO\n" +
+    "Email: keuangankupro@gmail.com\n" +
+    "Copyright © 2026 Sambarang Production";
+
+  if (email && email.indexOf("@") !== -1) {
+    try {
+      MailApp.sendEmail({
+        to: email,
+        subject: emailSubject,
+        body: emailBody
+      });
+      emailSent = true;
+      logEvent("LICENSE_EMAIL_SENT", tokenToUse, buyerName, "-", "-", "Email akun lisensi terkirim ke " + email);
+    } catch(errMail) {
+      logEvent("LICENSE_EMAIL_FAILED", tokenToUse, buyerName, "-", "-", "Gagal kirim email: " + errMail.toString());
+    }
+  }
+
   var waMessage = 
     "Halo kak *" + buyerName + "*,\n\n" +
     "Terima kasih atas pemesanan aplikasi resmi *Keuanganku PRO*! 🎉🙏\n\n" +
-    "Berikut adalah rincian lisensi resmi Anda:\n" +
+    "Rincian akun & lisensi resmi Anda telah kami kirimkan ke Gmail / Email Anda (" + (email || '-') + ").\n\n" +
+    "Berikut adalah ringkasan lisensi Anda:\n" +
     "📦 *Paket:* " + pkg + "\n" +
     "🔑 *Kode Token Lisensi:* `" + tokenToUse + "`\n" +
     "📱 *Kuota Perangkat:* Maksimal " + maxDevices + " Perangkat\n" +
@@ -1862,9 +1906,13 @@ function adminProcessOrderLicense(params) {
 
   return {
     success: true,
-    message: "Lisensi berhasil diterbitkan!",
+    message: emailSent ? ("Lisensi berhasil diterbitkan & email akun otomatis terkirim ke " + email) : "Lisensi berhasil diterbitkan!",
     token: tokenToUse,
     orderId: orderId,
+    email: email,
+    emailSent: emailSent,
+    emailSubject: emailSubject,
+    emailBody: emailBody,
     waMessage: waMessage
   };
 }

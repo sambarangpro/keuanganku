@@ -165,26 +165,28 @@
           </div>
 
           <div>
+            <label class="block font-semibold text-slate-300 mb-1 flex items-center justify-between">
+              <span>Alamat Gmail / Email Anda: <span class="text-rose-400">*</span></span>
+              <span class="text-[10px] font-bold text-amber-400">Pengiriman Akun Utama</span>
+            </label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3 top-2.5 text-blue-400 text-base">mail</span>
+              <input type="email" id="buyer-email" required placeholder="namaAnda@gmail.com"
+                class="w-full pl-9 pr-3.5 py-2.5 bg-slate-950 border border-blue-500/60 focus:border-blue-400 rounded-xl text-white placeholder-slate-500 outline-none transition-all font-mono-data font-semibold">
+            </div>
+            <p class="text-[10px] text-blue-300/90 mt-1">⭐ Akun & token lisensi resmi akan dikirimkan langsung ke email ini.</p>
+          </div>
+
+          <div class="sm:col-span-2">
             <label class="block font-semibold text-slate-300 mb-1">
-              Nomor WhatsApp Aktif: <span class="text-rose-400">*</span>
+              Nomor WhatsApp / HP Aktif: <span class="text-rose-400">*</span>
             </label>
             <div class="relative">
               <span class="material-symbols-outlined absolute left-3 top-2.5 text-emerald-500 text-base">call</span>
               <input type="tel" id="buyer-wa" required placeholder="Contoh: 08123456789"
                 class="w-full pl-9 pr-3.5 py-2.5 bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl text-white placeholder-slate-500 outline-none transition-all font-mono-data">
             </div>
-            <p class="text-[10px] text-slate-500 mt-1">Kode token lisensi akan dikirimkan ke nomor ini.</p>
-          </div>
-
-          <div class="sm:col-span-2">
-            <label class="block font-semibold text-slate-300 mb-1">
-              Alamat Email (Opsional):
-            </label>
-            <div class="relative">
-              <span class="material-symbols-outlined absolute left-3 top-2.5 text-slate-500 text-base">mail</span>
-              <input type="email" id="buyer-email" placeholder="contoh@gmail.com (opsional)"
-                class="w-full pl-9 pr-3.5 py-2.5 bg-slate-950 border border-slate-700 focus:border-blue-500 rounded-xl text-white placeholder-slate-500 outline-none transition-all">
-            </div>
+            <p class="text-[10px] text-slate-500 mt-1">Digunakan untuk konfirmasi pesanan & bantuan teknis via WhatsApp.</p>
           </div>
         </div>
       </div>
@@ -335,6 +337,10 @@
           <span id="succ-buyer-name" class="font-bold text-white">-</span>
         </div>
         <div class="flex items-center justify-between">
+          <span class="text-slate-400">Kirim Akun Ke (Email):</span>
+          <span id="succ-buyer-email" class="font-bold text-blue-300 font-mono-data">-</span>
+        </div>
+        <div class="flex items-center justify-between">
           <span class="text-slate-400">Paket Lisensi:</span>
           <span id="succ-pkg-name" class="font-semibold text-slate-200">-</span>
         </div>
@@ -342,6 +348,11 @@
           <span class="text-slate-400 font-bold">Total Pembayaran:</span>
           <span id="succ-total-price" class="font-bold text-emerald-400 font-mono-data text-sm">Rp 0</span>
         </div>
+      </div>
+
+      <div class="p-3 rounded-xl bg-blue-950/40 border border-blue-500/30 text-left text-xs text-blue-200 flex items-start gap-2">
+        <span class="material-symbols-outlined text-base text-blue-400 shrink-0 mt-0.5">mark_email_read</span>
+        <span><b>Pengiriman Utama:</b> Akun dan kode lisensi resmi Anda akan dikirimkan langsung ke <b>Gmail / Email</b> di atas setelah pembayaran diverifikasi.</span>
       </div>
 
       <div class="space-y-2 pt-2">
@@ -684,10 +695,26 @@
       }
 
       let buyerName = document.getElementById('buyer-name').value.trim();
-      let whatsapp = document.getElementById('buyer-wa').value.trim();
       let email = document.getElementById('buyer-email').value.trim();
+      let whatsapp = document.getElementById('buyer-wa').value.trim();
       let paymentProof = document.getElementById('payment-proof').value.trim();
       let notes = document.getElementById('buyer-notes').value.trim();
+
+      if (!buyerName) {
+        alert("Silakan masukkan nama lengkap Anda.");
+        document.getElementById('buyer-name').focus();
+        return;
+      }
+      if (!email || !email.includes('@')) {
+        alert("Silakan masukkan alamat Gmail / Email aktif Anda. Akun dan kode lisensi resmi Anda akan dikirimkan ke email ini.");
+        document.getElementById('buyer-email').focus();
+        return;
+      }
+      if (!whatsapp) {
+        alert("Silakan masukkan nomor WhatsApp aktif Anda.");
+        document.getElementById('buyer-wa').focus();
+        return;
+      }
 
       let pkgPriceNum = selectedPackage.priceNum || parseInt(String(selectedPackage.price).replace(/[^0-9]/g, '')) || 0;
       let discountAmount = 0;
@@ -758,19 +785,21 @@
         "Halo Admin *Keuanganku PRO*, saya ingin mengonfirmasi pemesanan lisensi resmi:\n\n" +
         "🆔 *ID Pemesanan:* `" + orderId + "`\n" +
         "👤 *Nama Pemesan:* " + buyerName + "\n" +
+        "📧 *Email Penerima Akun:* " + email + "\n" +
         "📱 *WhatsApp:* " + whatsapp + "\n" +
         "📦 *Paket:* " + selectedPackage.name + " (" + selectedPackage.devices + " Perangkat)\n" +
         "💰 *Total Bayar:* " + finalPriceFormatted + (appliedVoucher ? " (Voucher: " + appliedVoucher.code + ")" : "") + "\n" +
         "💳 *Pembayaran via:* " + selectedPaymentMethod + "\n" +
         "📎 *Bukti Bayar:* " + (paymentProof || "Terlampir di chat ini") + "\n" +
         (notes ? "📝 *Catatan:* " + notes + "\n" : "") + "\n" +
-        "Mohon diverifikasi dan diterbitkan token lisensi akun saya. Terima kasih! 🙏✨";
+        "Mohon diverifikasi dan dikirimkan akun lisensi resmi ke email saya. Terima kasih! 🙏✨";
 
       let waUrl = `https://api.whatsapp.com/send?phone=${rawWa}&text=${encodeURIComponent(waMessage)}`;
 
       // Update Modal Sukses
       document.getElementById('succ-order-id').textContent = orderId;
       document.getElementById('succ-buyer-name').textContent = buyerName;
+      if (document.getElementById('succ-buyer-email')) document.getElementById('succ-buyer-email').textContent = email;
       document.getElementById('succ-pkg-name').textContent = selectedPackage.name;
       document.getElementById('succ-total-price').textContent = finalPriceFormatted;
       let btnWa = document.getElementById('btn-open-wa');
