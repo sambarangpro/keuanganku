@@ -1995,6 +1995,7 @@ function submitPublicOrder(params) {
   var paymentMethod = (params.paymentMethod || "Transfer BCA").trim();
   var paymentProof = (params.paymentProof || "").trim();
   var voucherCode = (params.voucherCode || "").trim().toUpperCase();
+  var uniqueCode = parseInt(params.uniqueCode) || 0;
   var notes = (params.notes || "").trim();
 
   if (!buyerName) return { success: false, message: "Nama pemesan wajib diisi." };
@@ -2032,6 +2033,9 @@ function submitPublicOrder(params) {
         }
       }
     } catch(errVoucher) {}
+  }
+  if (uniqueCode) {
+    fullNotes = (fullNotes ? fullNotes + " | " : "") + "Kode Unik: " + uniqueCode;
   }
 
   var lastCol = sheet.getLastColumn();
@@ -2083,6 +2087,7 @@ function submitPublicOrder(params) {
     buyerName: buyerName,
     package: pkg,
     price: price,
+    uniqueCode: uniqueCode,
     paymentMethod: paymentMethod
   };
 }

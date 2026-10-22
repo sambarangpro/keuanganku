@@ -986,7 +986,12 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block font-semibold text-slate-300 mb-1">Nominal Pembayaran:</label>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block font-semibold text-slate-300">Nominal Pembayaran:</label>
+              <button type="button" onclick="randomizeOrderUniqueCode()" class="text-[10px] text-amber-300 hover:text-amber-200 font-bold flex items-center gap-0.5 cursor-pointer" title="Acak 3 digit kode unik pada nominal transfer">
+                <span class="material-symbols-outlined text-xs">shuffle</span> +Kode Unik
+              </button>
+            </div>
             <input type="text" id="order-price" value="Rp 149.000" required placeholder="Rp 149.000"
               class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-emerald-400 font-bold font-mono-data focus:outline-none focus:border-blue-500">
           </div>
@@ -2581,6 +2586,7 @@
             <!-- Nominal & Bayar -->
             <td class="p-3 whitespace-nowrap">
               <div class="font-mono-data font-bold text-xs text-emerald-400">${escapeHtml(o.price || 'Rp 0')}</div>
+              ${renderOrderUniqueCodeBadge(o)}
               <div class="text-[10px] text-slate-400 mt-0.5">${escapeHtml(o.paymentMethod || 'Transfer')}</div>
             </td>
 
@@ -2628,6 +2634,35 @@
       });
     }
 
+    function renderOrderUniqueCodeBadge(o) {
+      let code = o.uniqueCode;
+      if (!code) {
+        let m = String(o.notes || '').match(/Kode Unik:\s*([0-9]{1,4})/i);
+        if (m) code = m[1];
+        else {
+          let numDigits = String(o.price || '').replace(/[^0-9]/g, '');
+          if (numDigits.length >= 4) {
+            let last3 = parseInt(numDigits.slice(-3), 10);
+            if (last3 > 0 && last3 < 1000) code = String(last3);
+          }
+        }
+      }
+      if (!code) return '';
+      return `<div class="mt-0.5"><span class="px-1.5 py-0.5 rounded text-[9px] font-mono-data font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30" title="3 Digit Kode Unik Verifikasi Pembayaran">Kode: +${escapeHtml(String(code))}</span></div>`;
+    }
+
+    function randomizeOrderUniqueCode() {
+      let inp = document.getElementById('order-price');
+      if (!inp) return;
+      let val = inp.value.replace(/[^0-9]/g, '');
+      let num = parseInt(val, 10) || 0;
+      if (num <= 0) return;
+      let base = Math.floor(num / 1000) * 1000;
+      let uCode = Math.floor(100 + Math.random() * 890);
+      inp.value = 'Rp ' + (base + uCode).toLocaleString('id-ID');
+      showToast('info', 'Kode unik +' + uCode + ' diterapkan ke nominal pembayaran!');
+    }
+
     function filterOrdersTable() {
       let queryInput = document.getElementById('filter-order-search');
       let statusSelect = document.getElementById('filter-order-status');
@@ -2640,6 +2675,9 @@
           String(o.buyerName || '').toLowerCase().includes(query) ||
           String(o.whatsapp || '').toLowerCase().includes(query) ||
           String(o.email || '').toLowerCase().includes(query) ||
+          String(o.price || '').toLowerCase().includes(query) ||
+          String(o.price || '').replace(/[^0-9]/g, '').includes(query.replace(/[^0-9]/g, '')) ||
+          String(o.uniqueCode || '').toLowerCase().includes(query) ||
           String(o.package || '').toLowerCase().includes(query) ||
           String(o.paymentProof || '').toLowerCase().includes(query) ||
           String(o.token || '').toLowerCase().includes(query) ||

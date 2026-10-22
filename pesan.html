@@ -289,15 +289,33 @@
             <span>Potongan Voucher (<span id="summary-voucher-code">-</span>):</span>
             <span id="summary-voucher-disc" class="font-bold font-mono-data">- Rp 0</span>
           </div>
-          <div class="flex items-center justify-between pt-3">
+          <div id="summary-unique-row" class="flex items-center justify-between py-2 text-amber-300 border-t border-slate-800/80">
+            <div class="flex items-center gap-1.5">
+              <span class="font-semibold">Kode Unik Verifikasi:</span>
+              <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">Otomatis</span>
+            </div>
+            <span id="summary-unique-code" class="font-bold font-mono-data">+ Rp 0</span>
+          </div>
+          <div class="flex items-center justify-between pt-3 border-t-2 border-slate-800">
             <div>
-              <span class="text-sm font-black text-white block">TOTAL HARGA:</span>
-              <span class="text-[10px] text-slate-400">Sekali bayar seumur hidup</span>
+              <span class="text-sm font-black text-white block">TOTAL TRANSFER:</span>
+              <span class="text-[10px] text-amber-400 font-medium">Wajib tepat hingga 3 digit terakhir</span>
             </div>
             <div id="summary-total-price" class="text-xl sm:text-2xl font-black text-emerald-400 font-mono-data">
               Rp 0
             </div>
           </div>
+        </div>
+
+        <!-- Edukasi Kode Unik -->
+        <div class="p-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-xs space-y-1 text-slate-300">
+          <div class="flex items-center gap-1.5 font-bold text-amber-300 text-xs">
+            <span class="material-symbols-outlined text-sm text-amber-400">verified</span>
+            <span>Verifikasi Otomatis Lebih Cepat</span>
+          </div>
+          <p class="text-[11px] leading-relaxed text-slate-300">
+            Mohon lakukan transfer <b class="text-white font-bold">persis sesuai Total Transfer di atas</b> (termasuk 3 digit kode unik). Kode unik ini membedakan transaksi Anda dari pemesan lain agar konfirmasi akun dan lisensi dapat diproses secara instan.
+          </p>
         </div>
 
         <button type="submit" id="btn-submit-order" class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-blue-600 hover:from-emerald-400 hover:to-blue-500 text-slate-950 font-black text-sm sm:text-base shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-98">
@@ -344,11 +362,21 @@
           <span class="text-slate-400">Paket Lisensi:</span>
           <span id="succ-pkg-name" class="font-semibold text-slate-200">-</span>
         </div>
+        <div class="flex items-center justify-between">
+          <span class="text-slate-400">Kode Unik Verifikasi:</span>
+          <span id="succ-unique-code" class="font-bold text-amber-300 font-mono-data">+0</span>
+        </div>
         <div class="flex items-center justify-between border-t border-slate-800 pt-2">
           <span class="text-slate-400 font-bold">Total Pembayaran:</span>
-          <span id="succ-total-price" class="font-bold text-emerald-400 font-mono-data text-sm">Rp 0</span>
+          <span id="succ-total-price" class="font-extrabold text-emerald-400 font-mono-data text-base">Rp 0</span>
         </div>
       </div>
+
+      <!-- Tombol Salin Nominal Tepat -->
+      <button type="button" onclick="copyExactTransferTotal()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-slate-600 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer">
+        <span class="material-symbols-outlined text-sm text-amber-400">content_copy</span>
+        <span>Salin Nominal Transfer Tepat (<span id="btn-copy-total-amount">Rp 0</span>)</span>
+      </button>
 
       <div class="p-3 rounded-xl bg-blue-950/40 border border-blue-500/30 text-left text-xs text-blue-200 flex items-start gap-2">
         <span class="material-symbols-outlined text-base text-blue-400 shrink-0 mt-0.5">mark_email_read</span>
@@ -406,6 +434,16 @@
     let selectedPackage = null;
     let appliedVoucher = null;
     let selectedPaymentMethod = "Transfer BCA";
+    let currentUniqueCode = null;
+
+    function getOrderUniqueCode() {
+      if (!currentUniqueCode) {
+        let code = Math.floor(100 + Math.random() * 890);
+        if (code % 100 === 0) code += Math.floor(11 + Math.random() * 80);
+        currentUniqueCode = code;
+      }
+      return currentUniqueCode;
+    }
 
     // Inisialisasi Halaman: Render INSTAN (0 detik) lalu sinkronkan di background
     document.addEventListener('DOMContentLoaded', () => {
@@ -618,7 +656,9 @@
         }
       }
 
-      let finalPrice = Math.max(0, pkgPriceNum - discountAmount);
+      let baseAfterDiscount = Math.max(0, pkgPriceNum - discountAmount);
+      let uniqueCode = (baseAfterDiscount > 0) ? getOrderUniqueCode() : 0;
+      let finalPrice = baseAfterDiscount + uniqueCode;
 
       document.getElementById('summary-pkg-name').textContent = selectedPackage.name;
       document.getElementById('summary-pkg-price').textContent = 'Rp ' + pkgPriceNum.toLocaleString('id-ID');
@@ -630,6 +670,11 @@
         document.getElementById('summary-voucher-disc').textContent = '- Rp ' + discountAmount.toLocaleString('id-ID');
       } else {
         discRow.classList.add('hidden');
+      }
+
+      let uCodeEl = document.getElementById('summary-unique-code');
+      if (uCodeEl) {
+        uCodeEl.textContent = '+ Rp ' + uniqueCode.toLocaleString('id-ID');
       }
 
       document.getElementById('summary-total-price').textContent = 'Rp ' + finalPrice.toLocaleString('id-ID');
@@ -725,7 +770,9 @@
           discountAmount = appliedVoucher.value;
         }
       }
-      let finalPrice = Math.max(0, pkgPriceNum - discountAmount);
+      let baseAfterDiscount = Math.max(0, pkgPriceNum - discountAmount);
+      let uniqueCode = (baseAfterDiscount > 0) ? getOrderUniqueCode() : 0;
+      let finalPrice = baseAfterDiscount + uniqueCode;
       let finalPriceFormatted = 'Rp ' + finalPrice.toLocaleString('id-ID');
 
       let btn = document.getElementById('btn-submit-order');
@@ -748,10 +795,11 @@
         package: selectedPackage.name,
         maxDevices: selectedPackage.devices,
         price: finalPriceFormatted,
+        uniqueCode: uniqueCode,
         paymentMethod: selectedPaymentMethod,
         paymentProof: paymentProof,
         voucherCode: appliedVoucher ? appliedVoucher.code : '',
-        notes: notes
+        notes: (notes ? notes + " | " : "") + "Kode Unik: " + uniqueCode
       };
 
       try {
@@ -788,7 +836,8 @@
         "📧 *Email Penerima Akun:* " + email + "\n" +
         "📱 *WhatsApp:* " + whatsapp + "\n" +
         "📦 *Paket:* " + selectedPackage.name + " (" + selectedPackage.devices + " Perangkat)\n" +
-        "💰 *Total Bayar:* " + finalPriceFormatted + (appliedVoucher ? " (Voucher: " + appliedVoucher.code + ")" : "") + "\n" +
+        "💰 *Total Transfer:* " + finalPriceFormatted + " *(Tepat hingga 3 digit terakhir)*\n" +
+        "🔢 *Kode Unik Verifikasi:* +" + uniqueCode + (appliedVoucher ? " (Voucher: " + appliedVoucher.code + ")" : "") + "\n" +
         "💳 *Pembayaran via:* " + selectedPaymentMethod + "\n" +
         "📎 *Bukti Bayar:* " + (paymentProof || "Terlampir di chat ini") + "\n" +
         (notes ? "📝 *Catatan:* " + notes + "\n" : "") + "\n" +
@@ -801,7 +850,9 @@
       document.getElementById('succ-buyer-name').textContent = buyerName;
       if (document.getElementById('succ-buyer-email')) document.getElementById('succ-buyer-email').textContent = email;
       document.getElementById('succ-pkg-name').textContent = selectedPackage.name;
+      if (document.getElementById('succ-unique-code')) document.getElementById('succ-unique-code').textContent = '+' + uniqueCode;
       document.getElementById('succ-total-price').textContent = finalPriceFormatted;
+      if (document.getElementById('btn-copy-total-amount')) document.getElementById('btn-copy-total-amount').textContent = finalPriceFormatted;
       let btnWa = document.getElementById('btn-open-wa');
       if (btnWa) btnWa.href = waUrl;
 
@@ -815,6 +866,21 @@
         window.location.href = waUrl;
       } catch(e) {
         window.open(waUrl, '_blank');
+      }
+    }
+
+    function copyExactTransferTotal() {
+      let el = document.getElementById('succ-total-price');
+      let text = el ? el.textContent.trim() : '';
+      let numOnly = text.replace(/[^0-9]/g, '');
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(numOnly).then(() => {
+          alert("Nominal transfer tepat " + text + " (" + numOnly + ") berhasil disalin! Silakan tempelkan (paste) di aplikasi mobile banking / m-banking Anda.");
+        }).catch(() => {
+          prompt("Salin nominal transfer tepat:", numOnly);
+        });
+      } else {
+        prompt("Salin nominal transfer tepat:", numOnly);
       }
     }
 
