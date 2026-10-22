@@ -1,19 +1,29 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <!-- 1. Background Squircle: Single Uniform Royal Blue (Hanya 1 Warna Biru) -->
+  <!-- 1. Background Squircle: Single Uniform Royal Blue -->
   <rect x="16" y="16" width="480" height="480" rx="116" fill="#2563eb" />
 
-  <!-- 2. Wallet Icon Vector (Crisp White Outline) -->
-  <!-- Wallet Main Body Outline -->
-  <path d="M 355 206 L 355 185 A 40 40 0 0 0 315 145 L 180 145 A 40 40 0 0 0 140 185 L 140 327 A 40 40 0 0 0 180 367 L 315 367 A 40 40 0 0 0 355 327 L 355 306" 
-        fill="none" stroke="#ffffff" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" />
+  <!-- 2. Outer Security Shield Outline (Perisai Developer) -->
+  <path d="M 256 80 
+           C 320 80, 380 92, 400 110 
+           C 406 116, 408 126, 408 142 
+           L 408 260 
+           C 408 348, 342 414, 256 442 
+           C 170 414, 104 348, 104 260 
+           L 104 142 
+           C 104 126, 106 116, 112 110 
+           C 132 92, 192 80, 256 80 Z" 
+        fill="none" stroke="#ffffff" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" />
 
-  <!-- Flap Loop Outline -->
-  <rect x="260" y="206" width="115" height="100" rx="26" fill="#2563eb" stroke="#ffffff" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" />
+  <!-- 3. Inner Keuanganku Wallet Icon (Scaled to fit harmoniously inside the Shield) -->
+  <g transform="translate(256, 252) scale(0.66) translate(-250, -256)">
+    <!-- Wallet Main Body Outline -->
+    <path d="M 355 206 L 355 185 A 40 40 0 0 0 315 145 L 180 145 A 40 40 0 0 0 140 185 L 140 327 A 40 40 0 0 0 180 367 L 315 367 A 40 40 0 0 0 355 327 L 355 306" 
+          fill="none" stroke="#ffffff" stroke-width="30" stroke-linecap="round" stroke-linejoin="round" />
 
-  <!-- Clasp Dot -->
-  <circle cx="317.5" cy="256" r="12" fill="#ffffff" />
+    <!-- Flap Loop Outline -->
+    <rect x="260" y="206" width="115" height="100" rx="26" fill="#2563eb" stroke="#ffffff" stroke-width="30" stroke-linecap="round" stroke-linejoin="round" />
 
-  <!-- 3. Special Developer Badge Symbol (Bottom-Right) -->
-  <rect x="316" y="410" width="170" height="76" rx="38" fill="#090d16" stroke="#38bdf8" stroke-width="6" />
-  <text x="401" y="463" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="#38bdf8" text-anchor="middle">DEV</text>
+    <!-- Clasp Dot -->
+    <circle cx="317.5" cy="256" r="14" fill="#ffffff" />
+  </g>
 </svg>

@@ -2,36 +2,135 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Preview Ikon Aplikasi</title>
+  <title>Preview Logo Keuanganku & Dev Shield</title>
   <style>
-    body { font-family: sans-serif; background: #0f172a; color: #fff; padding: 40px; display: flex; flex-direction: column; align-items: center; gap: 40px; }
-    .card-grid { display: flex; gap: 30px; flex-wrap: wrap; justify-content: center; }
-    .card { background: #1e293b; border: 1px solid #334155; border-radius: 24px; padding: 24px; text-align: center; width: 280px; }
-    .icon-box { margin: 20px auto; width: 140px; height: 140px; border-radius: 30px; display: flex; align-items: center; justify-content: center; background: #020617; border: 1px solid #334155; }
-    .icon-box img { width: 110px; height: 110px; border-radius: 22px; }
-    h2 { font-size: 16px; margin: 0; color: #38bdf8; }
-    p { font-size: 12px; color: #94a3b8; margin: 6px 0 0 0; }
+    body {
+      background: #0b0f19;
+      color: #f1f5f9;
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 30px;
+    }
+    h1, h2 { color: #38bdf8; }
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+      margin-bottom: 40px;
+    }
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+    }
+    .sizes {
+      display: flex;
+      align-items: flex-end;
+      gap: 15px;
+      justify-content: center;
+      margin-top: 15px;
+    }
+    .zoom-box {
+      border: 2px dashed #38bdf8;
+      border-radius: 12px;
+      padding: 10px;
+      display: inline-block;
+      background: #0f172a;
+    }
   </style>
 </head>
 <body>
-  <h1>Preview Ikon Aplikasi Saat Diinstal</h1>
-  <div class="card-grid">
+  <h1>🔍 Preview Evaluasi Logo: Lengkungan Mulus & Dev Shield</h1>
+  <p>Memeriksa bahwa sudut-sudut logo 100% melengkung mulus (tanpa patahan garis lurus) dan Logo Dev baru berupa <b>Perisai (Shield) dengan Logo Dompet di dalamnya</b>.</p>
+
+  <div class="grid">
+    <!-- 1. USER APP LOGO (SMOOTH CORNER) -->
     <div class="card">
-      <h2>1. Akun Pengguna (KeuanganKu PRO)</h2>
-      <p>Warna Biru Muda (Warna Aplikasi)</p>
-      <div class="icon-box">
-        <img src="icon-512.png" alt="User App Icon">
+      <h2>1. Logo Utama Pengguna (icon.svg)</h2>
+      <p style="color: #94a3b8; font-size: 13px;">Lengkungan sudut luar & dalam 100% konsentris bulat mulus</p>
+      <div id="svg-user-container">
+        <!-- SVG will be injected -->
       </div>
-      <p style="color:#38bdf8; font-weight:bold;">Tampilan di Layar HP & Desktop</p>
+      <div class="sizes" id="user-sizes"></div>
     </div>
+
+    <!-- 2. DEV LOGO OPTION 1: FULL SHIELD EMBLEM -->
     <div class="card">
-      <h2>2. Developer Portal</h2>
-      <p>Ikon Terminal Header Dev Dashboard</p>
-      <div class="icon-box">
-        <img src="dev-icon-512.png" alt="Dev Icon">
+      <h2>2. Logo Dev Portal: Perisai Utama + Logo Keuanganku</h2>
+      <p style="color: #94a3b8; font-size: 13px;">Perisai Keamanan Master dengan Logo Dompet di dalamnya</p>
+      <div id="svg-dev1-container">
+        <!-- SVG will be injected -->
       </div>
-      <p style="color:#22d3ee; font-weight:bold;">Tampilan di Layar HP & Desktop</p>
+      <div class="sizes" id="dev1-sizes"></div>
     </div>
   </div>
+
+  <div class="card" style="text-align: left;">
+    <h2>🔬 Zoom-In Sudut Logo (Uji Patahan)</h2>
+    <p style="color: #94a3b8; font-size: 13px;">Memperbesar sudut belokan stroke untuk memastikan lengkungan dalam dan luar sama-sama bulat sempurna:</p>
+    <div class="zoom-box">
+      <svg width="240" height="240" viewBox="120 120 100 100">
+        <rect x="0" y="0" width="512" height="512" fill="#2563eb" />
+        <!-- Wallet Top Left Corner -->
+        <path d="M 315 145 L 180 145 A 40 40 0 0 0 140 185 L 140 327" 
+              fill="none" stroke="#ffffff" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </div>
+  </div>
+
+  <script>
+    const userSvg = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="200" height="200">
+  <rect x="16" y="16" width="480" height="480" rx="116" fill="#2563eb" />
+  <path d="M 355 206 L 355 185 A 40 40 0 0 0 315 145 L 180 145 A 40 40 0 0 0 140 185 L 140 327 A 40 40 0 0 0 180 367 L 315 367 A 40 40 0 0 0 355 327 L 355 306" 
+        fill="none" stroke="#ffffff" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" />
+  <rect x="260" y="206" width="115" height="100" rx="26" fill="#2563eb" stroke="#ffffff" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" />
+  <circle cx="317.5" cy="256" r="12" fill="#ffffff" />
+</svg>`;
+
+    const devSvg = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="200" height="200">
+  <rect x="16" y="16" width="480" height="480" rx="116" fill="#2563eb" />
+  
+  <!-- Outer Shield Outline -->
+  <path d="M 256 80 
+           C 320 80, 380 92, 400 110 
+           C 406 116, 408 126, 408 142 
+           L 408 260 
+           C 408 348, 342 414, 256 442 
+           C 170 414, 104 348, 104 260 
+           L 104 142 
+           C 104 126, 106 116, 112 110 
+           C 132 92, 192 80, 256 80 Z" 
+        fill="#1d4ed8" fill-opacity="0.35" stroke="#ffffff" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" />
+
+  <!-- Inner Wallet Icon (Scaled 0.68x, centered inside shield) -->
+  <g transform="translate(256, 252) scale(0.68) translate(-250, -256)">
+    <!-- Wallet Main Body Outline -->
+    <path d="M 355 206 L 355 185 A 40 40 0 0 0 315 145 L 180 145 A 40 40 0 0 0 140 185 L 140 327 A 40 40 0 0 0 180 367 L 315 367 A 40 40 0 0 0 355 327 L 355 306" 
+          fill="none" stroke="#ffffff" stroke-width="30" stroke-linecap="round" stroke-linejoin="round" />
+
+    <!-- Flap Loop Outline -->
+    <rect x="260" y="206" width="115" height="100" rx="26" fill="#2563eb" stroke="#ffffff" stroke-width="30" stroke-linecap="round" stroke-linejoin="round" />
+
+    <!-- Clasp Dot -->
+    <circle cx="317.5" cy="256" r="14" fill="#ffffff" />
+  </g>
+</svg>`;
+
+    document.getElementById('svg-user-container').innerHTML = userSvg;
+    document.getElementById('svg-dev1-container').innerHTML = devSvg;
+
+    [128, 64, 48, 32, 16].forEach(sz => {
+      let uWrap = document.createElement('div');
+      uWrap.innerHTML = userSvg.replace('width="200" height="200"', `width="${sz}" height="${sz}"`);
+      document.getElementById('user-sizes').appendChild(uWrap);
+
+      let dWrap = document.createElement('div');
+      dWrap.innerHTML = devSvg.replace('width="200" height="200"', `width="${sz}" height="${sz}"`);
+      document.getElementById('dev1-sizes').appendChild(dWrap);
+    });
+  </script>
 </body>
 </html>
