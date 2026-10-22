@@ -868,6 +868,38 @@
               </div>
             </div>
 
+            <!-- Card 2.5: Pembaruan Sistem Dev Portal -->
+            <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-5 sm:p-6 space-y-4 shadow-sm">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3 flex-wrap gap-2">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-9 h-9 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-lg">system_update</span>
+                  </div>
+                  <div>
+                    <h3 class="font-bold text-white text-sm">Pembaruan Versi Dev Portal</h3>
+                    <p class="text-[11px] text-slate-400">Pastikan Developer Dashboard ini selalu menjalankan kode terbaru dari server</p>
+                  </div>
+                </div>
+                <span class="px-2.5 py-1 bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 text-[10px] font-bold rounded-full">
+                  VERSI: v3.4
+                </span>
+              </div>
+              <p class="text-[11px] text-slate-300 leading-relaxed">
+                Jika Anda telah melakukan push kode di GitHub atau menambahkan tab baru, klik tombol di bawah untuk menyegarkan cache portal ini secara instan.
+              </p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <button type="button" id="btn-check-dev-update" onclick="checkDevPortalUpdatesManual()" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-md flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
+                  <span class="material-symbols-outlined text-sm">sync</span>
+                  <span>Periksa Pembaruan Dev Portal</span>
+                </button>
+                <button type="button" onclick="forceHardRefreshDevPortal()" class="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-rose-300 border border-rose-500/30 font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer" title="Bersihkan cache Service Worker & muat ulang">
+                  <span class="material-symbols-outlined text-sm">delete_sweep</span>
+                  <span>Bersihkan Cache & Reload</span>
+                </button>
+              </div>
+              <div id="dev-update-status-text" class="hidden text-[11px] text-center font-medium pt-1"></div>
+            </div>
+
             <!-- Card 3: Sesi & Logout -->
             <div class="p-4 bg-slate-950/60 border border-slate-800 rounded-2xl flex items-center justify-between flex-wrap gap-3">
               <div class="flex items-center gap-3">
@@ -1733,13 +1765,108 @@
     let activeDetailToken = null;
     let deferredDevPrompt = null;
 
+    let devSwRegistration = null;
+
     // Registrasi Service Worker PWA untuk Dev Portal
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./dev-sw.js', { scope: './dev-dashboard.html' })
-          .then(reg => console.log('Dev Portal SW registered:', reg.scope))
+          .then(reg => {
+            devSwRegistration = reg;
+            reg.update().catch(() => {});
+            console.log('Dev Portal SW registered:', reg.scope);
+          })
           .catch(err => console.log('Dev Portal SW reg error:', err));
+
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (!refreshing) {
+            refreshing = true;
+            window.location.reload();
+          }
+        });
       });
+    }
+
+    async function checkDevPortalUpdatesManual() {
+      let btn = document.getElementById('btn-check-dev-update');
+      let statusText = document.getElementById('dev-update-status-text');
+      let origHtml = btn ? btn.innerHTML : '';
+
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<span class="material-symbols-outlined text-sm animate-spin">progress_activity</span> <span>Memeriksa Server...</span>`;
+      }
+      if (statusText) {
+        statusText.classList.remove('hidden', 'text-rose-400', 'text-emerald-400', 'text-cyan-400');
+        statusText.classList.add('text-cyan-400');
+        statusText.textContent = "Menghubungi server GitHub untuk memeriksa versi terbaru Dev Portal...";
+      }
+
+      if (!('serviceWorker' in navigator)) {
+        showToast('error', 'Browser tidak mendukung Service Worker.');
+        if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
+        return;
+      }
+
+      try {
+        let reg = await navigator.serviceWorker.getRegistration('./dev-dashboard.html');
+        if (reg) await reg.update();
+
+        setTimeout(async () => {
+          if (reg && (reg.waiting || reg.installing)) {
+            if (statusText) {
+              statusText.classList.remove('text-cyan-400');
+              statusText.classList.add('text-emerald-400');
+              statusText.innerHTML = "🎉 <b>Versi baru ditemukan!</b> Memasang pembaruan...";
+            }
+            if (reg.waiting) reg.waiting.postMessage({ action: 'skipWaiting' });
+            else window.location.reload();
+          } else {
+            if (statusText) {
+              statusText.classList.remove('text-cyan-400');
+              statusText.classList.add('text-emerald-400');
+              statusText.innerHTML = "✅ <b>Developer Portal sudah versi terbaru (v3.4)!</b>";
+            }
+            showToast('success', 'Dev Portal sudah menggunakan versi paling mutakhir!');
+          }
+
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = origHtml;
+          }
+        }, 1200);
+      } catch(err) {
+        if (statusText) {
+          statusText.classList.remove('text-cyan-400');
+          statusText.classList.add('text-rose-400');
+          statusText.textContent = "Gagal memeriksa pembaruan. Pastikan internet aktif.";
+        }
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = origHtml;
+        }
+      }
+    }
+
+    async function forceHardRefreshDevPortal() {
+      if (!confirm("Bersihkan cache Dev Portal dan muat ulang ke versi paling baru dari server?")) return;
+
+      showToast('info', 'Membersihkan cache Dev Portal...');
+
+      try {
+        if ('caches' in window) {
+          let keys = await caches.keys();
+          await Promise.all(keys.filter(k => k.includes('dev-portal')).map(k => caches.delete(k)));
+        }
+        if ('serviceWorker' in navigator) {
+          let reg = await navigator.serviceWorker.getRegistration('./dev-dashboard.html');
+          if (reg) await reg.unregister();
+        }
+      } catch(e) {}
+
+      let cleanUrl = window.location.origin + window.location.pathname + '?_update=' + Date.now() + window.location.hash;
+      window.location.replace(cleanUrl);
     }
 
     // Tangkap Event PWA Install Prompt

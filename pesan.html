@@ -19,8 +19,8 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
-  <!-- Tailwind CSS via allowlisted CDN -->
-  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <!-- Tailwind CSS via Official CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
     body {
@@ -353,7 +353,7 @@
   <!-- SCRIPT LOGIKA FORM PEMESANAN -->
   <script>
     // URL Backend Google Apps Script (Sama dengan Dev Portal & Aplikasi)
-    const DEFAULT_API_URL = "https://script.google.com/macros/s/AKfycbz_uR9fWl6W7hG0xQ3qTfJ1e_d1J_XwZ3k/exec";
+    const DEFAULT_API_URL = "https://script.google.com/macros/s/AKfycbwFPoNUGmryOTOcvirMd47sW0jOy3nVG7S7MNopbJNXU2BY66HktKl-CWukO93Hl08S/exec";
     let apiUrl = localStorage.getItem("KEUANGANKU_DEV_API_URL") || DEFAULT_API_URL;
 
     // Default Fallback Catalog jika offline / sebelum API merespons
@@ -382,26 +382,37 @@
     let appliedVoucher = null;
     let selectedPaymentMethod = "Transfer BCA";
 
-    // Inisialisasi Halaman
-    document.addEventListener('DOMContentLoaded', async () => {
-      await loadCatalogData();
+    // Inisialisasi Halaman: Render INSTAN (0 detik) lalu sinkronkan di background
+    document.addEventListener('DOMContentLoaded', () => {
       renderPackages();
       renderPaymentAccounts();
       selectDefaultPackage();
+      loadCatalogData();
     });
 
     async function loadCatalogData() {
       try {
-        let resp = await fetch(`${apiUrl}?action=get_public_catalog&_t=${Date.now()}`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 6000);
+        let resp = await fetch(`${apiUrl}?action=get_public_catalog&_t=${Date.now()}`, { signal: controller.signal });
+        clearTimeout(timeoutId);
         let res = await resp.json();
         if (res && res.success) {
           if (Array.isArray(res.packages) && res.packages.length > 0) catalog.packages = res.packages;
           if (Array.isArray(res.vouchers)) catalog.vouchers = res.vouchers;
           if (Array.isArray(res.paymentAccounts) && res.paymentAccounts.length > 0) catalog.paymentAccounts = res.paymentAccounts;
           if (res.sellerWhatsApp) catalog.sellerWhatsApp = res.sellerWhatsApp;
+
+          renderPackages();
+          renderPaymentAccounts();
+          if (selectedPackage) {
+            let found = catalog.packages.find(p => p.id === selectedPackage.id);
+            if (found) selectPackage(found);
+            else selectDefaultPackage();
+          }
         }
       } catch(e) {
-        console.log("Menggunakan katalog lokal bawaan:", e);
+        console.log("Katalog offline / lokal aktif.");
       }
     }
 
@@ -426,7 +437,7 @@
           ` : ''}
           <div>
             <div class="flex items-center gap-2">
-              <input type="radio" name="package-radio" id="radio-${pkg.id}" class="text-blue-600 focus:ring-0">
+              <input type="radio" name="package-radio" id="radio-${pkg.id}" class="text-blue-600 focus:ring-0 pointer-events-none">
               <h4 class="font-bold text-white text-sm">${escapeHtml(pkg.name)}</h4>
             </div>
             <p class="text-[11px] text-slate-400 mt-1.5 leading-relaxed">${escapeHtml(pkg.description || '')}</p>
@@ -659,11 +670,15 @@
       };
 
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 4000);
         let resp = await fetch(apiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payload),
+          signal: controller.signal
         });
+        clearTimeout(timeoutId);
         let res = await resp.json();
         if (res && res.orderId) orderId = res.orderId;
       } catch(err) {
@@ -671,8 +686,9 @@
       }
 
       // Format Pesan WhatsApp Konfirmasi ke Admin
-      let sellerWa = (catalog.sellerWhatsApp || '628123456789').replace(/[^0-9]/g, '');
-      if (sellerWa.startsWith('0')) sellerWa = '62' + sellerWa.slice(1);
+      let rawWa = String(catalog.sellerWhatsApp || '08123456789').replace(/[^0-9]/g, '');
+      if (rawWa.startsWith('0')) rawWa = '62' + rawWa.slice(1);
+      if (!rawWa.startsWith('62')) rawWa = '62' + rawWa;
 
       let waMessage = 
         "Halo Admin *Keuanganku PRO*, saya ingin mengonfirmasi pemesanan lisensi resmi:\n\n" +
@@ -686,24 +702,27 @@
         (notes ? "📝 *Catatan:* " + notes + "\n" : "") + "\n" +
         "Mohon diverifikasi dan diterbitkan token lisensi akun saya. Terima kasih! 🙏✨";
 
-      let waUrl = `https://wa.me/${sellerWa}?text=${encodeURIComponent(waMessage)}`;
+      let waUrl = `https://api.whatsapp.com/send?phone=${rawWa}&text=${encodeURIComponent(waMessage)}`;
 
       // Update Modal Sukses
       document.getElementById('succ-order-id').textContent = orderId;
       document.getElementById('succ-buyer-name').textContent = buyerName;
       document.getElementById('succ-pkg-name').textContent = selectedPackage.name;
       document.getElementById('succ-total-price').textContent = finalPriceFormatted;
-      document.getElementById('btn-open-wa').href = waUrl;
+      let btnWa = document.getElementById('btn-open-wa');
+      if (btnWa) btnWa.href = waUrl;
 
       document.getElementById('modal-order-success').classList.remove('hidden');
 
       btn.disabled = false;
       btn.innerHTML = origHtml;
 
-      // Buka WA langsung
-      setTimeout(() => {
+      // Alihkan ke WhatsApp
+      try {
+        window.location.href = waUrl;
+      } catch(e) {
         window.open(waUrl, '_blank');
-      }, 500);
+      }
     }
 
     function escapeHtml(str) {

@@ -1,7 +1,8 @@
-const CACHE_NAME = 'keuanganku-pwa-v4.8';
+const CACHE_NAME = 'keuanganku-pwa-v4.9';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
+  './pesan.html',
   './poster-panduan-penggunaan.html',
   './panduan-pengguna.html',
   './manifest.json',
@@ -23,6 +24,13 @@ self.addEventListener('install', (event) => {
     })
   );
   self.skipWaiting();
+});
+
+// Message Event (Menerima perintah update dari aplikasi)
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.action === 'skipWaiting') {
+    self.skipWaiting();
+  }
 });
 
 // Activate Event

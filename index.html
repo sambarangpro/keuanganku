@@ -712,6 +712,33 @@
     <span id="sync-toast-text" class="font-medium text-[11px]">Data diperbarui dari Cloud</span>
   </div>
 
+  <!-- BANNER NOTIFIKASI PEMBARUAN VERSI BARU APLIKASI -->
+  <div id="pwa-update-banner" class="hidden fixed bottom-20 md:bottom-8 left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-md bg-gradient-to-r from-blue-950 via-slate-900 to-indigo-950 text-white p-4 rounded-3xl shadow-2xl border-2 border-cyan-400/60 backdrop-blur-xl">
+    <div class="flex items-start gap-3">
+      <div class="w-10 h-10 rounded-2xl bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-xl">upgrade</span>
+      </div>
+      <div class="flex-1 space-y-1">
+        <div class="flex items-center gap-2">
+          <h4 class="font-extrabold text-sm text-white">Versi Baru Tersedia!</h4>
+          <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-cyan-400 text-slate-950">UPDATE</span>
+        </div>
+        <p class="text-xs text-slate-300 leading-relaxed">
+          Pembaruan fitur & perbaikan sistem baru telah siap dipasang di aplikasi Anda.
+        </p>
+        <div class="flex items-center gap-2 pt-2">
+          <button onclick="applyAppUpdate()" class="px-4 py-2 bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 font-black text-xs rounded-xl shadow-md transition-all active:scale-95 cursor-pointer flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-sm">refresh</span>
+            <span>Perbarui Sekarang</span>
+          </button>
+          <button onclick="dismissAppUpdateBanner()" class="px-3 py-2 text-slate-400 hover:text-white text-xs font-semibold cursor-pointer">
+            Nanti Saja
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- TOMBOL MENGAMBANG -->
   <button onclick="toggleBalanceMask()" class="fixed bottom-24 md:bottom-8 right-6 md:right-8 z-50 bg-slate-800 dark:bg-slate-600 text-white p-3 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.25)] border border-slate-600 dark:border-slate-500 hover:scale-110 active:scale-95 transition-transform flex items-center justify-center group" title="Sembunyikan/Tampilkan Saldo">
     <span class="material-symbols-outlined" id="icon-mask-balance-fab" style="font-size: 26px;">visibility_off</span>
@@ -1340,6 +1367,33 @@
                 <button onclick="triggerPWAInstall()" class="w-full py-3 bg-primary hover:bg-primary-container text-white font-bold text-xs rounded-xl shadow flex items-center justify-center gap-2 transition-all active:scale-95">
                   <span class="material-symbols-outlined text-base">add_to_home_screen</span> PASANG / INSTAL APLIKASI SEKARANG
                 </button>
+              </section>
+
+              <!-- FITUR PEMBARUAN SISTEM APLIKASI (UPDATE MANAGER) -->
+              <section class="bg-gradient-to-r from-cyan-50 to-blue-50 border border-cyan-200 dark:from-slate-900 dark:to-slate-900 dark:border-cyan-900/60 rounded-2xl p-5 sm:p-6 shadow-sm space-y-3">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                  <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-cyan-600 dark:text-cyan-400 text-xl">system_update</span>
+                    <h2 class="font-headline-md text-headline-md font-bold text-on-surface">Pembaruan Versi Aplikasi</h2>
+                  </div>
+                  <span class="px-2.5 py-0.5 bg-cyan-100 dark:bg-cyan-950 text-cyan-700 dark:text-cyan-300 text-[10px] font-extrabold rounded-full border border-cyan-200 dark:border-cyan-800">
+                    VERSI AKTIF: v4.9
+                  </span>
+                </div>
+                <p class="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
+                  Jika Anda telah memperbarui kode di GitHub atau ingin memastikan aplikasi di HP/Laptop yang terinstal mendapatkan fitur terbaru, gunakan tombol di bawah untuk memeriksa dan memasang pembaruan secara instan.
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                  <button id="btn-check-app-update" onclick="checkAppUpdatesManual()" class="py-3 px-4 bg-primary hover:bg-primary-container text-white font-bold text-xs rounded-xl shadow-md flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
+                    <span id="icon-check-app-update" class="material-symbols-outlined text-base">sync</span>
+                    <span>PERIKSA PEMBARUAN (UPDATE)</span>
+                  </button>
+                  <button onclick="forceHardRefreshApp()" class="py-3 px-4 bg-white dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-slate-700 border border-rose-300 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer" title="Bersihkan cache browser dan muat ulang halaman">
+                    <span class="material-symbols-outlined text-base">delete_sweep</span>
+                    <span>BERSIHKAN CACHE & MUAT ULANG</span>
+                  </button>
+                </div>
+                <div id="update-check-status-text" class="hidden text-[11px] text-center font-medium pt-1"></div>
               </section>
 
               <!-- FITUR EKSKLUSIF PEMILIK (HANYA MUNCUL JIKA TERHUBUNG KE CLOUD PRIBADI) -->
@@ -6389,16 +6443,165 @@
 
     // === PWA & SERVICE WORKER INSTALLATION MANAGEMENT ===
     let deferredPWAInstallPrompt = null;
+    let swRegistration = null;
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=3.0').then((reg) => {
-          reg.update();
+        navigator.serviceWorker.register('./sw.js').then((reg) => {
+          swRegistration = reg;
           console.log('KEUANGANKU Service Worker active:', reg.scope);
+
+          // Cek update di server secara berkala
+          reg.update().catch(() => {});
+
+          // Tangani jika ada update baru yang sedang dipasang
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            if (newWorker) {
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  showAppUpdateBanner(reg);
+                }
+              });
+            }
+          });
+
+          // Jika sudah ada worker baru yang menunggu
+          if (reg.waiting && navigator.serviceWorker.controller) {
+            showAppUpdateBanner(reg);
+          }
         }).catch((err) => {
           console.warn('SW registration failed:', err);
         });
+
+        // Saat worker baru aktif, reload halaman secara mulus
+        let isRefreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (!isRefreshing) {
+            isRefreshing = true;
+            window.location.reload();
+          }
+        });
       });
+    }
+
+    function showAppUpdateBanner(reg) {
+      swRegistration = reg;
+      let banner = document.getElementById('pwa-update-banner');
+      if (banner) banner.classList.remove('hidden');
+    }
+
+    function dismissAppUpdateBanner() {
+      let banner = document.getElementById('pwa-update-banner');
+      if (banner) banner.classList.add('hidden');
+    }
+
+    function applyAppUpdate() {
+      if (swRegistration && swRegistration.waiting) {
+        swRegistration.waiting.postMessage({ action: 'skipWaiting' });
+      } else {
+        forceHardRefreshApp();
+      }
+    }
+
+    async function checkAppUpdatesManual() {
+      let btn = document.getElementById('btn-check-app-update');
+      let statusText = document.getElementById('update-check-status-text');
+      let origHtml = btn ? btn.innerHTML : '';
+
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<span class="material-symbols-outlined text-base animate-spin">progress_activity</span> <span>Memeriksa Server...</span>`;
+      }
+      if (statusText) {
+        statusText.classList.remove('hidden', 'text-rose-500', 'text-emerald-500', 'text-cyan-500');
+        statusText.classList.add('text-cyan-500');
+        statusText.textContent = "Menghubungi server GitHub untuk memeriksa versi terbaru...";
+      }
+
+      if (!('serviceWorker' in navigator)) {
+        alert("Browser ini tidak mendukung Service Worker.");
+        if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
+        return;
+      }
+
+      try {
+        let reg = await navigator.serviceWorker.getRegistration();
+        if (!reg) {
+          reg = await navigator.serviceWorker.register('./sw.js');
+        }
+
+        await reg.update();
+
+        setTimeout(async () => {
+          if (reg.waiting || reg.installing) {
+            if (statusText) {
+              statusText.classList.remove('text-cyan-500');
+              statusText.classList.add('text-emerald-500');
+              statusText.innerHTML = "🎉 <b>Pembaruan baru ditemukan!</b> Memasang versi terbaru...";
+            }
+            showAppUpdateBanner(reg);
+            applyAppUpdate();
+          } else {
+            // Cek langsung ke file sw.js dengan timestamp anti-cache
+            try {
+              let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
+              let testText = await testResp.text();
+              let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
+              let currentCacheInApp = 'keuanganku-pwa-v4.9';
+              if (match && match[1] && match[1] !== currentCacheInApp) {
+                forceHardRefreshApp();
+                return;
+              }
+            } catch(e) {}
+
+            if (statusText) {
+              statusText.classList.remove('text-cyan-500');
+              statusText.classList.add('text-emerald-500');
+              statusText.innerHTML = "✅ <b>Aplikasi Anda sudah versi paling baru (v4.9)!</b> Seluruh fitur telah mutakhir.";
+            }
+            showSyncToast("✓ Aplikasi sudah versi paling baru!");
+          }
+
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = origHtml;
+          }
+        }, 1200);
+
+      } catch(err) {
+        if (statusText) {
+          statusText.classList.remove('text-cyan-500');
+          statusText.classList.add('text-rose-500');
+          statusText.textContent = "Gagal memeriksa pembaruan. Pastikan perangkat terhubung ke internet.";
+        }
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = origHtml;
+        }
+      }
+    }
+
+    async function forceHardRefreshApp() {
+      if (!confirm("Bersihkan cache aplikasi dan muat ulang ke versi paling baru dari server?\n\nCatatan: Seluruh data keuangan, catatan, dan PIN Anda 100% AMAN di perangkat ini.")) return;
+
+      showSyncToast("Membersihkan cache & memuat versi baru...");
+
+      try {
+        if ('caches' in window) {
+          let keys = await caches.keys();
+          await Promise.all(keys.map(k => caches.delete(k)));
+        }
+        if ('serviceWorker' in navigator) {
+          let reg = await navigator.serviceWorker.getRegistration();
+          if (reg) await reg.unregister();
+        }
+      } catch(e) {
+        console.warn("Pembersihan cache:", e);
+      }
+
+      let cleanUrl = window.location.origin + window.location.pathname + '?_update=' + Date.now() + window.location.hash;
+      window.location.replace(cleanUrl);
     }
 
     // Tangkap event sebelum browser memunculkan dialog install bawaan
