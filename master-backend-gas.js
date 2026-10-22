@@ -596,9 +596,12 @@ function validateClientToken(params) {
       }
 
       var currentCloudUrl = (colMap.cloudUrl !== undefined && data[i][colMap.cloudUrl]) ? String(data[i][colMap.cloudUrl]).trim() : "";
-      if (!currentCloudUrl && params.cloudUrl && colMap.cloudUrl !== undefined) {
-        currentCloudUrl = String(params.cloudUrl).trim();
-        sheet.getRange(i + 1, colMap.cloudUrl + 1).setValue(currentCloudUrl);
+      if (params.cloudUrl && colMap.cloudUrl !== undefined) {
+        var newCloudUrl = String(params.cloudUrl).trim();
+        if (newCloudUrl && newCloudUrl !== currentCloudUrl) {
+          currentCloudUrl = newCloudUrl;
+          sheet.getRange(i + 1, colMap.cloudUrl + 1).setValue(currentCloudUrl);
+        }
       }
 
       // 3. Cek apakah perangkat sudah ada (Re-login)
@@ -961,9 +964,12 @@ function verifyClientStatus(params) {
       }
 
       var currentCloudUrl = (colMap.cloudUrl !== undefined && data[i][colMap.cloudUrl]) ? String(data[i][colMap.cloudUrl]).trim() : "";
-      if (!currentCloudUrl && params.cloudUrl && colMap.cloudUrl !== undefined) {
-        currentCloudUrl = String(params.cloudUrl).trim();
-        sheet.getRange(i + 1, colMap.cloudUrl + 1).setValue(currentCloudUrl);
+      if (params.cloudUrl && colMap.cloudUrl !== undefined) {
+        var newCloudUrl = String(params.cloudUrl).trim();
+        if (newCloudUrl && newCloudUrl !== currentCloudUrl) {
+          currentCloudUrl = newCloudUrl;
+          sheet.getRange(i + 1, colMap.cloudUrl + 1).setValue(currentCloudUrl);
+        }
       }
 
       return { 

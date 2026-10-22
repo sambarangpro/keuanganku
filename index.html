@@ -4003,6 +4003,21 @@
       localStorage.setItem("KEUANGANKU_CLOUD_URL", globalData.cloudUrl);
       globalData.lastUpdated = Date.now();
       localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData));
+
+      // Otomatis sinkronkan URL Cloud pengguna ke Master Server lisensi di background
+      let lic = getSavedLicense();
+      if (lic && lic.token && typeof callClientLicenseApi === 'function') {
+        let devId = getOrCreateDeviceId();
+        try {
+          callClientLicenseApi({
+            action: 'verify_status',
+            token: lic.token,
+            deviceId: devId,
+            cloudUrl: globalData.cloudUrl
+          });
+        } catch(e) {}
+      }
+
       alert("Kunci Cloud berhasil disimpan! Sistem akan otomatis mengupload database Anda ke Google Sheets.");
       await forceUploadToCloud();
     }
