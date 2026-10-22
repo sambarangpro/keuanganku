@@ -326,6 +326,12 @@
                 Daftar Lisensi Pengguna (<span id="tab-token-count">0</span>)
               </span>
             </button>
+            <button onclick="switchTab('orders')" id="tab-btn-orders" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+              <span class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm">shopping_cart</span>
+                Daftar Pemesanan (<span id="tab-order-count">0</span>)
+              </span>
+            </button>
             <button onclick="switchTab('logs')" id="tab-btn-logs" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
               <span class="flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-sm">history</span>
@@ -354,6 +360,26 @@
               <option value="UNCLAIMED">⚪ Belum Digunakan</option>
               <option value="BLOCKED">🔴 Hanya Diblokir</option>
             </select>
+          </div>
+
+          <!-- Search & Filter Controls (Orders) -->
+          <div id="orders-filter-bar" class="hidden flex flex-col sm:flex-row items-center gap-2.5 w-full md:w-auto">
+            <div class="relative w-full sm:w-64 lg:w-72">
+              <span class="material-symbols-outlined absolute left-3 top-2.5 text-slate-500 text-sm">search</span>
+              <input type="text" id="filter-order-search" oninput="filterOrdersTable()" placeholder="Cari nama, WA, ID order..."
+                class="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-all">
+            </div>
+            <select id="filter-order-status" onchange="filterOrdersTable()" class="w-full sm:w-auto px-3.5 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-slate-300 focus:outline-none focus:border-blue-500 transition-all">
+              <option value="ALL">Semua Status Pesanan</option>
+              <option value="PENDING">🟡 Menunggu Verifikasi</option>
+              <option value="PAID">🟢 Lunas (Siap Lisensi)</option>
+              <option value="COMPLETED">🔵 Selesai (Lisensi Terkirim)</option>
+              <option value="CANCELLED">🔴 Dibatalkan</option>
+            </select>
+            <button onclick="openCreateOrderModal()" class="w-full sm:w-auto px-3.5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-blue-500/20 active:scale-95 transition-all cursor-pointer">
+              <span class="material-symbols-outlined text-sm">add_shopping_cart</span>
+              <span>Catat Pemesanan</span>
+            </button>
           </div>
         </div>
 
@@ -407,7 +433,79 @@
           </table>
         </div>
 
-        <!-- 2. TAB KONTEN: AUDIT LOGS -->
+        <!-- 2. TAB KONTEN: DAFTAR PEMESANAN -->
+        <div id="tab-content-orders" class="hidden p-4 sm:p-6 space-y-5">
+          <!-- Mini Stats Row for Orders -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-4 flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-blue-600/15 border border-blue-500/30 text-blue-400 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-xl">shopping_cart</span>
+              </div>
+              <div>
+                <p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Total Pemesanan</p>
+                <h4 id="order-stat-total" class="text-lg font-bold text-white font-mono-data">0</h4>
+              </div>
+            </div>
+
+            <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-4 flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-xl">pending_actions</span>
+              </div>
+              <div>
+                <p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Menunggu Verifikasi</p>
+                <h4 id="order-stat-pending" class="text-lg font-bold text-amber-300 font-mono-data">0</h4>
+              </div>
+            </div>
+
+            <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-4 flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-xl">verified</span>
+              </div>
+              <div>
+                <p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Lunas & Selesai</p>
+                <h4 id="order-stat-paid" class="text-lg font-bold text-emerald-400 font-mono-data">0</h4>
+              </div>
+            </div>
+
+            <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-4 flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-xl">payments</span>
+              </div>
+              <div>
+                <p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Estimasi Total Omset</p>
+                <h4 id="order-stat-revenue" class="text-sm sm:text-base font-bold text-cyan-300 font-mono-data">Rp 0</h4>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tabel Pemesanan -->
+          <div class="overflow-x-auto custom-scroll border border-slate-800 rounded-2xl">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-950 text-slate-400 font-semibold border-b border-slate-800">
+                <tr>
+                  <th class="p-3 whitespace-nowrap">ID & Waktu</th>
+                  <th class="p-3 whitespace-nowrap">Pemesan & Kontak</th>
+                  <th class="p-3 whitespace-nowrap">Paket Lisensi</th>
+                  <th class="p-3 whitespace-nowrap">Nominal & Bayar</th>
+                  <th class="p-3 text-center whitespace-nowrap">Status & Lisensi</th>
+                  <th class="p-3 sm:px-4 text-right whitespace-nowrap">Tindakan Cepat</th>
+                </tr>
+              </thead>
+              <tbody id="orders-table-body" class="divide-y divide-slate-800/60 font-sans">
+                <tr>
+                  <td colspan="6" class="p-8 text-center text-slate-500">
+                    <div class="flex flex-col items-center justify-center space-y-2">
+                      <span class="material-symbols-outlined text-3xl text-slate-600">receipt_long</span>
+                      <p>Belum ada data pemesanan. Klik "Catat Pemesanan" untuk menambahkan pesanan pembeli.</p>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 3. TAB KONTEN: AUDIT LOGS -->
         <div id="tab-content-logs" class="hidden p-4 sm:p-6 space-y-3">
           <div class="flex items-center justify-between text-xs text-slate-400 pb-2">
             <span>Riwayat 30 Aktivitas Terakhir (Aktivasi, Validasi, & Blokir)</span>
@@ -580,6 +678,178 @@
         <p class="font-mono-data text-[11px] text-slate-400">Master License Engine v1.0 • Multi-Device Anti-Sharing Protection</p>
       </div>
     </footer>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: CATAT PEMESANAN BARU                -->
+  <!-- ========================================== -->
+  <div id="modal-create-order" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="max-w-lg w-full bg-slate-900 border border-slate-700/80 rounded-3xl p-6 shadow-2xl space-y-4 relative max-h-[90vh] overflow-y-auto custom-scroll">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-blue-400">add_shopping_cart</span>
+          <h2 class="text-base font-extrabold text-white">Catat Pemesanan Baru</h2>
+        </div>
+        <button onclick="closeModal('modal-create-order')" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+      </div>
+
+      <form onsubmit="handleCreateOrder(event)" class="space-y-3.5 text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Nama Pemesan / Pembeli: <span class="text-rose-400">*</span></label>
+            <input type="text" id="order-buyer-name" required placeholder="Contoh: Budi Santoso"
+              class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Nomor WhatsApp / HP: <span class="text-rose-400">*</span></label>
+            <input type="tel" id="order-buyer-wa" required placeholder="08123456789"
+              class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Email Pemesan (Opsional):</label>
+          <input type="email" id="order-buyer-email" placeholder="contoh@gmail.com"
+            class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Pilihan Paket Lisensi:</label>
+            <select id="order-package" onchange="onOrderPackageChange()" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-blue-500">
+              <option value="PRO Personal (1 Perangkat)" data-devices="1" data-price="Rp 99.000">PRO Personal (1 Perangkat) - Rp 99.000</option>
+              <option value="PRO Multi-Device (3 Perangkat)" data-devices="3" data-price="Rp 149.000" selected>PRO Multi-Device (3 Perangkat) - Rp 149.000</option>
+              <option value="PRO Bisnis (5 Perangkat)" data-devices="5" data-price="Rp 249.000">PRO Bisnis (5 Perangkat) - Rp 249.000</option>
+              <option value="PRO Developer Master (10 Perangkat)" data-devices="10" data-price="Rp 499.000">PRO Master (10 Perangkat) - Rp 499.000</option>
+              <option value="CUSTOM" data-devices="2" data-price="Rp 0">Paket Kustom (Atur Sendiri)...</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Maksimal Perangkat:</label>
+            <input type="number" id="order-max-devices" min="1" max="100" value="3" required
+              class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-blue-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Nominal Pembayaran:</label>
+            <input type="text" id="order-price" value="Rp 149.000" required placeholder="Rp 149.000"
+              class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-emerald-400 font-bold font-mono-data focus:outline-none focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Metode Pembayaran:</label>
+            <select id="order-payment-method" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-blue-500">
+              <option value="Transfer BCA">Transfer BCA</option>
+              <option value="Transfer Mandiri">Transfer Mandiri</option>
+              <option value="Transfer BRI">Transfer BRI</option>
+              <option value="Transfer BSI">Transfer BSI</option>
+              <option value="QRIS">QRIS</option>
+              <option value="DANA">DANA</option>
+              <option value="ShopeePay / OVO">ShopeePay / OVO</option>
+              <option value="Tunai / Cash">Tunai / Cash</option>
+              <option value="Lainnya">Lainnya</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Status Pembayaran:</label>
+            <select id="order-status" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-blue-500">
+              <option value="PAID">🟢 Lunas (Siap Terbitkan Lisensi)</option>
+              <option value="PENDING">🟡 Menunggu Pembayaran / Verifikasi</option>
+              <option value="COMPLETED">🔵 Selesai</option>
+              <option value="CANCELLED">🔴 Dibatalkan</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Catatan / Keterangan:</label>
+            <input type="text" id="order-notes" placeholder="No. ref, nama rekening pengirim, dll"
+              class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
+          </div>
+        </div>
+
+        <div class="p-3 bg-blue-950/40 border border-blue-500/30 rounded-xl flex items-start gap-2.5">
+          <input type="checkbox" id="order-auto-token" checked class="mt-0.5 rounded text-blue-600 focus:ring-blue-500 cursor-pointer">
+          <label for="order-auto-token" class="text-[11px] text-slate-300 leading-relaxed cursor-pointer">
+            <strong class="text-white">Langsung Terbitkan Lisensi Token Otomatis</strong><br>
+            Jika dicentang dan status pesanan Lunas, sistem akan otomatis membuat token lisensi resmi di database Lisensi dan mengaitkannya ke pemesan ini.
+          </label>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+          <button type="button" onclick="closeModal('modal-create-order')" class="px-4 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 font-semibold cursor-pointer">
+            Batal
+          </button>
+          <button type="submit" id="btn-save-order" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold shadow-lg shadow-blue-500/25 flex items-center gap-1.5 cursor-pointer">
+            <span class="material-symbols-outlined text-sm">save</span>
+            <span>Simpan Pemesanan</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: EDIT STATUS PEMESANAN              -->
+  <!-- ========================================== -->
+  <div id="modal-edit-order" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-slate-900 border border-slate-700/80 rounded-3xl p-6 shadow-2xl space-y-4 relative">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-cyan-400">edit_note</span>
+          <h2 class="text-base font-extrabold text-white">Kelola Status Pemesanan</h2>
+        </div>
+        <button onclick="closeModal('modal-edit-order')" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+      </div>
+
+      <form onsubmit="handleUpdateOrder(event)" class="space-y-3.5 text-xs">
+        <input type="hidden" id="edit-order-id">
+        
+        <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 space-y-1">
+          <p class="text-[10px] text-slate-400 uppercase font-mono-data">ID Pemesanan: <span id="edit-order-id-display" class="text-cyan-300 font-bold"></span></p>
+          <p class="text-sm font-bold text-white" id="edit-order-buyer-name"></p>
+          <p class="text-slate-400" id="edit-order-details"></p>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Status Pemesanan:</label>
+          <select id="edit-order-status" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-blue-500">
+            <option value="PENDING">🟡 Menunggu Verifikasi</option>
+            <option value="PAID">🟢 Lunas (Siap Diterbitkan Lisensi)</option>
+            <option value="COMPLETED">🔵 Selesai (Lisensi Terkirim)</option>
+            <option value="CANCELLED">🔴 Dibatalkan</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Token Lisensi Terhubung:</label>
+          <input type="text" id="edit-order-token" placeholder="Kosongkan jika belum diterbitkan atau isi kode token"
+            class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-cyan-300 font-mono-data focus:outline-none focus:border-blue-500">
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Catatan Pemesanan:</label>
+          <textarea id="edit-order-notes" rows="2" placeholder="Catatan internal transaksi..."
+            class="w-full px-3.5 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"></textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+          <button type="button" onclick="closeModal('modal-edit-order')" class="px-4 py-2 rounded-xl text-slate-400 hover:text-white font-semibold cursor-pointer">
+            Batal
+          </button>
+          <button type="submit" id="btn-update-order" class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold shadow-md shadow-blue-500/20 flex items-center gap-1.5 cursor-pointer">
+            <span class="material-symbols-outlined text-sm">check</span>
+            <span>Perbarui Pemesanan</span>
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <!-- ========================================== -->
@@ -1062,6 +1332,7 @@
     let currentAdminPassword = "";
     let currentApiUrl = "";
     let cachedTokens = [];
+    let cachedOrders = [];
     let activeDetailToken = null;
     let deferredDevPrompt = null;
 
@@ -1275,9 +1546,23 @@
         document.getElementById('stat-using-token').textContent = totalUsingToken;
         document.getElementById('tab-token-count').textContent = totalTokens;
 
+        // Load & Cache Orders
+        if (Array.isArray(res.orders)) {
+          cachedOrders = res.orders;
+          localStorage.setItem('KEUANGANKU_DEV_ORDERS_CACHE', JSON.stringify(cachedOrders));
+        } else {
+          try {
+            cachedOrders = JSON.parse(localStorage.getItem('KEUANGANKU_DEV_ORDERS_CACHE') || '[]');
+          } catch(e) {
+            cachedOrders = [];
+          }
+        }
+
         try {
           renderTokensTable(cachedTokens);
           renderLogsTable(res.recentLogs || []);
+          renderOrdersTable(cachedOrders);
+          updateOrdersStats(cachedOrders);
         } catch(renderErr) {
           console.error("Gagal merender data tabel:", renderErr);
         }
@@ -1524,47 +1809,529 @@
 
     function switchTab(tab) {
       let tokensTab = document.getElementById('tab-content-tokens');
+      let ordersTab = document.getElementById('tab-content-orders');
       let logsTab = document.getElementById('tab-content-logs');
       let settingsTab = document.getElementById('tab-content-settings');
-      let filterBar = document.getElementById('tokens-filter-bar');
+
+      let tokensFilterBar = document.getElementById('tokens-filter-bar');
+      let ordersFilterBar = document.getElementById('orders-filter-bar');
 
       let btnTokens = document.getElementById('tab-btn-tokens');
+      let btnOrders = document.getElementById('tab-btn-orders');
       let btnLogs = document.getElementById('tab-btn-logs');
       let btnSettings = document.getElementById('tab-btn-settings');
 
       const activeClass = "px-4 py-2 rounded-xl text-xs font-bold transition-all bg-blue-600 text-white shadow-md shadow-blue-500/20";
       const inactiveClass = "px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition-all";
 
+      // Hide all tabs & filters
+      if (tokensTab) tokensTab.classList.add('hidden');
+      if (ordersTab) ordersTab.classList.add('hidden');
+      if (logsTab) logsTab.classList.add('hidden');
+      if (settingsTab) settingsTab.classList.add('hidden');
+
+      if (tokensFilterBar) tokensFilterBar.classList.add('hidden');
+      if (ordersFilterBar) ordersFilterBar.classList.add('hidden');
+
+      if (btnTokens) btnTokens.className = inactiveClass;
+      if (btnOrders) btnOrders.className = inactiveClass;
+      if (btnLogs) btnLogs.className = inactiveClass;
+      if (btnSettings) btnSettings.className = inactiveClass;
+
       if (tab === 'tokens') {
         if (tokensTab) tokensTab.classList.remove('hidden');
-        if (logsTab) logsTab.classList.add('hidden');
-        if (settingsTab) settingsTab.classList.add('hidden');
-        if (filterBar) filterBar.classList.remove('hidden');
-
+        if (tokensFilterBar) tokensFilterBar.classList.remove('hidden');
         if (btnTokens) btnTokens.className = activeClass;
-        if (btnLogs) btnLogs.className = inactiveClass;
-        if (btnSettings) btnSettings.className = inactiveClass;
+      } else if (tab === 'orders') {
+        if (ordersTab) ordersTab.classList.remove('hidden');
+        if (ordersFilterBar) ordersFilterBar.classList.remove('hidden');
+        if (btnOrders) btnOrders.className = activeClass;
+        filterOrdersTable();
       } else if (tab === 'logs') {
-        if (tokensTab) tokensTab.classList.add('hidden');
         if (logsTab) logsTab.classList.remove('hidden');
-        if (settingsTab) settingsTab.classList.add('hidden');
-        if (filterBar) filterBar.classList.add('hidden');
-
-        if (btnTokens) btnTokens.className = inactiveClass;
         if (btnLogs) btnLogs.className = activeClass;
-        if (btnSettings) btnSettings.className = inactiveClass;
       } else if (tab === 'settings') {
-        if (tokensTab) tokensTab.classList.add('hidden');
-        if (logsTab) logsTab.classList.add('hidden');
         if (settingsTab) settingsTab.classList.remove('hidden');
-        if (filterBar) filterBar.classList.add('hidden');
-
-        if (btnTokens) btnTokens.className = inactiveClass;
-        if (btnLogs) btnLogs.className = inactiveClass;
         if (btnSettings) btnSettings.className = activeClass;
-
         initSettingsTab();
       }
+    }
+
+    // ============================================================
+    // MANAJEMEN DAFTAR PEMESANAN (ORDERS)
+    // ============================================================
+
+    function updateOrdersStats(orders) {
+      let list = Array.isArray(orders) ? orders : [];
+      let total = list.length;
+      let pending = 0;
+      let paid = 0;
+      let revenue = 0;
+
+      list.forEach(o => {
+        let st = String(o.status || 'PENDING').toUpperCase();
+        if (st === 'PENDING') {
+          pending++;
+        } else if (st === 'PAID' || st === 'COMPLETED') {
+          paid++;
+          let num = parseInt(String(o.price || '0').replace(/[^0-9]/g, '')) || 0;
+          revenue += num;
+        }
+      });
+
+      let statTotal = document.getElementById('order-stat-total');
+      let statPending = document.getElementById('order-stat-pending');
+      let statPaid = document.getElementById('order-stat-paid');
+      let statRevenue = document.getElementById('order-stat-revenue');
+      let tabOrderCount = document.getElementById('tab-order-count');
+
+      if (statTotal) statTotal.textContent = total;
+      if (statPending) statPending.textContent = pending;
+      if (statPaid) statPaid.textContent = paid;
+      if (statRevenue) statRevenue.textContent = 'Rp ' + revenue.toLocaleString('id-ID');
+      if (tabOrderCount) tabOrderCount.textContent = total;
+    }
+
+    function renderOrdersTable(list) {
+      let tbody = document.getElementById('orders-table-body');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      if (!list || list.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="p-8 text-center text-slate-500">
+              <div class="flex flex-col items-center justify-center space-y-2">
+                <span class="material-symbols-outlined text-3xl text-slate-600">receipt_long</span>
+                <p>Belum ada data pemesanan yang sesuai.</p>
+                <button onclick="openCreateOrderModal()" class="mt-2 px-3.5 py-1.5 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/30 rounded-xl text-xs font-bold transition-all cursor-pointer">
+                  + Catat Pemesanan Baru
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      list.forEach((o, index) => {
+        let st = String(o.status || 'PENDING').toUpperCase();
+        let statusBadge = '';
+        if (st === 'PAID') {
+          statusBadge = '<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 inline-flex items-center gap-1">🟢 Lunas</span>';
+        } else if (st === 'COMPLETED') {
+          statusBadge = '<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-500/15 text-blue-300 border border-blue-500/30 inline-flex items-center gap-1">🔵 Selesai</span>';
+        } else if (st === 'CANCELLED') {
+          statusBadge = '<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/15 text-rose-300 border border-rose-500/30 inline-flex items-center gap-1">🔴 Batal</span>';
+        } else {
+          statusBadge = '<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 inline-flex items-center gap-1">🟡 Menunggu</span>';
+        }
+
+        let tokenDisplay = '';
+        if (o.token) {
+          tokenDisplay = `
+            <div onclick="copyText('${escapeHtml(o.token)}', 'Token lisensi tersalin!')" title="Klik untuk menyalin token"
+              class="mt-1 flex items-center justify-center gap-1 font-mono-data text-[10px] text-cyan-300 bg-slate-950 px-2 py-0.5 rounded-lg border border-cyan-500/30 hover:border-cyan-400 cursor-pointer transition-all select-all">
+              <span class="material-symbols-outlined text-[11px]">vpn_key</span>
+              <span>${escapeHtml(o.token)}</span>
+            </div>
+          `;
+        }
+
+        let hasToken = !!(o.token && o.token.trim());
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-800/30 transition-colors border-b border-slate-800/50">
+            <!-- ID & Waktu -->
+            <td class="p-3 whitespace-nowrap">
+              <div class="font-mono-data text-xs font-bold text-blue-400">#${escapeHtml(o.orderId || ('ORD-' + (index + 1)))}</div>
+              <div class="text-[10px] text-slate-400 mt-0.5">${escapeHtml(o.timestamp || '-')}</div>
+            </td>
+
+            <!-- Pemesan & Kontak -->
+            <td class="p-3 whitespace-nowrap">
+              <div class="font-bold text-white text-xs">${escapeHtml(o.buyerName || '-')}</div>
+              <div class="flex items-center gap-1.5 text-[11px] text-slate-300 mt-0.5">
+                <span class="material-symbols-outlined text-xs text-emerald-400">call</span>
+                <span>${escapeHtml(o.whatsapp || '-')}</span>
+              </div>
+              ${o.email ? `<div class="text-[10px] text-slate-500">${escapeHtml(o.email)}</div>` : ''}
+            </td>
+
+            <!-- Paket & Kuota -->
+            <td class="p-3 whitespace-nowrap">
+              <div class="font-semibold text-slate-200 text-xs">${escapeHtml(o.package || 'PRO Personal')}</div>
+              <div class="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-300 border border-blue-500/20 text-[10px] font-bold">
+                <span class="material-symbols-outlined text-[10px]">devices</span>
+                <span>${parseInt(o.maxDevices) || 1} Perangkat</span>
+              </div>
+            </td>
+
+            <!-- Nominal & Bayar -->
+            <td class="p-3 whitespace-nowrap">
+              <div class="font-mono-data font-bold text-xs text-emerald-400">${escapeHtml(o.price || 'Rp 0')}</div>
+              <div class="text-[10px] text-slate-400 mt-0.5">${escapeHtml(o.paymentMethod || 'Transfer')}</div>
+            </td>
+
+            <!-- Status & Lisensi -->
+            <td class="p-3 text-center whitespace-nowrap">
+              <div>${statusBadge}</div>
+              ${tokenDisplay}
+            </td>
+
+            <!-- Tindakan Cepat -->
+            <td class="p-3 sm:px-4 text-right whitespace-nowrap">
+              <div class="flex items-center justify-end gap-1.5">
+                ${!hasToken ? `
+                  <button type="button" onclick="processOrderLicense('${escapeHtml(o.orderId)}')" title="⚡ Terbitkan Lisensi Token Otomatis"
+                    class="px-2 py-1 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/35 text-emerald-300 border border-emerald-500/40 text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer">
+                    <span class="material-symbols-outlined text-xs">vpn_key</span>
+                    <span class="hidden sm:inline">Terbitkan</span>
+                  </button>
+                ` : ''}
+                <button type="button" onclick="sendOrderWhatsApp('${escapeHtml(o.orderId)}')" title="Kirim Chat / Lisensi ke WhatsApp"
+                  class="p-1.5 rounded-lg bg-emerald-700/20 hover:bg-emerald-700/40 text-emerald-400 border border-emerald-600/30 transition-colors cursor-pointer">
+                  <span class="material-symbols-outlined text-sm">chat</span>
+                </button>
+                <button type="button" onclick="openEditOrderModal('${escapeHtml(o.orderId)}')" title="Edit Status & Catatan"
+                  class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer">
+                  <span class="material-symbols-outlined text-sm">edit</span>
+                </button>
+                <button type="button" onclick="deleteOrder('${escapeHtml(o.orderId)}')" title="Hapus Pemesanan"
+                  class="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-900/50 text-slate-400 hover:text-rose-400 transition-colors cursor-pointer">
+                  <span class="material-symbols-outlined text-sm">delete</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function filterOrdersTable() {
+      let queryInput = document.getElementById('filter-order-search');
+      let statusSelect = document.getElementById('filter-order-status');
+      let query = queryInput ? queryInput.value.toLowerCase().trim() : '';
+      let statusFilter = statusSelect ? statusSelect.value : 'ALL';
+
+      let filtered = cachedOrders.filter(o => {
+        let matchQuery = !query ||
+          String(o.orderId || '').toLowerCase().includes(query) ||
+          String(o.buyerName || '').toLowerCase().includes(query) ||
+          String(o.whatsapp || '').toLowerCase().includes(query) ||
+          String(o.email || '').toLowerCase().includes(query) ||
+          String(o.package || '').toLowerCase().includes(query) ||
+          String(o.token || '').toLowerCase().includes(query) ||
+          String(o.notes || '').toLowerCase().includes(query);
+
+        if (!matchQuery) return false;
+
+        if (statusFilter !== 'ALL') {
+          return String(o.status || 'PENDING').toUpperCase() === statusFilter;
+        }
+
+        return true;
+      });
+
+      renderOrdersTable(filtered);
+    }
+
+    function openCreateOrderModal() {
+      document.getElementById('modal-create-order').classList.remove('hidden');
+      document.getElementById('order-buyer-name').value = '';
+      document.getElementById('order-buyer-wa').value = '';
+      if (document.getElementById('order-buyer-email')) document.getElementById('order-buyer-email').value = '';
+      document.getElementById('order-package').value = 'PRO Multi-Device (3 Perangkat)';
+      onOrderPackageChange();
+      document.getElementById('order-notes').value = '';
+      document.getElementById('order-status').value = 'PAID';
+      document.getElementById('order-buyer-name').focus();
+    }
+
+    function onOrderPackageChange() {
+      let sel = document.getElementById('order-package');
+      let opt = sel.options[sel.selectedIndex];
+      let devicesInput = document.getElementById('order-max-devices');
+      let priceInput = document.getElementById('order-price');
+
+      let devVal = opt.getAttribute('data-devices');
+      let priceVal = opt.getAttribute('data-price');
+
+      if (sel.value === 'CUSTOM') {
+        devicesInput.value = 2;
+        priceInput.value = 'Rp ';
+        priceInput.focus();
+      } else {
+        if (devVal) devicesInput.value = devVal;
+        if (priceVal) priceInput.value = priceVal;
+      }
+    }
+
+    async function handleCreateOrder(e) {
+      e.preventDefault();
+      let buyerName = document.getElementById('order-buyer-name').value.trim();
+      let whatsapp = document.getElementById('order-buyer-wa').value.trim();
+      let email = (document.getElementById('order-buyer-email') ? document.getElementById('order-buyer-email').value : '').trim();
+      let pkg = document.getElementById('order-package').value;
+      let maxDevices = parseInt(document.getElementById('order-max-devices').value) || 1;
+      let price = document.getElementById('order-price').value.trim();
+      let paymentMethod = document.getElementById('order-payment-method').value;
+      let status = document.getElementById('order-status').value;
+      let notes = document.getElementById('order-notes').value.trim();
+      let autoToken = document.getElementById('order-auto-token').checked;
+
+      let btn = document.getElementById('btn-save-order');
+      let origText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<span class="material-symbols-outlined text-sm animate-spin">progress_activity</span> Menyimpan...`;
+
+      // Buat Order ID unik
+      let d = new Date();
+      let dateCompact = d.getFullYear() + ('0' + (d.getMonth() + 1)).slice(-2) + ('0' + d.getDate()).slice(-2);
+      let randDigits = Math.floor(100 + Math.random() * 900);
+      let orderId = "ORD-" + dateCompact + "-" + randDigits;
+      let nowStr = d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' + ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+
+      let payload = {
+        action: 'admin_add_order',
+        adminPassword: currentAdminPassword,
+        orderId: orderId,
+        buyerName: buyerName,
+        whatsapp: whatsapp,
+        email: email,
+        package: pkg,
+        maxDevices: maxDevices,
+        price: price,
+        paymentMethod: paymentMethod,
+        status: status,
+        notes: notes,
+        autoGenerateToken: autoToken
+      };
+
+      try {
+        let res = await callDevApi(payload);
+        let createdOrder = (res && res.order) ? res.order : {
+          orderId: orderId,
+          timestamp: nowStr,
+          buyerName: buyerName,
+          whatsapp: whatsapp,
+          email: email,
+          package: pkg,
+          maxDevices: maxDevices,
+          price: price,
+          paymentMethod: paymentMethod,
+          status: (autoToken && (status === 'PAID' || status === 'COMPLETED')) ? 'COMPLETED' : status,
+          token: (res && res.order && res.order.token) ? res.order.token : '',
+          notes: notes,
+          updatedAt: nowStr
+        };
+
+        // Simpan ke memory & local storage
+        cachedOrders.unshift(createdOrder);
+        localStorage.setItem('KEUANGANKU_DEV_ORDERS_CACHE', JSON.stringify(cachedOrders));
+
+        closeModal('modal-create-order');
+        renderOrdersTable(cachedOrders);
+        updateOrdersStats(cachedOrders);
+        showToast('success', '🎉 Pemesanan ' + orderId + ' berhasil dicatat!');
+
+        // Refresh database tokens jika auto-token aktif
+        if (autoToken) {
+          await loadDashboardData();
+        }
+
+        // Tawarkan langsung kirim ke WhatsApp jika ada nomor WA
+        if (whatsapp) {
+          setTimeout(() => {
+            if (confirm("Pemesanan berhasil disimpan!\n\nApakah Anda ingin langsung membuka WhatsApp untuk mengirim konfirmasi / lisensi ke " + buyerName + "?")) {
+              sendOrderWhatsApp(createdOrder.orderId);
+            }
+          }, 300);
+        }
+      } catch(err) {
+        showToast('error', 'Gagal menyimpan ke server: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = origText;
+      }
+    }
+
+    function openEditOrderModal(orderId) {
+      let o = cachedOrders.find(item => item.orderId === orderId);
+      if (!o) return;
+
+      document.getElementById('edit-order-id').value = o.orderId;
+      document.getElementById('edit-order-id-display').textContent = '#' + o.orderId;
+      document.getElementById('edit-order-buyer-name').textContent = o.buyerName + ' (' + (o.whatsapp || '-') + ')';
+      document.getElementById('edit-order-details').textContent = o.package + ' • ' + (o.price || 'Rp 0') + ' via ' + (o.paymentMethod || 'Transfer');
+      document.getElementById('edit-order-status').value = o.status || 'PENDING';
+      document.getElementById('edit-order-token').value = o.token || '';
+      document.getElementById('edit-order-notes').value = o.notes || '';
+
+      document.getElementById('modal-edit-order').classList.remove('hidden');
+    }
+
+    async function handleUpdateOrder(e) {
+      e.preventDefault();
+      let orderId = document.getElementById('edit-order-id').value;
+      let newStatus = document.getElementById('edit-order-status').value;
+      let newToken = document.getElementById('edit-order-token').value.trim();
+      let newNotes = document.getElementById('edit-order-notes').value.trim();
+
+      let o = cachedOrders.find(item => item.orderId === orderId);
+      if (!o) return;
+
+      let btn = document.getElementById('btn-update-order');
+      let origText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<span class="material-symbols-outlined text-sm animate-spin">progress_activity</span> Memperbarui...`;
+
+      try {
+        let res = await callDevApi({
+          action: 'admin_update_order',
+          adminPassword: currentAdminPassword,
+          orderId: orderId,
+          status: newStatus,
+          token: newToken,
+          notes: newNotes
+        });
+
+        o.status = newStatus;
+        o.token = newToken;
+        o.notes = newNotes;
+        o.updatedAt = new Date().toISOString();
+
+        localStorage.setItem('KEUANGANKU_DEV_ORDERS_CACHE', JSON.stringify(cachedOrders));
+        closeModal('modal-edit-order');
+        filterOrdersTable();
+        updateOrdersStats(cachedOrders);
+        showToast('success', 'Status pemesanan #' + orderId + ' berhasil diperbarui!');
+      } catch(err) {
+        showToast('error', 'Gagal memperbarui: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = origText;
+      }
+    }
+
+    async function deleteOrder(orderId) {
+      if (!confirm("Hapus catatan pemesanan #" + orderId + "?\n\nCatatan ini akan dihapus dari sistem.")) return;
+
+      try {
+        await callDevApi({
+          action: 'admin_delete_order',
+          adminPassword: currentAdminPassword,
+          orderId: orderId
+        });
+
+        cachedOrders = cachedOrders.filter(item => item.orderId !== orderId);
+        localStorage.setItem('KEUANGANKU_DEV_ORDERS_CACHE', JSON.stringify(cachedOrders));
+        filterOrdersTable();
+        updateOrdersStats(cachedOrders);
+        showToast('info', 'Pemesanan #' + orderId + ' telah dihapus.');
+      } catch(err) {
+        showToast('error', 'Gagal menghapus: ' + err.message);
+      }
+    }
+
+    async function processOrderLicense(orderId) {
+      let o = cachedOrders.find(item => item.orderId === orderId);
+      if (!o) return;
+
+      if (!confirm("Terbitkan lisensi resmi otomatis untuk pemesan:\n\n👤 " + o.buyerName + "\n📦 " + o.package + " (" + (o.maxDevices || 1) + " Perangkat)?")) return;
+
+      showToast('info', 'Menerbitkan lisensi & mendaftarkan token...');
+
+      try {
+        let res = await callDevApi({
+          action: 'admin_process_order_license',
+          adminPassword: currentAdminPassword,
+          orderId: orderId
+        });
+
+        let tokenGenerated = (res && res.token) ? res.token : '';
+
+        // Jika backend belum versi baru, gunakan fallback admin_generate_token
+        if (!tokenGenerated) {
+          let genRes = await callDevApi({
+            action: 'admin_generate_token',
+            adminPassword: currentAdminPassword,
+            buyerName: o.buyerName,
+            buyerContact: o.whatsapp,
+            maxDevices: o.maxDevices || 1,
+            notes: 'Pemesanan ' + o.orderId + ' (' + o.package + ')'
+          });
+          if (genRes && genRes.token) {
+            tokenGenerated = genRes.token.token || genRes.token;
+          }
+        }
+
+        if (tokenGenerated) {
+          o.token = tokenGenerated;
+          o.status = 'COMPLETED';
+          localStorage.setItem('KEUANGANKU_DEV_ORDERS_CACHE', JSON.stringify(cachedOrders));
+          
+          await loadDashboardData();
+          filterOrdersTable();
+          updateOrdersStats(cachedOrders);
+
+          showToast('success', '🎉 Lisensi resmi berhasil diterbitkan: ' + tokenGenerated);
+
+          if (confirm("Lisensi resmi berhasil dibuat!\n🔑 Token: " + tokenGenerated + "\n\nBuka WhatsApp untuk langsung mengirimkan lisensi ke " + o.buyerName + "?")) {
+            sendOrderWhatsApp(orderId);
+          }
+        } else {
+          showToast('error', (res && res.message) ? res.message : 'Gagal menerbitkan lisensi.');
+        }
+      } catch(err) {
+        showToast('error', 'Koneksi gagal: ' + err.message);
+      }
+    }
+
+    function sendOrderWhatsApp(orderId) {
+      let o = cachedOrders.find(item => item.orderId === orderId);
+      if (!o) return;
+
+      let rawPhone = String(o.whatsapp || '').trim().replace(/[^0-9]/g, '');
+      if (rawPhone.startsWith('08')) {
+        rawPhone = '628' + rawPhone.slice(2);
+      } else if (rawPhone.startsWith('8')) {
+        rawPhone = '628' + rawPhone.slice(1);
+      }
+
+      if (!rawPhone || rawPhone.length < 9) {
+        showToast('error', 'Nomor WhatsApp pemesan tidak valid.');
+        return;
+      }
+
+      let text = '';
+      if (o.token) {
+        text = 
+          "Halo kak *" + o.buyerName + "*,\n\n" +
+          "Terima kasih telah memesan aplikasi resmi *Keuanganku PRO*! 🙏🎉\n\n" +
+          "Berikut adalah rincian lisensi resmi Anda:\n" +
+          "📦 *Paket:* " + (o.package || 'PRO Personal') + "\n" +
+          "🔑 *Kode Token Lisensi:* `" + o.token + "`\n" +
+          "📱 *Kuota Perangkat:* Maksimal " + (o.maxDevices || 1) + " Perangkat (HP / Laptop)\n" +
+          "🆔 *ID Pemesanan:* " + o.orderId + "\n\n" +
+          "🌐 *Link Aplikasi:*\n" +
+          "https://sambarangpro.github.io/keuanganku/\n\n" +
+          "📖 *Panduan Penggunaan & Aktivasi Bergambar:*\n" +
+          "https://sambarangpro.github.io/keuanganku/poster-panduan-penggunaan.html\n\n" +
+          "Selamat mengelola keuangan dengan rapi, aman, dan berkah! ✨\n\n" +
+          "Salam hormat,\n" +
+          "*Muh Akbar - Sambarang Production*";
+      } else {
+        text = 
+          "Halo kak *" + o.buyerName + "*,\n\n" +
+          "Terima kasih atas pemesanan aplikasi *Keuanganku PRO* dengan ID *" + o.orderId + "* (" + (o.package || 'PRO Personal') + ").\n\n" +
+          "Status pesanan saat ini: *" + (o.status === 'PAID' ? 'LUNAS (Menunggu Lisensi)' : 'MENUNGGU VERIFIKASI') + "*.\n" +
+          "Total tagihan: *" + (o.price || 'Rp 0') + "* melalui *" + (o.paymentMethod || 'Transfer') + "*.\n\n" +
+          "Lisensi resmi Anda akan segera diterbitkan begitu pembayaran terverifikasi. Terima kasih! 🙏✨\n\n" +
+          "*Sambarang Production*";
+      }
+
+      window.open('https://wa.me/' + rawPhone + '?text=' + encodeURIComponent(text), '_blank');
     }
 
     // ============================================================

@@ -32,6 +32,7 @@ var SPREADSHEET_URL_OR_ID = "https://docs.google.com/spreadsheets/d/1782VpWnlNbE
 // Nama sheet penyimpanan
 var SHEET_TOKENS = "Tokens";
 var SHEET_LOGS = "Logs";
+var SHEET_ORDERS = "Orders";
 
 /**
  * Mendapatkan referensi Google Spreadsheet (mendukung Container-bound di Google Sheet maupun Standalone Script)
@@ -170,6 +171,18 @@ function initSheets() {
     logsSheet.appendRow(["Timestamp", "Event", "Token", "Buyer Name", "Device ID", "Device Name", "Details"]);
     logsSheet.getRange("A1:G1").setFontWeight("bold").setBackground("#0f172a").setFontColor("#38bdf8");
     logsSheet.setFrozenRows(1);
+  }
+
+  // Sheet Orders (Daftar Pemesanan)
+  var ordersSheet = ss.getSheetByName(SHEET_ORDERS);
+  if (!ordersSheet) {
+    ordersSheet = ss.insertSheet(SHEET_ORDERS);
+    ordersSheet.appendRow([
+      "Order ID", "Timestamp", "Buyer Name", "WhatsApp", "Email", 
+      "Package", "Max Devices", "Price", "Payment Method", "Status", "Token", "Notes", "Updated At"
+    ]);
+    ordersSheet.getRange("A1:M1").setFontWeight("bold").setBackground("#0f172a").setFontColor("#38bdf8");
+    ordersSheet.setFrozenRows(1);
   }
 }
 
@@ -443,6 +456,22 @@ function handleRequest(params) {
 
       case "admin_delete_token":
         result = adminDeleteToken(params);
+        break;
+
+      case "admin_add_order":
+        result = adminAddOrder(params);
+        break;
+
+      case "admin_update_order":
+        result = adminUpdateOrder(params);
+        break;
+
+      case "admin_delete_order":
+        result = adminDeleteOrder(params);
+        break;
+
+      case "admin_process_order_license":
+        result = adminProcessOrderLicense(params);
         break;
 
       // -------------------------------------------------------------
@@ -1227,6 +1256,37 @@ function adminGetData(params) {
     });
   }
 
+  // Data Pemesanan (Orders)
+  var ordersList = [];
+  try {
+    var ordersSheet = ss.getSheetByName(SHEET_ORDERS);
+    if (ordersSheet) {
+      var ordData = ordersSheet.getDataRange().getValues();
+      if (ordData && ordData.length > 1) {
+        for (var o = 1; o < ordData.length; o++) {
+          if (!ordData[o][0]) continue;
+          ordersList.unshift({
+            orderId: String(ordData[o][0] || ''),
+            timestamp: String(ordData[o][1] || ''),
+            buyerName: String(ordData[o][2] || ''),
+            whatsapp: String(ordData[o][3] || ''),
+            email: String(ordData[o][4] || ''),
+            package: String(ordData[o][5] || ''),
+            maxDevices: parseInt(ordData[o][6]) || 1,
+            price: String(ordData[o][7] || ''),
+            paymentMethod: String(ordData[o][8] || ''),
+            status: String(ordData[o][9] || 'PENDING').trim().toUpperCase(),
+            token: String(ordData[o][10] || ''),
+            notes: String(ordData[o][11] || ''),
+            updatedAt: String(ordData[o][12] || '')
+          });
+        }
+      }
+    }
+  } catch(ordErr) {
+    Logger.log("Error membaca sheet Orders: " + ordErr);
+  }
+
   return {
     success: true,
     stats: {
@@ -1239,6 +1299,7 @@ function adminGetData(params) {
       totalUnclaimed: totalUnclaimed    // Belum dipakai
     },
     tokens: tokensList,
+    orders: ordersList,
     recentLogs: recentLogs
   };
 }
@@ -1461,4 +1522,232 @@ function logEvent(event, token, buyerName, deviceId, deviceName, details) {
     var nowStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
     sheet.appendRow([nowStr, event, token, buyerName, deviceId, deviceName, details]);
   } catch(e) {}
+}
+
+// ============================================================
+// MANAJEMEN DAFTAR PEMESANAN (ORDERS)
+// ============================================================
+
+function adminAddOrder(params) {
+  if (!checkAdminAuth(params.adminPassword)) return { success: false, message: "Akses ditolak." };
+
+  var buyerName = (params.buyerName || "").trim();
+  var whatsapp = (params.whatsapp || "").trim();
+  var email = (params.email || "").trim();
+  var pkg = (params.package || "PRO Personal (1 Perangkat)").trim();
+  var maxDevices = parseInt(params.maxDevices) || 1;
+  var price = (params.price || "Rp 99.000").trim();
+  var paymentMethod = (params.paymentMethod || "Transfer BCA").trim();
+  var status = (params.status || "PENDING").trim().toUpperCase();
+  var notes = (params.notes || "").trim();
+
+  if (!buyerName) return { success: false, message: "Nama pemesan wajib diisi." };
+
+  var ss = getSpreadsheet();
+  var sheet = ss.getSheetByName(SHEET_ORDERS);
+  if (!sheet) {
+    initSheets();
+    sheet = ss.getSheetByName(SHEET_ORDERS);
+  }
+
+  var nowStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
+  var orderId = (params.orderId || "").trim();
+  if (!orderId) {
+    var dateCompact = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyyMMdd");
+    var randDigits = Math.floor(100 + Math.random() * 900);
+    orderId = "ORD-" + dateCompact + "-" + randDigits;
+  }
+
+  var tokenGenerated = "";
+  if (params.autoGenerateToken && (status === "PAID" || status === "COMPLETED")) {
+    tokenGenerated = generateRandomToken();
+    var tokSheet = ss.getSheetByName(SHEET_TOKENS);
+    tokSheet.appendRow([
+      tokenGenerated,
+      buyerName,
+      whatsapp,
+      maxDevices,
+      0,
+      JSON.stringify([]),
+      "ACTIVE",
+      "UNCLAIMED",
+      "",
+      nowStr,
+      "Pemesanan " + orderId + " (" + pkg + ")"
+    ]);
+    status = "COMPLETED";
+    logEvent("TOKEN_ORDER_CREATED", tokenGenerated, buyerName, "-", "-", "Lisensi terbit via pemesanan " + orderId);
+  }
+
+  sheet.appendRow([
+    orderId,
+    nowStr,
+    buyerName,
+    whatsapp,
+    email,
+    pkg,
+    maxDevices,
+    price,
+    paymentMethod,
+    status,
+    tokenGenerated,
+    notes,
+    nowStr
+  ]);
+
+  logEvent("ORDER_CREATED", tokenGenerated || "-", buyerName, "-", "-", "Pemesanan baru dicatat: " + orderId + " (" + pkg + " - " + price + ")");
+
+  return {
+    success: true,
+    message: "Pemesanan berhasil dicatat!",
+    order: {
+      orderId: orderId,
+      timestamp: nowStr,
+      buyerName: buyerName,
+      whatsapp: whatsapp,
+      email: email,
+      package: pkg,
+      maxDevices: maxDevices,
+      price: price,
+      paymentMethod: paymentMethod,
+      status: status,
+      token: tokenGenerated,
+      notes: notes,
+      updatedAt: nowStr
+    }
+  };
+}
+
+function adminUpdateOrder(params) {
+  if (!checkAdminAuth(params.adminPassword)) return { success: false, message: "Akses ditolak." };
+  var orderId = (params.orderId || "").trim();
+  if (!orderId) return { success: false, message: "Order ID wajib diberikan." };
+
+  var ss = getSpreadsheet();
+  var sheet = ss.getSheetByName(SHEET_ORDERS);
+  if (!sheet) return { success: false, message: "Sheet Orders belum ada." };
+
+  var data = sheet.getDataRange().getValues();
+  var targetRow = -1;
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][0]).trim().toUpperCase() === orderId.toUpperCase()) {
+      targetRow = i + 1;
+      break;
+    }
+  }
+
+  if (targetRow === -1) return { success: false, message: "Pesanan dengan ID " + orderId + " tidak ditemukan." };
+
+  var nowStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
+
+  if (params.status !== undefined) sheet.getRange(targetRow, 10).setValue(String(params.status).trim().toUpperCase());
+  if (params.notes !== undefined) sheet.getRange(targetRow, 12).setValue(String(params.notes).trim());
+  if (params.token !== undefined) sheet.getRange(targetRow, 11).setValue(String(params.token).trim());
+  sheet.getRange(targetRow, 13).setValue(nowStr);
+
+  logEvent("ORDER_UPDATED", "-", orderId, "-", "-", "Status order " + orderId + " diubah menjadi " + params.status);
+
+  return { success: true, message: "Pemesanan berhasil diperbarui!" };
+}
+
+function adminDeleteOrder(params) {
+  if (!checkAdminAuth(params.adminPassword)) return { success: false, message: "Akses ditolak." };
+  var orderId = (params.orderId || "").trim();
+  if (!orderId) return { success: false, message: "Order ID wajib diberikan." };
+
+  var ss = getSpreadsheet();
+  var sheet = ss.getSheetByName(SHEET_ORDERS);
+  if (!sheet) return { success: false, message: "Sheet Orders belum ada." };
+
+  var data = sheet.getDataRange().getValues();
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][0]).trim().toUpperCase() === orderId.toUpperCase()) {
+      sheet.deleteRow(i + 1);
+      logEvent("ORDER_DELETED", "-", orderId, "-", "-", "Pemesanan " + orderId + " dihapus.");
+      return { success: true, message: "Pemesanan berhasil dihapus." };
+    }
+  }
+
+  return { success: false, message: "Pesanan tidak ditemukan." };
+}
+
+function adminProcessOrderLicense(params) {
+  if (!checkAdminAuth(params.adminPassword)) return { success: false, message: "Akses ditolak." };
+  var orderId = (params.orderId || "").trim();
+  if (!orderId) return { success: false, message: "Order ID wajib diberikan." };
+
+  var ss = getSpreadsheet();
+  var sheet = ss.getSheetByName(SHEET_ORDERS);
+  if (!sheet) return { success: false, message: "Sheet Orders belum ada." };
+
+  var data = sheet.getDataRange().getValues();
+  var targetRow = -1;
+  var orderRowData = null;
+
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][0]).trim().toUpperCase() === orderId.toUpperCase()) {
+      targetRow = i + 1;
+      orderRowData = data[i];
+      break;
+    }
+  }
+
+  if (targetRow === -1) return { success: false, message: "Pesanan " + orderId + " tidak ditemukan." };
+
+  var buyerName = String(orderRowData[2] || "").trim();
+  var whatsapp = String(orderRowData[3] || "").trim();
+  var pkg = String(orderRowData[5] || "PRO Personal").trim();
+  var maxDevices = parseInt(orderRowData[6]) || 1;
+  var existingToken = String(orderRowData[10] || "").trim();
+
+  var tokenToUse = existingToken;
+  var nowStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
+
+  if (!tokenToUse) {
+    tokenToUse = generateRandomToken();
+    var tokSheet = ss.getSheetByName(SHEET_TOKENS);
+    tokSheet.appendRow([
+      tokenToUse,
+      buyerName,
+      whatsapp,
+      maxDevices,
+      0,
+      JSON.stringify([]),
+      "ACTIVE",
+      "UNCLAIMED",
+      "",
+      nowStr,
+      "Diterbitkan dari Pemesanan " + orderId + " (" + pkg + ")"
+    ]);
+  }
+
+  // Update Orders sheet
+  sheet.getRange(targetRow, 10).setValue("COMPLETED");
+  sheet.getRange(targetRow, 11).setValue(tokenToUse);
+  sheet.getRange(targetRow, 13).setValue(nowStr);
+
+  logEvent("ORDER_LICENSE_ISSUED", tokenToUse, buyerName, "-", "-", "Lisensi diterbitkan untuk order " + orderId);
+
+  var waMessage = 
+    "Halo kak *" + buyerName + "*,\n\n" +
+    "Terima kasih atas pemesanan aplikasi resmi *Keuanganku PRO*! 🎉🙏\n\n" +
+    "Berikut adalah rincian lisensi resmi Anda:\n" +
+    "📦 *Paket:* " + pkg + "\n" +
+    "🔑 *Kode Token Lisensi:* `" + tokenToUse + "`\n" +
+    "📱 *Kuota Perangkat:* Maksimal " + maxDevices + " Perangkat\n" +
+    "🆔 *ID Pemesanan:* " + orderId + "\n\n" +
+    "🌐 *Link Aplikasi:*\n" +
+    "https://sambarangpro.github.io/keuanganku/\n\n" +
+    "📖 *Panduan Penggunaan Lengkap:*\n" +
+    "https://sambarangpro.github.io/keuanganku/poster-panduan-penggunaan.html\n\n" +
+    "Selamat menggunakan Keuanganku PRO untuk mengelola keuangan Anda lebih rapi dan berkah! ✨\n\n" +
+    "_Sambarang Production_";
+
+  return {
+    success: true,
+    message: "Lisensi berhasil diterbitkan!",
+    token: tokenToUse,
+    orderId: orderId,
+    waMessage: waMessage
+  };
 }
