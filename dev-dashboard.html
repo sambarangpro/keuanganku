@@ -651,10 +651,17 @@
 
               <div class="space-y-3 text-xs">
                 <div>
-                  <label class="block text-[11px] font-semibold text-slate-300 mb-1">URL Web App Master Lisensi (Google Apps Script):</label>
+                  <div class="flex items-center justify-between mb-1">
+                    <label class="block text-[11px] font-semibold text-slate-300">URL Web App Master Lisensi (Google Apps Script):</label>
+                    <span class="text-[10px] text-slate-400">Dapat diedit jika Anda deploy URL baru</span>
+                  </div>
                   <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-                    <input type="text" id="setting-server-url" readonly class="w-full flex-1 px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-xs text-cyan-300 font-mono-data select-all outline-none">
-                    <button type="button" onclick="copyMasterServerUrl()" class="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl font-bold flex items-center gap-1.5 transition-all cursor-pointer shrink-0">
+                    <input type="text" id="setting-server-url" class="w-full flex-1 px-3.5 py-2.5 bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl text-xs text-cyan-300 font-mono-data outline-none transition-all" placeholder="https://script.google.com/macros/s/.../exec">
+                    <button type="button" onclick="saveNewServerUrl()" class="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-500/40 rounded-xl font-bold flex items-center gap-1.5 transition-all cursor-pointer shrink-0" title="Simpan URL jika Anda membuat deployment baru">
+                      <span class="material-symbols-outlined text-sm">save</span>
+                      <span class="hidden sm:inline">Simpan URL</span>
+                    </button>
+                    <button type="button" onclick="copyMasterServerUrl()" class="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl font-bold flex items-center gap-1.5 transition-all cursor-pointer shrink-0" title="Salin URL ke Clipboard">
                       <span class="material-symbols-outlined text-sm">content_copy</span>
                       <span class="hidden sm:inline">Salin</span>
                     </button>
@@ -2424,6 +2431,21 @@
       copyText(url, 'URL Web App Master Apps Script berhasil disalin!');
     }
 
+    function saveNewServerUrl() {
+      let input = document.getElementById('setting-server-url');
+      let newUrl = input ? input.value.trim() : '';
+      if (!newUrl || !newUrl.startsWith('http')) {
+        showToast('error', 'Masukkan URL Google Apps Script yang valid (diawali https://)');
+        return;
+      }
+      currentApiUrl = newUrl;
+      localStorage.setItem("KEUANGANKU_DEV_API_URL", newUrl);
+      let urlDisp = document.getElementById('dev-backend-url-display');
+      if (urlDisp) urlDisp.textContent = newUrl;
+      showToast('success', 'URL Server berhasil disimpan!');
+      testServerConnection();
+    }
+
     async function testServerConnection() {
       if (!currentApiUrl) {
         showToast('error', 'URL server belum diatur.');
@@ -2436,7 +2458,19 @@
           adminPassword: currentAdminPassword
         });
         if (res && res.success) {
-          showToast('success', '🟢 Server Aktif & Google Sheets Terhubung Normal!');
+          // Cek apakah skrip versi terbaru (mendukung admin_change_password)
+          let checkRes = await callDevApi({
+            action: 'admin_change_password',
+            adminPassword: 'TEST_VERSION_CHECK'
+          });
+          let isNewVersion = checkRes && checkRes.message && !checkRes.message.includes("tidak valid");
+          if (isNewVersion) {
+            showToast('success', '🟢 Server Aktif & Kode Skrip Sudah Versi Terbaru (Fitur Ganti Sandi Siap)!');
+            let helpBox = document.getElementById('dev-change-pass-help');
+            if (helpBox) helpBox.classList.add('hidden');
+          } else {
+            showToast('info', '🟢 Server Terhubung, tapi masih menjalankan Skrip Lama (Belum Versi Terbaru).');
+          }
         } else {
           showToast('error', 'Respon server: ' + (res && res.message ? res.message : 'Gagal otentikasi'));
         }
