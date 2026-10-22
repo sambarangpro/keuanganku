@@ -1884,8 +1884,8 @@ function getDefaultSalesSettings() {
       { id: "pkg-master", name: "PRO Developer Master (10 Perangkat)", devices: 10, price: "Rp 499.000", priceNum: 499000, description: "Akses maksimal hingga 10 perangkat untuk profesional / multi-kantor.", popular: false }
     ],
     vouchers: [
-      { code: "BERKAH30", type: "fixed", value: 30000, minPrice: 99000, status: "ACTIVE", description: "Diskon Spesial Berkah Rp 30.000" },
-      { code: "PROMOAKBAR", type: "percent", value: 20, minPrice: 99000, status: "ACTIVE", description: "Diskon Peluncuran 20%" }
+      { code: "BERKAH30", type: "fixed", value: 30000, minPrice: 99000, maxUses: 50, usedCount: 0, status: "ACTIVE", description: "Diskon Spesial Berkah Rp 30.000" },
+      { code: "PROMOAKBAR", type: "percent", value: 20, minPrice: 99000, maxUses: 100, usedCount: 0, status: "ACTIVE", description: "Diskon Peluncuran 20%" }
     ],
     paymentAccounts: [
       { bank: "Transfer BCA", accountNo: "1234567890", accountName: "Muh Akbar", notes: "Konfirmasi transfer cepat" },
@@ -1919,6 +1919,9 @@ function getPublicCatalog(params) {
       type: v.type || "fixed",
       value: Number(v.value) || 0,
       minPrice: Number(v.minPrice) || 0,
+      maxUses: Number(v.maxUses) || 0,
+      usedCount: Number(v.usedCount) || 0,
+      status: v.status || "ACTIVE",
       description: v.description || ""
     };
   });
@@ -1963,6 +1966,23 @@ function submitPublicOrder(params) {
   var fullNotes = notes;
   if (voucherCode) {
     fullNotes = (fullNotes ? fullNotes + " | " : "") + "Voucher: " + voucherCode;
+    // Auto increment voucher usedCount if matched
+    try {
+      var salesSettings = getStoredSalesSettings();
+      if (salesSettings && Array.isArray(salesSettings.vouchers)) {
+        var foundVoucher = null;
+        for (var vi = 0; vi < salesSettings.vouchers.length; vi++) {
+          if (String(salesSettings.vouchers[vi].code || "").trim().toUpperCase() === voucherCode) {
+            foundVoucher = salesSettings.vouchers[vi];
+            foundVoucher.usedCount = (Number(foundVoucher.usedCount) || 0) + 1;
+            break;
+          }
+        }
+        if (foundVoucher) {
+          PropertiesService.getScriptProperties().setProperty("KEUANGANKU_SALES_SETTINGS", JSON.stringify(salesSettings));
+        }
+      }
+    } catch(errVoucher) {}
   }
 
   var lastCol = sheet.getLastColumn();

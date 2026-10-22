@@ -380,8 +380,8 @@
         { id: "pkg-master", name: "PRO Developer Master (10 Perangkat)", devices: 10, price: "Rp 499.000", priceNum: 499000, description: "Akses maksimal hingga 10 perangkat untuk profesional / multi-kantor.", popular: false }
       ],
       vouchers: [
-        { code: "BERKAH30", type: "fixed", value: 30000, minPrice: 99000, description: "Diskon Berkah Rp 30.000" },
-        { code: "PROMOAKBAR", type: "percent", value: 20, minPrice: 99000, description: "Diskon Peluncuran 20%" }
+        { code: "BERKAH30", type: "fixed", value: 30000, minPrice: 99000, maxUses: 50, usedCount: 12, status: "ACTIVE", description: "Diskon Berkah Rp 30.000" },
+        { code: "PROMOAKBAR", type: "percent", value: 20, minPrice: 99000, maxUses: 100, usedCount: 35, status: "ACTIVE", description: "Diskon Peluncuran 20%" }
       ],
       paymentAccounts: [
         { bank: "Transfer BCA", accountNo: "1234567890", accountName: "Muh Akbar", notes: "Konfirmasi cepat" },
@@ -522,6 +522,22 @@
         return;
       }
 
+      if (v.status && String(v.status).toUpperCase() !== 'ACTIVE') {
+        showVoucherMsg('error', `Kode voucher "${code}" saat ini sedang dinonaktifkan.`);
+        appliedVoucher = null;
+        updateOrderSummary();
+        return;
+      }
+
+      let maxUses = Number(v.maxUses) || 0;
+      let usedCount = Number(v.usedCount) || 0;
+      if (maxUses > 0 && usedCount >= maxUses) {
+        showVoucherMsg('error', `Maaf, kuota kupon "${code}" telah habis (${usedCount}/${maxUses} terpakai).`);
+        appliedVoucher = null;
+        updateOrderSummary();
+        return;
+      }
+
       let pkgPriceNum = selectedPackage.priceNum || parseInt(String(selectedPackage.price).replace(/[^0-9]/g, '')) || 0;
       if (v.minPrice && pkgPriceNum < v.minPrice) {
         showVoucherMsg('error', `Voucher ini hanya berlaku untuk pembelian minimal Rp ${v.minPrice.toLocaleString('id-ID')}.`);
@@ -531,7 +547,8 @@
       }
 
       appliedVoucher = v;
-      showVoucherMsg('success', `🎉 Voucher "${code}" aktif! ${v.description || 'Potongan harga berhasil diterapkan.'}`);
+      let sisaKuota = (maxUses > 0) ? ` (Sisa kuota: ${maxUses - usedCount} kupon)` : '';
+      showVoucherMsg('success', `🎉 Voucher "${code}" aktif! ${v.description || 'Potongan harga berhasil diterapkan.'}${sisaKuota}`);
       updateOrderSummary();
     }
 
@@ -695,8 +712,14 @@
         clearTimeout(timeoutId);
         let res = await resp.json();
         if (res && res.orderId) orderId = res.orderId;
+        if (appliedVoucher) {
+          appliedVoucher.usedCount = (Number(appliedVoucher.usedCount) || 0) + 1;
+        }
       } catch(err) {
         console.log("Menggunakan fallback lokal:", err);
+        if (appliedVoucher) {
+          appliedVoucher.usedCount = (Number(appliedVoucher.usedCount) || 0) + 1;
+        }
       }
 
       // Format Pesan WhatsApp Konfirmasi ke Admin
