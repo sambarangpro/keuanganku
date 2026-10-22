@@ -1,31 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <!-- Light Blue Gradient (Warna Aplikasi KeuanganKu) -->
-    <linearGradient id="appLightBlueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#38bdf8" />
-      <stop offset="50%" stop-color="#0ea5e9" />
-      <stop offset="100%" stop-color="#0284c7" />
+    <!-- Royal Blue Gradient -->
+    <linearGradient id="userBlueGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2b65d9" />
+      <stop offset="100%" stop-color="#1f4eb4" />
     </linearGradient>
-    <!-- Top glass reflection -->
-    <linearGradient id="glassLight" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.25" />
-      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
-    </linearGradient>
-    <filter id="walletShadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#0369a1" flood-opacity="0.4" />
-    </filter>
   </defs>
 
-  <!-- Squircle Rounded Background (Light Blue) -->
-  <rect x="12" y="12" width="488" height="488" rx="110" fill="url(#appLightBlueGrad)" />
-  <rect x="12" y="12" width="488" height="240" rx="110" fill="url(#glassLight)" />
+  <!-- 1. Outer Squircle: Vibrant Royal Blue -->
+  <rect x="12" y="12" width="488" height="488" rx="118" fill="url(#userBlueGrad)" />
 
-  <!-- Wallet Body (White) -->
-  <g filter="url(#walletShadow)">
-    <rect x="110" y="150" width="292" height="212" rx="36" fill="#ffffff" />
-    <!-- Wallet Flap (Deeper Cyan #0284c7) -->
-    <rect x="250" y="210" width="152" height="92" rx="22" fill="#0284c7" />
-    <!-- Wallet Lock Coin (White Circle) -->
-    <circle cx="352" cy="256" r="14" fill="#ffffff" />
-  </g>
+  <!-- 2. Middle Container: Soft Frosted Squircle -->
+  <rect x="74" y="74" width="364" height="364" rx="88" fill="#ffffff" fill-opacity="0.20" stroke="#ffffff" stroke-opacity="0.30" stroke-width="5" />
+
+  <!-- 3. Inner White Wallet Outline -->
+  <!-- Wallet Main Body Outline (Left, Top, Bottom, and Right wall segments) -->
+  <path d="M 350 206 L 350 195 A 40 40 0 0 0 310 155 L 185 155 A 40 40 0 0 0 145 195 L 145 317 A 40 40 0 0 0 185 357 L 310 357 A 40 40 0 0 0 350 317 L 350 306" 
+        fill="none" stroke="#ffffff" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" />
+
+  <!-- Flap Loop Outline -->
+  <rect x="265" y="206" width="105" height="100" rx="26" fill="#4a75d3" fill-opacity="0.35" stroke="#ffffff" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" />
+
+  <!-- Clasp Dot -->
+  <circle cx="317.5" cy="256" r="11" fill="#ffffff" />
 </svg>
