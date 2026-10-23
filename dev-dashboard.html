@@ -5133,7 +5133,7 @@ Copyright © 2026 Sambarang Production`;
           { id: "pkg-master", name: "PRO Developer Master (10 Perangkat)", devices: 10, price: "Rp 499.000", priceNum: 499000, description: "Akses maksimal hingga 10 perangkat untuk profesional / kantor cabang.", popular: false }
         ],
         vouchers: [
-          { code: "ORANGDALAM", type: "percent", value: 100, minPrice: 0, targetPackage: "ALL", maxUses: 999, usedCount: 0, status: "ACTIVE", description: "Voucher Spesial Pengujian / Orang Dalam (Diskon 100%)" },
+          { code: "UJICOBA-PRO", type: "percent", value: 100, minPrice: 0, targetPackage: "ALL", maxUses: 3, usedCount: 0, status: "ACTIVE", description: "Token Lisensi Pengguna Perdana Multi-Device (Akses Seumur Hidup - Kuota 3 Pengguna)" },
           { code: "BERKAH30", type: "fixed", value: 30000, minPrice: 99000, targetPackage: "ALL", maxUses: 50, usedCount: 12, status: "ACTIVE", description: "Diskon Berkah Ramadhan Rp 30.000" },
           { code: "PROMOAKBAR", type: "percent", value: 20, minPrice: 99000, targetPackage: "pkg-multi", maxUses: 100, usedCount: 35, status: "ACTIVE", description: "Diskon Spesial 20% Khusus Multi-Device" }
         ],
@@ -5182,6 +5182,22 @@ Copyright © 2026 Sambarang Production`;
     function initSalesTab() {
       if (!cachedSalesSettings) {
         cachedSalesSettings = getDefaultSalesSettingsFallback();
+      }
+
+      // Bersihkan voucher 999 lama jika tersimpan di cache lokal
+      if (cachedSalesSettings && Array.isArray(cachedSalesSettings.vouchers)) {
+        let updated = false;
+        cachedSalesSettings.vouchers.forEach(v => {
+          if (v.code === 'ORANGDALAM' || v.maxUses === 999) {
+            v.code = 'UJICOBA-PRO';
+            v.maxUses = 3;
+            v.description = 'Token Lisensi Pengguna Perdana Multi-Device (Akses Seumur Hidup - Kuota 3 Pengguna)';
+            updated = true;
+          }
+        });
+        if (updated) {
+          localStorage.setItem('KEUANGANKU_DEV_SALES_SETTINGS', JSON.stringify(cachedSalesSettings));
+        }
       }
 
       let waInp = document.getElementById('setting-seller-wa');

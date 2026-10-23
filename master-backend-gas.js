@@ -1965,6 +1965,7 @@ function getDefaultSalesSettings() {
       { id: "pkg-master", name: "PRO Developer Master (10 Perangkat)", devices: 10, price: "Rp 499.000", priceNum: 499000, description: "Akses maksimal hingga 10 perangkat untuk profesional / multi-kantor.", popular: false }
     ],
     vouchers: [
+      { code: "UJICOBA-PRO", type: "percent", value: 100, minPrice: 0, targetPackage: "ALL", maxUses: 3, usedCount: 0, status: "ACTIVE", description: "Token Lisensi Pengguna Perdana Multi-Device (Akses Seumur Hidup - Kuota 3 Pengguna)" },
       { code: "BERKAH30", type: "fixed", value: 30000, minPrice: 99000, targetPackage: "ALL", maxUses: 50, usedCount: 0, status: "ACTIVE", description: "Diskon Spesial Berkah Rp 30.000" },
       { code: "PROMOAKBAR", type: "percent", value: 20, minPrice: 99000, targetPackage: "pkg-multi", maxUses: 100, usedCount: 0, status: "ACTIVE", description: "Diskon Peluncuran 20% Khusus Multi-Device" }
     ],
@@ -2090,7 +2091,8 @@ function submitPublicOrder(params) {
       if (salesSettings && Array.isArray(salesSettings.vouchers)) {
         var foundVoucher = null;
         for (var vi = 0; vi < salesSettings.vouchers.length; vi++) {
-          if (String(salesSettings.vouchers[vi].code || "").trim().toUpperCase() === voucherCode) {
+          var vCode = String(salesSettings.vouchers[vi].code || "").trim().toUpperCase();
+          if (vCode === voucherCode || (voucherCode === "ORANGDALAM" && vCode === "UJICOBA-PRO") || (voucherCode === "UJICOBA" && vCode === "UJICOBA-PRO")) {
             foundVoucher = salesSettings.vouchers[vi];
             foundVoucher.usedCount = (Number(foundVoucher.usedCount) || 0) + 1;
             break;
@@ -2104,6 +2106,109 @@ function submitPublicOrder(params) {
   }
   if (!fullNotes.includes("Kode Unik")) {
     fullNotes = (fullNotes ? fullNotes + " | " : "") + modeTag + "Kode Unik: " + uCodePadded + " (Urutan #" + orderSeq + ")";
+  }
+
+  var isPioneerVoucher = (voucherCode === "UJICOBA-PRO" || voucherCode === "ORANGDALAM" || voucherCode === "UJICOBA");
+  var isZeroPrice = (price === "Rp 0" || price === "0" || price === "Rp0" || price === 0);
+  var isExistingToken = (voucherCode.startsWith("PRO-") || (voucherCode.startsWith("PRO") && voucherCode.length >= 8));
+
+  var tokenGenerated = "";
+  var orderStatus = "PENDING";
+  var isEarlyAdopter = false;
+
+  // 1. Cek jika pemesan memasukkan Token Lisensi yang sudah ada di DEV Database
+  if (isExistingToken) {
+    try {
+      var tokSheet = ss.getSheetByName(SHEET_TOKENS);
+      var tokData = tokSheet ? tokSheet.getDataRange().getValues() : [];
+      var tokColMap = tokData.length > 0 ? getTokenColumnIndexes(tokData[0]) : null;
+      if (tokColMap) {
+        for (var ti = 1; ti < tokData.length; ti++) {
+          var rTok = String(tokData[ti][tokColMap.token] || "").trim().toUpperCase();
+          if (rTok === voucherCode || rTok.replace(/[^A-Z0-9]/g, '') === voucherCode.replace(/[^A-Z0-9]/g, '')) {
+            tokenGenerated = rTok;
+            var dbDevices = parseInt(tokData[ti][tokColMap.maxDevices]);
+            if (dbDevices) maxDevices = dbDevices;
+            break;
+          }
+        }
+      }
+      if (tokenGenerated) {
+        orderStatus = "COMPLETED";
+        fullNotes = (fullNotes ? fullNotes + " | " : "") + "[Token Terverifikasi Database: " + tokenGenerated + "]";
+      }
+    } catch(errTokLookup) {}
+  }
+
+  // 2. Jika Menggunakan Voucher Pengguna Perdana (UJICOBA-PRO / Gratis 100%)
+  if (!tokenGenerated && (isPioneerVoucher || isZeroPrice)) {
+    maxDevices = Math.max(maxDevices, 3);
+    tokenGenerated = generateRandomToken();
+    orderStatus = "COMPLETED";
+    isEarlyAdopter = true;
+
+    try {
+      var tokSheet = ss.getSheetByName(SHEET_TOKENS);
+      if (!tokSheet) {
+        initSheets();
+        tokSheet = ss.getSheetByName(SHEET_TOKENS);
+      }
+      tokSheet.appendRow([
+        tokenGenerated,
+        buyerName,
+        whatsapp + (email ? " | " + email : ""),
+        maxDevices,
+        0,
+        JSON.stringify([]),
+        "ACTIVE",
+        "USING_TOKEN",
+        "",
+        nowStr,
+        "Pengguna Perdana (Early Adopter - Akses Lifetime) via " + orderId + " (" + pkg + ")"
+      ]);
+
+      fullNotes = (fullNotes ? fullNotes + " | " : "") + "[Pengguna Perdana Resmi - Akses Seumur Hidup]";
+      logEvent("EARLY_ADOPTER_ISSUED", tokenGenerated, buyerName, "-", "-", "Lisensi resmi seumur hidup terbit untuk pengguna perdana via order " + orderId);
+
+      // Kirim Akun & Lisensi Resmi via Gmail / Email
+      if (email && email.indexOf("@") !== -1) {
+        try {
+          var pioneerEmailSubject = "Selamat Datang Pengguna Perdana! Aktivasi Akun & Lisensi Resmi KEUANGANKU PRO - " + tokenGenerated;
+          var pioneerEmailBody = 
+            "Kepada Yth. " + buyerName + ",\n\n" +
+            "Selamat! Anda telah resmi terdaftar sebagai Pengguna Perdana (Early Adopter) aplikasi KEUANGANKU PRO!\n" +
+            "Sebagai pengguna perdana, Anda mendapatkan Akses Penuh Resmi Seumur Hidup (Lifetime Access) untuk mengelola keuangan pribadi maupun usaha Anda.\n\n" +
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" +
+            "• STATUS AKUN        : PENGGUNA PERDANA (AKSES SEUMUR HIDUP / LIFETIME)\n" +
+            "• KODE LISENSI RESMI : " + tokenGenerated + "\n" +
+            "• PAKET LISENSI      : " + pkg + "\n" +
+            "• KUOTA PERANGKAT    : Maksimal " + maxDevices + " Perangkat (HP, Laptop, Tablet)\n" +
+            "• ID PEMESANAN       : " + orderId + "\n" +
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n" +
+            "LANGKAH MUDAH AKTIVASI 1-KLIK:\n" +
+            "1. Buka tautan aktivasi langsung di browser HP atau Laptop Anda:\n" +
+            "   https://sambarangpro.github.io/keuanganku/?token=" + encodeURIComponent(tokenGenerated) + "\n\n" +
+            "2. Aplikasi akan otomatis memvalidasi lisensi dan membuka dashboard penuh.\n\n" +
+            "3. Panduan Penggunaan Lengkap Bergambar:\n" +
+            "   https://sambarangpro.github.io/keuanganku/poster-panduan-penggunaan.html\n\n" +
+            "Simpan email ini dengan baik sebagai bukti kepemilikan lisensi resmi seumur hidup Anda.\n" +
+            "Terima kasih telah menjadi bagian dari peluncuran perdana Keuanganku PRO! 🙏✨\n\n" +
+            "Salam hormat,\n" +
+            "Tim Official KEUANGANKU PRO\n" +
+            "Email: keuangankupro@gmail.com\n" +
+            "Copyright © 2026 Sambarang Production";
+
+          MailApp.sendEmail({
+            to: email,
+            subject: pioneerEmailSubject,
+            body: pioneerEmailBody
+          });
+          logEvent("LICENSE_EMAIL_SENT", tokenGenerated, buyerName, "-", "-", "Email lisensi perdana terkirim ke " + email);
+        } catch(errMail) {
+          logEvent("LICENSE_EMAIL_FAILED", tokenGenerated, buyerName, "-", "-", "Gagal kirim email perdana: " + errMail.toString());
+        }
+      }
+    } catch(errTokSheet) {}
   }
 
   var lastCol = sheet.getLastColumn();
@@ -2122,8 +2227,8 @@ function submitPublicOrder(params) {
       price,
       paymentMethod,
       paymentProof,
-      "PENDING",
-      "", // token belum terbit
+      orderStatus,
+      tokenGenerated,
       fullNotes,
       nowStr
     ]);
@@ -2138,18 +2243,18 @@ function submitPublicOrder(params) {
       maxDevices,
       price,
       paymentMethod,
-      "PENDING",
-      "",
+      orderStatus,
+      tokenGenerated,
       fullNotes + (paymentProof ? " [Bukti: " + paymentProof + "]" : ""),
       nowStr
     ]);
   }
 
-  logEvent("PUBLIC_ORDER_SUBMITTED", "-", buyerName, "-", "-", "Pesanan online masuk: " + orderId + " (" + pkg + " - " + price + ")");
+  logEvent("PUBLIC_ORDER_SUBMITTED", tokenGenerated || "-", buyerName, "-", "-", "Pesanan online masuk: " + orderId + " (" + pkg + " - " + price + ")");
 
   return {
     success: true,
-    message: "Pesanan Anda berhasil dikirim!",
+    message: tokenGenerated ? "Selamat! Lisensi resmi seumur hidup Anda telah terbit." : "Pesanan Anda berhasil dikirim!",
     orderId: orderId,
     orderSeq: orderSeq,
     timestamp: nowStr,
@@ -2157,7 +2262,10 @@ function submitPublicOrder(params) {
     package: pkg,
     price: price,
     uniqueCode: uCodePadded,
-    paymentMethod: paymentMethod
+    paymentMethod: paymentMethod,
+    token: tokenGenerated,
+    maxDevices: maxDevices,
+    isEarlyAdopter: isEarlyAdopter
   };
 }
 

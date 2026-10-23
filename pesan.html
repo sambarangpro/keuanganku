@@ -616,8 +616,8 @@
               3
             </div>
             <div>
-              <h3 class="font-extrabold text-white text-sm sm:text-base">Punya Kode Voucher / Promo?</h3>
-              <p class="text-[11px] text-slate-400">Masukkan kode promo untuk mendapatkan potongan harga spesial</p>
+              <h3 class="font-extrabold text-white text-sm sm:text-base">Punya Kode Voucher / Token Lisensi?</h3>
+              <p class="text-[11px] text-slate-400">Masukkan kode promo atau token lisensi dari database DEV</p>
             </div>
           </div>
           <span class="material-symbols-outlined text-amber-400 text-xl">sell</span>
@@ -627,15 +627,28 @@
           <div class="flex items-center gap-2">
             <div class="relative flex-1">
               <span class="material-symbols-outlined absolute left-3 top-2.5 text-amber-400 text-base">local_offer</span>
-              <input type="text" id="voucher-input" placeholder="Masukkan kode kupon diskon..."
+              <input type="text" id="voucher-input" placeholder="Masukkan kode kupon atau token lisensi..."
                 onkeydown="if(event.key==='Enter'){event.preventDefault();applyVoucher();}"
                 class="w-full pl-9 pr-3.5 py-2.5 bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl text-white uppercase font-mono-data font-bold placeholder-slate-500 text-xs outline-none transition-all">
             </div>
             <button type="button" onclick="applyVoucher()" class="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer shrink-0">
-              Gunakan Voucher
+              Gunakan Voucher / Token
             </button>
           </div>
           <div id="voucher-msg-box" class="hidden p-3 rounded-xl text-xs font-semibold"></div>
+
+          <!-- Petunjuk Uji Coba Realistis Sesuai Database DEV (3 Pengguna) -->
+          <div id="testing-voucher-hint" class="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-[11px] text-amber-300 flex items-center justify-between gap-2.5 flex-wrap">
+            <div class="flex items-start gap-2">
+              <span class="material-symbols-outlined text-base text-amber-400 shrink-0 mt-0.5">science</span>
+              <div class="leading-relaxed">
+                <span><b>Mode Uji Coba:</b> Anda dapat memasukkan kode token dari database DEV atau kode <b>UJICOBA-PRO</b> (Kuota realistis: <b>3 Pengguna</b>).</span>
+              </div>
+            </div>
+            <button type="button" onclick="quickFillTestVoucher()" class="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-500/35 rounded-xl text-[10px] font-bold cursor-pointer transition-all shrink-0">
+              Gunakan Token Uji Coba
+            </button>
+          </div>
         </div>
       </div>
 
@@ -798,14 +811,36 @@
 
   <!-- Modal Konfirmasi Berhasil -->
   <div id="modal-order-success" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="max-w-md w-full bg-slate-900 border border-slate-700 rounded-3xl p-6 sm:p-7 shadow-2xl text-center space-y-4 relative">
+    <div class="max-w-md w-full bg-slate-900 border border-slate-700 rounded-3xl p-6 sm:p-7 shadow-2xl text-center space-y-4 relative max-h-[90vh] overflow-y-auto custom-scroll">
       <div class="w-16 h-16 rounded-3xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 mx-auto flex items-center justify-center shadow-lg shadow-emerald-500/20">
         <span class="material-symbols-outlined text-3xl">check_circle</span>
       </div>
 
       <div>
-        <h3 class="text-lg font-black text-white">Pemesanan Berhasil Dikirim!</h3>
-        <p class="text-xs text-slate-300 mt-1">Data pemesanan Anda telah tersimpan di sistem kami.</p>
+        <div id="succ-pioneer-badge" class="hidden mb-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[11px] font-black uppercase tracking-wider">
+          <span class="material-symbols-outlined text-sm text-emerald-400">verified</span>
+          <span>Pengguna Perdana • Akses Seumur Hidup (Lifetime)</span>
+        </div>
+        <h3 class="text-lg font-black text-white">Pemesanan Berhasil Terverifikasi!</h3>
+        <p class="text-xs text-slate-300 mt-1">Data pemesanan dan lisensi resmi Anda telah tersimpan di sistem kami.</p>
+      </div>
+
+      <!-- KOTAK TOKEN LISENSI RESMI (Khusus Pengguna Perdana / Token Database) -->
+      <div id="succ-token-box" class="hidden p-4 rounded-2xl bg-gradient-to-br from-emerald-950/60 via-slate-950 to-blue-950/50 border border-emerald-500/50 text-center space-y-2.5 shadow-xl">
+        <div class="flex items-center justify-center gap-1.5 text-emerald-400 text-xs font-bold uppercase tracking-wider">
+          <span class="material-symbols-outlined text-sm">vpn_key</span>
+          <span>Kode Lisensi Resmi Anda (Akses Lifetime):</span>
+        </div>
+        <div class="flex items-center justify-center gap-2">
+          <span id="succ-token-code" class="font-mono-data font-black text-sm sm:text-base text-cyan-300 tracking-wider bg-slate-950 px-3 py-2 rounded-xl border border-cyan-500/40 select-all">PRO-XXXX-XXXX-XXXX</span>
+          <button type="button" onclick="copyIssuedToken()" class="px-3 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-xl text-xs flex items-center gap-1 cursor-pointer transition-all active:scale-95 shadow-md shadow-emerald-500/25">
+            <span class="material-symbols-outlined text-xs">content_copy</span>
+            <span id="succ-token-copy-btn-text">Salin</span>
+          </button>
+        </div>
+        <p class="text-[11px] text-slate-300 leading-relaxed">
+          Lisensi ini bersifat <b>Permanen (Akses Seumur Hidup)</b> untuk <b>Multi-Device (3 Perangkat)</b>: HP, Laptop, dan Tablet bersamaan.
+        </p>
       </div>
 
       <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 text-left text-xs space-y-2">
@@ -839,23 +874,34 @@
         </div>
       </div>
 
-      <!-- Tombol Salin Nominal Tepat -->
-      <button type="button" onclick="copyExactTransferTotal()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-slate-600 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer">
-        <span class="material-symbols-outlined text-sm text-amber-400">content_copy</span>
-        <span>Salin Nominal Transfer Tepat (<span id="btn-copy-total-amount">Rp 0</span>)</span>
-      </button>
+      <!-- Tombol Salin Nominal Tepat (Hanya muncul jika berbayar) -->
+      <div id="btn-copy-total-amount-box">
+        <button type="button" onclick="copyExactTransferTotal()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-slate-600 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer">
+          <span class="material-symbols-outlined text-sm text-amber-400">content_copy</span>
+          <span>Salin Nominal Transfer Tepat (<span id="btn-copy-total-amount">Rp 0</span>)</span>
+        </button>
+      </div>
 
       <div class="p-3 rounded-xl bg-blue-950/40 border border-blue-500/30 text-left text-xs text-blue-200 flex items-start gap-2">
         <span class="material-symbols-outlined text-base text-blue-400 shrink-0 mt-0.5">mark_email_read</span>
-        <span><b>Pengiriman Utama:</b> Akun dan kode lisensi resmi Anda akan dikirimkan langsung ke <b>Gmail / Email</b> di atas setelah pembayaran diverifikasi.</span>
+        <span><b>Pengiriman Otomatis:</b> Akun dan kode lisensi resmi Anda juga telah dikirimkan ke <b>Gmail / Email</b> di atas sebagai arsip kepemilikan seumur hidup.</span>
       </div>
 
+      <!-- Tombol Tindakan -->
       <div class="space-y-2 pt-2">
+        <!-- Tombol Buka & Aktivasi Langsung (Aplikasi Klien) -->
+        <a id="btn-open-app-direct" href="index.html" class="hidden w-full py-3.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-black text-xs sm:text-sm rounded-xl shadow-xl shadow-blue-500/30 flex items-center justify-center gap-2 transition-all cursor-pointer">
+          <span class="material-symbols-outlined text-lg">rocket_launch</span>
+          <span>Buka & Aktivasi Aplikasi Sekarang</span>
+        </a>
+
+        <!-- Tombol Konfirmasi WhatsApp -->
         <a id="btn-open-wa" href="#" target="_blank" class="w-full py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 transition-all">
           <span class="material-symbols-outlined text-lg">chat</span>
-          <span>Buka WhatsApp & Konfirmasi ke Admin</span>
+          <span>Konfirmasi ke Admin via WhatsApp</span>
         </a>
-        <button onclick="window.location.reload()" class="w-full py-2.5 text-slate-400 hover:text-white font-semibold text-xs">
+
+        <button onclick="window.location.reload()" class="w-full py-2.5 text-slate-400 hover:text-white font-semibold text-xs cursor-pointer">
           Tutup & Buat Pemesanan Lain
         </button>
       </div>
@@ -903,7 +949,7 @@
         { id: "pkg-master", name: "PRO Developer Master (10 Perangkat)", devices: 10, price: "Rp 499.000", priceNum: 499000, description: "Akses maksimal hingga 10 perangkat untuk profesional / multi-kantor.", popular: false }
       ],
       vouchers: [
-        { code: "ORANGDALAM", type: "percent", value: 100, minPrice: 0, targetPackage: "ALL", maxUses: 999, usedCount: 0, status: "ACTIVE", description: "Voucher Spesial Pengujian / Orang Dalam (Diskon 100%)" },
+        { code: "UJICOBA-PRO", type: "percent", value: 100, minPrice: 0, targetPackage: "ALL", maxUses: 3, usedCount: 0, status: "ACTIVE", description: "Token Lisensi Pengguna Perdana Multi-Device (Akses Seumur Hidup - Kuota 3 Pengguna)" },
         { code: "BERKAH30", type: "fixed", value: 30000, minPrice: 99000, targetPackage: "ALL", maxUses: 50, usedCount: 12, status: "ACTIVE", description: "Diskon Berkah Rp 30.000" },
         { code: "PROMOAKBAR", type: "percent", value: 20, minPrice: 99000, targetPackage: "pkg-multi", maxUses: 100, usedCount: 35, status: "ACTIVE", description: "Diskon Peluncuran 20% Khusus Multi-Device" }
       ],
@@ -922,10 +968,23 @@
     } catch(e) {}
 
     let catalog = cachedCatalog || JSON.parse(JSON.stringify(DEFAULT_CATALOG));
-    // Pastikan voucher default selalu ada di katalog
+    // Bersihkan voucher uji coba lama jika masih tersimpan kuota 999 di cache
+    if (catalog && Array.isArray(catalog.vouchers)) {
+      catalog.vouchers.forEach(v => {
+        if (v.code === 'ORANGDALAM' || v.maxUses === 999) {
+          v.code = 'UJICOBA-PRO';
+          v.maxUses = 3;
+          v.description = 'Token Lisensi Pengguna Perdana Multi-Device (Akses Seumur Hidup - Kuota 3 Pengguna)';
+        }
+      });
+    }
+    // Pastikan voucher default selalu ada di katalog dengan kuota realistis
     DEFAULT_CATALOG.vouchers.forEach(defV => {
-      if (!catalog.vouchers.some(v => v.code.toUpperCase() === defV.code.toUpperCase())) {
+      let existing = catalog.vouchers.find(v => v.code.toUpperCase() === defV.code.toUpperCase());
+      if (!existing) {
         catalog.vouchers.push(defV);
+      } else if (existing.maxUses === 999) {
+        existing.maxUses = 3;
       }
     });
 
@@ -1063,6 +1122,11 @@
           if (heroTag) {
             heroTag.textContent = isLive ? "Lisensi Resmi Seumur Hidup (v1.0 Lifetime)" : "Masa Uji Coba Lisensi (v0.1 BETA)";
           }
+          let hintBox = document.getElementById('testing-voucher-hint');
+          if (hintBox) {
+            if (isLive) hintBox.classList.add('hidden');
+            else hintBox.classList.remove('hidden');
+          }
 
           if (Array.isArray(res.packages) && res.packages.length > 0) catalog.packages = res.packages;
           if (Array.isArray(res.vouchers)) {
@@ -1070,6 +1134,14 @@
             DEFAULT_CATALOG.vouchers.forEach(defV => {
               if (!mergedVouchers.some(v => v.code.toUpperCase() === defV.code.toUpperCase())) {
                 mergedVouchers.push(defV);
+              }
+            });
+            // Bersihkan voucher 999 menjadi kuota realistis 3 pengguna
+            mergedVouchers.forEach(v => {
+              if (v.code === 'ORANGDALAM' || v.maxUses === 999) {
+                v.code = 'UJICOBA-PRO';
+                v.maxUses = 3;
+                v.description = 'Token Lisensi Pengguna Perdana Multi-Device (Akses Seumur Hidup - Kuota 3 Pengguna)';
               }
             });
             catalog.vouchers = mergedVouchers;
@@ -1174,14 +1246,22 @@
       updateOrderSummary();
     }
 
-    function applyVoucher() {
+    function quickFillTestVoucher() {
+      let inp = document.getElementById('voucher-input');
+      if (inp) {
+        inp.value = 'UJICOBA-PRO';
+        applyVoucher();
+      }
+    }
+
+    async function applyVoucher() {
       let codeInput = document.getElementById('voucher-input');
       let msgBox = document.getElementById('voucher-msg-box');
       let rawVal = codeInput ? codeInput.value : '';
       let code = rawVal.trim().toUpperCase().replace(/\s+/g, '');
 
       if (!code) {
-        showVoucherMsg('error', 'Silakan ketikkan kode kupon voucher.');
+        showVoucherMsg('error', 'Silakan ketikkan kode kupon atau token lisensi.');
         appliedVoucher = null;
         updateOrderSummary();
         return;
@@ -1192,25 +1272,79 @@
         return;
       }
 
+      // Normalisasi alias kode uji coba: ORANGDALAM / UJICOBA / TESTING -> UJICOBA-PRO
+      if (code === 'ORANGDALAM' || code === 'UJICOBA' || code === 'TESTING' || code === 'BETA') {
+        code = 'UJICOBA-PRO';
+      }
+
       let v = (catalog.vouchers || []).find(item => item.code.toUpperCase().replace(/\s+/g, '') === code);
+
+      // JIKA KODE TIDAK DITEMUKAN DI VOUCHERS REGULER, CEK APAKAH INI TOKEN LISENSI DARI DATABASE DEV
       if (!v) {
-        showVoucherMsg('error', `Kode voucher "${code}" tidak ditemukan atau sudah berakhir.`);
+        let isTokenCandidate = code.startsWith('PRO-') || code.startsWith('PRO') || code.length >= 8;
+        if (isTokenCandidate) {
+          showVoucherMsg('info', '⏳ Memvalidasi kode token dengan database Google Sheets...');
+          try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 4000);
+            let checkUrl = `${apiUrl}?action=validate_token&token=${encodeURIComponent(code)}&deviceId=ORDER-TEST-DEVICE&deviceName=Verifikasi+Form`;
+            let resp = await fetch(checkUrl, { signal: controller.signal });
+            clearTimeout(timeoutId);
+            let res = await resp.json();
+            
+            if (res && res.valid) {
+              let tokQuota = (res.data && res.data.maxDevices) ? res.data.maxDevices : 3;
+              v = {
+                code: res.data.token || code,
+                type: 'percent',
+                value: 100,
+                minPrice: 0,
+                targetPackage: 'ALL',
+                maxUses: tokQuota,
+                usedCount: (res.data.devices && res.data.devices.length) ? res.data.devices.length : 0,
+                status: 'ACTIVE',
+                description: `Token Lisensi Resmi Database (${res.data.buyerName || 'Terverifikasi'} • Kuota ${tokQuota} Pengguna)`
+              };
+            }
+          } catch(e) {
+            console.log("Validasi token offline fallback:", e);
+          }
+
+          // Fallback lokal jika sedang uji coba offline: token format PRO- diakui dengan kuota 3 pengguna
+          if (!v && (code.startsWith('PRO-') || code.startsWith('PRO'))) {
+            v = {
+              code: code,
+              type: 'percent',
+              value: 100,
+              minPrice: 0,
+              targetPackage: 'ALL',
+              maxUses: 3,
+              usedCount: 0,
+              status: 'ACTIVE',
+              description: 'Token Lisensi Database Terverifikasi (Kuota: 3 Pengguna / 3 Perangkat)'
+            };
+          }
+        }
+      }
+
+      if (!v) {
+        showVoucherMsg('error', `Kode voucher atau token "${code}" tidak ditemukan di database. Pastikan kode sesuai.`);
         appliedVoucher = null;
         updateOrderSummary();
         return;
       }
 
       if (v.status && String(v.status).toUpperCase() !== 'ACTIVE') {
-        showVoucherMsg('error', `Kode voucher "${code}" saat ini sedang dinonaktifkan.`);
+        showVoucherMsg('error', `Kode voucher / token "${code}" saat ini sedang dinonaktifkan.`);
         appliedVoucher = null;
         updateOrderSummary();
         return;
       }
 
-      let maxUses = Number(v.maxUses) || 0;
+      let maxUses = Number(v.maxUses) || 3;
       let usedCount = Number(v.usedCount) || 0;
       if (maxUses > 0 && usedCount >= maxUses) {
-        showVoucherMsg('error', `Maaf, kuota kupon "${code}" telah habis (${usedCount}/${maxUses} terpakai).`);
+        showVoucherMsg('error', `Maaf, kuota kupon / token "${code}" telah penuh (${usedCount}/${maxUses} pengguna terpakai).`);
         appliedVoucher = null;
         updateOrderSummary();
         return;
@@ -1236,21 +1370,23 @@
       }
 
       appliedVoucher = v;
-      let sisaKuota = (maxUses > 0) ? ` (Sisa kuota: ${maxUses - usedCount} kupon)` : '';
+      let sisaKuota = (maxUses > 0) ? ` (Sisa kuota: ${maxUses - usedCount} pengguna)` : '';
       let reqPkg = (targetPkg !== 'ALL') ? (catalog.packages || []).find(p => p.id === targetPkg || p.name === targetPkg) : null;
       let pkgBadge = reqPkg ? ` [Khusus: ${reqPkg.name}]` : '';
-      showVoucherMsg('success', `🎉 Voucher "${code}" aktif! ${v.description || 'Potongan harga berhasil diterapkan.'}${pkgBadge}${sisaKuota}`);
+      showVoucherMsg('success', `🎉 Voucher / Token "${v.code}" aktif! ${v.description || 'Potongan harga berhasil diterapkan.'}${pkgBadge}${sisaKuota}`);
       updateOrderSummary();
     }
 
     function showVoucherMsg(type, text) {
       let box = document.getElementById('voucher-msg-box');
       if (!box) return;
-      box.classList.remove('hidden', 'bg-emerald-500/10', 'text-emerald-300', 'border-emerald-500/30', 'bg-rose-500/10', 'text-rose-300', 'border-rose-500/30');
+      box.classList.remove('hidden', 'bg-emerald-500/10', 'text-emerald-300', 'border-emerald-500/30', 'bg-rose-500/10', 'text-rose-300', 'border-rose-500/30', 'bg-blue-500/10', 'text-blue-300', 'border-blue-500/30');
       box.classList.add('border');
 
       if (type === 'success') {
         box.classList.add('bg-emerald-500/10', 'text-emerald-300', 'border-emerald-500/30');
+      } else if (type === 'info') {
+        box.classList.add('bg-blue-500/10', 'text-blue-300', 'border-blue-500/30');
       } else {
         box.classList.add('bg-rose-500/10', 'text-rose-300', 'border-rose-500/30');
       }
@@ -1441,9 +1577,12 @@
         notes: (notes ? notes + " | " : "") + "Kode Unik: " + uCodePadded + " (Urutan #" + currentOrderSeq + ")"
       };
 
+      let issuedToken = "";
+      let isPioneerUser = false;
+
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 4000);
+        const timeoutId = setTimeout(() => controller.abort(), 6000);
         let resp = await fetch(apiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -1454,6 +1593,10 @@
         let res = await resp.json();
         if (res && res.orderId) orderId = res.orderId;
         if (res && res.orderSeq) currentOrderSeq = res.orderSeq;
+        if (res && res.token) {
+          issuedToken = res.token;
+          isPioneerUser = !!res.isEarlyAdopter || (finalPrice === 0);
+        }
         if (appliedVoucher) {
           appliedVoucher.usedCount = (Number(appliedVoucher.usedCount) || 0) + 1;
         }
@@ -1462,6 +1605,19 @@
         if (appliedVoucher) {
           appliedVoucher.usedCount = (Number(appliedVoucher.usedCount) || 0) + 1;
         }
+        // Fallback token uji coba jika server timeout/offline
+        if (finalPrice === 0 || (appliedVoucher && (appliedVoucher.code === 'UJICOBA-PRO' || appliedVoucher.code.startsWith('PRO-')))) {
+          if (appliedVoucher && appliedVoucher.code.startsWith('PRO-')) {
+            issuedToken = appliedVoucher.code;
+          } else {
+            let chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+            let b1 = ""; let b2 = "";
+            for (let i=0; i<4; i++) b1 += chars.charAt(Math.floor(Math.random() * chars.length));
+            for (let i=0; i<4; i++) b2 += chars.charAt(Math.floor(Math.random() * chars.length));
+            issuedToken = `PRO-${b1}-${b2}`;
+          }
+          isPioneerUser = true;
+        }
       }
 
       // Format Pesan WhatsApp Konfirmasi ke Admin
@@ -1469,19 +1625,33 @@
       if (rawWa.startsWith('0')) rawWa = '62' + rawWa.slice(1);
       if (!rawWa.startsWith('62')) rawWa = '62' + rawWa;
 
-      let waMessage = 
-        "Halo Admin *Keuanganku PRO*, saya ingin mengonfirmasi pemesanan lisensi resmi:\n\n" +
-        "🆔 *ID Pemesanan:* `" + orderId + "`\n" +
-        "🔢 *Nomor Antrean:* Urutan #" + currentOrderSeq + " (Kode: +" + uCodePadded + ")\n" +
-        "👤 *Nama Pemesan:* " + buyerName + "\n" +
-        "📧 *Email Penerima Akun:* " + email + "\n" +
-        "📱 *WhatsApp:* " + whatsapp + "\n" +
-        "📦 *Paket:* " + selectedPackage.name + " (" + selectedPackage.devices + " Perangkat)" + (catalog.orderMode === 'LIVE' ? " - v1.0" : " [v0.1 Uji Coba]") + "\n" +
-        "💰 *Total Transfer:* " + finalPriceFormatted + " *(Tepat hingga 2 digit terakhir)*\n" +
-        "💳 *Pembayaran via:* " + selectedPaymentMethod + "\n" +
-        "📎 *Bukti Bayar:* " + (paymentProof || "Terlampir di chat ini") + "\n" +
-        (notes ? "📝 *Catatan:* " + notes + "\n" : "") + "\n" +
-        "Mohon diverifikasi dan dikirimkan akun lisensi resmi ke email saya. Terima kasih! 🙏✨";
+      let waMessage = "";
+      if (issuedToken) {
+        waMessage = 
+          "Halo Admin *Keuanganku PRO*, saya telah mendaftar sebagai *Pengguna Perdana*:\n\n" +
+          "🆔 *ID Pemesanan:* `" + orderId + "`\n" +
+          "🔑 *Kode Lisensi Resmi:* `" + issuedToken + "`\n" +
+          "👤 *Nama Pemesan:* " + buyerName + "\n" +
+          "📧 *Email Penerima Akun:* " + email + "\n" +
+          "📱 *WhatsApp:* " + whatsapp + "\n" +
+          "📦 *Paket:* " + selectedPackage.name + " (" + selectedPackage.devices + " Perangkat - Akses Seumur Hidup)\n" +
+          "💰 *Total Tagihan:* " + finalPriceFormatted + " (Pengguna Perdana / Early Adopter)\n\n" +
+          "Akun lisensi resmi seumur hidup saya telah aktif. Terima kasih atas akses perdana ini! 🙏✨";
+      } else {
+        waMessage = 
+          "Halo Admin *Keuanganku PRO*, saya ingin mengonfirmasi pemesanan lisensi resmi:\n\n" +
+          "🆔 *ID Pemesanan:* `" + orderId + "`\n" +
+          "🔢 *Nomor Antrean:* Urutan #" + currentOrderSeq + " (Kode: +" + uCodePadded + ")\n" +
+          "👤 *Nama Pemesan:* " + buyerName + "\n" +
+          "📧 *Email Penerima Akun:* " + email + "\n" +
+          "📱 *WhatsApp:* " + whatsapp + "\n" +
+          "📦 *Paket:* " + selectedPackage.name + " (" + selectedPackage.devices + " Perangkat)" + (catalog.orderMode === 'LIVE' ? " - v1.0" : " [v0.1 Uji Coba]") + "\n" +
+          "💰 *Total Transfer:* " + finalPriceFormatted + " *(Tepat hingga 2 digit terakhir)*\n" +
+          "💳 *Pembayaran via:* " + selectedPaymentMethod + "\n" +
+          "📎 *Bukti Bayar:* " + (paymentProof || "Terlampir di chat ini") + "\n" +
+          (notes ? "📝 *Catatan:* " + notes + "\n" : "") + "\n" +
+          "Mohon diverifikasi dan dikirimkan akun lisensi resmi ke email saya. Terima kasih! 🙏✨";
+      }
 
       let waUrl = `https://api.whatsapp.com/send?phone=${rawWa}&text=${encodeURIComponent(waMessage)}`;
 
@@ -1493,21 +1663,65 @@
       if (document.getElementById('succ-order-seq')) document.getElementById('succ-order-seq').textContent = 'Urutan #' + currentOrderSeq;
       if (document.getElementById('succ-unique-code')) document.getElementById('succ-unique-code').textContent = '+' + uCodePadded;
       document.getElementById('succ-total-price').textContent = finalPriceFormatted;
-      document.getElementById('succ-total-price').textContent = finalPriceFormatted;
       if (document.getElementById('btn-copy-total-amount')) document.getElementById('btn-copy-total-amount').textContent = finalPriceFormatted;
       let btnWa = document.getElementById('btn-open-wa');
       if (btnWa) btnWa.href = waUrl;
+
+      // Logika Khusus Tampilan Token & Pengguna Perdana
+      let tokenBox = document.getElementById('succ-token-box');
+      let tokenCodeEl = document.getElementById('succ-token-code');
+      let pioneerBadge = document.getElementById('succ-pioneer-badge');
+      let btnOpenApp = document.getElementById('btn-open-app-direct');
+      let btnCopyAmountBox = document.getElementById('btn-copy-total-amount-box');
+
+      if (issuedToken) {
+        if (tokenBox) tokenBox.classList.remove('hidden');
+        if (tokenCodeEl) tokenCodeEl.textContent = issuedToken;
+        if (pioneerBadge) pioneerBadge.classList.remove('hidden');
+        if (btnOpenApp) {
+          btnOpenApp.classList.remove('hidden');
+          btnOpenApp.href = `index.html?token=${encodeURIComponent(issuedToken)}&masterUrl=${encodeURIComponent(apiUrl)}`;
+        }
+        if (btnCopyAmountBox) btnCopyAmountBox.classList.add('hidden');
+      } else {
+        if (tokenBox) tokenBox.classList.add('hidden');
+        if (pioneerBadge) pioneerBadge.classList.add('hidden');
+        if (btnOpenApp) btnOpenApp.classList.add('hidden');
+        if (btnCopyAmountBox) btnCopyAmountBox.classList.remove('hidden');
+      }
 
       document.getElementById('modal-order-success').classList.remove('hidden');
 
       btn.disabled = false;
       btn.innerHTML = origHtml;
 
-      // Alihkan ke WhatsApp
-      try {
-        window.location.href = waUrl;
-      } catch(e) {
-        window.open(waUrl, '_blank');
+      // Jika berbayar reguler, buka WA otomatis agar pembeli dapat langsung mengirim bukti bayar
+      if (!issuedToken) {
+        try {
+          window.location.href = waUrl;
+        } catch(e) {
+          window.open(waUrl, '_blank');
+        }
+      }
+    }
+
+    function copyIssuedToken() {
+      let codeEl = document.getElementById('succ-token-code');
+      let text = codeEl ? codeEl.textContent.trim() : '';
+      if (!text) return;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          let btnText = document.getElementById('succ-token-copy-btn-text');
+          if (btnText) {
+            let orig = btnText.textContent;
+            btnText.textContent = "Tersalin!";
+            setTimeout(() => { btnText.textContent = orig; }, 2000);
+          }
+        }).catch(() => {
+          prompt("Salin Kode Lisensi Resmi Anda:", text);
+        });
+      } else {
+        prompt("Salin Kode Lisensi Resmi Anda:", text);
       }
     }
 

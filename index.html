@@ -2353,7 +2353,7 @@
       let isChanged = (lic.pinStatus === 'PIN_CHANGED');
       let isOwner = (lic.buyerName || '').toLowerCase().includes('akbar') || (lic.token || '') === 'PRO-S8GF-HQT5-CNVE' || (lic.token || '') === 'PRO-W9J2-RAYM-3KKL';
       let currentDevCount = lic.deviceCount || 1;
-      let maxDevicesAllowed = isOwner ? Math.max(currentDevCount, 3) : (lic.maxDevices || 2);
+      let maxDevicesAllowed = isOwner ? Math.max(currentDevCount, 3) : (parseInt(lic.maxDevices) || 3);
 
       if (pinStatusEl) {
         if (isChanged) {
@@ -2361,7 +2361,7 @@
           pinStatusEl.innerHTML = `<span class="material-symbols-outlined text-sm">lock</span> PIN Pribadi Aktif (Aman)`;
         } else {
           pinStatusEl.className = "font-semibold text-amber-400 flex items-center gap-1.5 text-xs";
-          pinStatusEl.innerHTML = `<span class="material-symbols-outlined text-sm">key</span> Token Bawaan (Akses 1 Perangkat)`;
+          pinStatusEl.innerHTML = `<span class="material-symbols-outlined text-sm">key</span> Token Bawaan (Kuota ${maxDevicesAllowed} Perangkat)`;
         }
       }
 
@@ -2375,7 +2375,7 @@
           }
         } else {
           quotaEl.className = "font-mono-data text-amber-400 font-semibold text-xs mt-0.5 flex items-center gap-1";
-          quotaEl.innerHTML = `<span class="material-symbols-outlined text-sm text-amber-400">lock</span> 1 Perangkat (Terkunci Sebelum Buat PIN)`;
+          quotaEl.innerHTML = `<span class="material-symbols-outlined text-sm text-amber-400">devices</span> ${currentDevCount} / ${maxDevicesAllowed} Perangkat (Buat PIN untuk buka di HP 2 / Laptop)`;
         }
       }
 
@@ -2385,7 +2385,7 @@
           badgeEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> TERAKTIVASI (PIN PRIBADI)`;
         } else {
           badgeEl.className = "px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/30 text-[10px] font-extrabold rounded-full flex items-center gap-1.5 shadow-sm";
-          badgeEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span> TOKEN BAWAAN (1 PERANGKAT)`;
+          badgeEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span> LISENSI RESMI (${maxDevicesAllowed} PERANGKAT)`;
         }
       }
       updateDevDashboardButtonVisibility(lic);
@@ -3894,7 +3894,7 @@
             updateCloudSyncLockUI(res.data);
             renderSetupPasswordCard(res.data);
 
-            alert(`Selamat datang, ${res.data.buyerName}!\n\nLisensi Keuanganku PRO Anda (${res.data.token}) berhasil diaktivasi di perangkat ini.`);
+            alert(`Selamat datang, ${res.data.buyerName}!\n\nLisensi Resmi Keuanganku PRO Anda (${res.data.token}) berhasil diaktivasi di perangkat ini.\n\nStatus Akun: Akses Resmi Seumur Hidup (Lifetime Multi-Device).`);
             return;
           } else {
             if (err) {
