@@ -1488,15 +1488,15 @@
                 </div>
               </section>
 
-              <!-- FITUR MODE PERCONTOHAN / IKLAN (SHOWCASE DEMO DATA) -->
-              <section class="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-300/80 dark:from-slate-900 dark:to-slate-900 dark:border-amber-900/60 rounded-2xl p-5 sm:p-6 shadow-sm space-y-3.5">
+              <!-- FITUR MODE PERCONTOHAN / IKLAN (SHOWCASE DEMO DATA - EKSKLUSIF PEMILIK) -->
+              <section id="setup-showcase-demo-section" class="hidden bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-300/80 dark:from-slate-900 dark:to-slate-900 dark:border-amber-900/60 rounded-2xl p-5 sm:p-6 shadow-sm space-y-3.5">
                 <div class="flex items-center justify-between flex-wrap gap-2">
                   <div class="flex items-center gap-2">
                     <span class="material-symbols-outlined text-amber-600 dark:text-amber-400 text-xl font-bold">movie_filter</span>
-                    <h2 class="font-headline-md text-headline-md font-bold text-on-surface">Mode Percontohan & Konten Iklan</h2>
+                    <h2 class="font-headline-md text-headline-md font-bold text-on-surface">Mode Percontohan &amp; Konten Iklan</h2>
                   </div>
                   <span class="px-2.5 py-0.5 bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 text-[10px] font-extrabold rounded-full border border-amber-300 dark:border-amber-800">
-                    🎬 SHOWCASE DATA
+                    🎬 KHUSUS PEMILIK
                   </span>
                 </div>
                 <p class="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
@@ -4691,6 +4691,19 @@
           syncBtn.title = "Status Sinkronisasi Cloud (Klik untuk sinkron sekarang)";
         }
       }
+
+      // KONTROL AKSES EKSKLUSIF: HANYA MUNCUL JIKA PEMILIK, LISENSI DEMO IKLAN, ATAU SEDANG DALAM MODE DEMO
+      let demoSection = document.getElementById('setup-showcase-demo-section');
+      if (demoSection) {
+        let isOwner = (typeof isOwnerDevice === 'function') && isOwnerDevice();
+        let lic = (typeof getSavedLicense === 'function') ? getSavedLicense() : null;
+        let isDemoToken = lic && (lic.token === 'PRO-DEMO-IKLAN-2026' || (lic.buyerName && lic.buyerName.toLowerCase().includes('demo')));
+        if (isOwner || isDemoToken || isDemo) {
+          demoSection.classList.remove('hidden');
+        } else {
+          demoSection.classList.add('hidden');
+        }
+      }
     }
 
     function activateShowcaseDemoData(isSilent = false) {
@@ -6791,6 +6804,7 @@
       updateCloudSyncLockUI(currentLic);
       renderSetupDatabaseCards();
       loadConnectedDevices();
+      updateDemoModeUI();
     }
 
     
