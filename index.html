@@ -4131,6 +4131,21 @@
     }
 
     async function syncWithCloud(isManualClick = false) {
+      // 1. CEK MODE PERCONTOHAN IKLAN: Jika aktif, jeda auto-sync agar data percontohan tetap tampil dan tidak mengotori / tertimpa Cloud
+      let isDemo = localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true';
+      if (isDemo) {
+        setSyncStatus('synced', 'Mode Demo (Cloud Dijeda)');
+        let icon = document.getElementById('header-sync-icon');
+        if (icon) {
+          icon.className = "material-symbols-outlined text-base text-amber-500 animate-pulse";
+          icon.textContent = "movie";
+        }
+        if (isManualClick) {
+          showSyncToast("🎬 Mode Demo Aktif: Sinkronisasi Cloud otomatis dijeda demi keamanan data Anda.");
+        }
+        return;
+      }
+
       let lic = getSavedLicense();
 
       if (!globalData.cloudUrl || !globalData.cloudUrl.startsWith("http")) {
@@ -4382,6 +4397,13 @@
       populateFormDropdowns(); 
       populateReportFilterCategories();
       
+      // Jeda upload otomatis jika sedang dalam mode demo iklan
+      let isDemo = localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true';
+      if (isDemo) {
+        setSyncStatus('synced', 'Mode Demo (Cloud Dijeda)');
+        return;
+      }
+      
       if (globalData.cloudUrl && globalData.cloudUrl.startsWith("http")) {
         let lic = getSavedLicense();
         if (lic && lic.pinStatus === 'USING_TOKEN') {
@@ -4406,6 +4428,11 @@
     }
 
     async function forceUploadToCloud() {
+      let isDemo = localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true';
+      if (isDemo) {
+        alert("PERINGATAN MODE DEMO IKLAN:\n\nUpload ke Google Sheets dinonaktifkan sementara untuk menjaga database asli Anda di Cloud agar tidak tertimpa data demo.\n\nSilakan klik 'Kembalikan Data Asli' terlebih dahulu sebelum upload ke Cloud.");
+        return;
+      }
       if (!globalData.cloudUrl || !globalData.cloudUrl.startsWith("http")) {
         alert("GAGAL: Kunci Cloud kosong atau tidak valid!\nSilakan isi link Web App Google Sheets Anda di kolom yang tersedia terlebih dahulu.");
         return;
@@ -4430,6 +4457,9 @@
     }
 
     async function autoPullDatabaseFromCloud(targetCloudUrl = '') {
+      let isDemo = localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true';
+      if (isDemo) return false;
+
       let url = targetCloudUrl || globalData.cloudUrl || localStorage.getItem("KEUANGANKU_CLOUD_URL");
       if (!url || !url.startsWith("http")) return false;
 
@@ -4458,6 +4488,13 @@
     }
 
     async function forceDownloadFromCloud() {
+      let isDemo = localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true';
+      if (isDemo) {
+        if (!confirm("Mode Percontohan Iklan sedang aktif.\n\nMenarik data dari Cloud sekarang akan mematikan Mode Demo dan mengembalikan data asli Anda dari Google Sheets. Lanjutkan?")) return;
+        localStorage.removeItem('KEUANGANKU_IS_DEMO_MODE');
+        localStorage.removeItem('KEUANGANKU_USER_REAL_BACKUP');
+        updateDemoModeUI();
+      }
       if (!globalData.cloudUrl || !globalData.cloudUrl.startsWith("http")) {
         alert("GAGAL: Kunci Cloud kosong!\nSilakan isi link Web App Google Sheets Anda terlebih dahulu agar sistem tahu data mana yang harus ditarik.");
         return;
@@ -4641,12 +4678,28 @@
         if (isDemo) topBanner.classList.remove('hidden');
         else topBanner.classList.add('hidden');
       }
+      let syncIcon = document.getElementById('header-sync-icon');
+      let syncBtn = document.getElementById('header-sync-btn');
+      if (syncIcon && syncBtn) {
+        if (isDemo) {
+          syncIcon.className = "material-symbols-outlined text-base text-amber-500 animate-pulse";
+          syncIcon.textContent = "movie";
+          syncBtn.title = "Mode Demo Iklan Aktif: Sinkronisasi Cloud Dijeda Sementara (Klik untuk info)";
+        } else {
+          syncIcon.className = "material-symbols-outlined text-base text-green-500";
+          syncIcon.textContent = "cloud_done";
+          syncBtn.title = "Status Sinkronisasi Cloud (Klik untuk sinkron sekarang)";
+        }
+      }
     }
 
     function activateShowcaseDemoData(isSilent = false) {
-      // 1. Simpan backup data asli pengguna jika belum dalam mode demo
-      let isAlreadyDemo = localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true';
-      if (!isAlreadyDemo) {
+      // 1. Simpan backup data asli pengguna jika belum dalam mode demo atau backup belum ada
+      let hasRealBackup = !!localStorage.getItem('KEUANGANKU_USER_REAL_BACKUP');
+      let isCurrentlyFake = globalData.recentHistory && globalData.recentHistory.some(tx => tx.name === "Kopi & Pastry Artisan Bakery");
+      
+      // Amankan data asli pengguna hanya jika saat ini data masih asli (bukan fake)
+      if (!isCurrentlyFake) {
         try {
           localStorage.setItem('KEUANGANKU_USER_REAL_BACKUP', JSON.stringify(globalData));
         } catch(e) {}
@@ -4839,6 +4892,15 @@
     function restoreUserRealData() {
       let backupStr = localStorage.getItem('KEUANGANKU_USER_REAL_BACKUP');
       if (!backupStr) {
+        // Fallback cerdas: Jika backup lokal hilang, tawarkan unduh data asli langsung dari Cloud
+        if (globalData.cloudUrl && globalData.cloudUrl.startsWith("http")) {
+          if (confirm("PULIHKAN DARI CLOUD?\n\nCadangan lokal tidak ditemukan. Apakah Anda ingin mengunduh data keuangan asli Anda langsung dari Google Sheets Cloud?")) {
+            localStorage.removeItem('KEUANGANKU_IS_DEMO_MODE');
+            updateDemoModeUI();
+            forceDownloadFromCloud();
+            return;
+          }
+        }
         alert("Informasi: Anda saat ini sudah menggunakan database asli Anda.");
         return;
       }
@@ -4851,7 +4913,8 @@
         localStorage.removeItem('KEUANGANKU_USER_REAL_BACKUP');
         initApp();
         updateDemoModeUI();
-        alert("✅ DATA ASLI BERHASIL DIPULIHKAN!\n\nMode demo iklan telah dinonaktifkan. Seluruh data transaksi & saldo asli Anda telah kembali aktif.");
+        syncWithCloud(true); // Langsung sambungkan kembali ke Cloud
+        alert("✅ DATA ASLI BERHASIL DIPULIHKAN!\n\nMode demo iklan telah dinonaktifkan. Seluruh data transaksi & saldo asli Anda telah kembali aktif dan sinkronisasi Cloud dilanjutkan.");
       } catch(e) {
         alert("Gagal memulihkan data: " + e.message);
       }
