@@ -5139,8 +5139,10 @@ Copyright © 2026 Sambarang Production`;
         ],
         paymentAccounts: [
           { bank: "Bank Syariah Indonesia (BSI)", accountNo: "7177946448", accountName: "Muh Akbar", notes: "Rekening Utama • Konfirmasi Cepat" },
-          { bank: "Bank Jago", accountNo: "504172135812", accountName: "Muh Akbar", notes: "Transfer Bebas Biaya Admin" },
-          { bank: "QRIS / DANA / GoPay / OVO", accountNo: "087788197916", accountName: "Muh Akbar", notes: "Scan QRIS / Transfer E-Wallet Instant" }
+          { bank: "Bank Jago (Jago Syariah)", accountNo: "504172135812", accountName: "Muh Akbar", notes: "Transfer Bebas Biaya Admin" },
+          { bank: "GoPay", accountNo: "087788197916", accountName: "Muh Akbar", notes: "Transfer E-Wallet Instant" },
+          { bank: "DANA", accountNo: "087788197916", accountName: "Muh Akbar", notes: "Transfer E-Wallet Instant" },
+          { bank: "OVO", accountNo: "087788197916", accountName: "Muh Akbar", notes: "Transfer E-Wallet Instant" }
         ]
       };
     }
@@ -5192,7 +5194,7 @@ Copyright © 2026 Sambarang Production`;
         }
         if (Array.isArray(cachedSalesSettings.paymentAccounts)) {
           let hasDummy = cachedSalesSettings.paymentAccounts.some(acc => (acc.accountNo === '1234567890' || acc.accountNo === '08123456789' || (acc.bank && acc.bank.includes('Transfer BCA'))));
-          if (hasDummy || cachedSalesSettings.paymentAccounts.length === 0) {
+          if (hasDummy || cachedSalesSettings.paymentAccounts.length < 5) {
             cachedSalesSettings.paymentAccounts = JSON.parse(JSON.stringify(getDefaultSalesSettingsFallback().paymentAccounts));
             updated = true;
           }
@@ -5840,6 +5842,26 @@ Copyright © 2026 Sambarang Production`;
     }
 
     // --- REKENING PEMBAYARAN CRUD ---
+    function getDevBankLogoHtml(bankName) {
+      let name = String(bankName || '').toLowerCase();
+      if (name.includes('bsi') || name.includes('syariah')) {
+        return `<img src="logo-bsi.png" alt="BSI" class="w-7 h-7 rounded-lg object-contain shrink-0 border border-slate-700/60 shadow-sm" onerror="this.style.display='none'">`;
+      }
+      if (name.includes('jago')) {
+        return `<img src="logo-jago.png" alt="Jago" class="w-7 h-7 rounded-lg object-contain shrink-0 border border-slate-700/60 shadow-sm" onerror="this.style.display='none'">`;
+      }
+      if (name.includes('gopay')) {
+        return `<img src="logo-gopay.png" alt="GoPay" class="w-7 h-7 rounded-lg object-contain shrink-0 border border-slate-700/60 shadow-sm" onerror="this.style.display='none'">`;
+      }
+      if (name.includes('dana')) {
+        return `<img src="logo-dana.png" alt="DANA" class="w-7 h-7 rounded-lg object-contain shrink-0 border border-slate-700/60 shadow-sm" onerror="this.style.display='none'">`;
+      }
+      if (name.includes('ovo')) {
+        return `<img src="logo-ovo.png" alt="OVO" class="w-7 h-7 rounded-lg object-contain shrink-0 border border-slate-700/60 shadow-sm" onerror="this.style.display='none'">`;
+      }
+      return `<span class="material-symbols-outlined text-base text-emerald-400">account_balance</span>`;
+    }
+
     function renderPaymentAccountsTable() {
       let tbody = document.getElementById('accounts-table-body');
       if (!tbody) return;
@@ -5859,7 +5881,10 @@ Copyright © 2026 Sambarang Production`;
 
         tr.innerHTML = `
           <td class="p-3">
-            <div class="font-extrabold text-white text-xs">${escapeHtml(acc.bank)}</div>
+            <div class="flex items-center gap-2.5">
+              ${getDevBankLogoHtml(acc.bank)}
+              <div class="font-extrabold text-white text-xs">${escapeHtml(acc.bank)}</div>
+            </div>
           </td>
           <td class="p-3 whitespace-nowrap">
             <span class="font-mono-data text-cyan-300 font-bold text-xs select-all bg-slate-950 px-2 py-1 rounded-lg border border-slate-800">

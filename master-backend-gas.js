@@ -1971,8 +1971,10 @@ function getDefaultSalesSettings() {
     ],
     paymentAccounts: [
       { bank: "Bank Syariah Indonesia (BSI)", accountNo: "7177946448", accountName: "Muh Akbar", notes: "Rekening Utama • Konfirmasi Cepat" },
-      { bank: "Bank Jago", accountNo: "504172135812", accountName: "Muh Akbar", notes: "Transfer Bebas Biaya Admin" },
-      { bank: "QRIS / DANA / GoPay / OVO", accountNo: "087788197916", accountName: "Muh Akbar", notes: "Scan QRIS / Transfer E-Wallet Instant" }
+      { bank: "Bank Jago (Jago Syariah)", accountNo: "504172135812", accountName: "Muh Akbar", notes: "Transfer Bebas Biaya Admin" },
+      { bank: "GoPay", accountNo: "087788197916", accountName: "Muh Akbar", notes: "Transfer E-Wallet Instant" },
+      { bank: "DANA", accountNo: "087788197916", accountName: "Muh Akbar", notes: "Transfer E-Wallet Instant" },
+      { bank: "OVO", accountNo: "087788197916", accountName: "Muh Akbar", notes: "Transfer E-Wallet Instant" }
     ]
   };
 }
