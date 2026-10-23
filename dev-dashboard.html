@@ -99,21 +99,49 @@
     /* ======================================================== */
     /* KEUANGANKU LIGHT MODE THEME (REVERENSI RESMI index.html)*/
     /* ======================================================== */
+    /* KEUANGANKU DEVELOPER PORTAL - ULTRA PROFESSIONAL LIGHT MODE */
+    /* High-Contrast, WCAG AAA/AA Compliant Design System      */
+    /* ======================================================== */
     html:not(.dark) body,
     html.light body {
       background-color: #f8fafc !important;
       color: #0f172a !important;
     }
 
-    /* Header Nav */
+    /* 1. Header Navigation Bar */
     html:not(.dark) header,
     html.light header {
       background-color: #ffffff !important;
       border-color: #e2e8f0 !important;
       box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
     }
+    html:not(.dark) header h1,
+    html.light header h1 {
+      color: #0f172a !important;
+      font-weight: 800 !important;
+    }
+    html:not(.dark) #dev-app-version-badge,
+    html.light #dev-app-version-badge,
+    html:not(.dark) header span.bg-amber-500\/20,
+    html.light header span.bg-amber-500\/20 {
+      background-color: #fef3c7 !important;
+      color: #92400e !important;
+      border: 1px solid #fde68a !important;
+      font-weight: 800 !important;
+    }
+    html:not(.dark) #btn-install-dev-pwa,
+    html.light #btn-install-dev-pwa {
+      background-color: #fffbeb !important;
+      color: #92400e !important;
+      border: 1px solid #fde68a !important;
+      font-weight: 700 !important;
+    }
+    html:not(.dark) #btn-install-dev-pwa:hover,
+    html.light #btn-install-dev-pwa:hover {
+      background-color: #fef3c7 !important;
+    }
 
-    /* All Cards, Panels & Outer Wrappers */
+    /* 2. All Major Cards, Panels & Outer Wrappers */
     html:not(.dark) .bg-slate-950,
     html.light .bg-slate-950,
     html:not(.dark) .bg-slate-900,
@@ -139,9 +167,10 @@
       background-color: #ffffff !important;
       background-image: none !important;
       color: #0f172a !important;
+      border-color: #e2e8f0 !important;
     }
 
-    /* Reset Dark Gradients to Clean Light Surfaces */
+    /* Reset Dark Gradients to Crisp Clean Surfaces */
     html:not(.dark) [class*="from-slate-900"],
     html.light [class*="from-slate-900"],
     html:not(.dark) [class*="from-blue-950"],
@@ -150,7 +179,7 @@
       background-color: #ffffff !important;
     }
 
-    /* Master Backend Status Banner */
+    /* 3. Master Backend Status Banner */
     html:not(.dark) .master-status-banner-box,
     html.light .master-status-banner-box {
       background: #ffffff !important;
@@ -158,24 +187,65 @@
       border: 1px solid #e2e8f0 !important;
       box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
     }
+    html:not(.dark) .master-status-banner-box span.bg-emerald-500\/20,
+    html.light .master-status-banner-box span.bg-emerald-500\/20 {
+      background-color: #d1fae5 !important;
+      color: #065f46 !important;
+      border: 1px solid #6ee7b7 !important;
+      font-weight: 800 !important;
+    }
+    html:not(.dark) #dev-backend-url-display,
+    html.light #dev-backend-url-display {
+      background-color: #f1f5f9 !important;
+      color: #1e293b !important;
+      border: 1px solid #e2e8f0 !important;
+      padding: 3px 8px !important;
+      border-radius: 6px !important;
+      font-weight: 600 !important;
+      font-family: monospace !important;
+    }
 
     /* Special Soft Banner for Formulir Pemesanan */
     html:not(.dark) .order-form-banner-box,
     html.light .order-form-banner-box {
       background: linear-gradient(135deg, #eff6ff 0%, #ffffff 50%, #f0fdf4 100%) !important;
-      border: 1px solid #bfdbfe !important;
+      border: 1.5px solid #bfdbfe !important;
+      box-shadow: 0 2px 6px rgba(37,99,235,0.06) !important;
     }
-
-    html:not(.dark) #dev-order-url-display,
-    html.light #dev-order-url-display {
+    html:not(.dark) #display-order-form-url,
+    html.light #display-order-form-url {
       background-color: #ffffff !important;
-      border-color: #93c5fd !important;
+      border: 1.5px solid #93c5fd !important;
       color: #1d4ed8 !important;
+      font-weight: 700 !important;
     }
 
-    html:not(.dark) #dev-backend-url-display,
-    html.light #dev-backend-url-display {
-      color: #64748b !important;
+    /* 4. Stats Overview Cards */
+    html:not(.dark) .grid.grid-cols-2.lg\:grid-cols-4 > div,
+    html.light .grid.grid-cols-2.lg\:grid-cols-4 > div {
+      background-color: #ffffff !important;
+      border: 1px solid #e2e8f0 !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+    }
+    html:not(.dark) #stat-total-tokens,
+    html.light #stat-total-tokens {
+      color: #0f172a !important;
+      font-weight: 800 !important;
+    }
+    html:not(.dark) #stat-pin-changed,
+    html.light #stat-pin-changed {
+      color: #047857 !important;
+      font-weight: 800 !important;
+    }
+    html:not(.dark) #stat-using-token,
+    html.light #stat-using-token {
+      color: #b45309 !important;
+      font-weight: 800 !important;
+    }
+    html:not(.dark) #stat-active-devices,
+    html.light #stat-active-devices {
+      color: #0284c7 !important;
+      font-weight: 800 !important;
     }
 
     /* Sub-panels & Metric Info Cards */
@@ -200,6 +270,8 @@
     html.light .border-slate-800,
     html:not(.dark) .border-slate-800\/80,
     html.light .border-slate-800\/80,
+    html:not(.dark) .border-slate-800\/60,
+    html.light .border-slate-800\/60,
     html:not(.dark) .border-slate-700,
     html.light .border-slate-700,
     html:not(.dark) .border-slate-700\/80,
@@ -207,15 +279,15 @@
       border-color: #e2e8f0 !important;
     }
 
-    /* Text Colors */
+    /* 5. Typography Hierarchy & Contrast */
     html:not(.dark) .text-white,
     html.light .text-white,
     html:not(.dark) .text-slate-100,
-    html.light .text-slate-100,
-    html:not(.dark) .text-slate-200,
-    html.light .text-slate-200 {
+    html.light .text-slate-100 {
       color: #0f172a !important;
     }
+    html:not(.dark) .text-slate-200,
+    html.light .text-slate-200,
     html:not(.dark) .text-slate-300,
     html.light .text-slate-300 {
       color: #334155 !important;
@@ -227,7 +299,64 @@
       color: #64748b !important;
     }
 
-    /* Inputs & Selects */
+    /* 6. High-Contrast Monospace Tokens & Badges */
+    html:not(.dark) .font-mono-data .text-cyan-300,
+    html.light .font-mono-data .text-cyan-300,
+    html:not(.dark) [onclick*="copyText"] .text-cyan-300,
+    html.light [onclick*="copyText"] .text-cyan-300 {
+      color: #0369a1 !important;
+      background-color: #f0f9ff !important;
+      padding: 2px 7px !important;
+      border-radius: 6px !important;
+      border: 1px solid #bae6fd !important;
+      font-weight: 800 !important;
+    }
+    html:not(.dark) [onclick*="copyText"]:hover .text-cyan-300,
+    html.light [onclick*="copyText"]:hover .text-cyan-300 {
+      background-color: #e0f2fe !important;
+      color: #075985 !important;
+      border-color: #7dd3fc !important;
+    }
+
+    /* Neon Text Overrides in Light Mode (Crystal Clear WCAG AAA/AA) */
+    html:not(.dark) .text-cyan-300,
+    html.light .text-cyan-300,
+    html:not(.dark) .text-cyan-400,
+    html.light .text-cyan-400,
+    html:not(.dark) .text-sky-400,
+    html.light .text-sky-400 {
+      color: #0369a1 !important;
+    }
+    html:not(.dark) .text-amber-300,
+    html.light .text-amber-300,
+    html:not(.dark) .text-amber-400,
+    html.light .text-amber-400,
+    html:not(.dark) .text-yellow-400,
+    html.light .text-yellow-400 {
+      color: #92400e !important;
+    }
+    html:not(.dark) .text-emerald-300,
+    html.light .text-emerald-300,
+    html:not(.dark) .text-emerald-400,
+    html.light .text-emerald-400,
+    html:not(.dark) .text-green-400,
+    html.light .text-green-400 {
+      color: #047857 !important;
+    }
+    html:not(.dark) .text-blue-300,
+    html.light .text-blue-300,
+    html:not(.dark) .text-blue-400,
+    html.light .text-blue-400 {
+      color: #1d4ed8 !important;
+    }
+    html:not(.dark) .text-rose-300,
+    html.light .text-rose-300,
+    html:not(.dark) .text-rose-400,
+    html.light .text-rose-400 {
+      color: #b91c1c !important;
+    }
+
+    /* 7. Inputs, Selects & Search Bar */
     html:not(.dark) input,
     html.light input,
     html:not(.dark) select,
@@ -236,36 +365,92 @@
     html.light textarea {
       background-color: #ffffff !important;
       color: #0f172a !important;
-      border-color: #cbd5e1 !important;
+      border: 1.5px solid #cbd5e1 !important;
+      font-weight: 500 !important;
+    }
+    html:not(.dark) input:focus,
+    html.light input:focus,
+    html:not(.dark) select:focus,
+    html.light select:focus,
+    html:not(.dark) textarea:focus,
+    html.light textarea:focus {
+      border-color: #2563eb !important;
+      outline: 2px solid rgba(37, 99, 235, 0.2) !important;
     }
     html:not(.dark) input::placeholder,
     html.light input::placeholder,
     html:not(.dark) textarea::placeholder,
     html.light textarea::placeholder {
-      color: #94a3b8 !important;
+      color: #64748b !important;
     }
 
-    /* Secondary Buttons */
+    /* 8. Action Buttons & Secondary Controls */
     html:not(.dark) .bg-slate-800,
     html.light .bg-slate-800,
     html:not(.dark) .bg-slate-700,
     html.light .bg-slate-700 {
-      background-color: #f1f5f9 !important;
-      color: #0f172a !important;
-      border-color: #cbd5e1 !important;
+      background-color: #f8fafc !important;
+      color: #1e293b !important;
+      border: 1px solid #cbd5e1 !important;
+      font-weight: 600 !important;
     }
     html:not(.dark) .bg-slate-800:hover,
     html.light .bg-slate-800:hover,
     html:not(.dark) .bg-slate-700:hover,
     html.light .bg-slate-700:hover {
       background-color: #e2e8f0 !important;
+      color: #0f172a !important;
+      border-color: #94a3b8 !important;
     }
     html:not(.dark) .bg-slate-800 .material-symbols-outlined,
     html.light .bg-slate-800 .material-symbols-outlined {
-      color: #334155 !important;
+      color: #475569 !important;
     }
 
-    /* Preserve White Text for Vibrant Primary Action Buttons */
+    /* Table Action Buttons: Email, WhatsApp, Uji */
+    html:not(.dark) [class*="bg-blue-600/25"],
+    html.light [class*="bg-blue-600/25"],
+    html:not(.dark) [class*="bg-blue-600/20"],
+    html.light [class*="bg-blue-600/20"] {
+      background-color: #eff6ff !important;
+      color: #1d4ed8 !important;
+      border: 1px solid #bfdbfe !important;
+      font-weight: 700 !important;
+    }
+    html:not(.dark) [class*="bg-blue-600/25"]:hover,
+    html.light [class*="bg-blue-600/25"]:hover,
+    html:not(.dark) [class*="bg-blue-600/20"]:hover,
+    html.light [class*="bg-blue-600/20"]:hover {
+      background-color: #2563eb !important;
+      color: #ffffff !important;
+      border-color: #1d4ed8 !important;
+    }
+    html:not(.dark) [class*="bg-blue-600/25"]:hover *,
+    html.light [class*="bg-blue-600/25"]:hover *,
+    html:not(.dark) [class*="bg-blue-600/20"]:hover *,
+    html.light [class*="bg-blue-600/20"]:hover * {
+      color: #ffffff !important;
+    }
+
+    html:not(.dark) [class*="bg-emerald-600/20"],
+    html.light [class*="bg-emerald-600/20"] {
+      background-color: #ecfdf5 !important;
+      color: #047857 !important;
+      border: 1px solid #a7f3d0 !important;
+      font-weight: 700 !important;
+    }
+    html:not(.dark) [class*="bg-emerald-600/20"]:hover,
+    html.light [class*="bg-emerald-600/20"]:hover {
+      background-color: #10b981 !important;
+      color: #ffffff !important;
+      border-color: #059669 !important;
+    }
+    html:not(.dark) [class*="bg-emerald-600/20"]:hover *,
+    html.light [class*="bg-emerald-600/20"]:hover * {
+      color: #ffffff !important;
+    }
+
+    /* Preserve Crisp White Text for Vibrant Primary Action Buttons */
     html:not(.dark) .bg-blue-600,
     html.light .bg-blue-600,
     html:not(.dark) .bg-emerald-600,
@@ -291,28 +476,36 @@
       color: #ffffff !important;
     }
 
-    /* Tab Navigation in Light Mode */
-    html:not(.dark) .tab-btn-inactive {
-      color: #475569 !important;
-      background-color: transparent !important;
+    /* 9. Tab Navigation in Light Mode */
+    html:not(.dark) button[id^="tab-btn-"]:not(.bg-blue-600),
+    html.light button[id^="tab-btn-"]:not(.bg-blue-600) {
+      background-color: #f8fafc !important;
+      color: #334155 !important;
+      border: 1px solid #e2e8f0 !important;
+      font-weight: 700 !important;
     }
-    html:not(.dark) .tab-btn-inactive:hover {
+    html:not(.dark) button[id^="tab-btn-"]:not(.bg-blue-600):hover,
+    html.light button[id^="tab-btn-"]:not(.bg-blue-600):hover {
       background-color: #f1f5f9 !important;
       color: #0f172a !important;
+      border-color: #cbd5e1 !important;
     }
 
-    /* Tables in Light Mode (Matching index.html) */
+    /* 10. Tables in Light Mode (Crisp Header & Border) */
     html:not(.dark) table thead,
     html.light table thead {
-      background-color: #f1f5f9 !important;
-      border-bottom: 2px solid #e2e8f0 !important;
+      background-color: #f8fafc !important;
+      border-bottom: 2px solid #cbd5e1 !important;
     }
     html:not(.dark) table thead th,
     html.light table thead th {
-      background-color: #f1f5f9 !important;
-      color: #475569 !important;
+      background-color: #f8fafc !important;
+      color: #1e293b !important;
       border-color: #e2e8f0 !important;
-      font-weight: 700 !important;
+      font-weight: 800 !important;
+      font-size: 11px !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.05em !important;
     }
     html:not(.dark) table tbody tr,
     html.light table tbody tr {
@@ -330,32 +523,75 @@
       border-color: #f1f5f9 !important;
     }
 
-    /* Badges in Light Mode (Clean pastel background with high contrast text) */
+    /* 11. Badges & Status Pills in Light Mode */
+    html:not(.dark) [class*="bg-cyan-500/10"],
+    html.light [class*="bg-cyan-500/10"],
+    html:not(.dark) [class*="bg-cyan-500/15"],
+    html.light [class*="bg-cyan-500/15"],
     html:not(.dark) [class*="bg-cyan-950"],
     html.light [class*="bg-cyan-950"],
     html:not(.dark) [class*="bg-blue-950"],
     html.light [class*="bg-blue-950"] {
-      background-color: #eff6ff !important;
-      color: #0284c7 !important;
-      border-color: #bae6fd !important;
+      background-color: #f0f9ff !important;
+      color: #0369a1 !important;
+      border: 1px solid #bae6fd !important;
+      font-weight: 700 !important;
     }
+    html:not(.dark) [class*="bg-emerald-500/15"],
+    html.light [class*="bg-emerald-500/15"],
+    html:not(.dark) [class*="bg-emerald-500/20"],
+    html.light [class*="bg-emerald-500/20"],
     html:not(.dark) [class*="bg-emerald-950"],
     html.light [class*="bg-emerald-950"] {
-      background-color: #ecfdf5 !important;
-      color: #047857 !important;
-      border-color: #a7f3d0 !important;
+      background-color: #d1fae5 !important;
+      color: #065f46 !important;
+      border: 1px solid #6ee7b7 !important;
+      font-weight: 700 !important;
     }
+    html:not(.dark) [class*="bg-amber-500/10"],
+    html.light [class*="bg-amber-500/10"],
+    html:not(.dark) [class*="bg-amber-500/15"],
+    html.light [class*="bg-amber-500/15"],
+    html:not(.dark) [class*="bg-amber-500/20"],
+    html.light [class*="bg-amber-500/20"],
     html:not(.dark) [class*="bg-amber-950"],
     html.light [class*="bg-amber-950"] {
       background-color: #fffbeb !important;
-      color: #b45309 !important;
-      border-color: #fde68a !important;
+      color: #92400e !important;
+      border: 1px solid #fde68a !important;
+      font-weight: 700 !important;
     }
+    html:not(.dark) [class*="bg-rose-500/20"],
+    html.light [class*="bg-rose-500/20"],
     html:not(.dark) [class*="bg-rose-950"],
     html.light [class*="bg-rose-950"] {
-      background-color: #fef2f2 !important;
-      color: #b91c1c !important;
-      border-color: #fecaca !important;
+      background-color: #fee2e2 !important;
+      color: #991b1b !important;
+      border: 1px solid #fca5a5 !important;
+      font-weight: 700 !important;
+    }
+
+    /* 12. Modals in Light Mode */
+    html:not(.dark) .fixed.inset-0 .max-w-md,
+    html.light .fixed.inset-0 .max-w-md,
+    html:not(.dark) .fixed.inset-0 .max-w-lg,
+    html.light .fixed.inset-0 .max-w-lg,
+    html:not(.dark) .fixed.inset-0 .max-w-xl,
+    html.light .fixed.inset-0 .max-w-xl,
+    html:not(.dark) .fixed.inset-0 .max-w-2xl,
+    html.light .fixed.inset-0 .max-w-2xl {
+      background-color: #ffffff !important;
+      border: 1px solid #e2e8f0 !important;
+      color: #0f172a !important;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    /* 13. Footer */
+    html:not(.dark) footer,
+    html.light footer {
+      background-color: #ffffff !important;
+      border-top: 1px solid #e2e8f0 !important;
+      color: #64748b !important;
     }
 
     html:not(.dark) .custom-scroll::-webkit-scrollbar-track,
