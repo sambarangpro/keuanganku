@@ -4655,12 +4655,65 @@
       // 2. Tandai mode demo aktif
       localStorage.setItem('KEUANGANKU_IS_DEMO_MODE', 'true');
 
-      // 3. Bangun data demo yang dinamis, realistis, dan super lengkap
+      // 3. Bangun data demo yang dinamis, realistis, dan 100% mengisi semua indikator
       let now = new Date();
       let y = now.getFullYear();
       let m = String(now.getMonth() + 1).padStart(2, '0');
       let pad = (n) => String(n).padStart(2, '0');
       let curDay = now.getDate();
+
+      // Tanggal jatuh tempo fleksibel untuk notifikasi menagih piutang
+      let recDate1 = new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000);
+      let recDate1Str = `${recDate1.getFullYear()}-${pad(recDate1.getMonth() + 1)}-${pad(recDate1.getDate())}`;
+      let recDate2 = new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000);
+      let recDate2Str = `${recDate2.getFullYear()}-${pad(recDate2.getMonth() + 1)}-${pad(recDate2.getDate())}`;
+
+      let sampleReceiptSvg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='380' viewBox='0 0 300 380'><rect width='300' height='380' fill='%23ffffff' rx='8'/><text x='150' y='36' font-family='sans-serif' font-size='16' font-weight='bold' text-anchor='middle' fill='%23111827'>SUPERMARKET GRAND</text><text x='150' y='58' font-family='sans-serif' font-size='10' text-anchor='middle' fill='%236b7280'>Jl. Sudirman No. 88 Jakarta</text><line x1='20' y1='75' x2='280' y2='75' stroke='%23e5e7eb' stroke-width='1.5' stroke-dasharray='4'/><text x='25' y='110' font-family='sans-serif' font-size='12' fill='%23374151'>Belanja Mingguan &amp; Dapur</text><text x='275' y='110' font-family='sans-serif' font-size='12' text-anchor='end' font-weight='bold' fill='%23111827'>Rp 620.000</text><text x='25' y='140' font-family='sans-serif' font-size='11' fill='%236b7280'>Subtotal</text><text x='275' y='140' font-family='sans-serif' font-size='11' text-anchor='end' fill='%236b7280'>Rp 620.000</text><text x='25' y='165' font-family='sans-serif' font-size='11' fill='%236b7280'>PPN (11%)</text><text x='275' y='165' font-family='sans-serif' font-size='11' text-anchor='end' fill='%236b7280'>Termasuk</text><line x1='20' y1='280' x2='280' y2='280' stroke='%23e5e7eb' stroke-width='1.5' stroke-dasharray='4'/><text x='25' y='310' font-family='sans-serif' font-size='14' font-weight='bold' fill='%23111827'>TOTAL TRANSAKSI</text><text x='275' y='310' font-family='sans-serif' font-size='14' font-weight='bold' text-anchor='end' fill='%232563eb'>Rp 620.000</text><text x='150' y='350' font-family='sans-serif' font-size='10' font-weight='bold' text-anchor='middle' fill='%2316a34a'>LUNAS - TERIMA KASIH</text></svg>";
+
+      // Transaksi bulan berjalan mencakup semua kategori & fitur aplikasi
+      let curMonthTransactions = [
+        { dateTime: `${pad(curDay)}/${m}/${y}, 14:15:00`, rawDate: `${y}-${m}-${pad(curDay)}`, name: "Kopi & Pastry Artisan Bakery", amount: 45000, cashflow: "Spending", category: "Makan & Minum", dariAcc: "GoPay / E-Wallet", keAcc: "- not applicable -" },
+        { dateTime: `${pad(curDay)}/${m}/${y}, 09:30:00`, rawDate: `${y}-${m}-${pad(curDay)}`, name: "Isi Bensin Pertamax Turbo", amount: 200000, cashflow: "Spending", category: "Transportasi", dariAcc: "GoPay / E-Wallet", keAcc: "- not applicable -" },
+        { dateTime: `${pad(Math.max(1, curDay-1))}/${m}/${y}, 19:45:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-1))}`, name: "Makan Malam Resto Bareng Keluarga", amount: 385000, cashflow: "Spending", category: "Makan & Minum", dariAcc: "BCA Prioritas (Utama)", keAcc: "- not applicable -" },
+        { dateTime: `${pad(Math.max(1, curDay-2))}/${m}/${y}, 16:20:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-2))}`, name: "Belanja Mingguan Supermarket", amount: 620000, cashflow: "Spending", category: "Belanja Bulanan", dariAcc: "BCA Prioritas (Utama)", keAcc: "- not applicable -", attachments: [{ name: "struk_supermarket.svg", type: "image/svg+xml", size: "2.4 KB", data: sampleReceiptSvg }] },
+        { dateTime: `${pad(Math.max(1, curDay-2))}/${m}/${y}, 11:30:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-2))}`, name: "Pelunasan Sebagian Laptop Rian", amount: 1250000, cashflow: "Pelunasan Piutang", category: "Talangan Pembelian Laptop (Rian Ardiansyah)", dariAcc: "- not applicable -", keAcc: "GoPay / E-Wallet" },
+        { dateTime: `${pad(Math.max(1, curDay-3))}/${m}/${y}, 14:00:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-3))}`, name: "Cicilan Pelunasan Katering Bpk Hendra", amount: 1500000, cashflow: "Pelunasan Piutang", category: "Pinjaman Modal Usaha Katering (Bpk Hendra)", dariAcc: "- not applicable -", keAcc: "BCA Prioritas (Utama)" },
+        { dateTime: `${pad(Math.max(1, curDay-3))}/${m}/${y}, 13:00:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-3))}`, name: "Bonus Proyek Aplikasi & Desain", amount: 4500000, cashflow: "Income", category: "Bonus Proyek", dariAcc: "- not applicable -", keAcc: "BCA Prioritas (Utama)" },
+        { dateTime: `${pad(Math.max(1, curDay-4))}/${m}/${y}, 10:30:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-4))}`, name: "Tagihan Listrik PLN Pascabayar", amount: 480000, cashflow: "Spending", category: "Tagihan & WiFi", dariAcc: "BCA Prioritas (Utama)", keAcc: "- not applicable -" },
+        { dateTime: `${pad(Math.max(1, curDay-5))}/${m}/${y}, 12:15:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-5))}`, name: "Sedekah Jumat Berkah", amount: 150000, cashflow: "Spending", category: "Sedekah & Zakat", dariAcc: "GoPay / E-Wallet", keAcc: "- not applicable -" },
+        { dateTime: `${pad(Math.max(1, curDay-5))}/${m}/${y}, 16:00:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-5))}`, name: "Bayar Cicilan iPad Pro Bulan Ini", amount: 1375000, cashflow: "Bayar Cicilan / Utang", category: "Kredit Gadget iPad Pro M4", dariAcc: "Bank Jago (Kantong Tabungan)", keAcc: "- not applicable -" },
+        { dateTime: `${pad(Math.max(1, curDay-6))}/${m}/${y}, 15:40:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-6))}`, name: "Buku Pengembangan Diri Gramedia", amount: 135000, cashflow: "Spending", category: "Hiburan & Hobi", dariAcc: "Uang Tunai (Cash Fisik)", keAcc: "- not applicable -" },
+        { dateTime: `${pad(Math.max(1, curDay-7))}/${m}/${y}, 11:20:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-7))}`, name: "Pencairan Piutang Laptop Rian", amount: 4500000, cashflow: "Piutang Baru", category: "Talangan Pembelian Laptop (Rian Ardiansyah)", dariAcc: "BCA Prioritas (Utama)", keAcc: "- not applicable -" },
+        { dateTime: `${pad(Math.max(1, curDay-8))}/${m}/${y}, 10:00:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-8))}`, name: "Dividen Investasi Reksadana", amount: 850000, cashflow: "Income", category: "Dividen Saham", dariAcc: "- not applicable -", keAcc: "Bank Jago (Kantong Tabungan)" },
+        { dateTime: `${pad(Math.max(1, curDay-9))}/${m}/${y}, 17:10:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-9))}`, name: "Beli Aksesoris & Mouse Ergonomis", amount: 420000, cashflow: "Spending", category: "Hiburan & Hobi", dariAcc: "BCA Prioritas (Utama)", keAcc: "- not applicable -" },
+        { dateTime: `${pad(Math.max(1, curDay-10))}/${m}/${y}, 14:30:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-10))}`, name: "Bayar Cicilan KPR Rumah Bulan Ini", amount: 3200000, cashflow: "Bayar Cicilan / Utang", category: "Cicilan Rumah KPR Syariah (Bank BSI)", dariAcc: "BCA Prioritas (Utama)", keAcc: "- not applicable -" },
+        { dateTime: `${pad(Math.max(1, curDay-11))}/${m}/${y}, 11:20:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-11))}`, name: "Servis Rutin Kendaraan & Ganti Oli", amount: 350000, cashflow: "Spending", category: "Transportasi", dariAcc: "BCA Prioritas (Utama)", keAcc: "- not applicable -" },
+        { dateTime: `${pad(Math.max(1, curDay-12))}/${m}/${y}, 16:00:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-12))}`, name: "Medical Checkup & Multivitamin", amount: 250000, cashflow: "Spending", category: "Kesehatan", dariAcc: "GoPay / E-Wallet", keAcc: "- not applicable -" },
+        { dateTime: `${pad(Math.max(1, curDay-13))}/${m}/${y}, 09:15:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-13))}`, name: "Tagihan Internet WiFi Fiber 100Mbps", amount: 380000, cashflow: "Spending", category: "Tagihan & WiFi", dariAcc: "BCA Prioritas (Utama)", keAcc: "- not applicable -" },
+        { dateTime: `${pad(Math.max(1, curDay-14))}/${m}/${y}, 15:00:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-14))}`, name: "Setoran Investasi Rutin Bibit", amount: 1500000, cashflow: "Invest / Savings", category: "Reksadana Saham Bibit", dariAcc: "Bank Jago (Kantong Tabungan)", keAcc: "- not applicable -" },
+        { dateTime: `${pad(Math.max(1, curDay-15))}/${m}/${y}, 20:30:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-15))}`, name: "Langganan Netflix & Spotify Family", amount: 186000, cashflow: "Spending", category: "Hiburan & Hobi", dariAcc: "Bank Jago (Kantong Tabungan)", keAcc: "- not applicable -" },
+        { dateTime: `${pad(Math.max(1, curDay-16))}/${m}/${y}, 10:00:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-16))}`, name: "Infaq Pembangunan Musholla & Anak Yatim", amount: 350000, cashflow: "Spending", category: "Sedekah & Zakat", dariAcc: "BCA Prioritas (Utama)", keAcc: "- not applicable -" },
+        { dateTime: `${pad(Math.max(1, curDay-17))}/${m}/${y}, 13:45:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-17))}`, name: "Tabungan Impian MacBook Pro M3", amount: 1000000, cashflow: "Financial Goals", category: "Beli MacBook M3 Pro Max", dariAcc: "BCA Prioritas (Utama)", keAcc: "- not applicable -" },
+        { dateTime: `${pad(Math.max(1, curDay-18))}/${m}/${y}, 14:00:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-18))}`, name: "Belanja Bulanan Kebutuhan Pokok", amount: 1450000, cashflow: "Spending", category: "Belanja Bulanan", dariAcc: "BCA Prioritas (Utama)", keAcc: "- not applicable -" },
+        { dateTime: `01/${m}/${y}, 08:00:00`, rawDate: `${y}-${m}-01`, name: "Gaji Pokok Eksekutif", amount: 18500000, cashflow: "Income", category: "Gaji Pokok", dariAcc: "- not applicable -", keAcc: "BCA Prioritas (Utama)" },
+        { dateTime: `01/${m}/${y}, 08:30:00`, rawDate: `${y}-${m}-01`, name: "Alokasi Pos Tabungan Impian", amount: 3500000, cashflow: "Transfer", category: "Transfer Antar Akun", dariAcc: "BCA Prioritas (Utama)", keAcc: "Bank Jago (Kantong Tabungan)" },
+        { dateTime: `01/${m}/${y}, 08:45:00`, rawDate: `${y}-${m}-01`, name: "Top Up Saldo E-Wallet Operasional", amount: 1000000, cashflow: "Transfer", category: "Transfer Antar Akun", dariAcc: "BCA Prioritas (Utama)", keAcc: "GoPay / E-Wallet" }
+      ];
+
+      // Riwayat beberapa bulan sebelumnya agar grafik Diagram Tren Kategori (Jan-Des) terisi penuh
+      let pastTransactions = [];
+      let curMonthIdx = now.getMonth();
+      for (let pastM = 0; pastM < curMonthIdx; pastM++) {
+        let pMStr = pad(pastM + 1);
+        pastTransactions.push(
+          { dateTime: `01/${pMStr}/${y}, 08:00:00`, rawDate: `${y}-${pMStr}-01`, name: "Gaji Pokok Bulanan", amount: 18500000, cashflow: "Income", category: "Gaji Pokok", dariAcc: "- not applicable -", keAcc: "BCA Prioritas (Utama)" },
+          { dateTime: `05/${pMStr}/${y}, 12:30:00`, rawDate: `${y}-${pMStr}-05`, name: "Belanja Bulanan & Dapur", amount: 2300000 + (pastM * 40000), cashflow: "Spending", category: "Belanja Bulanan", dariAcc: "BCA Prioritas (Utama)", keAcc: "- not applicable -" },
+          { dateTime: `10/${pMStr}/${y}, 19:00:00`, rawDate: `${y}-${pMStr}-10`, name: "Restoran & Kuliner Keluarga", amount: 1750000 + (pastM * 60000), cashflow: "Spending", category: "Makan & Minum", dariAcc: "GoPay / E-Wallet", keAcc: "- not applicable -" },
+          { dateTime: `15/${pMStr}/${y}, 10:15:00`, rawDate: `${y}-${pMStr}-15`, name: "Bensin & Operasional Mobil", amount: 800000 + (pastM * 25000), cashflow: "Spending", category: "Transportasi", dariAcc: "GoPay / E-Wallet", keAcc: "- not applicable -" },
+          { dateTime: `20/${pMStr}/${y}, 14:00:00`, rawDate: `${y}-${pMStr}-20`, name: "Internet WiFi & Tagihan", amount: 760000, cashflow: "Spending", category: "Tagihan & WiFi", dariAcc: "BCA Prioritas (Utama)", keAcc: "- not applicable -" },
+          { dateTime: `25/${pMStr}/${y}, 09:00:00`, rawDate: `${y}-${pMStr}-25`, name: "Cicilan KPR Rumah", amount: 3200000, cashflow: "Bayar Cicilan / Utang", category: "Cicilan Rumah KPR Syariah (Bank BSI)", dariAcc: "BCA Prioritas (Utama)", keAcc: "- not applicable -" }
+        );
+      }
 
       let demoData = {
         appPin: globalData.appPin || "123456",
@@ -4688,52 +4741,89 @@
         },
         incomes: ["Gaji Pokok", "Bonus Proyek", "Dividen Saham", "Hasil Usaha", "Lainnya"],
         spendings: ["Makan & Minum", "Belanja Bulanan", "Transportasi", "Tagihan & WiFi", "Hiburan & Hobi", "Sedekah & Zakat", "Kesehatan", "Lainnya"],
-        bills: ["Listrik PLN", "Internet WiFi", "Air PDAM", "Cicilan"],
-        routinePayments: {},
+        bills: ["Listrik PLN", "Internet WiFi", "Air PDAM", "Cicilan KPR", "BPJS Kesehatan"],
+        routinePayments: {
+          "Tagihan Internet WiFi Fiber 100Mbps": { amount: 385000, dueDay: curDay },
+          "Tagihan Listrik PLN Pascabayar": { amount: 520000, dueDay: (curDay + 2 <= 28 ? curDay + 2 : 28) },
+          "Iuran BPJS Kesehatan Mandiri": { amount: 300000, dueDay: (curDay + 1 <= 28 ? curDay + 1 : 15) },
+          "Cicilan Asuransi Keluarga": { amount: 750000, dueDay: 25 }
+        },
         monthlyBudgets: {
-          "Makan & Minum": 3000000,
-          "Belanja Bulanan": 2500000,
-          "Transportasi": 1000000,
+          "Makan & Minum": 3500000,
+          "Belanja Bulanan": 3000000,
+          "Transportasi": 1200000,
+          "Tagihan & WiFi": 1000000,
           "Hiburan & Hobi": 1500000,
-          "Tagihan & WiFi": 1200000
+          "Sedekah & Zakat": 1000000,
+          "Kesehatan": 800000
         },
         investData: {
           "Reksadana Saham Bibit": { initial: 18500000, used: 0 },
-          "Tabungan Emas Antam Digital": { initial: 12000000, used: 0 }
+          "Tabungan Emas Antam Digital": { initial: 12000000, used: 0 },
+          "Deposito BSI Mudharabah": { initial: 25000000, used: 0 }
         },
         sinkingData: {
-          "Pajak & Servis Kendaraan": { target: 5000000, initial: 3800000, durationMonths: 12, deadline: `${y}-12-31`, used: 0 },
-          "Kurban Idul Adha": { target: 4500000, initial: 3500000, durationMonths: 10, deadline: `${y+1}-05-20`, used: 0 }
+          "Pajak & Servis Mobil Tahunan": { target: 6000000, initial: 4500000, durationMonths: 12, deadline: `${y}-12-31`, used: 500000 },
+          "Kurban Idul Adha 1447H": { target: 4500000, initial: 3750000, durationMonths: 10, deadline: `${y+1}-05-20`, used: 0 },
+          "Dana Liburan Akhir Tahun": { target: 10000000, initial: 7500000, durationMonths: 6, deadline: `${y}-12-20`, used: 1200000 }
         },
         goalsData: {
-          "Beli MacBook M3 Pro": { target: 25000000, initial: 18750000, durationMonths: 12, deadline: `${y}-11-30`, used: 0 },
-          "Dana Darurat 6 Bulan": { target: 30000000, initial: 27000000, durationMonths: 12, deadline: `${y}-12-31`, used: 0 },
-          "Liburan Akhir Tahun": { target: 15000000, initial: 9000000, durationMonths: 8, deadline: `${y}-12-20`, used: 0 }
+          "Beli MacBook M3 Pro Max": { target: 32000000, initial: 24000000, timeframeVal: 1, timeframeUnit: "Tahun", used: 0 },
+          "Dana Darurat 6 Bulan": { target: 45000000, initial: 38500000, timeframeVal: 2, timeframeUnit: "Tahun", used: 0 },
+          "DP Rumah Impian Syariah": { target: 120000000, initial: 75000000, timeframeVal: 3, timeframeUnit: "Tahun", used: 0 }
         },
-        receivablesData: {},
+        receivablesData: {
+          "Pinjaman Modal Usaha Katering (Bpk Hendra)": {
+            total: 5000000,
+            paid: 3000000,
+            deadline: recDate1Str
+          },
+          "Talangan Pembelian Laptop (Rian Ardiansyah)": {
+            total: 4500000,
+            paid: 2500000,
+            deadline: recDate2Str
+          }
+        },
         nonMoneyAssets: {
-          "Laptop Kerja Asus ROG": { value: 18500000, note: "Aset Produktif" },
-          "Emas Batangan Antam 10gr": { value: 14200000, note: "Simpanan Fisik" }
+          "Logam Mulia Emas Antam 100g": {
+            type: "Emas",
+            qty: 100,
+            unit: "Gram",
+            estimatedPrice: 1420000,
+            used: 0
+          },
+          "Perak Murni Batangan SRH": {
+            type: "Perak",
+            qty: 250,
+            unit: "Gram",
+            estimatedPrice: 18500,
+            used: 0
+          },
+          "Aset Properti Kavling Siap Bangun": {
+            type: "Lainnya",
+            qty: 150,
+            unit: "M2",
+            estimatedPrice: 1250000,
+            used: 0
+          }
         },
-        debtData: {},
-        recentHistory: [
-          { dateTime: `${pad(curDay)}/${m}/${y}, 14:15:00`, rawDate: `${y}-${m}-${pad(curDay)}`, name: "Kopi & Pastry Artisan Bakery", amount: 45000, cashflow: "Spending", category: "Makan & Minum", dariAcc: "GoPay / E-Wallet", keAcc: "- not applicable -" },
-          { dateTime: `${pad(curDay)}/${m}/${y}, 09:30:00`, rawDate: `${y}-${m}-${pad(curDay)}`, name: "Isi Bensin Pertamax Turbo", amount: 200000, cashflow: "Spending", category: "Transportasi", dariAcc: "GoPay / E-Wallet", keAcc: "- not applicable -" },
-          { dateTime: `${pad(Math.max(1, curDay-1))}/${m}/${y}, 19:45:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-1))}`, name: "Makan Malam Resto Bareng Keluarga", amount: 385000, cashflow: "Spending", category: "Makan & Minum", dariAcc: "BCA Prioritas (Utama)", keAcc: "- not applicable -" },
-          { dateTime: `${pad(Math.max(1, curDay-2))}/${m}/${y}, 16:20:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-2))}`, name: "Belanja Mingguan Supermarket", amount: 620000, cashflow: "Spending", category: "Belanja Bulanan", dariAcc: "BCA Prioritas (Utama)", keAcc: "- not applicable -" },
-          { dateTime: `${pad(Math.max(1, curDay-3))}/${m}/${y}, 13:00:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-3))}`, name: "Bonus Proyek Aplikasi & Desain", amount: 4500000, cashflow: "Income", category: "Bonus Proyek", dariAcc: "- not applicable -", keAcc: "BCA Prioritas (Utama)" },
-          { dateTime: `${pad(Math.max(1, curDay-4))}/${m}/${y}, 10:30:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-4))}`, name: "Tagihan Listrik PLN Pascabayar", amount: 480000, cashflow: "Spending", category: "Tagihan & WiFi", dariAcc: "BCA Prioritas (Utama)", keAcc: "- not applicable -" },
-          { dateTime: `${pad(Math.max(1, curDay-5))}/${m}/${y}, 12:15:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-5))}`, name: "Sedekah Jumat Berkah", amount: 150000, cashflow: "Spending", category: "Sedekah & Zakat", dariAcc: "GoPay / E-Wallet", keAcc: "- not applicable -" },
-          { dateTime: `${pad(Math.max(1, curDay-6))}/${m}/${y}, 15:40:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-6))}`, name: "Buku Pengembangan Diri Gramedia", amount: 135000, cashflow: "Spending", category: "Hiburan & Hobi", dariAcc: "Uang Tunai (Cash Fisik)", keAcc: "- not applicable -" },
-          { dateTime: `${pad(Math.max(1, curDay-8))}/${m}/${y}, 10:00:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-8))}`, name: "Dividen Investasi Reksadana", amount: 850000, cashflow: "Income", category: "Dividen Saham", dariAcc: "- not applicable -", keAcc: "Bank Jago (Kantong Tabungan)" },
-          { dateTime: `${pad(Math.max(1, curDay-9))}/${m}/${y}, 17:10:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-9))}`, name: "Beli Aksesoris & Mouse Ergonomis", amount: 420000, cashflow: "Spending", category: "Hiburan & Hobi", dariAcc: "BCA Prioritas (Utama)", keAcc: "- not applicable -" },
-          { dateTime: `${pad(Math.max(1, curDay-11))}/${m}/${y}, 11:20:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-11))}`, name: "Servis Rutin Kendaraan & Ganti Oli", amount: 350000, cashflow: "Spending", category: "Transportasi", dariAcc: "BCA Prioritas (Utama)", keAcc: "- not applicable -" },
-          { dateTime: `${pad(Math.max(1, curDay-13))}/${m}/${y}, 09:15:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-13))}`, name: "Tagihan Internet WiFi Fiber 100Mbps", amount: 380000, cashflow: "Spending", category: "Tagihan & WiFi", dariAcc: "BCA Prioritas (Utama)", keAcc: "- not applicable -" },
-          { dateTime: `${pad(Math.max(1, curDay-15))}/${m}/${y}, 20:30:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-15))}`, name: "Langganan Netflix & Spotify Family", amount: 186000, cashflow: "Spending", category: "Hiburan & Hobi", dariAcc: "Bank Jago (Kantong Tabungan)", keAcc: "- not applicable -" },
-          { dateTime: `${pad(Math.max(1, curDay-18))}/${m}/${y}, 14:00:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-18))}`, name: "Belanja Bulanan Kebutuhan Pokok", amount: 1450000, cashflow: "Spending", category: "Belanja Bulanan", dariAcc: "BCA Prioritas (Utama)", keAcc: "- not applicable -" },
-          { dateTime: `01/${m}/${y}, 08:00:00`, rawDate: `${y}-${m}-01`, name: "Gaji Pokok Eksekutif", amount: 18500000, cashflow: "Income", category: "Gaji Pokok", dariAcc: "- not applicable -", keAcc: "BCA Prioritas (Utama)" },
-          { dateTime: `01/${m}/${y}, 08:30:00`, rawDate: `${y}-${m}-01`, name: "Alokasi Pos Tabungan Impian", amount: 3500000, cashflow: "Transfer", category: "Transfer Antar Akun", dariAcc: "BCA Prioritas (Utama)", keAcc: "Bank Jago (Kantong Tabungan)" }
-        ]
+        debtData: {
+          "Cicilan Rumah KPR Syariah (Bank BSI)": {
+            total: 240000000,
+            paid: 96000000,
+            monthlyPay: 3200000,
+            category: "Cicilan",
+            period: "Bulanan"
+          },
+          "Kredit Gadget iPad Pro M4": {
+            total: 16500000,
+            paid: 11000000,
+            monthlyPay: 1375000,
+            category: "Cicilan",
+            period: "Setiap Tanggal 15"
+          }
+        },
+        recentHistory: curMonthTransactions.concat(pastTransactions)
       };
 
       globalData = demoData;
@@ -4742,7 +4832,7 @@
       updateDemoModeUI();
       navTo('dashboard');
       if (!isSilent) {
-        alert("🎬 MODE PERCONTOHAN IKLAN AKTIF!\n\nSeluruh data percontohan (rekening bank, riwayat transaksi lengkap, target goals, grafik diagram, dan budget) telah dimuat dengan indah.\n\nData asli pribadi Anda tersimpan aman dan dapat dipulihkan kapan saja melalui tombol 'Kembalikan Data Asli'.");
+        alert("🎬 MODE PERCONTOHAN IKLAN AKTIF!\n\nSeluruh 100% indikator (semua rekening bank, riwayat transaksi lengkap, bukti struk, grafik analisis bulanan, tren 12 bulan, target goals, sinking fund, piutang dengan riwayat, utang cicilan dengan sisa sesi, aset emas/perak, nisab zakat, dan banner tagihan) telah terisi sempurna!\n\nData asli pribadi Anda tetap tersimpan aman dan dapat dipulihkan kapan saja.");
       }
     }
 
