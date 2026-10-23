@@ -417,6 +417,23 @@
       border-top-left-radius: 24px !important;
       border-top-right-radius: 24px !important;
     }
+    html:not(.dark) #dashboard-filter-toolbar,
+    html.light #dashboard-filter-toolbar {
+      background: #f8fafc !important;
+      border-bottom: 1px solid #e2e8f0 !important;
+    }
+    html:not(.dark) #tokens-filter-bar input,
+    html:not(.dark) #tokens-filter-bar select,
+    html:not(.dark) #orders-filter-bar input,
+    html:not(.dark) #orders-filter-bar select,
+    html.light #tokens-filter-bar input,
+    html.light #tokens-filter-bar select,
+    html.light #orders-filter-bar input,
+    html.light #orders-filter-bar select {
+      background-color: #ffffff !important;
+      color: #0f172a !important;
+      border-color: #cbd5e1 !important;
+    }
 
     /* Tab Buttons */
     html:not(.dark) button[id^="tab-btn-"]:not(.bg-blue-600),
@@ -1343,79 +1360,93 @@
 
       <!-- MAIN TABS: TOKENS & LOGS -->
       <div class="bg-slate-900 border border-slate-800 rounded-3xl shadow-xl overflow-hidden">
-        <!-- Tabs Header & Search Filter Bar -->
-        <div class="p-4 sm:p-6 border-b border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div class="flex items-center gap-2 flex-wrap">
-            <button onclick="switchTab('tokens')" id="tab-btn-tokens" class="px-4 py-2 rounded-xl text-xs font-bold transition-all bg-blue-600 text-white shadow-md shadow-blue-500/20">
+        <!-- BARIS 1: MENU UTAMA TABS (DEDICATED - POSISI TERKUNCI & TIDAK BERGESER SAAT PINDAH MENU) -->
+        <div class="p-3.5 sm:px-6 sm:py-4 border-b border-slate-800 bg-slate-900 overflow-x-auto custom-scroll">
+          <div class="flex items-center gap-2 min-w-max">
+            <button onclick="switchTab('tokens')" id="tab-btn-tokens" class="px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-blue-600 text-white shadow-md shadow-blue-500/20">
               <span class="flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-sm">vpn_key</span>
-                Daftar Lisensi Pengguna (<span id="tab-token-count">0</span>)
+                <span>Daftar Lisensi Pengguna (<span id="tab-token-count">0</span>)</span>
               </span>
             </button>
-            <button onclick="switchTab('orders')" id="tab-btn-orders" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+            <button onclick="switchTab('orders')" id="tab-btn-orders" class="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
               <span class="flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-sm">shopping_cart</span>
-                Daftar Pemesanan (<span id="tab-order-count">0</span>)
+                <span>Daftar Pemesanan (<span id="tab-order-count">0</span>)</span>
               </span>
             </button>
-            <button onclick="switchTab('sales')" id="tab-btn-sales" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+            <button onclick="switchTab('sales')" id="tab-btn-sales" class="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
               <span class="flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-sm">sell</span>
-                Katalog & Voucher
+                <span>Katalog & Voucher</span>
               </span>
             </button>
-            <button onclick="switchTab('logs')" id="tab-btn-logs" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+            <button onclick="switchTab('logs')" id="tab-btn-logs" class="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
               <span class="flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-sm">history</span>
-                Audit Aktivitas & Device
+                <span>Audit Aktivitas & Device</span>
               </span>
             </button>
-            <button onclick="switchTab('settings')" id="tab-btn-settings" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+            <button onclick="switchTab('settings')" id="tab-btn-settings" class="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
               <span class="flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-sm">settings</span>
-                Pengaturan Dev Portal
+                <span>Pengaturan Dev Portal</span>
               </span>
             </button>
           </div>
+        </div>
 
-          <!-- Search & Filter Controls -->
-          <div id="tokens-filter-bar" class="flex flex-col sm:flex-row items-center gap-2.5 w-full md:w-auto">
-            <div class="relative w-full sm:w-72 lg:w-80 xl:w-96">
-              <span class="material-symbols-outlined absolute left-3 top-2.5 text-slate-500 text-sm">search</span>
-              <input type="text" id="filter-search" oninput="filterTokensTable()" placeholder="Cari pembeli, token, nomor WA, catatan..."
-                class="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-all">
+        <!-- BARIS 2: BILAH ALAT, PENCARIAN & FILTER KONTEKSTUAL (TERPISAH DI BAWAH MENU TABS) -->
+        <div id="dashboard-filter-toolbar" class="px-4 sm:px-6 py-3.5 border-b border-slate-800 bg-slate-950/70 flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <!-- 1. Search & Filter Controls (Tokens) -->
+          <div id="tokens-filter-bar" class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 w-full">
+            <div class="flex items-center gap-2 text-xs font-bold text-slate-300">
+              <span class="material-symbols-outlined text-sm text-blue-400">filter_alt</span>
+              <span>Filter & Pencarian Lisensi Pembeli</span>
             </div>
-            <select id="filter-status" onchange="filterTokensTable()" class="w-full sm:w-auto px-3.5 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-slate-300 focus:outline-none focus:border-blue-500 transition-all">
-              <option value="ALL">Semua Status</option>
-              <option value="PIN_CHANGED">🟢 Sudah Ganti PIN (Token Hangus)</option>
-              <option value="USING_TOKEN">🟡 Masih Token Bawaan (1 Device)</option>
-              <option value="UNCLAIMED">⚪ Belum Digunakan</option>
-              <option value="BLOCKED">🔴 Hanya Diblokir</option>
-            </select>
+            <div class="flex flex-col sm:flex-row items-center gap-2.5 w-full sm:w-auto">
+              <div class="relative w-full sm:w-72 lg:w-80">
+                <span class="material-symbols-outlined absolute left-3 top-2.5 text-slate-500 text-sm">search</span>
+                <input type="text" id="filter-search" oninput="filterTokensTable()" placeholder="Cari pembeli, token, nomor WA, catatan..."
+                  class="w-full pl-9 pr-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-all">
+              </div>
+              <select id="filter-status" onchange="filterTokensTable()" class="w-full sm:w-auto px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-300 focus:outline-none focus:border-blue-500 transition-all">
+                <option value="ALL">Semua Status</option>
+                <option value="PIN_CHANGED">🟢 Sudah Ganti PIN (Token Hangus)</option>
+                <option value="USING_TOKEN">🟡 Masih Token Bawaan (1 Device)</option>
+                <option value="UNCLAIMED">⚪ Belum Digunakan</option>
+                <option value="BLOCKED">🔴 Hanya Diblokir</option>
+              </select>
+            </div>
           </div>
 
-          <!-- Search & Filter Controls (Orders) -->
-          <div id="orders-filter-bar" class="hidden flex flex-col sm:flex-row items-center gap-2.5 w-full md:w-auto">
-            <div id="orders-mode-pill" class="px-2.5 py-1.5 rounded-xl text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 whitespace-nowrap flex items-center gap-1.5 shrink-0" title="Mode Sistem Pemesanan">
-              <span id="orders-mode-pill-dot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-              <span id="orders-mode-pill-text">Mode Uji Coba (v0.1)</span>
+          <!-- 2. Search & Filter Controls (Orders) -->
+          <div id="orders-filter-bar" class="hidden flex flex-col lg:flex-row lg:items-center justify-between gap-3 w-full">
+            <div class="flex items-center gap-3 flex-wrap">
+              <div id="orders-mode-pill" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 whitespace-nowrap flex items-center gap-1.5 shrink-0" title="Mode Sistem Pemesanan">
+                <span id="orders-mode-pill-dot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                <span id="orders-mode-pill-text">Mode Uji Coba (v0.1)</span>
+              </div>
+              <span class="text-xs text-slate-400 font-medium hidden sm:inline">Manajemen Pemesanan & Pembeli</span>
             </div>
-            <div class="relative w-full sm:w-64 lg:w-72">
-              <span class="material-symbols-outlined absolute left-3 top-2.5 text-slate-500 text-sm">search</span>
-              <input type="text" id="filter-order-search" oninput="filterOrdersTable()" placeholder="Cari nama, WA, ID order..."
-                class="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-all">
+            <div class="flex flex-col sm:flex-row items-center gap-2.5 w-full lg:w-auto">
+              <div class="relative w-full sm:w-64 lg:w-72">
+                <span class="material-symbols-outlined absolute left-3 top-2.5 text-slate-500 text-sm">search</span>
+                <input type="text" id="filter-order-search" oninput="filterOrdersTable()" placeholder="Cari nama, WA, ID order..."
+                  class="w-full pl-9 pr-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-all">
+              </div>
+              <select id="filter-order-status" onchange="filterOrdersTable()" class="w-full sm:w-auto px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-300 focus:outline-none focus:border-blue-500 transition-all">
+                <option value="ALL">Semua Status Pesanan</option>
+                <option value="PENDING">🟡 Menunggu Verifikasi</option>
+                <option value="PAID">🟢 Lunas (Siap Lisensi)</option>
+                <option value="COMPLETED">🔵 Selesai (Lisensi Terkirim)</option>
+                <option value="CANCELLED">🔴 Dibatalkan</option>
+              </select>
+              <button onclick="openCreateOrderModal()" class="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-blue-500/20 active:scale-95 transition-all cursor-pointer whitespace-nowrap">
+                <span class="material-symbols-outlined text-sm">add_shopping_cart</span>
+                <span>Catat Pemesanan</span>
+              </button>
             </div>
-            <select id="filter-order-status" onchange="filterOrdersTable()" class="w-full sm:w-auto px-3.5 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-slate-300 focus:outline-none focus:border-blue-500 transition-all">
-              <option value="ALL">Semua Status Pesanan</option>
-              <option value="PENDING">🟡 Menunggu Verifikasi</option>
-              <option value="PAID">🟢 Lunas (Siap Lisensi)</option>
-              <option value="COMPLETED">🔵 Selesai (Lisensi Terkirim)</option>
-              <option value="CANCELLED">🔴 Dibatalkan</option>
-            </select>
-            <button onclick="openCreateOrderModal()" class="w-full sm:w-auto px-3.5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-blue-500/20 active:scale-95 transition-all cursor-pointer">
-              <span class="material-symbols-outlined text-sm">add_shopping_cart</span>
-              <span>Catat Pemesanan</span>
-            </button>
           </div>
         </div>
 
@@ -3536,6 +3567,7 @@
       let logsTab = document.getElementById('tab-content-logs');
       let settingsTab = document.getElementById('tab-content-settings');
 
+      let filterToolbar = document.getElementById('dashboard-filter-toolbar');
       let tokensFilterBar = document.getElementById('tokens-filter-bar');
       let ordersFilterBar = document.getElementById('orders-filter-bar');
 
@@ -3545,8 +3577,8 @@
       let btnLogs = document.getElementById('tab-btn-logs');
       let btnSettings = document.getElementById('tab-btn-settings');
 
-      const activeClass = "px-4 py-2 rounded-xl text-xs font-bold transition-all bg-blue-600 text-white shadow-md shadow-blue-500/20";
-      const inactiveClass = "px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition-all";
+      const activeClass = "px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-blue-600 text-white shadow-md shadow-blue-500/20";
+      const inactiveClass = "px-4 py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition-all";
 
       // Hide all tabs & filters
       if (tokensTab) tokensTab.classList.add('hidden');
@@ -3557,6 +3589,7 @@
 
       if (tokensFilterBar) tokensFilterBar.classList.add('hidden');
       if (ordersFilterBar) ordersFilterBar.classList.add('hidden');
+      if (filterToolbar) filterToolbar.classList.add('hidden');
 
       if (btnTokens) btnTokens.className = inactiveClass;
       if (btnOrders) btnOrders.className = inactiveClass;
@@ -3567,10 +3600,12 @@
       if (tab === 'tokens') {
         if (tokensTab) tokensTab.classList.remove('hidden');
         if (tokensFilterBar) tokensFilterBar.classList.remove('hidden');
+        if (filterToolbar) filterToolbar.classList.remove('hidden');
         if (btnTokens) btnTokens.className = activeClass;
       } else if (tab === 'orders') {
         if (ordersTab) ordersTab.classList.remove('hidden');
         if (ordersFilterBar) ordersFilterBar.classList.remove('hidden');
+        if (filterToolbar) filterToolbar.classList.remove('hidden');
         if (btnOrders) btnOrders.className = activeClass;
         filterOrdersTable();
         loadDashboardData(true);
