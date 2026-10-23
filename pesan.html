@@ -986,7 +986,7 @@
   <!-- SCRIPT LOGIKA FORM PEMESANAN -->
   <script>
     // URL Backend Google Apps Script (Sama dengan Dev Portal & Aplikasi)
-    const DEFAULT_API_URL = "https://script.google.com/macros/s/AKfycbwFPoNUGmryOTOcvirMd47sW0jOy3nVG7S7MNopbJNXU2BY66HktKl-CWukO93Hl08S/exec";
+    const DEFAULT_API_URL = "https://script.google.com/macros/s/AKfycbwYagi0dQnACZPh4bBnvexVx7JB81_r2X4DwrOnyw5Sen9HYz2XUsEjm5ipuNA84w4/exec";
 
     // Auto-detect URL API dari URL Query Parameter (?api=... atau ?apiUrl=...) atau LocalStorage
     let apiUrl = DEFAULT_API_URL;
@@ -1933,7 +1933,7 @@
 
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 6000);
+        const timeoutId = setTimeout(() => controller.abort(), 35000);
         let resp = await fetch(apiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -1942,21 +1942,27 @@
         });
         clearTimeout(timeoutId);
         let res = await resp.json();
-        if (res && res.orderId) orderId = res.orderId;
-        if (res && res.orderSeq) currentOrderSeq = res.orderSeq;
-        if (res && res.token) {
-          issuedToken = res.token;
-          isPioneerUser = !!res.isEarlyAdopter || (finalPrice === 0);
-        }
-        if (appliedVoucher) {
-          appliedVoucher.usedCount = (Number(appliedVoucher.usedCount) || 0) + 1;
+        if (res && res.success) {
+          if (res.orderId) orderId = res.orderId;
+          if (res.orderSeq) currentOrderSeq = res.orderSeq;
+          if (res.token) {
+            issuedToken = res.token;
+            isPioneerUser = !!res.isEarlyAdopter || (finalPrice === 0);
+          }
+          if (appliedVoucher) {
+            appliedVoucher.usedCount = (Number(appliedVoucher.usedCount) || 0) + 1;
+          }
+        } else {
+          throw new Error((res && res.message) ? res.message : "Server gagal mencatat pesanan.");
         }
       } catch(err) {
-        console.log("Menggunakan fallback lokal:", err);
+        console.error("Gagal mengirim pesanan ke server cloud:", err);
+        // Tampilkan info yang jelas jika server gagal terhubung
+        let errMsg = (err.name === 'AbortError') ? 'Waktu koneksi habis (Timeout 35s)' : err.message;
+        alert("Pemberitahuan:\nPesanan Anda telah disiapkan (" + orderId + "), namun sinkronisasi langsung ke Server Cloud Google mengalami kendala (" + errMsg + ").\n\nSilakan klik 'Konfirmasi ke Admin via WhatsApp' untuk menyelesaikan aktivasi.");
         if (appliedVoucher) {
           appliedVoucher.usedCount = (Number(appliedVoucher.usedCount) || 0) + 1;
         }
-        // Fallback token uji coba jika server timeout/offline
         if (finalPrice === 0 || (appliedVoucher && (appliedVoucher.code === 'UJICOBA-PRO' || appliedVoucher.code.startsWith('PRO-')))) {
           if (appliedVoucher && appliedVoucher.code.startsWith('PRO-')) {
             issuedToken = appliedVoucher.code;

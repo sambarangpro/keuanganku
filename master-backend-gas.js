@@ -2371,3 +2371,65 @@ function adminSetOrderMode(params) {
     nextUniqueCode: 1
   };
 }
+
+/**
+ * ==============================================================================
+ * FUNGSI DIAGNOSTIK & OTORISASI CEPAT (Jalankan di Google Apps Script Editor)
+ * ==============================================================================
+ * Pilih fungsi 'testSystemDeployment' di menu dropdown atas Google Apps Script,
+ * lalu klik 'Jalankan' (Run).
+ * Fungsi ini akan:
+ * 1. Menghubungkan & memastikan Spreadsheet aktif (Tab Tokens, Logs, Orders).
+ * 2. Memicu pop-up izin otorisasi Google Workspace (Drive & Mail) jika belum diizinkan.
+ * 3. Memastikan folder Google Drive untuk foto bukti struk sudah siap.
+ */
+function testSystemDeployment() {
+  Logger.log("=====================================================");
+  Logger.log("🔍 MEMULAI VERIFIKASI MASTER BACKEND KEUANGANKU PRO");
+  Logger.log("=====================================================");
+
+  // 1. Spreadsheet Check
+  var ss = getSpreadsheet();
+  if (!ss) {
+    var errMsg = "Spreadsheet TIDAK ditemukan! Pastikan SPREADSHEET_URL_OR_ID di baris 30 sudah terisi benar.";
+    Logger.log("❌ ERROR: " + errMsg);
+    return errMsg;
+  }
+  Logger.log("✅ 1. Spreadsheet Terhubung: " + ss.getName());
+
+  // 2. Inisialisasi Sheet & Kolom Orders
+  initSheets();
+  var ordersSheet = ss.getSheetByName(SHEET_ORDERS);
+  var ordCols = ordersSheet ? ordersSheet.getLastColumn() : 0;
+  Logger.log("✅ 2. Tab Database Lengkap: 'Tokens', 'Logs', dan 'Orders' (" + ordCols + " kolom).");
+
+  // 3. Tes Google Drive (Penyimpanan Foto Bukti Transfer)
+  try {
+    var folderName = "Bukti_Transfer_Keuanganku";
+    var folders = DriveApp.getFoldersByName(folderName);
+    var folder = folders.hasNext() ? folders.next() : DriveApp.createFolder(folderName);
+    folder.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    Logger.log("✅ 3. Google Drive Siap: Folder '" + folder.getName() + "' (ID: " + folder.getId() + ")");
+  } catch(errDrive) {
+    Logger.log("⚠️ 3. Info Izin Drive: " + errDrive.toString());
+  }
+
+  // 4. Pengaturan Penjualan & Mode
+  var settings = getStoredSalesSettings();
+  Logger.log("✅ 4. Mode Pemesanan: " + (settings.orderMode || "TESTING"));
+  Logger.log("      - Paket Lisensi : " + (settings.packages ? settings.packages.length : 0) + " paket");
+  Logger.log("      - Rekening/Bank : " + (settings.paymentAccounts ? settings.paymentAccounts.length : 0) + " rekening");
+  Logger.log("      - Kupon/Voucher : " + (settings.vouchers ? settings.vouchers.length : 0) + " voucher");
+
+  Logger.log("=====================================================");
+  Logger.log("🎉 STATUS: BACKEND SIAP 100%!");
+  Logger.log("Langkah Terakhir:");
+  Logger.log("1. Klik menu 'Terapkan' (Deploy) di kanan atas.");
+  Logger.log("2. Pilih 'Kelola penerapan' (Manage deployments).");
+  Logger.log("3. Klik ikon Pensil (Edit) pada penerapan aktif.");
+  Logger.log("4. Pada Versi, pilih 'Versi baru' (New version).");
+  Logger.log("5. Klik tombol 'Terapkan' (Deploy).");
+  Logger.log("=====================================================");
+
+  return "BERHASIL: Sistem siap 100%! Silakan Terapkan > Kelola Penerapan > Versi Baru.";
+}

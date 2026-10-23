@@ -3041,7 +3041,7 @@
       if (savedUrl) {
         document.getElementById('input-api-url').value = savedUrl;
       } else {
-        document.getElementById('input-api-url').value = "https://script.google.com/macros/s/AKfycbwFPoNUGmryOTOcvirMd47sW0jOy3nVG7S7MNopbJNXU2BY66HktKl-CWukO93Hl08S/exec";
+        document.getElementById('input-api-url').value = "https://script.google.com/macros/s/AKfycbwYagi0dQnACZPh4bBnvexVx7JB81_r2X4DwrOnyw5Sen9HYz2XUsEjm5ipuNA84w4/exec";
       }
 
       // AUTO-LOGIN: Jika ada URL dan Password yang tersimpan di perangkat ini
@@ -3103,6 +3103,7 @@
           document.getElementById('dashboard-screen').classList.remove('hidden');
           loadDashboardData();
           initSettingsTab();
+          startDashboardAutoPolling();
           if (isAuto) {
             showToast('success', '⚡ Auto-Login Berhasil! Selamat datang di Developer Portal.');
           }
@@ -3134,8 +3135,19 @@
       }
     }
 
+    function startDashboardAutoPolling() {
+      if (window.dashboardPollTimer) clearInterval(window.dashboardPollTimer);
+      window.dashboardPollTimer = setInterval(() => {
+        let dashScreen = document.getElementById('dashboard-screen');
+        if (dashScreen && !dashScreen.classList.contains('hidden') && currentApiUrl && currentAdminPassword) {
+          loadDashboardData(true);
+        }
+      }, 20000);
+    }
+
     function handleAdminLogout() {
       if (confirm("Keluar dari Developer Dashboard?\n\nJika Anda keluar, sandi yang tersimpan otomatis di perangkat ini akan dibersihkan untuk keamanan.")) {
+        if (window.dashboardPollTimer) clearInterval(window.dashboardPollTimer);
         localStorage.removeItem("KEUANGANKU_DEV_SAVED_PASS");
         sessionStorage.removeItem("KEUANGANKU_DEV_PASS");
         currentAdminPassword = "";
@@ -3148,16 +3160,16 @@
       }
     }
 
-    async function loadDashboardData() {
+    async function loadDashboardData(isSilent = false) {
       let refIcon = document.getElementById('refresh-icon');
-      if (refIcon) refIcon.classList.add('animate-spin');
+      if (refIcon && !isSilent) refIcon.classList.add('animate-spin');
 
       let res;
       try {
         let resp = await fetch(`${currentApiUrl}?action=admin_get_data&adminPassword=${encodeURIComponent(currentAdminPassword)}&_t=${Date.now()}`);
         res = await resp.json();
       } catch(err) {
-        showToast("error", "Koneksi terputus ke Google Sheets.");
+        if (!isSilent) showToast("error", "Koneksi terputus ke Google Sheets.");
         if (refIcon) refIcon.classList.remove('animate-spin');
         return;
       }
@@ -3198,8 +3210,15 @@
         document.getElementById('stat-using-token').textContent = totalUsingToken;
         document.getElementById('tab-token-count').textContent = totalTokens;
 
+        let previousOrdersCount = Array.isArray(cachedOrders) ? cachedOrders.length : 0;
+
         // Load & Cache Orders
         if (Array.isArray(res.orders)) {
+          let newOrdersCount = res.orders.length;
+          if (isSilent && previousOrdersCount > 0 && newOrdersCount > previousOrdersCount) {
+            let diff = newOrdersCount - previousOrdersCount;
+            showToast('success', `🛎️ ${diff} Pemesanan baru telah masuk ke sistem!`);
+          }
           cachedOrders = res.orders;
           localStorage.setItem('KEUANGANKU_DEV_ORDERS_CACHE', JSON.stringify(cachedOrders));
         } else {
@@ -3230,6 +3249,9 @@
           renderLogsTable(res.recentLogs || []);
           renderOrdersTable(cachedOrders);
           updateOrdersStats(cachedOrders);
+          if (window.currentActiveTab === 'orders') {
+            filterOrdersTable();
+          }
           renderPackagesTable();
           renderVouchersTable();
           renderPaymentAccountsTable();
@@ -3507,6 +3529,7 @@
     }
 
     function switchTab(tab) {
+      window.currentActiveTab = tab;
       let tokensTab = document.getElementById('tab-content-tokens');
       let ordersTab = document.getElementById('tab-content-orders');
       let salesTab = document.getElementById('tab-content-sales');
@@ -3550,6 +3573,7 @@
         if (ordersFilterBar) ordersFilterBar.classList.remove('hidden');
         if (btnOrders) btnOrders.className = activeClass;
         filterOrdersTable();
+        loadDashboardData(true);
       } else if (tab === 'sales') {
         if (salesTab) salesTab.classList.remove('hidden');
         if (btnSales) btnSales.className = activeClass;
