@@ -2155,7 +2155,7 @@ function submitPublicOrder(params) {
 
   var isPioneerVoucher = (voucherCode === "UJICOBA-PRO" || voucherCode === "ORANGDALAM" || voucherCode === "UJICOBA");
   var isZeroPrice = (price === "Rp 0" || price === "0" || price === "Rp0" || price === 0);
-  var isExistingToken = (voucherCode.startsWith("PRO-") || (voucherCode.startsWith("PRO") && voucherCode.length >= 8));
+  var isExistingToken = (voucherCode.startsWith("PRO-") || voucherCode.startsWith("KEU-"));
 
   var tokenGenerated = "";
   var orderStatus = "PENDING";

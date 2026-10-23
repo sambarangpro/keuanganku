@@ -5303,7 +5303,7 @@ Copyright © 2026 Sambarang Production`;
         }
         if (Array.isArray(cachedSalesSettings.vouchers)) {
           cachedSalesSettings.vouchers.forEach(v => {
-            if (v.code === 'ORANGDALAM' || v.maxUses === 999) {
+            if (v.code === 'ORANGDALAM' || (v.code === 'UJICOBA-PRO' && v.maxUses === 999)) {
               v.code = 'UJICOBA-PRO';
               v.maxUses = 3;
               v.description = 'Token Lisensi Pengguna Perdana Multi-Device (Akses Seumur Hidup - Kuota 3 Pengguna)';

@@ -1056,7 +1056,7 @@
       // Bersihkan voucher uji coba lama jika masih tersimpan kuota 999 di cache
       if (Array.isArray(catalog.vouchers)) {
         catalog.vouchers.forEach(v => {
-          if (v.code === 'ORANGDALAM' || v.maxUses === 999) {
+          if (v.code === 'ORANGDALAM' || (v.code === 'UJICOBA-PRO' && v.maxUses === 999)) {
             v.code = 'UJICOBA-PRO';
             v.maxUses = 3;
             v.description = 'Token Lisensi Pengguna Perdana Multi-Device (Akses Seumur Hidup - Kuota 3 Pengguna)';
@@ -1070,7 +1070,7 @@
       let existing = catalog.vouchers.find(v => v.code.toUpperCase() === defV.code.toUpperCase());
       if (!existing) {
         catalog.vouchers.push(defV);
-      } else if (existing.maxUses === 999) {
+      } else if (existing.code === 'UJICOBA-PRO' && existing.maxUses === 999) {
         existing.maxUses = 3;
       }
     });
@@ -1220,7 +1220,7 @@
             });
             // Bersihkan voucher 999 menjadi kuota realistis 3 pengguna
             mergedVouchers.forEach(v => {
-              if (v.code === 'ORANGDALAM' || v.maxUses === 999) {
+              if (v.code === 'ORANGDALAM' || (v.code === 'UJICOBA-PRO' && v.maxUses === 999)) {
                 v.code = 'UJICOBA-PRO';
                 v.maxUses = 3;
                 v.description = 'Token Lisensi Pengguna Perdana Multi-Device (Akses Seumur Hidup - Kuota 3 Pengguna)';
@@ -1370,7 +1370,7 @@
 
       // JIKA KODE TIDAK DITEMUKAN DI VOUCHERS REGULER, CEK APAKAH INI TOKEN LISENSI DARI DATABASE DEV
       if (!v) {
-        let isTokenCandidate = code.startsWith('PRO-') || code.startsWith('PRO') || code.length >= 8;
+        let isTokenCandidate = code.startsWith('PRO-') || code.startsWith('KEU-') || /^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(code);
         if (isTokenCandidate) {
           showVoucherMsg('info', '⏳ Memvalidasi kode token dengan database Google Sheets...');
           try {
@@ -1400,7 +1400,7 @@
           }
 
           // Fallback lokal jika sedang uji coba offline: token format PRO- diakui dengan kuota 3 pengguna
-          if (!v && (code.startsWith('PRO-') || code.startsWith('PRO'))) {
+          if (!v && (code.startsWith('PRO-') || code.startsWith('KEU-'))) {
             v = {
               code: code,
               type: 'percent',
@@ -1430,7 +1430,8 @@
         return;
       }
 
-      let maxUses = Number(v.maxUses) || 3;
+      let rawMaxUses = (v.maxUses !== undefined && v.maxUses !== null && v.maxUses !== '') ? Number(v.maxUses) : 0;
+      let maxUses = (isNaN(rawMaxUses) || rawMaxUses < 0) ? 0 : rawMaxUses;
       let usedCount = Number(v.usedCount) || 0;
       if (maxUses > 0 && usedCount >= maxUses) {
         showVoucherMsg('error', `Maaf, kuota kupon / token "${code}" telah penuh (${usedCount}/${maxUses} pengguna terpakai).`);
@@ -1459,7 +1460,7 @@
       }
 
       appliedVoucher = v;
-      let sisaKuota = (maxUses > 0) ? ` (Sisa kuota: ${maxUses - usedCount} pengguna)` : '';
+      let sisaKuota = (maxUses > 0) ? ` (Sisa kuota: ${Math.max(0, maxUses - usedCount)} pengguna)` : ' (Kuota: Tanpa Batas)';
       let reqPkg = (targetPkg !== 'ALL') ? (catalog.packages || []).find(p => p.id === targetPkg || p.name === targetPkg) : null;
       let pkgBadge = reqPkg ? ` [Khusus: ${reqPkg.name}]` : '';
       showVoucherMsg('success', `🎉 Voucher / Token "${v.code}" aktif! ${v.description || 'Potongan harga berhasil diterapkan.'}${pkgBadge}${sisaKuota}`);
