@@ -982,11 +982,16 @@
       if (!catalog.sellerWhatsApp || catalog.sellerWhatsApp.includes('123456789')) {
         catalog.sellerWhatsApp = '087788197916';
       }
+      if (!Array.isArray(catalog.packages) || catalog.packages.length === 0) {
+        catalog.packages = JSON.parse(JSON.stringify(DEFAULT_CATALOG.packages));
+      }
       if (Array.isArray(catalog.paymentAccounts)) {
-        let hasDummy = catalog.paymentAccounts.some(acc => (acc.accountNo === '1234567890' || acc.accountNo === '08123456789' || acc.bank.includes('Transfer BCA')));
+        let hasDummy = catalog.paymentAccounts.some(acc => (acc.accountNo === '1234567890' || acc.accountNo === '08123456789' || (acc.bank && acc.bank.includes('Transfer BCA'))));
         if (hasDummy || catalog.paymentAccounts.length < 5) {
           catalog.paymentAccounts = JSON.parse(JSON.stringify(DEFAULT_CATALOG.paymentAccounts));
         }
+      } else {
+        catalog.paymentAccounts = JSON.parse(JSON.stringify(DEFAULT_CATALOG.paymentAccounts));
       }
       // Bersihkan voucher uji coba lama jika masih tersimpan kuota 999 di cache
       if (Array.isArray(catalog.vouchers)) {
@@ -1055,11 +1060,11 @@
 
     // Inisialisasi Halaman: Render INSTAN (0 detik) lalu sinkronkan di background
     document.addEventListener('DOMContentLoaded', () => {
-      updatePesanThemeUI();
-      renderPackages();
-      renderPaymentAccounts();
-      selectDefaultPackage();
-      loadCatalogData();
+      try { updatePesanThemeUI(); } catch(e) { console.error("Error updatePesanThemeUI:", e); }
+      try { renderPackages(); } catch(e) { console.error("Error renderPackages:", e); }
+      try { renderPaymentAccounts(); } catch(e) { console.error("Error renderPaymentAccounts:", e); }
+      try { selectDefaultPackage(); } catch(e) { console.error("Error selectDefaultPackage:", e); }
+      try { loadCatalogData(); } catch(e) { console.error("Error loadCatalogData:", e); }
     });
 
     function updateServerStatusBadge(status) {
@@ -1608,8 +1613,6 @@
       if (name.includes('qris') || name.includes('wallet')) {
         return `<span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-rose-500/15 text-rose-300 border border-rose-500/30">QRIS</span>`;
       }
-      return '';
-    }
       return '';
     }
 
