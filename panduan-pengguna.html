@@ -79,7 +79,7 @@
     }
 
     /* ======================================================== */
-    /* LIGHT MODE STYLING FOR PANDUAN PENGGUNAAN               */
+    /* KEUANGANKU LIGHT MODE THEME (REVERENSI RESMI index.html)*/
     /* ======================================================== */
     html:not(.dark) body,
     html.light body {
@@ -96,6 +96,8 @@
     html.light .anti-leak-bar {
       background-color: #ffffff !important;
     }
+
+    /* All Cards & Step Containers */
     html:not(.dark) .bg-slate-950,
     html.light .bg-slate-950,
     html:not(.dark) .bg-slate-900,
@@ -105,10 +107,28 @@
     html:not(.dark) .bg-slate-900\/80,
     html.light .bg-slate-900\/80,
     html:not(.dark) .bg-slate-900\/60,
-    html.light .bg-slate-900\/60 {
+    html.light .bg-slate-900\/60,
+    html:not(.dark) .bg-slate-950\/60,
+    html.light .bg-slate-950\/60,
+    html:not(.dark) .bg-slate-950\/80,
+    html.light .bg-slate-950\/80 {
       background-color: #ffffff !important;
+      background-image: none !important;
       color: #0f172a !important;
     }
+
+    /* Reset Dark Gradients to Soft Light Surfaces */
+    html:not(.dark) [class*="from-slate-900"],
+    html.light [class*="from-slate-900"],
+    html:not(.dark) [class*="from-blue-950"],
+    html.light [class*="from-blue-950"],
+    html:not(.dark) [class*="from-indigo-950"],
+    html.light [class*="from-indigo-950"] {
+      background-image: none !important;
+      background-color: #ffffff !important;
+    }
+
+    /* Borders */
     html:not(.dark) .border-slate-800,
     html.light .border-slate-800,
     html:not(.dark) .border-slate-700,
@@ -119,6 +139,8 @@
     html.light .border-slate-800\/80 {
       border-color: #e2e8f0 !important;
     }
+
+    /* Text Colors */
     html:not(.dark) .text-white,
     html.light .text-white,
     html:not(.dark) .text-slate-100,
@@ -132,21 +154,93 @@
       color: #334155 !important;
     }
     html:not(.dark) .text-slate-400,
-    html.light .text-slate-400 {
+    html.light .text-slate-400,
+    html:not(.dark) .text-slate-500,
+    html.light .text-slate-500 {
       color: #64748b !important;
     }
+
+    /* Secondary Buttons & Jump Navigation Pills */
     html:not(.dark) .bg-slate-800,
     html.light .bg-slate-800 {
       background-color: #f1f5f9 !important;
       color: #0f172a !important;
-      border-color: #cbd5e1 !important;
+      border: 1px solid #cbd5e1 !important;
     }
+    html:not(.dark) .bg-slate-800:hover,
+    html.light .bg-slate-800:hover {
+      background-color: #e2e8f0 !important;
+    }
+
+    /* Preserve White Text for Vibrant Primary Action Buttons */
+    html:not(.dark) .bg-blue-600,
+    html.light .bg-blue-600,
+    html:not(.dark) .bg-emerald-600,
+    html.light .bg-emerald-600,
+    html:not(.dark) [class*="from-blue-600"],
+    html.light [class*="from-blue-600"],
+    html:not(.dark) [class*="from-emerald-600"],
+    html.light [class*="from-emerald-600"] {
+      color: #ffffff !important;
+    }
+    html:not(.dark) .bg-blue-600 *,
+    html.light .bg-blue-600 *,
+    html:not(.dark) .bg-emerald-600 *,
+    html.light .bg-emerald-600 *,
+    html:not(.dark) [class*="from-blue-600"] *,
+    html.light [class*="from-blue-600"] *,
+    html:not(.dark) [class*="from-emerald-600"] *,
+    html.light [class*="from-emerald-600"] * {
+      color: #ffffff !important;
+    }
+
+    /* Mockup Showcase Container in Light Mode */
     html:not(.dark) .mockup-showcase-stage,
     html.light .mockup-showcase-stage {
       background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%) !important;
       border-color: #e2e8f0 !important;
       box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.07) !important;
     }
+
+    /* Badges in Light Mode */
+    html:not(.dark) [class*="bg-cyan-950"],
+    html.light [class*="bg-cyan-950"],
+    html:not(.dark) [class*="bg-blue-950"],
+    html.light [class*="bg-blue-950"] {
+      background-color: #eff6ff !important;
+      color: #0284c7 !important;
+      border-color: #bae6fd !important;
+    }
+    html:not(.dark) [class*="bg-emerald-950"],
+    html.light [class*="bg-emerald-950"] {
+      background-color: #ecfdf5 !important;
+      color: #047857 !important;
+      border-color: #a7f3d0 !important;
+    }
+    html:not(.dark) [class*="bg-amber-950"],
+    html.light [class*="bg-amber-950"] {
+      background-color: #fffbeb !important;
+      color: #b45309 !important;
+      border-color: #fde68a !important;
+    }
+    html:not(.dark) [class*="bg-rose-950"],
+    html.light [class*="bg-rose-950"] {
+      background-color: #fef2f2 !important;
+      color: #b91c1c !important;
+      border-color: #fecaca !important;
+    }
+
+    /* Keep Code Editor in Step 5 Crisp Dark */
+    html:not(.dark) pre code,
+    html.light pre code {
+      color: #e2e8f0 !important;
+    }
+    html:not(.dark) pre,
+    html.light pre {
+      background-color: #0f172a !important;
+      border-color: #1e293b !important;
+    }
+
     html:not(.dark) footer,
     html.light footer {
       background-color: #ffffff !important;

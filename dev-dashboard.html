@@ -97,40 +97,117 @@
     }
 
     /* ======================================================== */
-    /* LIGHT MODE STYLING FOR DEVELOPER PORTAL                 */
+    /* KEUANGANKU LIGHT MODE THEME (REVERENSI RESMI index.html)*/
     /* ======================================================== */
     html:not(.dark) body,
     html.light body {
       background-color: #f8fafc !important;
       color: #0f172a !important;
     }
+
+    /* Header Nav */
     html:not(.dark) header,
     html.light header {
       background-color: #ffffff !important;
       border-color: #e2e8f0 !important;
       box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
     }
+
+    /* All Cards, Panels & Outer Wrappers */
     html:not(.dark) .bg-slate-950,
     html.light .bg-slate-950,
     html:not(.dark) .bg-slate-900,
     html.light .bg-slate-900,
+    html:not(.dark) .bg-slate-950\/70,
+    html.light .bg-slate-950\/70,
+    html:not(.dark) .bg-slate-950\/80,
+    html.light .bg-slate-950\/80,
+    html:not(.dark) .bg-slate-950\/85,
+    html.light .bg-slate-950\/85,
     html:not(.dark) .bg-slate-900\/90,
     html.light .bg-slate-900\/90,
     html:not(.dark) .bg-slate-900\/80,
     html.light .bg-slate-900\/80,
+    html:not(.dark) .bg-slate-900\/60,
+    html.light .bg-slate-900\/60,
     html:not(.dark) .bg-slate-900\/50,
     html.light .bg-slate-900\/50,
     html:not(.dark) .bg-\[\#020617\],
-    html.light .bg-\[\#020617\] {
+    html.light .bg-\[\#020617\],
+    html:not(.dark) .bg-\[\#0b141a\],
+    html.light .bg-\[\#0b141a\] {
       background-color: #ffffff !important;
+      background-image: none !important;
       color: #0f172a !important;
     }
+
+    /* Reset Dark Gradients to Clean Light Surfaces */
+    html:not(.dark) [class*="from-slate-900"],
+    html.light [class*="from-slate-900"],
+    html:not(.dark) [class*="from-blue-950"],
+    html.light [class*="from-blue-950"] {
+      background-image: none !important;
+      background-color: #ffffff !important;
+    }
+
+    /* Master Backend Status Banner */
+    html:not(.dark) .master-status-banner-box,
+    html.light .master-status-banner-box {
+      background: #ffffff !important;
+      background-image: none !important;
+      border: 1px solid #e2e8f0 !important;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
+    }
+
+    /* Special Soft Banner for Formulir Pemesanan */
+    html:not(.dark) .order-form-banner-box,
+    html.light .order-form-banner-box {
+      background: linear-gradient(135deg, #eff6ff 0%, #ffffff 50%, #f0fdf4 100%) !important;
+      border: 1px solid #bfdbfe !important;
+    }
+
+    html:not(.dark) #dev-order-url-display,
+    html.light #dev-order-url-display {
+      background-color: #ffffff !important;
+      border-color: #93c5fd !important;
+      color: #1d4ed8 !important;
+    }
+
+    html:not(.dark) #dev-backend-url-display,
+    html.light #dev-backend-url-display {
+      color: #64748b !important;
+    }
+
+    /* Sub-panels & Metric Info Cards */
+    html:not(.dark) .bg-slate-950\/60,
+    html.light .bg-slate-950\/60,
+    html:not(.dark) .bg-slate-800\/50,
+    html.light .bg-slate-800\/50,
+    html:not(.dark) .bg-slate-800\/40,
+    html.light .bg-slate-800\/40,
+    html:not(.dark) .bg-slate-800\/30,
+    html.light .bg-slate-800\/30,
+    html:not(.dark) .bg-slate-800\/60,
+    html.light .bg-slate-800\/60 {
+      background-color: #f8fafc !important;
+      background-image: none !important;
+      border-color: #e2e8f0 !important;
+      color: #0f172a !important;
+    }
+
+    /* Borders */
     html:not(.dark) .border-slate-800,
     html.light .border-slate-800,
+    html:not(.dark) .border-slate-800\/80,
+    html.light .border-slate-800\/80,
     html:not(.dark) .border-slate-700,
-    html.light .border-slate-700 {
+    html.light .border-slate-700,
+    html:not(.dark) .border-slate-700\/80,
+    html.light .border-slate-700\/80 {
       border-color: #e2e8f0 !important;
     }
+
+    /* Text Colors */
     html:not(.dark) .text-white,
     html.light .text-white,
     html:not(.dark) .text-slate-100,
@@ -144,9 +221,13 @@
       color: #334155 !important;
     }
     html:not(.dark) .text-slate-400,
-    html.light .text-slate-400 {
+    html.light .text-slate-400,
+    html:not(.dark) .text-slate-500,
+    html.light .text-slate-500 {
       color: #64748b !important;
     }
+
+    /* Inputs & Selects */
     html:not(.dark) input,
     html.light input,
     html:not(.dark) select,
@@ -163,33 +244,120 @@
     html.light textarea::placeholder {
       color: #94a3b8 !important;
     }
+
+    /* Secondary Buttons */
     html:not(.dark) .bg-slate-800,
-    html.light .bg-slate-800 {
+    html.light .bg-slate-800,
+    html:not(.dark) .bg-slate-700,
+    html.light .bg-slate-700 {
       background-color: #f1f5f9 !important;
       color: #0f172a !important;
       border-color: #cbd5e1 !important;
     }
-    html:not(.dark) .bg-slate-800\/50,
-    html.light .bg-slate-800\/50 {
-      background-color: #f8fafc !important;
+    html:not(.dark) .bg-slate-800:hover,
+    html.light .bg-slate-800:hover,
+    html:not(.dark) .bg-slate-700:hover,
+    html.light .bg-slate-700:hover {
+      background-color: #e2e8f0 !important;
     }
+    html:not(.dark) .bg-slate-800 .material-symbols-outlined,
+    html.light .bg-slate-800 .material-symbols-outlined {
+      color: #334155 !important;
+    }
+
+    /* Preserve White Text for Vibrant Primary Action Buttons */
+    html:not(.dark) .bg-blue-600,
+    html.light .bg-blue-600,
+    html:not(.dark) .bg-emerald-600,
+    html.light .bg-emerald-600,
+    html:not(.dark) .bg-rose-600,
+    html.light .bg-rose-600,
+    html:not(.dark) [class*="from-blue-600"],
+    html.light [class*="from-blue-600"],
+    html:not(.dark) [class*="from-emerald-600"],
+    html.light [class*="from-emerald-600"] {
+      color: #ffffff !important;
+    }
+    html:not(.dark) .bg-blue-600 *,
+    html.light .bg-blue-600 *,
+    html:not(.dark) .bg-emerald-600 *,
+    html.light .bg-emerald-600 *,
+    html:not(.dark) .bg-rose-600 *,
+    html.light .bg-rose-600 *,
+    html:not(.dark) [class*="from-blue-600"] *,
+    html.light [class*="from-blue-600"] *,
+    html:not(.dark) [class*="from-emerald-600"] *,
+    html.light [class*="from-emerald-600"] * {
+      color: #ffffff !important;
+    }
+
+    /* Tab Navigation in Light Mode */
+    html:not(.dark) .tab-btn-inactive {
+      color: #475569 !important;
+      background-color: transparent !important;
+    }
+    html:not(.dark) .tab-btn-inactive:hover {
+      background-color: #f1f5f9 !important;
+      color: #0f172a !important;
+    }
+
+    /* Tables in Light Mode (Matching index.html) */
     html:not(.dark) table thead,
     html.light table thead {
-      background-color: #f8fafc !important;
+      background-color: #f1f5f9 !important;
+      border-bottom: 2px solid #e2e8f0 !important;
     }
     html:not(.dark) table thead th,
     html.light table thead th {
+      background-color: #f1f5f9 !important;
       color: #475569 !important;
       border-color: #e2e8f0 !important;
+      font-weight: 700 !important;
     }
     html:not(.dark) table tbody tr,
     html.light table tbody tr {
+      background-color: #ffffff !important;
       border-color: #f1f5f9 !important;
+      color: #0f172a !important;
     }
     html:not(.dark) table tbody tr:hover,
     html.light table tbody tr:hover {
       background-color: #f8fafc !important;
     }
+    html:not(.dark) table td,
+    html.light table td {
+      color: #0f172a !important;
+      border-color: #f1f5f9 !important;
+    }
+
+    /* Badges in Light Mode (Clean pastel background with high contrast text) */
+    html:not(.dark) [class*="bg-cyan-950"],
+    html.light [class*="bg-cyan-950"],
+    html:not(.dark) [class*="bg-blue-950"],
+    html.light [class*="bg-blue-950"] {
+      background-color: #eff6ff !important;
+      color: #0284c7 !important;
+      border-color: #bae6fd !important;
+    }
+    html:not(.dark) [class*="bg-emerald-950"],
+    html.light [class*="bg-emerald-950"] {
+      background-color: #ecfdf5 !important;
+      color: #047857 !important;
+      border-color: #a7f3d0 !important;
+    }
+    html:not(.dark) [class*="bg-amber-950"],
+    html.light [class*="bg-amber-950"] {
+      background-color: #fffbeb !important;
+      color: #b45309 !important;
+      border-color: #fde68a !important;
+    }
+    html:not(.dark) [class*="bg-rose-950"],
+    html.light [class*="bg-rose-950"] {
+      background-color: #fef2f2 !important;
+      color: #b91c1c !important;
+      border-color: #fecaca !important;
+    }
+
     html:not(.dark) .custom-scroll::-webkit-scrollbar-track,
     html.light .custom-scroll::-webkit-scrollbar-track {
       background: #f1f5f9;
@@ -350,7 +518,7 @@
     <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1720px] 2xl:max-w-[1850px] mx-auto w-full space-y-6">
 
       <!-- MASTER BACKEND STATUS BANNER -->
-      <div class="p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900 to-blue-950/40 border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-md">
+      <div class="master-status-banner-box p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900 to-blue-950/40 border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-md">
         <div class="flex items-center gap-3">
           <div class="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0">
             <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -698,7 +866,7 @@
           </div>
 
           <!-- BANNER: LINK FORMULIR PEMESANAN PUBLIK -->
-          <div class="p-5 rounded-3xl bg-gradient-to-r from-blue-950/60 via-slate-900 to-indigo-950/40 border border-blue-500/40 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="order-form-banner-box p-5 rounded-3xl bg-gradient-to-r from-blue-950/60 via-slate-900 to-indigo-950/40 border border-blue-500/40 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div class="flex items-start gap-3.5">
               <div class="w-12 h-12 rounded-2xl bg-blue-600/20 border border-blue-500/30 text-blue-400 flex items-center justify-center shrink-0">
                 <span class="material-symbols-outlined text-2xl">public</span>

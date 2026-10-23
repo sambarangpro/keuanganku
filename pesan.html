@@ -71,7 +71,7 @@
     }
 
     /* ======================================================== */
-    /* LIGHT MODE STYLING FOR FORM PEMESANAN                   */
+    /* KEUANGANKU LIGHT MODE THEME (REVERENSI RESMI index.html)*/
     /* ======================================================== */
     html:not(.dark) body,
     html.light body {
@@ -88,6 +88,8 @@
     html.light .pesan-status-bar-cover {
       background-color: #ffffff !important;
     }
+
+    /* All Cards & Panels in Form */
     html:not(.dark) .bg-slate-950,
     html.light .bg-slate-950,
     html:not(.dark) .bg-slate-900,
@@ -97,10 +99,59 @@
     html:not(.dark) .bg-slate-900\/60,
     html.light .bg-slate-900\/60,
     html:not(.dark) .bg-slate-900\/40,
-    html.light .bg-slate-900\/40 {
+    html.light .bg-slate-900\/40,
+    html:not(.dark) .bg-slate-950\/60,
+    html.light .bg-slate-950\/60,
+    html:not(.dark) .bg-slate-950\/80,
+    html.light .bg-slate-950\/80 {
       background-color: #ffffff !important;
+      background-image: none !important;
       color: #0f172a !important;
     }
+
+    /* Reset Dark Gradients to Soft Light Surfaces */
+    html:not(.dark) [class*="from-slate-900"],
+    html.light [class*="from-slate-900"],
+    html:not(.dark) [class*="from-blue-950"],
+    html.light [class*="from-blue-950"] {
+      background-image: none !important;
+      background-color: #ffffff !important;
+    }
+
+    /* Hero Banner */
+    html:not(.dark) .hero-banner-order,
+    html.light .hero-banner-order {
+      background: linear-gradient(135deg, #eff6ff 0%, #ffffff 50%, #f0fdf4 100%) !important;
+      border: 1px solid #bfdbfe !important;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03) !important;
+    }
+
+    /* Package Cards in Light Mode */
+    html:not(.dark) [id^="pkg-card-"],
+    html.light [id^="pkg-card-"] {
+      background-color: #ffffff !important;
+      background-image: none !important;
+      border-color: #e2e8f0 !important;
+    }
+    html:not(.dark) [id^="pkg-card-"].ring-blue-500,
+    html.light [id^="pkg-card-"].ring-blue-500 {
+      background-color: #eff6ff !important;
+      border-color: #2563eb !important;
+    }
+
+    /* Payment Account Cards */
+    html:not(.dark) [id^="pay-card-"],
+    html.light [id^="pay-card-"] {
+      background-color: #ffffff !important;
+      border-color: #e2e8f0 !important;
+    }
+    html:not(.dark) [id^="pay-card-"].ring-emerald-500,
+    html.light [id^="pay-card-"].ring-emerald-500 {
+      background-color: #ecfdf5 !important;
+      border-color: #10b981 !important;
+    }
+
+    /* Borders */
     html:not(.dark) .border-slate-800,
     html.light .border-slate-800,
     html:not(.dark) .border-slate-700,
@@ -111,6 +162,8 @@
     html.light .border-slate-700\/80 {
       border-color: #e2e8f0 !important;
     }
+
+    /* Text Colors */
     html:not(.dark) .text-white,
     html.light .text-white,
     html:not(.dark) .text-slate-100,
@@ -124,9 +177,13 @@
       color: #334155 !important;
     }
     html:not(.dark) .text-slate-400,
-    html.light .text-slate-400 {
+    html.light .text-slate-400,
+    html:not(.dark) .text-slate-500,
+    html.light .text-slate-500 {
       color: #64748b !important;
     }
+
+    /* Inputs & Selects */
     html:not(.dark) input,
     html.light input,
     html:not(.dark) select,
@@ -143,17 +200,61 @@
     html.light textarea::placeholder {
       color: #94a3b8 !important;
     }
+
+    /* Buttons */
     html:not(.dark) .bg-slate-800,
     html.light .bg-slate-800 {
       background-color: #f1f5f9 !important;
       color: #0f172a !important;
       border-color: #cbd5e1 !important;
     }
-    html:not(.dark) .hero-banner-order,
-    html.light .hero-banner-order {
-      background: linear-gradient(135deg, #eff6ff 0%, #ffffff 50%, #f0fdf4 100%) !important;
+    html:not(.dark) .bg-slate-800:hover,
+    html.light .bg-slate-800:hover {
+      background-color: #e2e8f0 !important;
+    }
+
+    /* Preserve White Text for Vibrant Primary Buttons */
+    html:not(.dark) .bg-blue-600,
+    html.light .bg-blue-600,
+    html:not(.dark) .bg-emerald-600,
+    html.light .bg-emerald-600,
+    html:not(.dark) [class*="from-blue-600"],
+    html.light [class*="from-blue-600"],
+    html:not(.dark) [class*="from-emerald-600"],
+    html.light [class*="from-emerald-600"] {
+      color: #ffffff !important;
+    }
+    html:not(.dark) .bg-blue-600 *,
+    html.light .bg-blue-600 *,
+    html:not(.dark) .bg-emerald-600 *,
+    html.light .bg-emerald-600 *,
+    html:not(.dark) [class*="from-blue-600"] *,
+    html.light [class*="from-blue-600"] *,
+    html:not(.dark) [class*="from-emerald-600"] *,
+    html.light [class*="from-emerald-600"] * {
+      color: #ffffff !important;
+    }
+
+    /* Badges in Light Mode */
+    html:not(.dark) [class*="bg-amber-500/20"],
+    html.light [class*="bg-amber-500/20"] {
+      background-color: #fffbeb !important;
+      color: #b45309 !important;
+      border-color: #fde68a !important;
+    }
+    html:not(.dark) [class*="bg-emerald-500/20"],
+    html.light [class*="bg-emerald-500/20"] {
+      background-color: #ecfdf5 !important;
+      color: #047857 !important;
+      border-color: #a7f3d0 !important;
+    }
+    html:not(.dark) [class*="bg-blue-500/20"],
+    html.light [class*="bg-blue-500/20"] {
+      background-color: #eff6ff !important;
+      color: #1d4ed8 !important;
       border-color: #bfdbfe !important;
     }
+
     html:not(.dark) footer,
     html.light footer {
       background-color: #ffffff !important;
