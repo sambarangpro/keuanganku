@@ -72,25 +72,103 @@
 
     /* ======================================================== */
     /* KEUANGANKU FORM PEMESANAN - ULTRA PROFESSIONAL LIGHT MODE */
-    /* High-Contrast, WCAG AAA/AA Compliant Design System      */
+    /* Vibrant Pastel Cards, High Contrast WCAG AAA/AA System    */
     /* ======================================================== */
     html:not(.dark) body,
     html.light body {
-      background-color: #f8fafc !important;
+      background-color: #f1f5f9 !important;
+      background-image: radial-gradient(circle at 50% 0%, #dbeafe 0%, #f1f5f9 45%, #e2e8f0 100%) !important;
+      background-attachment: fixed !important;
       color: #0f172a !important;
     }
     html:not(.dark) .pesan-header,
     html.light .pesan-header {
-      background-color: #ffffff !important;
-      border-color: #e2e8f0 !important;
-      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
+      background: rgba(255, 255, 255, 0.95) !important;
+      backdrop-filter: blur(16px) !important;
+      -webkit-backdrop-filter: blur(16px) !important;
+      border-color: #cbd5e1 !important;
+      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.08) !important;
     }
     html:not(.dark) .pesan-status-bar-cover,
     html.light .pesan-status-bar-cover {
       background-color: #ffffff !important;
     }
 
-    /* All Cards & Panels in Form */
+    /* Hero Banner */
+    html:not(.dark) .hero-banner-order,
+    html.light .hero-banner-order {
+      background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 50%, #ecfdf5 100%) !important;
+      border: 2px solid #93c5fd !important;
+      box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.12) !important;
+    }
+    html:not(.dark) #hero-status-tag,
+    html.light #hero-status-tag {
+      color: #1e40af !important;
+      font-weight: 800 !important;
+    }
+
+    /* Step Cards Tints */
+    html:not(.dark) #pesan-step-1,
+    html.light #pesan-step-1 {
+      background: linear-gradient(145deg, #ffffff 0%, #eff6ff 100%) !important;
+      border: 1.5px solid #bfdbfe !important;
+      box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.08) !important;
+    }
+    html:not(.dark) #pesan-step-1 .w-8.h-8,
+    html.light #pesan-step-1 .w-8.h-8 {
+      background-color: #2563eb !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 10px -2px rgba(37, 99, 235, 0.4) !important;
+    }
+
+    html:not(.dark) #pesan-step-2,
+    html.light #pesan-step-2 {
+      background: linear-gradient(145deg, #ffffff 0%, #f5f3ff 100%) !important;
+      border: 1.5px solid #ddd6fe !important;
+      box-shadow: 0 10px 25px -5px rgba(124, 58, 237, 0.08) !important;
+    }
+    html:not(.dark) #pesan-step-2 .w-8.h-8,
+    html.light #pesan-step-2 .w-8.h-8 {
+      background-color: #7c3aed !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 10px -2px rgba(124, 58, 237, 0.4) !important;
+    }
+
+    html:not(.dark) #pesan-step-3,
+    html.light #pesan-step-3 {
+      background: linear-gradient(145deg, #ffffff 0%, #fffbeb 100%) !important;
+      border: 1.5px solid #fde68a !important;
+      box-shadow: 0 10px 25px -5px rgba(217, 119, 6, 0.08) !important;
+    }
+    html:not(.dark) #pesan-step-3 .w-8.h-8,
+    html.light #pesan-step-3 .w-8.h-8 {
+      background-color: #d97706 !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 10px -2px rgba(217, 119, 6, 0.4) !important;
+    }
+
+    html:not(.dark) #pesan-step-4,
+    html.light #pesan-step-4 {
+      background: linear-gradient(145deg, #ffffff 0%, #ecfdf5 100%) !important;
+      border: 1.5px solid #a7f3d0 !important;
+      box-shadow: 0 10px 25px -5px rgba(5, 150, 105, 0.08) !important;
+    }
+    html:not(.dark) #pesan-step-4 .w-8.h-8,
+    html.light #pesan-step-4 .w-8.h-8 {
+      background-color: #059669 !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 10px -2px rgba(5, 150, 105, 0.4) !important;
+    }
+
+    /* Summary Card */
+    html:not(.dark) #pesan-step-summary,
+    html.light #pesan-step-summary {
+      background: linear-gradient(135deg, #ffffff 0%, #eff6ff 50%, #f0fdf4 100%) !important;
+      border: 2.5px solid #3b82f6 !important;
+      box-shadow: 0 16px 36px -6px rgba(37, 99, 235, 0.16) !important;
+    }
+
+    /* Fallback Card Styling */
     html:not(.dark) .bg-slate-950,
     html.light .bg-slate-950,
     html:not(.dark) .bg-slate-900,
@@ -106,27 +184,8 @@
     html:not(.dark) .bg-slate-950\/80,
     html.light .bg-slate-950\/80 {
       background-color: #ffffff !important;
-      background-image: none !important;
       color: #0f172a !important;
-      border-color: #e2e8f0 !important;
-      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04) !important;
-    }
-
-    /* Reset Dark Gradients to Soft Light Surfaces */
-    html:not(.dark) [class*="from-slate-900"],
-    html.light [class*="from-slate-900"],
-    html:not(.dark) [class*="from-blue-950"],
-    html.light [class*="from-blue-950"] {
-      background-image: none !important;
-      background-color: #ffffff !important;
-    }
-
-    /* Hero Banner */
-    html:not(.dark) .hero-banner-order,
-    html.light .hero-banner-order {
-      background: linear-gradient(135deg, #eff6ff 0%, #ffffff 50%, #f0fdf4 100%) !important;
-      border: 1.5px solid #bfdbfe !important;
-      box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.05) !important;
+      border-color: #cbd5e1 !important;
     }
 
     /* Package Cards in Light Mode */
@@ -134,36 +193,38 @@
     html.light [id^="pkg-card-"] {
       background-color: #ffffff !important;
       background-image: none !important;
-      border: 1.5px solid #e2e8f0 !important;
+      border: 1.5px solid #cbd5e1 !important;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04) !important;
     }
     html:not(.dark) [id^="pkg-card-"]:hover,
     html.light [id^="pkg-card-"]:hover {
-      border-color: #93c5fd !important;
+      border-color: #60a5fa !important;
       background-color: #f8fafc !important;
     }
     html:not(.dark) [id^="pkg-card-"].ring-blue-500,
     html.light [id^="pkg-card-"].ring-blue-500 {
-      background-color: #eff6ff !important;
+      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%) !important;
       border-color: #2563eb !important;
-      box-shadow: 0 0 0 2px #2563eb !important;
+      box-shadow: 0 0 0 2.5px #2563eb, 0 8px 20px -4px rgba(37, 99, 235, 0.25) !important;
     }
 
     /* Payment Account Cards */
     html:not(.dark) [id^="pay-card-"],
     html.light [id^="pay-card-"] {
       background-color: #ffffff !important;
-      border: 1.5px solid #e2e8f0 !important;
+      border: 1.5px solid #cbd5e1 !important;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04) !important;
     }
     html:not(.dark) [id^="pay-card-"]:hover,
     html.light [id^="pay-card-"]:hover {
-      border-color: #6ee7b7 !important;
+      border-color: #34d399 !important;
       background-color: #f8fafc !important;
     }
     html:not(.dark) [id^="pay-card-"].ring-emerald-500,
     html.light [id^="pay-card-"].ring-emerald-500 {
-      background-color: #ecfdf5 !important;
-      border-color: #10b981 !important;
-      box-shadow: 0 0 0 2px #10b981 !important;
+      background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%) !important;
+      border-color: #059669 !important;
+      box-shadow: 0 0 0 2.5px #059669, 0 8px 20px -4px rgba(5, 150, 105, 0.25) !important;
     }
 
     /* Borders */
@@ -175,7 +236,7 @@
     html.light .border-slate-800\/90,
     html:not(.dark) .border-slate-700\/80,
     html.light .border-slate-700\/80 {
-      border-color: #e2e8f0 !important;
+      border-color: #cbd5e1 !important;
     }
 
     /* Text Colors & Contrast */
@@ -436,7 +497,7 @@
       <!-- ========================================== -->
       <!-- LANGKAH 1: PILIH PAKET LISENSI             -->
       <!-- ========================================== -->
-      <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 space-y-4 shadow-xl">
+      <div id="pesan-step-1" class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 space-y-4 shadow-xl">
         <div class="flex items-center justify-between border-b border-slate-800 pb-3">
           <div class="flex items-center gap-2.5">
             <div class="w-8 h-8 rounded-xl bg-blue-600/20 text-blue-400 flex items-center justify-center font-bold text-xs">
@@ -465,7 +526,7 @@
       <!-- ========================================== -->
       <!-- LANGKAH 2: DATA PEMESAN                    -->
       <!-- ========================================== -->
-      <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 space-y-4 shadow-xl">
+      <div id="pesan-step-2" class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 space-y-4 shadow-xl">
         <div class="flex items-center gap-2.5 border-b border-slate-800 pb-3">
           <div class="w-8 h-8 rounded-xl bg-blue-600/20 text-blue-400 flex items-center justify-center font-bold text-xs">
             2
@@ -519,7 +580,7 @@
       <!-- ========================================== -->
       <!-- LANGKAH 3: KLAIM KODE VOUCHER              -->
       <!-- ========================================== -->
-      <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 space-y-4 shadow-xl">
+      <div id="pesan-step-3" class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 space-y-4 shadow-xl">
         <div class="flex items-center justify-between border-b border-slate-800 pb-3">
           <div class="flex items-center gap-2.5">
             <div class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-xs">
@@ -552,7 +613,7 @@
       <!-- ========================================== -->
       <!-- LANGKAH 4: METODE PEMBAYARAN               -->
       <!-- ========================================== -->
-      <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 space-y-4 shadow-xl">
+      <div id="pesan-step-4" class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 space-y-4 shadow-xl">
         <div class="flex items-center justify-between border-b border-slate-800 pb-3">
           <div class="flex items-center gap-2.5">
             <div class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">
@@ -596,7 +657,7 @@
       <!-- ========================================== -->
       <!-- RINGKASAN TAGIHAN & SUBMIT                 -->
       <!-- ========================================== -->
-      <div class="bg-gradient-to-br from-slate-900 to-slate-950 border-2 border-blue-500/40 rounded-3xl p-5 sm:p-6 space-y-4 shadow-2xl">
+      <div id="pesan-step-summary" class="bg-gradient-to-br from-slate-900 to-slate-950 border-2 border-blue-500/40 rounded-3xl p-5 sm:p-6 space-y-4 shadow-2xl">
         <h3 class="font-extrabold text-white text-sm sm:text-base flex items-center gap-2">
           <span class="material-symbols-outlined text-blue-400">receipt</span>
           <span>Ringkasan Tagihan Pemesanan</span>

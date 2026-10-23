@@ -79,53 +79,205 @@
     }
 
     /* ======================================================== */
-    /* KEUANGANKU LIGHT MODE THEME (REVERENSI RESMI index.html)*/
+    /* KEUANGANKU LIGHT MODE - ULTRA PROFESSIONAL PALETTE       */
+    /* Colorful Pastel Cards, High Contrast WCAG AAA/AA System  */
     /* ======================================================== */
     html:not(.dark) body,
     html.light body {
-      background-color: #f8fafc !important;
+      background-color: #f1f5f9 !important;
+      background-image: radial-gradient(circle at 50% 0%, #dbeafe 0%, #f1f5f9 40%, #e2e8f0 100%) !important;
+      background-attachment: fixed !important;
       color: #0f172a !important;
     }
     html:not(.dark) .guide-header,
     html.light .guide-header {
-      background-color: rgba(255, 255, 255, 0.96) !important;
-      border-color: #e2e8f0 !important;
-      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
+      background: rgba(255, 255, 255, 0.95) !important;
+      backdrop-filter: blur(16px) !important;
+      -webkit-backdrop-filter: blur(16px) !important;
+      border-color: #cbd5e1 !important;
+      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.08) !important;
     }
     html:not(.dark) .anti-leak-bar,
     html.light .anti-leak-bar {
       background-color: #ffffff !important;
     }
 
-    /* All Cards & Step Containers */
-    html:not(.dark) .bg-slate-950,
-    html.light .bg-slate-950,
-    html:not(.dark) .bg-slate-900,
-    html.light .bg-slate-900,
-    html:not(.dark) .bg-slate-900\/90,
-    html.light .bg-slate-900\/90,
-    html:not(.dark) .bg-slate-900\/80,
-    html.light .bg-slate-900\/80,
-    html:not(.dark) .bg-slate-900\/60,
-    html.light .bg-slate-900\/60,
-    html:not(.dark) .bg-slate-950\/60,
-    html.light .bg-slate-950\/60,
-    html:not(.dark) .bg-slate-950\/80,
-    html.light .bg-slate-950\/80 {
-      background-color: #ffffff !important;
-      background-image: none !important;
-      color: #0f172a !important;
+    /* Mockup Showcase Stage */
+    html:not(.dark) .mockup-showcase-stage,
+    html.light .mockup-showcase-stage {
+      background: radial-gradient(circle at 50% 20%, #ffffff 0%, #eff6ff 55%, #e0e7ff 100%) !important;
+      border: 2px solid #bfdbfe !important;
+      box-shadow: 0 15px 40px -10px rgba(37, 99, 235, 0.12) !important;
     }
 
-    /* Reset Dark Gradients to Soft Light Surfaces */
-    html:not(.dark) [class*="from-slate-900"],
-    html.light [class*="from-slate-900"],
-    html:not(.dark) [class*="from-blue-950"],
-    html.light [class*="from-blue-950"],
-    html:not(.dark) [class*="from-indigo-950"],
-    html.light [class*="from-indigo-950"] {
-      background-image: none !important;
+    /* Ringkasan Alur 5 Tahap Section */
+    html:not(.dark) #alur-summary-section,
+    html.light #alur-summary-section {
+      background: linear-gradient(135deg, #ffffff 0%, #eff6ff 50%, #f0fdf4 100%) !important;
+      border: 2px solid #93c5fd !important;
+      box-shadow: 0 12px 30px -6px rgba(37, 99, 235, 0.1) !important;
+    }
+    html:not(.dark) #alur-tahap-1,
+    html.light #alur-tahap-1 {
+      background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%) !important;
+      border: 1.5px solid #93c5fd !important;
+    }
+    html:not(.dark) #alur-tahap-2,
+    html.light #alur-tahap-2 {
+      background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%) !important;
+      border: 1.5px solid #7dd3fc !important;
+    }
+    html:not(.dark) #alur-tahap-3,
+    html.light #alur-tahap-3 {
+      background: linear-gradient(135deg, #ffffff 0%, #fff1f2 100%) !important;
+      border: 2px solid #fca5a5 !important;
+      box-shadow: 0 6px 16px -2px rgba(225, 29, 72, 0.15) !important;
+    }
+    html:not(.dark) #alur-tahap-4,
+    html.light #alur-tahap-4 {
+      background: linear-gradient(135deg, #ffffff 0%, #fffbeb 100%) !important;
+      border: 1.5px solid #fde68a !important;
+    }
+    html:not(.dark) #alur-tahap-5,
+    html.light #alur-tahap-5 {
+      background: linear-gradient(135deg, #ffffff 0%, #ecfdf5 100%) !important;
+      border: 1.5px solid #6ee7b7 !important;
+    }
+
+    /* Quick Step Navigation Bar */
+    html:not(.dark) .custom-scroll.overflow-x-auto,
+    html.light .custom-scroll.overflow-x-auto {
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
+      border-color: #cbd5e1 !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+    }
+    html:not(.dark) .custom-scroll.overflow-x-auto a,
+    html.light .custom-scroll.overflow-x-auto a {
+      background: #f1f5f9 !important;
+      color: #1e293b !important;
+      border: 1px solid #cbd5e1 !important;
+    }
+    html:not(.dark) .custom-scroll.overflow-x-auto a:hover,
+    html.light .custom-scroll.overflow-x-auto a:hover {
+      background: #2563eb !important;
+      color: #ffffff !important;
+      border-color: #2563eb !important;
+    }
+
+    /* Distinctive Theme Tints for Steps 1 through 8 */
+    /* Step 1: Rose / Coral (Gmail Jalur Utama) */
+    html:not(.dark) #langkah-1,
+    html.light #langkah-1 {
+      background: linear-gradient(145deg, #ffffff 0%, #fff1f2 100%) !important;
+      border: 2px solid #fecdd3 !important;
+      box-shadow: 0 10px 25px -5px rgba(225, 29, 72, 0.08) !important;
+    }
+    html:not(.dark) #langkah-1 > div:first-child .w-8.h-8,
+    html.light #langkah-1 > div:first-child .w-8.h-8 {
+      background-color: #e11d48 !important;
+      color: #ffffff !important;
+    }
+
+    /* Step 2: Sky Blue (Aktivasi Perdana) */
+    html:not(.dark) #langkah-2,
+    html.light #langkah-2 {
+      background: linear-gradient(145deg, #ffffff 0%, #f0f9ff 100%) !important;
+      border: 2px solid #bae6fd !important;
+      box-shadow: 0 10px 25px -5px rgba(2, 132, 199, 0.08) !important;
+    }
+    html:not(.dark) #langkah-2 > div:first-child .w-8.h-8,
+    html.light #langkah-2 > div:first-child .w-8.h-8 {
+      background-color: #0284c7 !important;
+      color: #ffffff !important;
+    }
+
+    /* Step 3: Royal Blue (Pasang PWA & Pembaruan) */
+    html:not(.dark) #langkah-3,
+    html.light #langkah-3 {
+      background: linear-gradient(145deg, #ffffff 0%, #eff6ff 100%) !important;
+      border: 2px solid #bfdbfe !important;
+      box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.08) !important;
+    }
+    html:not(.dark) #langkah-3 > div:first-child .w-8.h-8,
+    html.light #langkah-3 > div:first-child .w-8.h-8 {
+      background-color: #2563eb !important;
+      color: #ffffff !important;
+    }
+
+    /* Step 4: Warm Amber / Gold (Ganti PIN Pribadi) */
+    html:not(.dark) #langkah-4,
+    html.light #langkah-4 {
+      background: linear-gradient(145deg, #ffffff 0%, #fffbeb 100%) !important;
+      border: 2px solid #fde68a !important;
+      box-shadow: 0 10px 25px -5px rgba(217, 119, 6, 0.08) !important;
+    }
+    html:not(.dark) #langkah-4 > div:first-child .w-8.h-8,
+    html.light #langkah-4 > div:first-child .w-8.h-8 {
+      background-color: #d97706 !important;
+      color: #ffffff !important;
+    }
+
+    /* Step 5: Violet / Purple (Setup Google Sheets) */
+    html:not(.dark) #langkah-5,
+    html.light #langkah-5 {
+      background: linear-gradient(145deg, #ffffff 0%, #f5f3ff 100%) !important;
+      border: 2px solid #ddd6fe !important;
+      box-shadow: 0 10px 25px -5px rgba(124, 58, 237, 0.08) !important;
+    }
+    html:not(.dark) #langkah-5 > div:first-child .w-8.h-8,
+    html.light #langkah-5 > div:first-child .w-8.h-8 {
+      background-color: #7c3aed !important;
+      color: #ffffff !important;
+    }
+
+    /* Step 6: Cyan / Teal (Multi-Device QR Sync) */
+    html:not(.dark) #langkah-6,
+    html.light #langkah-6 {
+      background: linear-gradient(145deg, #ffffff 0%, #ecfeff 100%) !important;
+      border: 2px solid #a5f3fc !important;
+      box-shadow: 0 10px 25px -5px rgba(6, 182, 212, 0.08) !important;
+    }
+    html:not(.dark) #langkah-6 > div:first-child .w-8.h-8,
+    html.light #langkah-6 > div:first-child .w-8.h-8 {
+      background-color: #0891b2 !important;
+      color: #ffffff !important;
+    }
+
+    /* Step 7: Emerald Green (Fitur Keuangan) */
+    html:not(.dark) #langkah-7,
+    html.light #langkah-7 {
+      background: linear-gradient(145deg, #ffffff 0%, #ecfdf5 100%) !important;
+      border: 2px solid #a7f3d0 !important;
+      box-shadow: 0 10px 25px -5px rgba(5, 150, 105, 0.08) !important;
+    }
+    html:not(.dark) #langkah-7 > div:first-child .w-8.h-8,
+    html.light #langkah-7 > div:first-child .w-8.h-8 {
+      background-color: #059669 !important;
+      color: #ffffff !important;
+    }
+
+    /* Step 8: Slate / Steel (Remote Control & FAQ) */
+    html:not(.dark) #langkah-8,
+    html.light #langkah-8 {
+      background: linear-gradient(145deg, #ffffff 0%, #f1f5f9 100%) !important;
+      border: 2px solid #cbd5e1 !important;
+      box-shadow: 0 10px 25px -5px rgba(100, 116, 139, 0.08) !important;
+    }
+    html:not(.dark) #langkah-8 > div:first-child .w-8.h-8,
+    html.light #langkah-8 > div:first-child .w-8.h-8 {
+      background-color: #475569 !important;
+      color: #ffffff !important;
+    }
+
+    /* Sub-Cards Inside Sections (Clean White on Colored Card) */
+    html:not(.dark) section .bg-slate-950,
+    html.light section .bg-slate-950,
+    html:not(.dark) section .bg-slate-900,
+    html.light section .bg-slate-900 {
       background-color: #ffffff !important;
+      border-color: #cbd5e1 !important;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04) !important;
+      color: #0f172a !important;
     }
 
     /* Borders */
@@ -137,10 +289,10 @@
     html.light .border-slate-800\/90,
     html:not(.dark) .border-slate-800\/80,
     html.light .border-slate-800\/80 {
-      border-color: #e2e8f0 !important;
+      border-color: #cbd5e1 !important;
     }
 
-    /* Text Colors */
+    /* Text Colors & Contrast */
     html:not(.dark) .text-white,
     html.light .text-white,
     html:not(.dark) .text-slate-100,
@@ -160,19 +312,7 @@
       color: #64748b !important;
     }
 
-    /* Secondary Buttons & Jump Navigation Pills */
-    html:not(.dark) .bg-slate-800,
-    html.light .bg-slate-800 {
-      background-color: #f1f5f9 !important;
-      color: #0f172a !important;
-      border: 1px solid #cbd5e1 !important;
-    }
-    html:not(.dark) .bg-slate-800:hover,
-    html.light .bg-slate-800:hover {
-      background-color: #e2e8f0 !important;
-    }
-
-    /* Preserve White Text for Vibrant Primary Action Buttons */
+    /* Preserve White Text for Action Buttons */
     html:not(.dark) .bg-blue-600,
     html.light .bg-blue-600,
     html:not(.dark) .bg-emerald-600,
@@ -194,40 +334,48 @@
       color: #ffffff !important;
     }
 
-    /* Mockup Showcase Container in Light Mode */
-    html:not(.dark) .mockup-showcase-stage,
-    html.light .mockup-showcase-stage {
-      background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%) !important;
-      border-color: #e2e8f0 !important;
-      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.07) !important;
-    }
-
-    /* Badges in Light Mode */
+    /* Badges & Callout Alerts in Light Mode */
     html:not(.dark) [class*="bg-cyan-950"],
     html.light [class*="bg-cyan-950"],
     html:not(.dark) [class*="bg-blue-950"],
-    html.light [class*="bg-blue-950"] {
+    html.light [class*="bg-blue-950"],
+    html:not(.dark) [class*="bg-blue-500/10"],
+    html.light [class*="bg-blue-500/10"],
+    html:not(.dark) [class*="bg-blue-500/20"],
+    html.light [class*="bg-blue-500/20"] {
       background-color: #eff6ff !important;
-      color: #0284c7 !important;
-      border-color: #bae6fd !important;
+      color: #1e40af !important;
+      border-color: #bfdbfe !important;
     }
     html:not(.dark) [class*="bg-emerald-950"],
-    html.light [class*="bg-emerald-950"] {
+    html.light [class*="bg-emerald-950"],
+    html:not(.dark) [class*="bg-emerald-500/10"],
+    html.light [class*="bg-emerald-500/10"],
+    html:not(.dark) [class*="bg-emerald-500/20"],
+    html.light [class*="bg-emerald-500/20"] {
       background-color: #ecfdf5 !important;
-      color: #047857 !important;
+      color: #065f46 !important;
       border-color: #a7f3d0 !important;
     }
     html:not(.dark) [class*="bg-amber-950"],
-    html.light [class*="bg-amber-950"] {
+    html.light [class*="bg-amber-950"],
+    html:not(.dark) [class*="bg-amber-500/10"],
+    html.light [class*="bg-amber-500/10"],
+    html:not(.dark) [class*="bg-amber-500/20"],
+    html.light [class*="bg-amber-500/20"] {
       background-color: #fffbeb !important;
-      color: #b45309 !important;
+      color: #92400e !important;
       border-color: #fde68a !important;
     }
     html:not(.dark) [class*="bg-rose-950"],
-    html.light [class*="bg-rose-950"] {
-      background-color: #fef2f2 !important;
-      color: #b91c1c !important;
-      border-color: #fecaca !important;
+    html.light [class*="bg-rose-950"],
+    html:not(.dark) [class*="bg-rose-500/10"],
+    html.light [class*="bg-rose-500/10"],
+    html:not(.dark) [class*="bg-rose-500/20"],
+    html.light [class*="bg-rose-500/20"] {
+      background-color: #fff1f2 !important;
+      color: #9f1239 !important;
+      border-color: #fecdd3 !important;
     }
 
     /* Neon Text Overrides in Light Mode (High Contrast WCAG AAA/AA) */
@@ -282,7 +430,7 @@
     html:not(.dark) footer,
     html.light footer {
       background-color: #ffffff !important;
-      border-color: #e2e8f0 !important;
+      border-color: #cbd5e1 !important;
     }
   </style>
 </head>
@@ -579,7 +727,7 @@
     <!-- BAGIAN 0: ALUR UTUH PEMESANAN HINGGA PENGGUNAAN          -->
     <!-- (SESUAI ALUR & SISTEM TERBARU YANG TELAH DIUJI COBA)     -->
     <!-- ======================================================== -->
-    <section class="p-5 sm:p-7 rounded-3xl bg-slate-900/90 border border-blue-500/30 shadow-xl space-y-4">
+    <section id="alur-summary-section" class="p-5 sm:p-7 rounded-3xl bg-slate-900/90 border border-blue-500/30 shadow-xl space-y-4">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-wrap gap-2">
         <div class="flex items-center gap-2.5">
           <span class="w-7 h-7 rounded-lg bg-blue-600/30 text-blue-400 flex items-center justify-center">
@@ -593,7 +741,7 @@
       <!-- 5-Step Process Timeline -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 text-xs">
         <!-- Stage 1 -->
-        <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5 relative">
+        <div id="alur-tahap-1" class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5 relative">
           <div class="flex items-center justify-between">
             <span class="text-[10px] font-black text-blue-400 font-mono-code uppercase">TAHAP 01</span>
             <span class="material-symbols-outlined text-blue-400 text-sm">shopping_cart</span>
@@ -603,7 +751,7 @@
         </div>
 
         <!-- Stage 2 -->
-        <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5 relative">
+        <div id="alur-tahap-2" class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5 relative">
           <div class="flex items-center justify-between">
             <span class="text-[10px] font-black text-cyan-400 font-mono-code uppercase">TAHAP 02</span>
             <span class="material-symbols-outlined text-cyan-400 text-sm">pin</span>
@@ -613,7 +761,7 @@
         </div>
 
         <!-- Stage 3 -->
-        <div class="p-3.5 rounded-2xl bg-slate-950 border border-blue-500/40 space-y-1.5 relative shadow-sm">
+        <div id="alur-tahap-3" class="p-3.5 rounded-2xl bg-slate-950 border border-blue-500/40 space-y-1.5 relative shadow-sm">
           <div class="flex items-center justify-between">
             <span class="text-[10px] font-black text-rose-400 font-mono-code uppercase">TAHAP 03 (UTAMA)</span>
             <span class="material-symbols-outlined text-rose-400 text-sm">mail</span>
@@ -623,7 +771,7 @@
         </div>
 
         <!-- Stage 4 -->
-        <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5 relative">
+        <div id="alur-tahap-4" class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5 relative">
           <div class="flex items-center justify-between">
             <span class="text-[10px] font-black text-amber-400 font-mono-code uppercase">TAHAP 04</span>
             <span class="material-symbols-outlined text-amber-400 text-sm">touch_app</span>
@@ -633,7 +781,7 @@
         </div>
 
         <!-- Stage 5 -->
-        <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5 relative">
+        <div id="alur-tahap-5" class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5 relative">
           <div class="flex items-center justify-between">
             <span class="text-[10px] font-black text-emerald-400 font-mono-code uppercase">TAHAP 05</span>
             <span class="material-symbols-outlined text-emerald-400 text-sm">lock_open</span>
