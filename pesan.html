@@ -242,18 +242,26 @@
     }
     html:not(.dark) [id^="pay-card-"].ring-emerald-500,
     html.light [id^="pay-card-"].ring-emerald-500 {
-      background: #ecfdf5 !important;
+      background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%) !important;
       border-color: #059669 !important;
       box-shadow: 0 0 0 2px #059669, 0 8px 20px -4px rgba(5, 150, 105, 0.2) !important;
       border-radius: 18px !important;
     }
-      background-color: #f8fafc !important;
+
+    html:not(.dark) .bank-logo-bsi,
+    html.light .bank-logo-bsi {
+      background-color: #ecfdf5 !important;
+      border-color: #a7f3d0 !important;
     }
-    html:not(.dark) [id^="pay-card-"].ring-emerald-500,
-    html.light [id^="pay-card-"].ring-emerald-500 {
-      background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%) !important;
-      border-color: #059669 !important;
-      box-shadow: 0 0 0 2.5px #059669, 0 8px 20px -4px rgba(5, 150, 105, 0.25) !important;
+    html:not(.dark) .bank-logo-jago,
+    html.light .bank-logo-jago {
+      background-color: #fff7ed !important;
+      border-color: #fed7aa !important;
+    }
+    html:not(.dark) .bank-logo-qris,
+    html.light .bank-logo-qris {
+      background-color: #f0f9ff !important;
+      border-color: #bae6fd !important;
     }
 
     /* Borders */
@@ -717,8 +725,14 @@
               <span class="text-sm font-black text-white block">TOTAL TRANSFER:</span>
               <span class="text-[10px] text-amber-400 font-medium">Wajib tepat hingga 2 digit terakhir</span>
             </div>
-            <div id="summary-total-price" class="text-xl sm:text-2xl font-black text-emerald-400 font-mono-data">
-              Rp 0
+            <div class="flex items-center gap-2">
+              <div id="summary-total-price" class="text-xl sm:text-2xl font-black text-emerald-400 font-mono-data tracking-tight">
+                Rp 0
+              </div>
+              <button type="button" onclick="copySummaryTotal()" title="Salin Nominal Pembayaran Tepat"
+                class="p-2 bg-slate-800 hover:bg-slate-700 text-amber-400 hover:text-amber-300 border border-slate-700 hover:border-amber-400/50 rounded-xl transition-all cursor-pointer flex items-center justify-center active:scale-90 shadow-sm" id="btn-copy-summary-total">
+                <span id="icon-copy-summary-total" class="material-symbols-outlined text-base">content_copy</span>
+              </button>
             </div>
           </div>
         </div>
@@ -857,7 +871,13 @@
         </div>
         <div class="flex items-center justify-between border-t border-slate-800 pt-2">
           <span class="text-slate-400 font-bold">Total Pembayaran:</span>
-          <span id="succ-total-price" class="font-extrabold text-emerald-400 font-mono-data text-base">Rp 0</span>
+          <div class="flex items-center gap-1.5">
+            <span id="succ-total-price" class="font-extrabold text-emerald-400 font-mono-data text-base">Rp 0</span>
+            <button type="button" onclick="copyExactTransferTotal()" title="Salin Nominal Transfer"
+              class="p-1 px-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 hover:text-amber-300 border border-slate-700 hover:border-amber-400/50 transition-all cursor-pointer flex items-center justify-center active:scale-95 shadow-sm">
+              <span class="material-symbols-outlined text-xs">content_copy</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1456,8 +1476,117 @@
       document.getElementById('summary-total-price').textContent = 'Rp ' + finalPrice.toLocaleString('id-ID');
     }
 
+    function copySummaryTotal() {
+      let el = document.getElementById('summary-total-price');
+      let text = el ? el.textContent.trim() : '';
+      let numOnly = text.replace(/[^0-9]/g, '');
+      if (!numOnly || numOnly === '0') {
+        alert("Total tagihan saat ini Rp 0 (Diskon 100% / Pengguna Perdana). Tidak memerlukan transfer.");
+        return;
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(numOnly).then(() => {
+          let icon = document.getElementById('icon-copy-summary-total');
+          if (icon) {
+            icon.textContent = 'check';
+            icon.classList.add('text-emerald-400');
+            setTimeout(() => {
+              icon.textContent = 'content_copy';
+              icon.classList.remove('text-emerald-400');
+            }, 2000);
+          }
+          alert(`Nominal transfer tepat ${text} (${numOnly}) berhasil disalin!\n\nSilakan tempelkan (paste) pada aplikasi mobile banking atau e-wallet Anda.`);
+        }).catch(() => {
+          prompt("Salin nominal transfer tepat:", numOnly);
+        });
+      } else {
+        prompt("Salin nominal transfer tepat:", numOnly);
+      }
+    }
+
+    function getBankLogoHtml(bankName) {
+      let name = String(bankName || '').toLowerCase();
+      if (name.includes('bsi') || name.includes('syariah')) {
+        return `
+          <div class="w-11 h-11 rounded-2xl bg-teal-500/15 border border-teal-500/35 flex items-center justify-center shrink-0 shadow-sm bank-logo-bsi">
+            <svg class="w-6 h-6" viewBox="0 0 32 32" fill="none">
+              <circle cx="16" cy="16" r="14" fill="#00A39D" fill-opacity="0.25"/>
+              <path d="M16 6C10.48 6 6 10.48 6 16C6 21.52 10.48 26 16 26C17.9 26 19.68 25.47 21.2 24.55C17.07 23.6 14 19.92 14 15.5C14 11.08 17.07 7.4 21.2 6.45C19.68 5.53 17.9 5 16 5" fill="#00A39D"/>
+              <polygon points="23,9 24.2,12.2 27.5,12.2 24.8,14.2 25.8,17.5 23,15.5 20.2,17.5 21.2,14.2 18.5,12.2 21.8,12.2" fill="#F59E0B"/>
+            </svg>
+          </div>`;
+      }
+      if (name.includes('jago')) {
+        return `
+          <div class="w-11 h-11 rounded-2xl bg-orange-500/15 border border-orange-500/35 flex items-center justify-center shrink-0 shadow-sm bank-logo-jago">
+            <svg class="w-6 h-6" viewBox="0 0 32 32" fill="none">
+              <rect width="32" height="32" rx="10" fill="#FF5722" fill-opacity="0.25"/>
+              <circle cx="16" cy="16" r="11" fill="#FF5722"/>
+              <path d="M14 10V18C14 19.8 12.5 21 11 21H10V18.5H11C11.5 18.5 12 18.1 12 17.5V10H14Z" fill="#FFFFFF"/>
+              <circle cx="20" cy="12" r="2" fill="#FDE047"/>
+              <path d="M16 16.5C17.5 18 19 18 20.5 16.5" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>`;
+      }
+      if (name.includes('qris') || name.includes('dana') || name.includes('gopay') || name.includes('ovo') || name.includes('wallet')) {
+        return `
+          <div class="w-11 h-11 rounded-2xl bg-sky-500/15 border border-sky-500/35 flex items-center justify-center shrink-0 shadow-sm bank-logo-qris">
+            <svg class="w-6 h-6" viewBox="0 0 32 32" fill="none">
+              <rect width="32" height="32" rx="10" fill="#0284C7" fill-opacity="0.25"/>
+              <rect x="7" y="7" width="7" height="7" rx="1.5" stroke="#38BDF8" stroke-width="1.8"/>
+              <rect x="9.5" y="9.5" width="2" height="2" fill="#38BDF8"/>
+              <rect x="18" y="7" width="7" height="7" rx="1.5" stroke="#38BDF8" stroke-width="1.8"/>
+              <rect x="20.5" y="9.5" width="2" height="2" fill="#38BDF8"/>
+              <rect x="7" y="18" width="7" height="7" rx="1.5" stroke="#38BDF8" stroke-width="1.8"/>
+              <rect x="9.5" y="20.5" width="2" height="2" fill="#38BDF8"/>
+              <path d="M18 18H21V21H18V18Z" fill="#38BDF8"/>
+              <path d="M22 18H25V21H22V18Z" fill="#38BDF8"/>
+              <path d="M18 22H21V25H18V22Z" fill="#38BDF8"/>
+              <path d="M22 22H25V25H22V22Z" fill="#38BDF8"/>
+            </svg>
+          </div>`;
+      }
+      if (name.includes('bca')) {
+        return `
+          <div class="w-11 h-11 rounded-2xl bg-blue-600/20 border border-blue-600/40 flex items-center justify-center shrink-0 shadow-sm font-black text-xs text-blue-400 font-mono-data">
+            BCA
+          </div>`;
+      }
+      if (name.includes('mandiri')) {
+        return `
+          <div class="w-11 h-11 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center shrink-0 shadow-sm font-black text-[10px] text-amber-300 font-mono-data">
+            MDR
+          </div>`;
+      }
+      if (name.includes('bri')) {
+        return `
+          <div class="w-11 h-11 rounded-2xl bg-blue-500/20 border border-blue-500/40 flex items-center justify-center shrink-0 shadow-sm font-black text-xs text-blue-300 font-mono-data">
+            BRI
+          </div>`;
+      }
+      return `
+        <div class="w-11 h-11 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0 text-slate-300">
+          <span class="material-symbols-outlined text-xl text-emerald-400">account_balance</span>
+        </div>`;
+    }
+
+    function getBankBadgeHtml(bankName) {
+      let name = String(bankName || '').toLowerCase();
+      if (name.includes('bsi') || name.includes('syariah')) {
+        return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-teal-500/15 text-teal-300 border border-teal-500/30">Bank Syariah</span>`;
+      }
+      if (name.includes('jago')) {
+        return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-orange-500/15 text-orange-300 border border-orange-500/30">Bank Digital</span>`;
+      }
+      if (name.includes('qris') || name.includes('dana') || name.includes('gopay') || name.includes('ovo') || name.includes('wallet')) {
+        return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-sky-500/15 text-sky-300 border border-sky-500/30">QRIS / E-Wallet</span>`;
+      }
+      return '';
+    }
+
     function renderPaymentAccounts() {
       let list = document.getElementById('payment-accounts-list');
+      if (!list) return;
       list.innerHTML = '';
 
       catalog.paymentAccounts.forEach((acc, idx) => {
@@ -1466,18 +1595,26 @@
         card.id = `pay-card-${idx}`;
         card.onclick = () => selectPaymentMethod(acc.bank, idx);
         card.className = `p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
-          isDefault ? 'bg-slate-900 border-emerald-500/50 ring-1 ring-emerald-500' : 'bg-slate-950 border-slate-800 hover:border-slate-700'
+          isDefault ? 'bg-slate-900 border-emerald-500/50 ring-2 ring-emerald-500' : 'bg-slate-950 border-slate-800 hover:border-slate-700'
         }`;
 
         card.innerHTML = `
-          <div class="space-y-0.5">
-            <span class="font-extrabold text-white text-xs block">${escapeHtml(acc.bank)}</span>
-            <span class="font-mono-data text-xs text-cyan-300 select-all block">${escapeHtml(acc.accountNo)}</span>
-            <span class="text-[10px] text-slate-400 block">a.n ${escapeHtml(acc.accountName)}</span>
+          <div class="flex items-center gap-3 min-w-0">
+            ${getBankLogoHtml(acc.bank)}
+            <div class="space-y-0.5 min-w-0">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="font-extrabold text-white text-xs sm:text-sm truncate">${escapeHtml(acc.bank)}</span>
+                ${getBankBadgeHtml(acc.bank)}
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="font-mono-data text-xs font-bold text-cyan-300 select-all">${escapeHtml(acc.accountNo)}</span>
+              </div>
+              <span class="text-[10px] text-slate-400 block truncate">a.n ${escapeHtml(acc.accountName)}${acc.notes ? ` • <span class="text-slate-400">${escapeHtml(acc.notes)}</span>` : ''}</span>
+            </div>
           </div>
-          <button type="button" onclick="event.stopPropagation(); copyAccountNo('${escapeHtml(acc.accountNo)}')" title="Salin nomor rekening"
-            class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-all">
-            <span class="material-symbols-outlined text-xs">content_copy</span>
+          <button type="button" onclick="event.stopPropagation(); copyAccountNo('${escapeHtml(acc.accountNo)}', '${escapeHtml(acc.bank)}')" title="Salin nomor rekening"
+            class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/80 hover:border-emerald-500/50 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 cursor-pointer active:scale-95 shadow-sm">
+            <span class="material-symbols-outlined text-xs text-amber-400">content_copy</span>
             <span>Salin</span>
           </button>
         `;
@@ -1492,7 +1629,7 @@
         let c = document.getElementById(`pay-card-${i}`);
         if (c) {
           if (i === idx) {
-            c.className = 'p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 bg-slate-900 border-emerald-500/50 ring-1 ring-emerald-500';
+            c.className = 'p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 bg-slate-900 border-emerald-500/50 ring-2 ring-emerald-500';
           } else {
             c.className = 'p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 bg-slate-950 border-slate-800 hover:border-slate-700';
           }
@@ -1500,12 +1637,17 @@
       });
     }
 
-    function copyAccountNo(text) {
-      navigator.clipboard.writeText(text).then(() => {
-        alert("Nomor rekening tersalin ke clipboard: " + text);
-      }).catch(() => {
+    function copyAccountNo(text, bankName = '') {
+      if (!text) return;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          alert(`Nomor rekening ${bankName ? bankName + ' ' : ''}(${text}) berhasil disalin ke clipboard!`);
+        }).catch(() => {
+          prompt("Salin nomor rekening:", text);
+        });
+      } else {
         prompt("Salin nomor rekening:", text);
-      });
+      }
     }
 
     async function handlePublicOrderSubmit(e) {
@@ -1731,6 +1873,10 @@
       let el = document.getElementById('succ-total-price');
       let text = el ? el.textContent.trim() : '';
       let numOnly = text.replace(/[^0-9]/g, '');
+      if (!numOnly || numOnly === '0') {
+        alert("Total pembayaran saat ini adalah Rp 0 (Diskon 100% / Pengguna Perdana). Tidak memerlukan transfer.");
+        return;
+      }
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(numOnly).then(() => {
           alert("Nominal transfer tepat " + text + " (" + numOnly + ") berhasil disalin! Silakan tempelkan (paste) di aplikasi mobile banking / m-banking Anda.");
