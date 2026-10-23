@@ -151,17 +151,17 @@
     }
     html:not(.dark) #pesan-step-2 .w-8.h-8,
     html.light #pesan-step-2 .w-8.h-8 {
-      background-color: #4f46e5 !important;
-      color: #ffffff !important;
-      border-radius: 14px !important;
-      box-shadow: 0 4px 12px -2px rgba(79, 70, 229, 0.35) !important;
-    }
-    html:not(.dark) #pesan-step-3 .w-8.h-8,
-    html.light #pesan-step-3 .w-8.h-8 {
       background-color: #d97706 !important;
       color: #ffffff !important;
       border-radius: 14px !important;
       box-shadow: 0 4px 12px -2px rgba(217, 119, 6, 0.35) !important;
+    }
+    html:not(.dark) #pesan-step-3 .w-8.h-8,
+    html.light #pesan-step-3 .w-8.h-8 {
+      background-color: #4f46e5 !important;
+      color: #ffffff !important;
+      border-radius: 14px !important;
+      box-shadow: 0 4px 12px -2px rgba(79, 70, 229, 0.35) !important;
     }
     html:not(.dark) #pesan-step-4 .w-8.h-8,
     html.light #pesan-step-4 .w-8.h-8 {
@@ -561,12 +561,45 @@
       </div>
 
       <!-- ========================================== -->
-      <!-- LANGKAH 2: DATA PEMESAN                    -->
+      <!-- LANGKAH 2: KLAIM KODE VOUCHER              -->
       <!-- ========================================== -->
       <div id="pesan-step-2" class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 space-y-4 shadow-xl">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-xs">
+              2
+            </div>
+            <div>
+              <h3 class="font-extrabold text-white text-sm sm:text-base">Punya Kode Voucher / Token Lisensi?</h3>
+              <p class="text-[11px] text-slate-400">Masukkan kode promo atau token lisensi dari database DEV</p>
+            </div>
+          </div>
+          <span class="material-symbols-outlined text-amber-400 text-xl">sell</span>
+        </div>
+
+        <div class="space-y-2">
+          <div class="flex items-center gap-2">
+            <div class="relative flex-1">
+              <span class="material-symbols-outlined absolute left-3 top-2.5 text-amber-400 text-base">local_offer</span>
+              <input type="text" id="voucher-input" placeholder="Masukkan kode kupon atau token lisensi..."
+                onkeydown="if(event.key==='Enter'){event.preventDefault();applyVoucher();}"
+                class="w-full pl-9 pr-3.5 py-2.5 bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl text-white uppercase font-mono-data font-bold placeholder-slate-500 text-xs outline-none transition-all">
+            </div>
+            <button type="button" onclick="applyVoucher()" class="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer shrink-0">
+              Gunakan Voucher / Token
+            </button>
+          </div>
+          <div id="voucher-msg-box" class="hidden p-3 rounded-xl text-xs font-semibold"></div>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- LANGKAH 3: DATA PEMESAN                    -->
+      <!-- ========================================== -->
+      <div id="pesan-step-3" class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 space-y-4 shadow-xl">
         <div class="flex items-center gap-2.5 border-b border-slate-800 pb-3">
           <div class="w-8 h-8 rounded-xl bg-blue-600/20 text-blue-400 flex items-center justify-center font-bold text-xs">
-            2
+            3
           </div>
           <div>
             <h3 class="font-extrabold text-white text-sm sm:text-base">Data Pemesan / Pemilik Lisensi</h3>
@@ -611,39 +644,6 @@
             </div>
             <p class="text-[10px] text-slate-500 mt-1">Digunakan untuk konfirmasi pesanan & bantuan teknis via WhatsApp.</p>
           </div>
-        </div>
-      </div>
-
-      <!-- ========================================== -->
-      <!-- LANGKAH 3: KLAIM KODE VOUCHER              -->
-      <!-- ========================================== -->
-      <div id="pesan-step-3" class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 space-y-4 shadow-xl">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-          <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-xs">
-              3
-            </div>
-            <div>
-              <h3 class="font-extrabold text-white text-sm sm:text-base">Punya Kode Voucher / Token Lisensi?</h3>
-              <p class="text-[11px] text-slate-400">Masukkan kode promo atau token lisensi dari database DEV</p>
-            </div>
-          </div>
-          <span class="material-symbols-outlined text-amber-400 text-xl">sell</span>
-        </div>
-
-        <div class="space-y-2">
-          <div class="flex items-center gap-2">
-            <div class="relative flex-1">
-              <span class="material-symbols-outlined absolute left-3 top-2.5 text-amber-400 text-base">local_offer</span>
-              <input type="text" id="voucher-input" placeholder="Masukkan kode kupon atau token lisensi..."
-                onkeydown="if(event.key==='Enter'){event.preventDefault();applyVoucher();}"
-                class="w-full pl-9 pr-3.5 py-2.5 bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl text-white uppercase font-mono-data font-bold placeholder-slate-500 text-xs outline-none transition-all">
-            </div>
-            <button type="button" onclick="applyVoucher()" class="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer shrink-0">
-              Gunakan Voucher / Token
-            </button>
-          </div>
-          <div id="voucher-msg-box" class="hidden p-3 rounded-xl text-xs font-semibold"></div>
         </div>
       </div>
 
@@ -1016,6 +1016,7 @@
         { id: "pkg-master", name: "PRO Developer Master (10 Perangkat)", devices: 10, price: "Rp 499.000", priceNum: 499000, description: "Akses maksimal hingga 10 perangkat untuk profesional / multi-kantor.", popular: false }
       ],
       vouchers: [
+        { code: "PROMOLAUNCHING", type: "percent", value: 30, minPrice: 0, targetPackage: "ALL", maxUses: 0, usedCount: 0, status: "ACTIVE", description: "Diskon Peluncuran 30% Hingga Desember" },
         { code: "UJICOBA-PRO", type: "percent", value: 100, minPrice: 0, targetPackage: "ALL", maxUses: 3, usedCount: 0, status: "ACTIVE", description: "Token Lisensi Pengguna Perdana Multi-Device (Akses Seumur Hidup - Kuota 3 Pengguna)" },
         { code: "BERKAH30", type: "fixed", value: 30000, minPrice: 99000, targetPackage: "ALL", maxUses: 50, usedCount: 12, status: "ACTIVE", description: "Diskon Berkah Rp 30.000" },
         { code: "PROMOAKBAR", type: "percent", value: 20, minPrice: 99000, targetPackage: "pkg-multi", maxUses: 100, usedCount: 35, status: "ACTIVE", description: "Diskon Peluncuran 20% Khusus Multi-Device" }
@@ -1061,6 +1062,9 @@
             v.maxUses = 3;
             v.description = 'Token Lisensi Pengguna Perdana Multi-Device (Akses Seumur Hidup - Kuota 3 Pengguna)';
           }
+          if (v.code === 'PROMOLAUNCHING') {
+            v.maxUses = 0; // Pastikan kuota Tanpa Batas / Unlimited
+          }
         });
       }
     }
@@ -1070,8 +1074,13 @@
       let existing = catalog.vouchers.find(v => v.code.toUpperCase() === defV.code.toUpperCase());
       if (!existing) {
         catalog.vouchers.push(defV);
-      } else if (existing.code === 'UJICOBA-PRO' && existing.maxUses === 999) {
-        existing.maxUses = 3;
+      } else {
+        if (existing.code === 'UJICOBA-PRO' && existing.maxUses === 999) {
+          existing.maxUses = 3;
+        }
+        if (existing.code === 'PROMOLAUNCHING') {
+          existing.maxUses = 0; // Pastikan kuota Tanpa Batas / Unlimited
+        }
       }
     });
 
