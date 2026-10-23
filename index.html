@@ -125,6 +125,74 @@
     html.dark input, html.dark select { background-color: #090d16 !important; color: #ffffff !important; border-color: #475569 !important; }
     html.dark .text-gray-500, html.dark .text-gray-600 { color: #94a3b8 !important; }
 
+    /* Pengecualian Khusus Layar Bumper / Kunci PIN Splash Screen:
+       Layar ini menggunakan konsep Glassmorphism Biru Mewah tersendiri,
+       sehingga kolom PIN dan tombol MASUK APLIKASI tidak boleh tertimpa warna hitam dari Dark Mode global. */
+    #splash-screen input,
+    html.dark #splash-screen input,
+    #splash-screen #bumper-pin-input {
+      background-color: rgba(255, 255, 255, 0.16) !important;
+      color: #ffffff !important;
+      border-color: rgba(255, 255, 255, 0.35) !important;
+    }
+    #splash-screen input:focus,
+    html.dark #splash-screen input:focus,
+    #splash-screen #bumper-pin-input:focus {
+      border-color: #ffffff !important;
+      background-color: rgba(255, 255, 255, 0.22) !important;
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2) !important;
+    }
+    #splash-screen input::placeholder,
+    html.dark #splash-screen input::placeholder {
+      color: rgba(219, 234, 254, 0.75) !important;
+    }
+    #splash-screen #btn-bumper-login,
+    html.dark #splash-screen #btn-bumper-login,
+    #splash-screen button.bg-white,
+    html.dark #splash-screen button.bg-white {
+      background-color: #ffffff !important;
+      color: #1d4ed8 !important;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25) !important;
+    }
+    #splash-screen #btn-bumper-login:hover,
+    html.dark #splash-screen #btn-bumper-login:hover,
+    #splash-screen button.bg-white:hover,
+    html.dark #splash-screen button.bg-white:hover {
+      background-color: #eff6ff !important;
+      color: #1e40af !important;
+    }
+
+    /* Penataan Kamera QR Scanner Modern & Responsif */
+    #qr-camera-reader {
+      width: 100% !important;
+      height: 100% !important;
+      border: none !important;
+      background: #000000 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      overflow: hidden !important;
+    }
+    #qr-camera-reader video {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      border-radius: 1.5rem !important;
+    }
+    #qr-camera-reader__scan_region {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      width: 100% !important;
+      height: 100% !important;
+    }
+    #qr-camera-reader__scan_region video {
+      object-fit: cover !important;
+    }
+    #qr-shaded-region {
+      border-color: rgba(6, 182, 212, 0.45) !important;
+    }
+
     .hidden-action-row .delete-action-btn { opacity: 0; transition: opacity 0.2s ease-in-out; }
     .hidden-action-row:hover .delete-action-btn { opacity: 1; }
 
@@ -541,53 +609,53 @@
   </div>
 
   <!-- MODAL KAMERA SCANNER ("TOLS SCANENYA") -->
-  <div id="modal-qr-scanner" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[75] flex items-center justify-center hidden p-4 overflow-y-auto">
-    <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-sm w-full p-5 space-y-4 shadow-2xl relative text-slate-100 my-auto text-center">
-      <button onclick="closeQrScannerModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-full hover:bg-slate-800 transition-colors cursor-pointer">
-        <span class="material-symbols-outlined text-xl">close</span>
+  <div id="modal-qr-scanner" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[75] flex items-center justify-center hidden p-4 sm:p-6 overflow-y-auto">
+    <div class="bg-slate-900/95 border border-slate-700/80 rounded-3xl max-w-md sm:max-w-lg md:max-w-xl w-full p-5 sm:p-7 space-y-4 shadow-2xl relative text-slate-100 my-auto text-center">
+      <button onclick="closeQrScannerModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1.5 rounded-full hover:bg-slate-800 transition-colors cursor-pointer" title="Tutup Scanner">
+        <span class="material-symbols-outlined text-2xl">close</span>
       </button>
 
       <div>
-        <h3 class="font-headline-md font-bold text-white text-base flex items-center justify-center gap-1.5">
-          <span class="material-symbols-outlined text-cyan-400 text-lg">qr_code_scanner</span>
+        <h3 class="font-headline-md font-bold text-white text-base sm:text-lg flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-cyan-400 text-xl">qr_code_scanner</span>
           <span>Scan Barcode Lisensi</span>
         </h3>
-        <p class="text-[11px] text-slate-400 mt-1">Arahkan kamera ke layar HP/Laptop pertama Anda</p>
+        <p class="text-xs text-slate-400 mt-1">Arahkan kamera ke layar HP/Laptop pertama Anda untuk menghubungkan lisensi</p>
       </div>
 
       <!-- VIEWFINDER CAMERA SCANNER -->
-      <div class="relative w-full aspect-square max-w-[280px] mx-auto rounded-2xl overflow-hidden bg-black border-2 border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.25)]">
+      <div class="relative w-full aspect-square max-w-[340px] sm:max-w-[440px] md:max-w-[480px] mx-auto rounded-3xl overflow-hidden bg-black border-2 border-cyan-400/90 shadow-[0_0_30px_rgba(6,182,212,0.3)]">
         <div id="qr-camera-reader" class="w-full h-full"></div>
 
         <!-- ANIMATED SCANNER LASER -->
-        <div class="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_12px_#22d3ee] animate-scanner-laser pointer-events-none"></div>
+        <div class="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_14px_#22d3ee] animate-scanner-laser pointer-events-none"></div>
 
-        <!-- CORNER ACCENTS -->
-        <div class="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-cyan-300 pointer-events-none"></div>
-        <div class="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-cyan-300 pointer-events-none"></div>
-        <div class="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-cyan-300 pointer-events-none"></div>
-        <div class="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-cyan-300 pointer-events-none"></div>
+        <!-- CORNER ACCENTS (HIGH-TECH CORNER BRACKETS) -->
+        <div class="absolute top-3 left-3 w-6 h-6 sm:w-8 sm:h-8 border-t-[3px] border-l-[3px] border-cyan-400 rounded-tl-xl pointer-events-none shadow-[0_0_10px_#22d3ee]"></div>
+        <div class="absolute top-3 right-3 w-6 h-6 sm:w-8 sm:h-8 border-t-[3px] border-r-[3px] border-cyan-400 rounded-tr-xl pointer-events-none shadow-[0_0_10px_#22d3ee]"></div>
+        <div class="absolute bottom-3 left-3 w-6 h-6 sm:w-8 sm:h-8 border-b-[3px] border-l-[3px] border-cyan-400 rounded-bl-xl pointer-events-none shadow-[0_0_10px_#22d3ee]"></div>
+        <div class="absolute bottom-3 right-3 w-6 h-6 sm:w-8 sm:h-8 border-b-[3px] border-r-[3px] border-cyan-400 rounded-br-xl pointer-events-none shadow-[0_0_10px_#22d3ee]"></div>
 
         <!-- STATUS PILL -->
-        <div id="qr-scan-status" class="absolute bottom-2 inset-x-2 text-center py-1 px-2 bg-slate-950/85 backdrop-blur-md text-[10px] text-cyan-300 font-semibold rounded-lg border border-cyan-500/30 truncate">
+        <div id="qr-scan-status" class="absolute bottom-3 inset-x-4 text-center py-2 px-3 bg-slate-950/85 backdrop-blur-md text-xs text-cyan-200 font-semibold rounded-xl border border-cyan-500/30 truncate shadow-lg">
           Mempersiapkan kamera...
         </div>
       </div>
 
       <!-- KONTROL KAMERA -->
-      <div class="grid grid-cols-2 gap-2 pt-1">
-        <button type="button" onclick="flipQrCamera()" class="py-2 px-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
-          <span class="material-symbols-outlined text-sm">flip_camera_ios</span>
+      <div class="grid grid-cols-2 gap-2.5 pt-1">
+        <button type="button" onclick="flipQrCamera()" class="py-2.5 px-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer border border-slate-700/60 shadow-sm">
+          <span class="material-symbols-outlined text-base text-cyan-300">flip_camera_ios</span>
           <span>Ganti Kamera</span>
         </button>
-        <label class="py-2 px-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
-          <span class="material-symbols-outlined text-sm">image</span>
+        <label class="py-2.5 px-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer border border-slate-700/60 shadow-sm">
+          <span class="material-symbols-outlined text-base text-cyan-300">image</span>
           <span>Pilih Foto</span>
           <input type="file" accept="image/*" onchange="handleQrImageUpload(this)" class="hidden">
         </label>
       </div>
 
-      <button onclick="closeQrScannerModal()" class="w-full py-2 border border-slate-700 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer">
+      <button onclick="closeQrScannerModal()" class="w-full py-2.5 border border-slate-700/80 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer">
         Batal / Masukkan Manual
       </button>
     </div>
@@ -3296,7 +3364,15 @@
           activeQrScannerInstance = new Html5Qrcode("qr-camera-reader");
         }
 
-        const config = { fps: 10, qrbox: { width: 220, height: 220 } };
+        const config = {
+          fps: 15,
+          qrbox: (viewfinderWidth, viewfinderHeight) => {
+            let edge = Math.min(viewfinderWidth || 360, viewfinderHeight || 360);
+            let boxSize = Math.max(250, Math.floor(edge * 0.82));
+            return { width: boxSize, height: boxSize };
+          },
+          aspectRatio: 1.0
+        };
         await activeQrScannerInstance.start(
           { facingMode: qrCameraFacing },
           config,
