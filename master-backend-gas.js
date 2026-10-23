@@ -1956,7 +1956,7 @@ function getDefaultSalesSettings() {
   return {
     orderMode: "TESTING", // "TESTING" (v0.1) | "LIVE" (v1.0)
     launchSeqOffset: 0,
-    sellerWhatsApp: "628123456789",
+    sellerWhatsApp: "087788197916",
     orderFormUrl: "https://sambarangpro.github.io/keuanganku/pesan.html",
     packages: [
       { id: "pkg-personal", name: "PRO Personal (1 Perangkat)", devices: 1, price: "Rp 99.000", priceNum: 99000, description: "Untuk penggunaan pribadi di 1 HP atau 1 Laptop. Akses seumur hidup.", popular: false },
@@ -1970,10 +1970,9 @@ function getDefaultSalesSettings() {
       { code: "PROMOAKBAR", type: "percent", value: 20, minPrice: 99000, targetPackage: "pkg-multi", maxUses: 100, usedCount: 0, status: "ACTIVE", description: "Diskon Peluncuran 20% Khusus Multi-Device" }
     ],
     paymentAccounts: [
-      { bank: "Transfer BCA", accountNo: "1234567890", accountName: "Muh Akbar", notes: "Konfirmasi transfer cepat" },
-      { bank: "Transfer Mandiri", accountNo: "1234567890123", accountName: "Muh Akbar", notes: "Bank Mandiri" },
-      { bank: "Transfer BRI", accountNo: "123456789012345", accountName: "Muh Akbar", notes: "Bank BRI" },
-      { bank: "QRIS / DANA", accountNo: "08123456789", accountName: "Muh Akbar", notes: "Scan QRIS / Transfer E-Wallet" }
+      { bank: "Bank Syariah Indonesia (BSI)", accountNo: "7177946448", accountName: "Muh Akbar", notes: "Rekening Utama • Konfirmasi Cepat" },
+      { bank: "Bank Jago", accountNo: "504172135812", accountName: "Muh Akbar", notes: "Transfer Bebas Biaya Admin" },
+      { bank: "QRIS / DANA / GoPay / OVO", accountNo: "087788197916", accountName: "Muh Akbar", notes: "Scan QRIS / Transfer E-Wallet Instant" }
     ]
   };
 }
@@ -1984,6 +1983,18 @@ function getStoredSalesSettings() {
     if (raw) {
       var parsed = JSON.parse(raw);
       if (parsed && Array.isArray(parsed.packages) && parsed.packages.length > 0) {
+        // Auto-heal dummy data jika script properties masih menyimpan dummy BCA / 123456789
+        if (!parsed.sellerWhatsApp || parsed.sellerWhatsApp.includes("123456789")) {
+          parsed.sellerWhatsApp = "087788197916";
+        }
+        if (Array.isArray(parsed.paymentAccounts)) {
+          var hasDummy = parsed.paymentAccounts.some(function(acc) {
+            return acc.accountNo === "1234567890" || acc.accountNo === "08123456789" || (acc.bank && acc.bank.indexOf("Transfer BCA") !== -1);
+          });
+          if (hasDummy || parsed.paymentAccounts.length === 0) {
+            parsed.paymentAccounts = getDefaultSalesSettings().paymentAccounts;
+          }
+        }
         return parsed;
       }
     }

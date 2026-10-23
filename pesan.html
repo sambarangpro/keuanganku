@@ -636,19 +636,6 @@
             </button>
           </div>
           <div id="voucher-msg-box" class="hidden p-3 rounded-xl text-xs font-semibold"></div>
-
-          <!-- Petunjuk Uji Coba Realistis Sesuai Database DEV (3 Pengguna) -->
-          <div id="testing-voucher-hint" class="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-[11px] text-amber-300 flex items-center justify-between gap-2.5 flex-wrap">
-            <div class="flex items-start gap-2">
-              <span class="material-symbols-outlined text-base text-amber-400 shrink-0 mt-0.5">science</span>
-              <div class="leading-relaxed">
-                <span><b>Mode Uji Coba:</b> Anda dapat memasukkan kode token dari database DEV atau kode <b>UJICOBA-PRO</b> (Kuota realistis: <b>3 Pengguna</b>).</span>
-              </div>
-            </div>
-            <button type="button" onclick="quickFillTestVoucher()" class="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-500/35 rounded-xl text-[10px] font-bold cursor-pointer transition-all shrink-0">
-              Gunakan Token Uji Coba
-            </button>
-          </div>
         </div>
       </div>
 
@@ -941,7 +928,7 @@
     const DEFAULT_CATALOG = {
       orderMode: "TESTING", // "TESTING" (v0.1) | "LIVE" (v1.0)
       appVersion: "v0.1",
-      sellerWhatsApp: "628123456789",
+      sellerWhatsApp: "087788197916",
       packages: [
         { id: "pkg-personal", name: "PRO Personal (1 Perangkat)", devices: 1, price: "Rp 99.000", priceNum: 99000, description: "Untuk penggunaan pribadi di 1 HP atau 1 Laptop. Akses seumur hidup.", popular: false },
         { id: "pkg-multi", name: "PRO Multi-Device (3 Perangkat)", devices: 3, price: "Rp 149.000", priceNum: 149000, description: "Paling Populer! Sinkronisasi otomatis di HP, Laptop, dan Tablet secara hening.", popular: true },
@@ -954,10 +941,9 @@
         { code: "PROMOAKBAR", type: "percent", value: 20, minPrice: 99000, targetPackage: "pkg-multi", maxUses: 100, usedCount: 35, status: "ACTIVE", description: "Diskon Peluncuran 20% Khusus Multi-Device" }
       ],
       paymentAccounts: [
-        { bank: "Transfer BCA", accountNo: "1234567890", accountName: "Muh Akbar", notes: "Konfirmasi cepat" },
-        { bank: "Transfer Mandiri", accountNo: "1234567890123", accountName: "Muh Akbar", notes: "Bank Mandiri" },
-        { bank: "Transfer BRI", accountNo: "123456789012345", accountName: "Muh Akbar", notes: "Bank BRI" },
-        { bank: "QRIS / DANA", accountNo: "08123456789", accountName: "Muh Akbar", notes: "Scan QRIS / E-Wallet" }
+        { bank: "Bank Syariah Indonesia (BSI)", accountNo: "7177946448", accountName: "Muh Akbar", notes: "Rekening Utama • Konfirmasi Cepat" },
+        { bank: "Bank Jago", accountNo: "504172135812", accountName: "Muh Akbar", notes: "Transfer Bebas Biaya Admin" },
+        { bank: "QRIS / DANA / GoPay / OVO", accountNo: "087788197916", accountName: "Muh Akbar", notes: "Scan QRIS / Transfer E-Wallet Instant" }
       ]
     };
 
@@ -968,16 +954,30 @@
     } catch(e) {}
 
     let catalog = cachedCatalog || JSON.parse(JSON.stringify(DEFAULT_CATALOG));
-    // Bersihkan voucher uji coba lama jika masih tersimpan kuota 999 di cache
-    if (catalog && Array.isArray(catalog.vouchers)) {
-      catalog.vouchers.forEach(v => {
-        if (v.code === 'ORANGDALAM' || v.maxUses === 999) {
-          v.code = 'UJICOBA-PRO';
-          v.maxUses = 3;
-          v.description = 'Token Lisensi Pengguna Perdana Multi-Device (Akses Seumur Hidup - Kuota 3 Pengguna)';
+
+    // Bersihkan data dummy lama (1234567890 / 08123456789) jika masih tersimpan di cache browser
+    if (catalog) {
+      if (!catalog.sellerWhatsApp || catalog.sellerWhatsApp.includes('123456789')) {
+        catalog.sellerWhatsApp = '087788197916';
+      }
+      if (Array.isArray(catalog.paymentAccounts)) {
+        let hasDummy = catalog.paymentAccounts.some(acc => (acc.accountNo === '1234567890' || acc.accountNo === '08123456789' || acc.bank.includes('Transfer BCA')));
+        if (hasDummy || catalog.paymentAccounts.length === 0) {
+          catalog.paymentAccounts = JSON.parse(JSON.stringify(DEFAULT_CATALOG.paymentAccounts));
         }
-      });
+      }
+      // Bersihkan voucher uji coba lama jika masih tersimpan kuota 999 di cache
+      if (Array.isArray(catalog.vouchers)) {
+        catalog.vouchers.forEach(v => {
+          if (v.code === 'ORANGDALAM' || v.maxUses === 999) {
+            v.code = 'UJICOBA-PRO';
+            v.maxUses = 3;
+            v.description = 'Token Lisensi Pengguna Perdana Multi-Device (Akses Seumur Hidup - Kuota 3 Pengguna)';
+          }
+        });
+      }
     }
+
     // Pastikan voucher default selalu ada di katalog dengan kuota realistis
     DEFAULT_CATALOG.vouchers.forEach(defV => {
       let existing = catalog.vouchers.find(v => v.code.toUpperCase() === defV.code.toUpperCase());
@@ -990,7 +990,7 @@
 
     let selectedPackage = null;
     let appliedVoucher = null;
-    let selectedPaymentMethod = "Transfer BCA";
+    let selectedPaymentMethod = "Bank Syariah Indonesia (BSI)";
     let currentOrderSeq = 1;
     let currentUniqueCode = null;
 
@@ -1122,11 +1122,6 @@
           if (heroTag) {
             heroTag.textContent = isLive ? "Lisensi Resmi Seumur Hidup (v1.0 Lifetime)" : "Masa Uji Coba Lisensi (v0.1 BETA)";
           }
-          let hintBox = document.getElementById('testing-voucher-hint');
-          if (hintBox) {
-            if (isLive) hintBox.classList.add('hidden');
-            else hintBox.classList.remove('hidden');
-          }
 
           if (Array.isArray(res.packages) && res.packages.length > 0) catalog.packages = res.packages;
           if (Array.isArray(res.vouchers)) {
@@ -1146,8 +1141,15 @@
             });
             catalog.vouchers = mergedVouchers;
           }
-          if (Array.isArray(res.paymentAccounts) && res.paymentAccounts.length > 0) catalog.paymentAccounts = res.paymentAccounts;
-          if (res.sellerWhatsApp) catalog.sellerWhatsApp = res.sellerWhatsApp;
+          if (Array.isArray(res.paymentAccounts) && res.paymentAccounts.length > 0) {
+            let hasDummyRes = res.paymentAccounts.some(acc => (acc.accountNo === '1234567890' || acc.accountNo === '08123456789' || (acc.bank && acc.bank.includes('Transfer BCA'))));
+            if (!hasDummyRes) {
+              catalog.paymentAccounts = res.paymentAccounts;
+            }
+          }
+          if (res.sellerWhatsApp && !res.sellerWhatsApp.includes('123456789')) {
+            catalog.sellerWhatsApp = res.sellerWhatsApp;
+          }
           if (res.nextOrderSeq) {
             currentOrderSeq = Number(res.nextOrderSeq) || 1;
           }

@@ -5124,7 +5124,7 @@ Copyright © 2026 Sambarang Production`;
       return {
         orderMode: "TESTING",
         launchSeqOffset: 0,
-        sellerWhatsApp: "081234567890",
+        sellerWhatsApp: "087788197916",
         orderFormUrl: "https://sambarangpro.github.io/keuanganku/pesan.html",
         packages: [
           { id: "pkg-personal", name: "PRO Personal (1 Perangkat)", devices: 1, price: "Rp 99.000", priceNum: 99000, description: "Akses selamanya untuk 1 HP Android atau Laptop. Fitur lengkap tanpa batas.", popular: false },
@@ -5138,10 +5138,9 @@ Copyright © 2026 Sambarang Production`;
           { code: "PROMOAKBAR", type: "percent", value: 20, minPrice: 99000, targetPackage: "pkg-multi", maxUses: 100, usedCount: 35, status: "ACTIVE", description: "Diskon Spesial 20% Khusus Multi-Device" }
         ],
         paymentAccounts: [
-          { bank: "Transfer BCA", accountNo: "1234567890", accountName: "Muh Akbar", notes: "Konfirmasi transfer cepat" },
-          { bank: "Transfer Mandiri", accountNo: "1234567890123", accountName: "Muh Akbar", notes: "Bank Mandiri" },
-          { bank: "Transfer BRI", accountNo: "123456789012345", accountName: "Muh Akbar", notes: "Bank BRI" },
-          { bank: "QRIS / DANA / GoPay", accountNo: "08123456789", accountName: "Muh Akbar", notes: "Scan QRIS / E-Wallet instant" }
+          { bank: "Bank Syariah Indonesia (BSI)", accountNo: "7177946448", accountName: "Muh Akbar", notes: "Rekening Utama • Konfirmasi Cepat" },
+          { bank: "Bank Jago", accountNo: "504172135812", accountName: "Muh Akbar", notes: "Transfer Bebas Biaya Admin" },
+          { bank: "QRIS / DANA / GoPay / OVO", accountNo: "087788197916", accountName: "Muh Akbar", notes: "Scan QRIS / Transfer E-Wallet Instant" }
         ]
       };
     }
@@ -5184,17 +5183,30 @@ Copyright © 2026 Sambarang Production`;
         cachedSalesSettings = getDefaultSalesSettingsFallback();
       }
 
-      // Bersihkan voucher 999 lama jika tersimpan di cache lokal
-      if (cachedSalesSettings && Array.isArray(cachedSalesSettings.vouchers)) {
+      // Bersihkan data dummy lama (1234567890 / 08123456789) jika tersimpan di cache lokal
+      if (cachedSalesSettings) {
         let updated = false;
-        cachedSalesSettings.vouchers.forEach(v => {
-          if (v.code === 'ORANGDALAM' || v.maxUses === 999) {
-            v.code = 'UJICOBA-PRO';
-            v.maxUses = 3;
-            v.description = 'Token Lisensi Pengguna Perdana Multi-Device (Akses Seumur Hidup - Kuota 3 Pengguna)';
+        if (!cachedSalesSettings.sellerWhatsApp || cachedSalesSettings.sellerWhatsApp.includes('123456789')) {
+          cachedSalesSettings.sellerWhatsApp = '087788197916';
+          updated = true;
+        }
+        if (Array.isArray(cachedSalesSettings.paymentAccounts)) {
+          let hasDummy = cachedSalesSettings.paymentAccounts.some(acc => (acc.accountNo === '1234567890' || acc.accountNo === '08123456789' || (acc.bank && acc.bank.includes('Transfer BCA'))));
+          if (hasDummy || cachedSalesSettings.paymentAccounts.length === 0) {
+            cachedSalesSettings.paymentAccounts = JSON.parse(JSON.stringify(getDefaultSalesSettingsFallback().paymentAccounts));
             updated = true;
           }
-        });
+        }
+        if (Array.isArray(cachedSalesSettings.vouchers)) {
+          cachedSalesSettings.vouchers.forEach(v => {
+            if (v.code === 'ORANGDALAM' || v.maxUses === 999) {
+              v.code = 'UJICOBA-PRO';
+              v.maxUses = 3;
+              v.description = 'Token Lisensi Pengguna Perdana Multi-Device (Akses Seumur Hidup - Kuota 3 Pengguna)';
+              updated = true;
+            }
+          });
+        }
         if (updated) {
           localStorage.setItem('KEUANGANKU_DEV_SALES_SETTINGS', JSON.stringify(cachedSalesSettings));
         }
@@ -5203,8 +5215,8 @@ Copyright © 2026 Sambarang Production`;
       let waInp = document.getElementById('setting-seller-wa');
       let urlInp = document.getElementById('setting-order-form-url');
 
-      if (waInp && !waInp.value) {
-        waInp.value = cachedSalesSettings.sellerWhatsApp || '08123456789';
+      if (waInp && (!waInp.value || waInp.value.includes('123456789'))) {
+        waInp.value = cachedSalesSettings.sellerWhatsApp || '087788197916';
       }
       if (urlInp && !urlInp.value) {
         urlInp.value = cachedSalesSettings.orderFormUrl || 'https://sambarangpro.github.io/keuanganku/pesan.html';
