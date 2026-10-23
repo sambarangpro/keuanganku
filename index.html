@@ -831,6 +831,19 @@
     </div>
   </header>
 
+  <!-- FLOATING BANNER MODE DEMO IKLAN -->
+  <div id="top-demo-banner" class="hidden bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 text-slate-950 px-3 py-1.5 text-xs font-bold text-center flex items-center justify-center gap-2 shadow-md sticky top-[56px] z-30 transition-all">
+    <span class="flex items-center gap-1.5">
+      <span class="material-symbols-outlined text-sm font-bold animate-pulse">movie</span>
+      <span>MODE PERCONTOHAN IKLAN AKTIF</span>
+    </span>
+    <span class="text-slate-900/60">•</span>
+    <span class="text-[11px] font-medium hidden sm:inline text-slate-900">Data pribadi Anda tersimpan aman</span>
+    <button onclick="restoreUserRealData()" class="ml-1 px-2.5 py-0.5 bg-slate-950 hover:bg-slate-900 text-white rounded-lg text-[10px] font-bold shadow-sm transition-all cursor-pointer">
+      Kembalikan Data Asli
+    </button>
+  </div>
+
   <!-- TOAST NOTIFIKASI SINKRONISASI OTOMATIS -->
   <div id="sync-toast" class="fixed top-18 right-4 z-50 bg-slate-900/90 dark:bg-slate-800/95 text-white text-xs px-3.5 py-2.5 rounded-xl shadow-2xl border border-white/10 flex items-center gap-2 transform -translate-y-4 opacity-0 pointer-events-none transition-all duration-300">
     <span class="material-symbols-outlined text-green-400 text-sm">cloud_done</span>
@@ -1472,6 +1485,39 @@
                       <span>2. PULIHKAN (IMPORT)</span>
                     </button>
                   </div>
+                </div>
+              </section>
+
+              <!-- FITUR MODE PERCONTOHAN / IKLAN (SHOWCASE DEMO DATA) -->
+              <section class="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-300/80 dark:from-slate-900 dark:to-slate-900 dark:border-amber-900/60 rounded-2xl p-5 sm:p-6 shadow-sm space-y-3.5">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                  <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-amber-600 dark:text-amber-400 text-xl font-bold">movie_filter</span>
+                    <h2 class="font-headline-md text-headline-md font-bold text-on-surface">Mode Percontohan & Konten Iklan</h2>
+                  </div>
+                  <span class="px-2.5 py-0.5 bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 text-[10px] font-extrabold rounded-full border border-amber-300 dark:border-amber-800">
+                    🎬 SHOWCASE DATA
+                  </span>
+                </div>
+                <p class="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
+                  Muat contoh data transaksi realistis, rekening bank, grafik diagram penuh, financial goals, dan budget bulanan yang tampak estetik & meyakinkan untuk kebutuhan <b>screenshot promosi, video reels, dan rekaman iklan</b>.
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                  <button onclick="activateShowcaseDemoData()" class="py-3 px-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold text-xs rounded-xl shadow-md flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
+                    <span class="material-symbols-outlined text-base font-bold">play_circle</span>
+                    <span>1. MUAT DATA PERCONTOHAN IKLAN</span>
+                  </button>
+                  <button id="btn-restore-real-data" onclick="restoreUserRealData()" class="py-3 px-4 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
+                    <span class="material-symbols-outlined text-base">history</span>
+                    <span>2. KEMBALIKAN DATA ASLI SAYA</span>
+                  </button>
+                </div>
+                <div id="demo-mode-indicator" class="hidden p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-xs text-amber-800 dark:text-amber-300 flex items-center justify-between flex-wrap gap-2">
+                  <span class="flex items-center gap-1.5 font-semibold">
+                    <span class="material-symbols-outlined text-base text-amber-500">verified</span>
+                    <span>Mode Demo Iklan Aktif. Database asli Anda aman di memori cadangan.</span>
+                  </span>
+                  <button onclick="restoreUserRealData()" class="px-2.5 py-1 bg-amber-500 text-slate-950 font-bold text-[10px] rounded-lg hover:bg-amber-400 transition-all cursor-pointer">Kembalikan Sekarang</button>
                 </div>
               </section>
 
@@ -3959,6 +4005,13 @@
               saveStorageData();
             }
 
+            // Jika mengaktifkan Akun Demo Iklan dan data transaksi masih kosong, otomatis isi data percontohan estetik
+            if (res.data.token === 'PRO-DEMO-IKLAN-2026' || (res.data.buyerName && res.data.buyerName.includes('Demo'))) {
+              if (!globalData.recentHistory || globalData.recentHistory.length === 0) {
+                activateShowcaseDemoData(true);
+              }
+            }
+
             playSuccessSound();
             showSyncToast("🎉 Lisensi Berhasil Diaktivasi!");
 
@@ -4572,6 +4625,147 @@
     }
 
     function resetTransactionHistory() { if (confirm("Apakah Anda yakin ingin mereset seluruh riwayat transaksi? Data rekam transaksi akan dikosongkan.")) { globalData.recentHistory = []; saveStorageData(); renderDashboard(); renderHistoryTable(); alert("Riwayat transaksi berhasil direset kosong!"); } }
+
+    // ==============================================================================
+    // FITUR MODE PERCONTOHAN / IKLAN (SHOWCASE DEMO DATA)
+    // ==============================================================================
+    function updateDemoModeUI() {
+      let isDemo = localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true';
+      let indicator = document.getElementById('demo-mode-indicator');
+      if (indicator) {
+        if (isDemo) indicator.classList.remove('hidden');
+        else indicator.classList.add('hidden');
+      }
+      let topBanner = document.getElementById('top-demo-banner');
+      if (topBanner) {
+        if (isDemo) topBanner.classList.remove('hidden');
+        else topBanner.classList.add('hidden');
+      }
+    }
+
+    function activateShowcaseDemoData(isSilent = false) {
+      // 1. Simpan backup data asli pengguna jika belum dalam mode demo
+      let isAlreadyDemo = localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true';
+      if (!isAlreadyDemo) {
+        try {
+          localStorage.setItem('KEUANGANKU_USER_REAL_BACKUP', JSON.stringify(globalData));
+        } catch(e) {}
+      }
+
+      // 2. Tandai mode demo aktif
+      localStorage.setItem('KEUANGANKU_IS_DEMO_MODE', 'true');
+
+      // 3. Bangun data demo yang dinamis, realistis, dan super lengkap
+      let now = new Date();
+      let y = now.getFullYear();
+      let m = String(now.getMonth() + 1).padStart(2, '0');
+      let pad = (n) => String(n).padStart(2, '0');
+      let curDay = now.getDate();
+
+      let demoData = {
+        appPin: globalData.appPin || "123456",
+        ownerPassword: globalData.ownerPassword || "123456",
+        cloudUrl: globalData.cloudUrl || "",
+        startingBalance: 15000000,
+        enableCalculator: true,
+        accounts: [
+          "BCA Prioritas (Utama)",
+          "Bank Jago (Kantong Tabungan)",
+          "GoPay / E-Wallet",
+          "Uang Tunai (Cash Fisik)"
+        ],
+        accountDetails: {
+          "BCA Prioritas (Utama)": { bankName: "Bank Central Asia (BCA)", accNo: "8271928371", owner: "Muh Akbar", balance: 28750000 },
+          "Bank Jago (Kantong Tabungan)": { bankName: "Bank Jago Syariah", accNo: "504172135812", owner: "Muh Akbar", balance: 16500000 },
+          "GoPay / E-Wallet": { bankName: "GoPay", accNo: "087788197916", owner: "Muh Akbar", balance: 1250000 },
+          "Uang Tunai (Cash Fisik)": { bankName: "Dompet Fisik", accNo: "-", owner: "Muh Akbar", balance: 650000 }
+        },
+        currentBalances: {
+          "BCA Prioritas (Utama)": 28750000,
+          "Bank Jago (Kantong Tabungan)": 16500000,
+          "GoPay / E-Wallet": 1250000,
+          "Uang Tunai (Cash Fisik)": 650000
+        },
+        incomes: ["Gaji Pokok", "Bonus Proyek", "Dividen Saham", "Hasil Usaha", "Lainnya"],
+        spendings: ["Makan & Minum", "Belanja Bulanan", "Transportasi", "Tagihan & WiFi", "Hiburan & Hobi", "Sedekah & Zakat", "Kesehatan", "Lainnya"],
+        bills: ["Listrik PLN", "Internet WiFi", "Air PDAM", "Cicilan"],
+        routinePayments: {},
+        monthlyBudgets: {
+          "Makan & Minum": 3000000,
+          "Belanja Bulanan": 2500000,
+          "Transportasi": 1000000,
+          "Hiburan & Hobi": 1500000,
+          "Tagihan & WiFi": 1200000
+        },
+        investData: {
+          "Reksadana Saham Bibit": { initial: 18500000, used: 0 },
+          "Tabungan Emas Antam Digital": { initial: 12000000, used: 0 }
+        },
+        sinkingData: {
+          "Pajak & Servis Kendaraan": { target: 5000000, initial: 3800000, durationMonths: 12, deadline: `${y}-12-31`, used: 0 },
+          "Kurban Idul Adha": { target: 4500000, initial: 3500000, durationMonths: 10, deadline: `${y+1}-05-20`, used: 0 }
+        },
+        goalsData: {
+          "Beli MacBook M3 Pro": { target: 25000000, initial: 18750000, durationMonths: 12, deadline: `${y}-11-30`, used: 0 },
+          "Dana Darurat 6 Bulan": { target: 30000000, initial: 27000000, durationMonths: 12, deadline: `${y}-12-31`, used: 0 },
+          "Liburan Akhir Tahun": { target: 15000000, initial: 9000000, durationMonths: 8, deadline: `${y}-12-20`, used: 0 }
+        },
+        receivablesData: {},
+        nonMoneyAssets: {
+          "Laptop Kerja Asus ROG": { value: 18500000, note: "Aset Produktif" },
+          "Emas Batangan Antam 10gr": { value: 14200000, note: "Simpanan Fisik" }
+        },
+        debtData: {},
+        recentHistory: [
+          { dateTime: `${pad(curDay)}/${m}/${y}, 14:15:00`, rawDate: `${y}-${m}-${pad(curDay)}`, name: "Kopi & Pastry Artisan Bakery", amount: 45000, cashflow: "Spending", category: "Makan & Minum", dariAcc: "GoPay / E-Wallet", keAcc: "- not applicable -" },
+          { dateTime: `${pad(curDay)}/${m}/${y}, 09:30:00`, rawDate: `${y}-${m}-${pad(curDay)}`, name: "Isi Bensin Pertamax Turbo", amount: 200000, cashflow: "Spending", category: "Transportasi", dariAcc: "GoPay / E-Wallet", keAcc: "- not applicable -" },
+          { dateTime: `${pad(Math.max(1, curDay-1))}/${m}/${y}, 19:45:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-1))}`, name: "Makan Malam Resto Bareng Keluarga", amount: 385000, cashflow: "Spending", category: "Makan & Minum", dariAcc: "BCA Prioritas (Utama)", keAcc: "- not applicable -" },
+          { dateTime: `${pad(Math.max(1, curDay-2))}/${m}/${y}, 16:20:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-2))}`, name: "Belanja Mingguan Supermarket", amount: 620000, cashflow: "Spending", category: "Belanja Bulanan", dariAcc: "BCA Prioritas (Utama)", keAcc: "- not applicable -" },
+          { dateTime: `${pad(Math.max(1, curDay-3))}/${m}/${y}, 13:00:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-3))}`, name: "Bonus Proyek Aplikasi & Desain", amount: 4500000, cashflow: "Income", category: "Bonus Proyek", dariAcc: "- not applicable -", keAcc: "BCA Prioritas (Utama)" },
+          { dateTime: `${pad(Math.max(1, curDay-4))}/${m}/${y}, 10:30:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-4))}`, name: "Tagihan Listrik PLN Pascabayar", amount: 480000, cashflow: "Spending", category: "Tagihan & WiFi", dariAcc: "BCA Prioritas (Utama)", keAcc: "- not applicable -" },
+          { dateTime: `${pad(Math.max(1, curDay-5))}/${m}/${y}, 12:15:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-5))}`, name: "Sedekah Jumat Berkah", amount: 150000, cashflow: "Spending", category: "Sedekah & Zakat", dariAcc: "GoPay / E-Wallet", keAcc: "- not applicable -" },
+          { dateTime: `${pad(Math.max(1, curDay-6))}/${m}/${y}, 15:40:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-6))}`, name: "Buku Pengembangan Diri Gramedia", amount: 135000, cashflow: "Spending", category: "Hiburan & Hobi", dariAcc: "Uang Tunai (Cash Fisik)", keAcc: "- not applicable -" },
+          { dateTime: `${pad(Math.max(1, curDay-8))}/${m}/${y}, 10:00:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-8))}`, name: "Dividen Investasi Reksadana", amount: 850000, cashflow: "Income", category: "Dividen Saham", dariAcc: "- not applicable -", keAcc: "Bank Jago (Kantong Tabungan)" },
+          { dateTime: `${pad(Math.max(1, curDay-9))}/${m}/${y}, 17:10:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-9))}`, name: "Beli Aksesoris & Mouse Ergonomis", amount: 420000, cashflow: "Spending", category: "Hiburan & Hobi", dariAcc: "BCA Prioritas (Utama)", keAcc: "- not applicable -" },
+          { dateTime: `${pad(Math.max(1, curDay-11))}/${m}/${y}, 11:20:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-11))}`, name: "Servis Rutin Kendaraan & Ganti Oli", amount: 350000, cashflow: "Spending", category: "Transportasi", dariAcc: "BCA Prioritas (Utama)", keAcc: "- not applicable -" },
+          { dateTime: `${pad(Math.max(1, curDay-13))}/${m}/${y}, 09:15:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-13))}`, name: "Tagihan Internet WiFi Fiber 100Mbps", amount: 380000, cashflow: "Spending", category: "Tagihan & WiFi", dariAcc: "BCA Prioritas (Utama)", keAcc: "- not applicable -" },
+          { dateTime: `${pad(Math.max(1, curDay-15))}/${m}/${y}, 20:30:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-15))}`, name: "Langganan Netflix & Spotify Family", amount: 186000, cashflow: "Spending", category: "Hiburan & Hobi", dariAcc: "Bank Jago (Kantong Tabungan)", keAcc: "- not applicable -" },
+          { dateTime: `${pad(Math.max(1, curDay-18))}/${m}/${y}, 14:00:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-18))}`, name: "Belanja Bulanan Kebutuhan Pokok", amount: 1450000, cashflow: "Spending", category: "Belanja Bulanan", dariAcc: "BCA Prioritas (Utama)", keAcc: "- not applicable -" },
+          { dateTime: `01/${m}/${y}, 08:00:00`, rawDate: `${y}-${m}-01`, name: "Gaji Pokok Eksekutif", amount: 18500000, cashflow: "Income", category: "Gaji Pokok", dariAcc: "- not applicable -", keAcc: "BCA Prioritas (Utama)" },
+          { dateTime: `01/${m}/${y}, 08:30:00`, rawDate: `${y}-${m}-01`, name: "Alokasi Pos Tabungan Impian", amount: 3500000, cashflow: "Transfer", category: "Transfer Antar Akun", dariAcc: "BCA Prioritas (Utama)", keAcc: "Bank Jago (Kantong Tabungan)" }
+        ]
+      };
+
+      globalData = demoData;
+      localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData));
+      initApp();
+      updateDemoModeUI();
+      navTo('dashboard');
+      if (!isSilent) {
+        alert("🎬 MODE PERCONTOHAN IKLAN AKTIF!\n\nSeluruh data percontohan (rekening bank, riwayat transaksi lengkap, target goals, grafik diagram, dan budget) telah dimuat dengan indah.\n\nData asli pribadi Anda tersimpan aman dan dapat dipulihkan kapan saja melalui tombol 'Kembalikan Data Asli'.");
+      }
+    }
+
+    function restoreUserRealData() {
+      let backupStr = localStorage.getItem('KEUANGANKU_USER_REAL_BACKUP');
+      if (!backupStr) {
+        alert("Informasi: Anda saat ini sudah menggunakan database asli Anda.");
+        return;
+      }
+      if (!confirm("KEMBALIKAN DATA ASLI PRIBADI ANDA?\n\nMode demo iklan akan dinonaktifkan dan seluruh data transaksi & saldo asli Anda akan dipulihkan seperti semula.")) return;
+
+      try {
+        globalData = JSON.parse(backupStr);
+        localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData));
+        localStorage.removeItem('KEUANGANKU_IS_DEMO_MODE');
+        localStorage.removeItem('KEUANGANKU_USER_REAL_BACKUP');
+        initApp();
+        updateDemoModeUI();
+        alert("✅ DATA ASLI BERHASIL DIPULIHKAN!\n\nMode demo iklan telah dinonaktifkan. Seluruh data transaksi & saldo asli Anda telah kembali aktif.");
+      } catch(e) {
+        alert("Gagal memulihkan data: " + e.message);
+      }
+    }
     
     function initApp() { 
       let isOwner = isOwnerDevice();
@@ -4596,6 +4790,7 @@
       }
 
       updateDevDashboardButtonVisibility();
+      updateDemoModeUI();
 
       renderDashboard(); 
       populateFormDropdowns(); 

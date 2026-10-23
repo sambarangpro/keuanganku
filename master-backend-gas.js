@@ -615,7 +615,7 @@ function validateClientToken(params) {
       var buyerName = data[i][colMap.buyerName] || "";
       var maxDevices = parseInt(data[i][colMap.maxDevices]) || 2;
       // Berikan batas kuota prioritas pemilik/developer akun agar bebas multi-perangkat saat pengujian
-      if (tokenInput === 'PRO-S8GF-HQT5-CNVE' || tokenInput === 'PRO-W9J2-RAYM-3KKL' || String(buyerName).toLowerCase().includes('akbar')) {
+      if (tokenInput === 'PRO-S8GF-HQT5-CNVE' || tokenInput === 'PRO-W9J2-RAYM-3KKL' || tokenInput === 'PRO-DEMO-IKLAN-2026' || String(buyerName).toLowerCase().includes('akbar') || String(buyerName).toLowerCase().includes('demo')) {
         maxDevices = Math.max(maxDevices, 10);
       }
       var status = String(data[i][colMap.status] || "ACTIVE").trim().toUpperCase();
@@ -779,6 +779,45 @@ function validateClientToken(params) {
         }
       };
     }
+  }
+
+  // Auto-provisioning resmi untuk Akun Demo Iklan jika belum ada di database
+  if (tokenInput === 'PRO-DEMO-IKLAN-2026') {
+    var nowStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
+    var demoDevObj = [{
+      deviceId: deviceId,
+      deviceName: deviceName,
+      activatedAt: nowStr,
+      lastActive: nowStr
+    }];
+    sheet.appendRow([
+      "PRO-DEMO-IKLAN-2026",
+      "Akun Demo Iklan (Official Showcase)",
+      "087788197916 | demo@keuanganku.id",
+      10,
+      1,
+      JSON.stringify(demoDevObj),
+      "ACTIVE",
+      "USING_TOKEN",
+      "",
+      nowStr,
+      "Akun Resmi Percontohan Khusus Iklan & Promosi (Showcase)"
+    ]);
+    logEvent("DEVICE_ACTIVATED", "PRO-DEMO-IKLAN-2026", "Akun Demo Iklan (Official Showcase)", deviceId, deviceName, "Perangkat resmi terdaftar di Akun Demo Iklan");
+    return {
+      success: true,
+      message: "Selamat datang di Akun Percontohan Iklan KeuanganKu!",
+      data: {
+        token: "PRO-DEMO-IKLAN-2026",
+        buyerName: "Akun Demo Iklan (Official Showcase)",
+        pinStatus: "USING_TOKEN",
+        isPasswordChanged: false,
+        maxDevices: 10,
+        deviceCount: 1,
+        activatedAt: nowStr,
+        cloudUrl: ""
+      }
+    };
   }
 
   logEvent("INVALID_TOKEN", tokenInput, "-", deviceId, deviceName, "Token tidak terdaftar dalam database master");
@@ -1122,7 +1161,7 @@ function clientGetDevices(params) {
 
       var maxDevices = parseInt(data[i][colMap.maxDevices]) || 2;
       // Berikan batas kuota prioritas pemilik/developer akun agar bebas multi-perangkat saat pengujian
-      if (tokenInput === 'PRO-S8GF-HQT5-CNVE' || tokenInput === 'PRO-W9J2-RAYM-3KKL' || String(buyerName).toLowerCase().includes('akbar')) {
+      if (tokenInput === 'PRO-S8GF-HQT5-CNVE' || tokenInput === 'PRO-W9J2-RAYM-3KKL' || tokenInput === 'PRO-DEMO-IKLAN-2026' || String(buyerName).toLowerCase().includes('akbar') || String(buyerName).toLowerCase().includes('demo')) {
         maxDevices = Math.max(maxDevices, 10);
       }
       var pinStatus = String(data[i][colMap.pinStatus] || "UNCLAIMED").trim().toUpperCase();

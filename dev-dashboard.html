@@ -1259,6 +1259,10 @@
             <span class="material-symbols-outlined text-sm text-amber-400">shield_person</span>
             <span class="hidden sm:inline">👑 Pulihkan Master</span>
           </button>
+          <button onclick="createDemoAdvertisingAccount()" title="Buat / Kelola Akun Lisensi Demo Khusus Konten & Iklan" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 text-xs font-bold flex items-center gap-1.5 shadow-md shadow-amber-500/20 active:scale-95 transition-all cursor-pointer">
+            <span class="material-symbols-outlined text-sm font-bold">movie</span>
+            <span class="hidden sm:inline">🎬 Akun Demo Iklan</span>
+          </button>
           <button onclick="openCreateTokenModal()" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-blue-500/20 active:scale-95 transition-all">
             <span class="material-symbols-outlined text-sm">add</span>
             <span>Buat Token Baru</span>
@@ -3386,12 +3390,15 @@
 
       list.forEach((t) => {
         let isMaster = isMasterAccount(t);
+        let isDemo = (t.token === 'PRO-DEMO-IKLAN-2026' || (t.buyerName && t.buyerName.toLowerCase().includes('demo')));
         let isBlocked = t.status === 'BLOCKED';
         let statusBadge = isBlocked 
           ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-500/20 text-rose-400 border border-rose-500/40 whitespace-nowrap">DIBLOKIR</span>`
           : (isMaster 
               ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 whitespace-nowrap shadow-sm">👑 MASTER AKTIF</span>`
-              : `<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 whitespace-nowrap">AKTIF</span>`);
+              : (isDemo
+                  ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-orange-500/20 text-orange-300 border border-orange-500/40 whitespace-nowrap shadow-sm">🎬 DEMO IKLAN</span>`
+                  : `<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 whitespace-nowrap">AKTIF</span>`));
 
         // PIN & Token Status Badge (Ringkas & Informatif dengan Tooltip)
         let effPinStatus = getEffectivePinStatus(t);
@@ -5198,6 +5205,57 @@ Copyright © 2026 Sambarang Production`;
       } finally {
         btn.disabled = false;
         btn.innerHTML = origText;
+      }
+    }
+
+    async function createDemoAdvertisingAccount() {
+      if (!currentAdminPassword) {
+        showToast('error', 'Silakan login developer terlebih dahulu.');
+        return;
+      }
+
+      const demoToken = 'PRO-DEMO-IKLAN-2026';
+      const demoOwner = 'Akun Demo Iklan (Official Showcase)';
+      const demoContact = '087788197916';
+      const maxDevices = 10;
+      const notes = 'Akun Resmi Percontohan untuk Promosi, Screenshot, & Rekaman Video Iklan';
+
+      // Cek apakah token demo sudah ada
+      let existing = (cachedTokens || []).find(t => t.token === demoToken);
+      if (existing) {
+        showTokenDetailsModal(existing);
+        showToast('info', '🎬 Akun Demo Iklan sudah terdaftar aktif!');
+        return;
+      }
+
+      let msg = "🎬 BUAT AKUN LISENSI PERCONTOHAN IKLAN?\n\n" +
+        "Token: PRO-DEMO-IKLAN-2026\n" +
+        "Nama: Akun Demo Iklan (Official Showcase)\n" +
+        "Kuota: 10 Perangkat (Akses Seumur Hidup)\n\n" +
+        "Token ini akan didaftarkan ke Google Sheets Tokens Anda. Lanjutkan?";
+      if (!confirm(msg)) return;
+
+      try {
+        let res = await callDevApi({
+          action: 'admin_generate_token',
+          adminPassword: currentAdminPassword,
+          buyerName: demoOwner,
+          buyerContact: demoContact,
+          maxDevices: maxDevices,
+          notes: notes,
+          customToken: demoToken
+        });
+
+        if (res && res.success) {
+          showToast('success', '🎬 Akun Demo Iklan (PRO-DEMO-IKLAN-2026) berhasil dibuat!');
+          await loadDashboardData();
+          let created = (cachedTokens || []).find(t => t.token === demoToken);
+          if (created) showTokenDetailsModal(created);
+        } else {
+          showToast('error', (res && res.message) ? res.message : 'Gagal membuat akun demo.');
+        }
+      } catch(err) {
+        showToast('error', 'Koneksi gagal: ' + err.message);
       }
     }
 
