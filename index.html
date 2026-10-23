@@ -2068,33 +2068,26 @@
     const DEFAULT_MASTER_LICENSE_URL = "https://script.google.com/macros/s/AKfycbwFPoNUGmryOTOcvirMd47sW0jOy3nVG7S7MNopbJNXU2BY66HktKl-CWukO93Hl08S/exec";
 
     function getMasterLicenseServerUrl() {
-      // 1. Selalu gunakan DEFAULT_MASTER_LICENSE_URL resmi jika sudah terpasang
-      if (DEFAULT_MASTER_LICENSE_URL && DEFAULT_MASTER_LICENSE_URL.startsWith("http") && !DEFAULT_MASTER_LICENSE_URL.includes("YOUR_SCRIPT_ID")) {
-        // Bersihkan key lama di localStorage HP yang dulu pernah tertimpa oleh URL sinkronisasi cloud keuangan
-        let cloudUrl = localStorage.getItem("KEUANGANKU_CLOUD_URL") || (typeof globalData !== 'undefined' ? globalData.cloudUrl : '');
-        ['KEUANGANKU_MASTER_SERVER_URL', 'KEUANGANKU_DEV_API_URL', 'KEUANGANKU_CUSTOM_LICENSE_URL'].forEach(k => {
-          let v = localStorage.getItem(k);
-          if (v && (v === cloudUrl || !v.includes("AKfycbwFPoNUGmryOTOcvirMd47sW0jOy3nVG7S7MNopbJNXU2BY66HktKl-CWukO93Hl08S"))) {
-            localStorage.setItem(k, DEFAULT_MASTER_LICENSE_URL);
-          }
-        });
-        return DEFAULT_MASTER_LICENSE_URL;
-      }
-
-      // 2. Cek parameter URL (?masterUrl=... atau ?server=...) jika dibuka langsung dari Dev Portal / Link Khusus
+      // 1. Cek parameter URL (?masterUrl=... atau ?server=... atau ?api=...) jika dibuka langsung dari Dev Portal / Link Khusus
       try {
         let params = new URLSearchParams(window.location.search);
-        let urlParam = params.get("masterUrl") || params.get("server");
+        let urlParam = params.get("masterUrl") || params.get("server") || params.get("api");
         if (urlParam && urlParam.startsWith("http") && !urlParam.includes("YOUR_SCRIPT_ID")) {
+          localStorage.setItem("KEUANGANKU_MASTER_SERVER_URL", urlParam);
           return urlParam;
         }
       } catch(e) {}
 
-      // 3. Cek localStorage
+      // 2. Cek localStorage jika ada URL server backend dev/master tersimpan
       let saved = localStorage.getItem("KEUANGANKU_MASTER_SERVER_URL") ||
                   localStorage.getItem("KEUANGANKU_DEV_API_URL") || 
                   localStorage.getItem("KEUANGANKU_CUSTOM_LICENSE_URL");
-      return (saved && saved.startsWith("http") && !saved.includes("YOUR_SCRIPT_ID")) ? saved : DEFAULT_MASTER_LICENSE_URL;
+      if (saved && saved.startsWith("http") && !saved.includes("YOUR_SCRIPT_ID")) {
+        return saved;
+      }
+
+      // 3. Fallback ke DEFAULT_MASTER_LICENSE_URL resmi
+      return DEFAULT_MASTER_LICENSE_URL;
     }
 
     function getOrCreateDeviceId() {

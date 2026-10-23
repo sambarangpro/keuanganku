@@ -892,7 +892,7 @@
                 <span class="material-symbols-outlined text-sm">content_copy</span>
                 <span>Salin Link</span>
               </button>
-              <a href="pesan.html" target="_blank" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/30 font-bold text-xs rounded-xl flex items-center gap-1.5 transition-all">
+              <a id="btn-open-order-form" href="pesan.html" target="_blank" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/30 font-bold text-xs rounded-xl flex items-center gap-1.5 transition-all">
                 <span class="material-symbols-outlined text-sm">open_in_new</span>
                 <span>Buka Form</span>
               </a>
@@ -2430,6 +2430,7 @@
         let urlDisp = document.getElementById('dev-backend-url-display');
         if (urlDisp) urlDisp.textContent = currentApiUrl || 'URL Backend belum diatur';
         initSettingsTab();
+        updateOrderFormUrlDisplays();
 
         // Hitung statistik real-time dari data token secara cerdas & akurat
         let totalTokens = cachedTokens.length;
@@ -3518,6 +3519,7 @@
       localStorage.setItem("KEUANGANKU_DEV_API_URL", newUrl);
       let urlDisp = document.getElementById('dev-backend-url-display');
       if (urlDisp) urlDisp.textContent = newUrl;
+      updateOrderFormUrlDisplays();
       showToast('success', 'URL Server berhasil disimpan!');
       testServerConnection();
     }
@@ -4392,6 +4394,7 @@ Copyright © 2026 Sambarang Production`;
           { id: "pkg-master", name: "PRO Developer Master (10 Perangkat)", devices: 10, price: "Rp 499.000", priceNum: 499000, description: "Akses maksimal hingga 10 perangkat untuk profesional / kantor cabang.", popular: false }
         ],
         vouchers: [
+          { code: "ORANGDALAM", type: "percent", value: 100, minPrice: 0, targetPackage: "ALL", maxUses: 999, usedCount: 0, status: "ACTIVE", description: "Voucher Spesial Pengujian / Orang Dalam (Diskon 100%)" },
           { code: "BERKAH30", type: "fixed", value: 30000, minPrice: 99000, targetPackage: "ALL", maxUses: 50, usedCount: 12, status: "ACTIVE", description: "Diskon Berkah Ramadhan Rp 30.000" },
           { code: "PROMOAKBAR", type: "percent", value: 20, minPrice: 99000, targetPackage: "pkg-multi", maxUses: 100, usedCount: 35, status: "ACTIVE", description: "Diskon Spesial 20% Khusus Multi-Device" }
         ],
@@ -4444,7 +4447,6 @@ Copyright © 2026 Sambarang Production`;
 
       let waInp = document.getElementById('setting-seller-wa');
       let urlInp = document.getElementById('setting-order-form-url');
-      let urlDisp = document.getElementById('display-order-form-url');
 
       if (waInp && !waInp.value) {
         waInp.value = cachedSalesSettings.sellerWhatsApp || '08123456789';
@@ -4452,9 +4454,7 @@ Copyright © 2026 Sambarang Production`;
       if (urlInp && !urlInp.value) {
         urlInp.value = cachedSalesSettings.orderFormUrl || 'https://sambarangpro.github.io/keuanganku/pesan.html';
       }
-      if (urlDisp) {
-        urlDisp.textContent = (urlInp && urlInp.value) ? urlInp.value : (cachedSalesSettings.orderFormUrl || 'https://sambarangpro.github.io/keuanganku/pesan.html');
-      }
+      updateOrderFormUrlDisplays();
 
       renderOrderModeUI();
       renderPackagesTable();
@@ -4616,10 +4616,38 @@ Copyright © 2026 Sambarang Production`;
       }
     }
 
-    function copyOrderFormLink() {
+    function getOrderFormShareUrl() {
       let urlInput = document.getElementById('setting-order-form-url');
-      let url = (urlInput && urlInput.value) ? urlInput.value.trim() : (cachedSalesSettings && cachedSalesSettings.orderFormUrl) || 'https://sambarangpro.github.io/keuanganku/pesan.html';
-      copyText(url, "Link Formulir Pemesanan berhasil disalin ke clipboard!");
+      let base = (urlInput && urlInput.value) 
+        ? urlInput.value.trim() 
+        : ((cachedSalesSettings && cachedSalesSettings.orderFormUrl) || 'https://sambarangpro.github.io/keuanganku/pesan.html');
+      if (!base) base = 'https://sambarangpro.github.io/keuanganku/pesan.html';
+
+      // Pastikan menyertakan apiUrl aktif sebagai query parameter agar di HP/publik langsung terhubung ke backend master
+      if (currentApiUrl && currentApiUrl.startsWith('https://')) {
+        try {
+          let u = new URL(base, window.location.href);
+          u.searchParams.set('api', currentApiUrl);
+          return u.toString();
+        } catch(e) {
+          let sep = base.includes('?') ? '&' : '?';
+          return `${base}${sep}api=${encodeURIComponent(currentApiUrl)}`;
+        }
+      }
+      return base;
+    }
+
+    function updateOrderFormUrlDisplays() {
+      let shareUrl = getOrderFormShareUrl();
+      let urlDisp = document.getElementById('display-order-form-url');
+      if (urlDisp) urlDisp.textContent = shareUrl;
+      let btnOpen = document.getElementById('btn-open-order-form');
+      if (btnOpen) btnOpen.href = shareUrl;
+    }
+
+    function copyOrderFormLink() {
+      let url = getOrderFormShareUrl();
+      copyText(url, "Link Formulir Pemesanan (tersambung ke Server Backend) berhasil disalin ke clipboard!");
     }
 
     // --- PACKAGES CRUD ---
@@ -5189,8 +5217,8 @@ Copyright © 2026 Sambarang Production`;
       }
       if (urlInp && urlInp.value) {
         cachedSalesSettings.orderFormUrl = urlInp.value.trim();
-        if (urlDisp) urlDisp.textContent = cachedSalesSettings.orderFormUrl;
       }
+      updateOrderFormUrlDisplays();
 
       localStorage.setItem('KEUANGANKU_DEV_SALES_SETTINGS', JSON.stringify(cachedSalesSettings));
 

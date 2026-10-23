@@ -285,6 +285,10 @@
         </div>
       </div>
       <div class="flex items-center gap-2 shrink-0">
+        <button type="button" onclick="showServerConfigModal()" id="btn-server-status" title="Status Server Backend" class="p-2 sm:px-2.5 sm:py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-semibold border border-slate-700/80 flex items-center gap-1.5 transition-all shrink-0 active:scale-95">
+          <span id="server-status-dot" class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          <span class="hidden sm:inline text-xs font-bold" id="server-status-text">Server</span>
+        </button>
         <button type="button" onclick="togglePesanTheme()" id="btn-pesan-theme" title="Ubah Mode Gelap / Terang" class="p-2 sm:px-2.5 sm:py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-semibold border border-slate-700/80 flex items-center gap-1.5 transition-all shrink-0 active:scale-95">
           <span id="pesan-theme-icon" class="material-symbols-outlined text-sm">light_mode</span>
           <span id="pesan-theme-text" class="hidden sm:inline text-xs font-bold">Mode</span>
@@ -423,6 +427,7 @@
             <div class="relative flex-1">
               <span class="material-symbols-outlined absolute left-3 top-2.5 text-amber-400 text-base">local_offer</span>
               <input type="text" id="voucher-input" placeholder="Masukkan kode kupon diskon..."
+                onkeydown="if(event.key==='Enter'){event.preventDefault();applyVoucher();}"
                 class="w-full pl-9 pr-3.5 py-2.5 bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl text-white uppercase font-mono-data font-bold placeholder-slate-500 text-xs outline-none transition-all">
             </div>
             <button type="button" onclick="applyVoucher()" class="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer shrink-0">
@@ -543,6 +548,53 @@
 
   </main>
 
+  <!-- Modal Konfigurasi / Cek Server Backend -->
+  <div id="modal-server-config" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-slate-900 border border-slate-700 rounded-3xl p-6 sm:p-7 shadow-2xl text-left space-y-4 relative">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/30 flex items-center justify-center">
+            <span class="material-symbols-outlined text-lg">cloud_sync</span>
+          </div>
+          <div>
+            <h3 class="text-sm sm:text-base font-bold text-white">Koneksi Server Backend</h3>
+            <p class="text-[11px] text-slate-400">Google Apps Script Engine</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeServerConfigModal()" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-all cursor-pointer">
+          <span class="material-symbols-outlined text-base">close</span>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Status Koneksi:</label>
+          <div id="server-status-pill" class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-[11px] font-mono-data text-emerald-400">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span id="server-status-detail">Memeriksa koneksi...</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">URL Endpoint Google Apps Script:</label>
+          <textarea id="server-api-url-input" rows="3" placeholder="https://script.google.com/macros/s/.../exec"
+            class="w-full p-2.5 bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl text-cyan-300 font-mono-data text-[11px] outline-none transition-all resize-none"></textarea>
+          <p class="text-[10px] text-slate-500 mt-1">URL ini otomatis tersimpan di perangkat ini saat membuka link pemesanan dari Developer Portal.</p>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+        <button type="button" onclick="resetDefaultServerUrl()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-xl text-xs font-semibold transition-all">
+          Reset Bawaan
+        </button>
+        <button type="button" onclick="saveCustomServerUrl()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-500/20 transition-all flex items-center gap-1.5 cursor-pointer">
+          <span class="material-symbols-outlined text-xs">save</span>
+          <span>Simpan & Sinkron</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal Konfirmasi Berhasil -->
   <div id="modal-order-success" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
     <div class="max-w-md w-full bg-slate-900 border border-slate-700 rounded-3xl p-6 sm:p-7 shadow-2xl text-center space-y-4 relative">
@@ -621,7 +673,22 @@
   <script>
     // URL Backend Google Apps Script (Sama dengan Dev Portal & Aplikasi)
     const DEFAULT_API_URL = "https://script.google.com/macros/s/AKfycbwFPoNUGmryOTOcvirMd47sW0jOy3nVG7S7MNopbJNXU2BY66HktKl-CWukO93Hl08S/exec";
-    let apiUrl = localStorage.getItem("KEUANGANKU_DEV_API_URL") || DEFAULT_API_URL;
+
+    // Auto-detect URL API dari URL Query Parameter (?api=... atau ?apiUrl=...) atau LocalStorage
+    let apiUrl = DEFAULT_API_URL;
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const apiParam = urlParams.get('api') || urlParams.get('apiUrl') || urlParams.get('server');
+      if (apiParam && apiParam.startsWith('https://')) {
+        apiUrl = apiParam.trim();
+        localStorage.setItem("KEUANGANKU_DEV_API_URL", apiUrl);
+      } else {
+        let savedApi = localStorage.getItem("KEUANGANKU_DEV_API_URL");
+        if (savedApi && savedApi.startsWith('https://')) {
+          apiUrl = savedApi.trim();
+        }
+      }
+    } catch(e) {}
 
     // Default Fallback Catalog jika offline / sebelum API merespons
     const DEFAULT_CATALOG = {
@@ -635,6 +702,7 @@
         { id: "pkg-master", name: "PRO Developer Master (10 Perangkat)", devices: 10, price: "Rp 499.000", priceNum: 499000, description: "Akses maksimal hingga 10 perangkat untuk profesional / multi-kantor.", popular: false }
       ],
       vouchers: [
+        { code: "ORANGDALAM", type: "percent", value: 100, minPrice: 0, targetPackage: "ALL", maxUses: 999, usedCount: 0, status: "ACTIVE", description: "Voucher Spesial Pengujian / Orang Dalam (Diskon 100%)" },
         { code: "BERKAH30", type: "fixed", value: 30000, minPrice: 99000, targetPackage: "ALL", maxUses: 50, usedCount: 12, status: "ACTIVE", description: "Diskon Berkah Rp 30.000" },
         { code: "PROMOAKBAR", type: "percent", value: 20, minPrice: 99000, targetPackage: "pkg-multi", maxUses: 100, usedCount: 35, status: "ACTIVE", description: "Diskon Peluncuran 20% Khusus Multi-Device" }
       ],
@@ -646,7 +714,20 @@
       ]
     };
 
-    let catalog = DEFAULT_CATALOG;
+    let cachedCatalog = null;
+    try {
+      let rawCache = localStorage.getItem("KEUANGANKU_PUBLIC_CATALOG_CACHE");
+      if (rawCache) cachedCatalog = JSON.parse(rawCache);
+    } catch(e) {}
+
+    let catalog = cachedCatalog || JSON.parse(JSON.stringify(DEFAULT_CATALOG));
+    // Pastikan voucher default selalu ada di katalog
+    DEFAULT_CATALOG.vouchers.forEach(defV => {
+      if (!catalog.vouchers.some(v => v.code.toUpperCase() === defV.code.toUpperCase())) {
+        catalog.vouchers.push(defV);
+      }
+    });
+
     let selectedPackage = null;
     let appliedVoucher = null;
     let selectedPaymentMethod = "Transfer BCA";
@@ -699,7 +780,64 @@
       loadCatalogData();
     });
 
+    function updateServerStatusBadge(status) {
+      let dot = document.getElementById('server-status-dot');
+      let text = document.getElementById('server-status-text');
+      let pill = document.getElementById('server-status-pill');
+      let detail = document.getElementById('server-status-detail');
+
+      if (status === 'connected') {
+        if (dot) dot.className = "w-2 h-2 rounded-full bg-emerald-400";
+        if (text) text.textContent = "Online";
+        if (pill) pill.className = "flex items-center gap-2 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-[11px] font-mono-data text-emerald-400";
+        if (detail) detail.textContent = "Terhubung ke Server Cloud Google Apps Script";
+      } else if (status === 'connecting') {
+        if (dot) dot.className = "w-2 h-2 rounded-full bg-amber-400 animate-ping";
+        if (text) text.textContent = "Koneksi...";
+        if (pill) pill.className = "flex items-center gap-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-[11px] font-mono-data text-amber-300";
+        if (detail) detail.textContent = "Menghubungkan ke server...";
+      } else {
+        if (dot) dot.className = "w-2 h-2 rounded-full bg-emerald-400";
+        if (text) text.textContent = "Server";
+        if (pill) pill.className = "flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/80 border border-slate-700 text-[11px] font-mono-data text-slate-300";
+        if (detail) detail.textContent = "Katalog Mandiri Aktif (Siap Menerima Order)";
+      }
+    }
+
+    function showServerConfigModal() {
+      let inp = document.getElementById('server-api-url-input');
+      if (inp) inp.value = apiUrl;
+      document.getElementById('modal-server-config').classList.remove('hidden');
+    }
+
+    function closeServerConfigModal() {
+      document.getElementById('modal-server-config').classList.add('hidden');
+    }
+
+    function resetDefaultServerUrl() {
+      apiUrl = DEFAULT_API_URL;
+      localStorage.removeItem("KEUANGANKU_DEV_API_URL");
+      let inp = document.getElementById('server-api-url-input');
+      if (inp) inp.value = DEFAULT_API_URL;
+      loadCatalogData();
+      closeServerConfigModal();
+    }
+
+    function saveCustomServerUrl() {
+      let inp = document.getElementById('server-api-url-input');
+      let val = (inp && inp.value) ? inp.value.trim() : "";
+      if (!val || !val.startsWith("https://")) {
+        alert("URL server harus diawali dengan https://");
+        return;
+      }
+      apiUrl = val;
+      localStorage.setItem("KEUANGANKU_DEV_API_URL", val);
+      closeServerConfigModal();
+      loadCatalogData();
+    }
+
     async function loadCatalogData() {
+      updateServerStatusBadge('connecting');
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 6000);
@@ -707,6 +845,7 @@
         clearTimeout(timeoutId);
         let res = await resp.json();
         if (res && res.success) {
+          updateServerStatusBadge('connected');
           if (res.orderMode) catalog.orderMode = res.orderMode;
           if (res.appVersion) catalog.appVersion = res.appVersion;
 
@@ -725,7 +864,15 @@
           }
 
           if (Array.isArray(res.packages) && res.packages.length > 0) catalog.packages = res.packages;
-          if (Array.isArray(res.vouchers)) catalog.vouchers = res.vouchers;
+          if (Array.isArray(res.vouchers)) {
+            let mergedVouchers = res.vouchers.slice();
+            DEFAULT_CATALOG.vouchers.forEach(defV => {
+              if (!mergedVouchers.some(v => v.code.toUpperCase() === defV.code.toUpperCase())) {
+                mergedVouchers.push(defV);
+              }
+            });
+            catalog.vouchers = mergedVouchers;
+          }
           if (Array.isArray(res.paymentAccounts) && res.paymentAccounts.length > 0) catalog.paymentAccounts = res.paymentAccounts;
           if (res.sellerWhatsApp) catalog.sellerWhatsApp = res.sellerWhatsApp;
           if (res.nextOrderSeq) {
@@ -737,6 +884,10 @@
             currentUniqueCode = ((currentOrderSeq - 1) % 99) + 1;
           }
 
+          try {
+            localStorage.setItem('KEUANGANKU_PUBLIC_CATALOG_CACHE', JSON.stringify(catalog));
+          } catch(e) {}
+
           renderPackages();
           renderPaymentAccounts();
           if (selectedPackage) {
@@ -746,9 +897,12 @@
           } else {
             updateOrderSummary();
           }
+        } else {
+          updateServerStatusBadge('fallback');
         }
       } catch(e) {
         console.log("Katalog offline / lokal aktif.");
+        updateServerStatusBadge('offline');
       }
     }
 
@@ -822,7 +976,8 @@
     function applyVoucher() {
       let codeInput = document.getElementById('voucher-input');
       let msgBox = document.getElementById('voucher-msg-box');
-      let code = (codeInput ? codeInput.value : '').trim().toUpperCase();
+      let rawVal = codeInput ? codeInput.value : '';
+      let code = rawVal.trim().toUpperCase().replace(/\s+/g, '');
 
       if (!code) {
         showVoucherMsg('error', 'Silakan ketikkan kode kupon voucher.');
@@ -836,7 +991,7 @@
         return;
       }
 
-      let v = (catalog.vouchers || []).find(item => item.code.toUpperCase() === code);
+      let v = (catalog.vouchers || []).find(item => item.code.toUpperCase().replace(/\s+/g, '') === code);
       if (!v) {
         showVoucherMsg('error', `Kode voucher "${code}" tidak ditemukan atau sudah berakhir.`);
         appliedVoucher = null;
