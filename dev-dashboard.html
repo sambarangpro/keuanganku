@@ -3599,10 +3599,53 @@
       if (tabOrderCount) tabOrderCount.textContent = total;
     }
 
+    function previewProofModal(imgSrc) {
+      let modal = document.getElementById('modal-preview-proof');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'modal-preview-proof';
+        modal.className = 'fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4';
+        modal.onclick = (e) => { if (e.target === modal) modal.classList.add('hidden'); };
+        modal.innerHTML = `
+          <div class="bg-slate-900 border border-slate-700 rounded-3xl p-4 max-w-lg w-full space-y-3 shadow-2xl relative">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+              <h4 class="font-bold text-white text-sm flex items-center gap-2">
+                <span class="material-symbols-outlined text-cyan-400">receipt_long</span>
+                <span>Foto Bukti Transfer Pemesan</span>
+              </h4>
+              <button onclick="document.getElementById('modal-preview-proof').classList.add('hidden')" class="p-1 rounded-lg text-slate-400 hover:text-white cursor-pointer">
+                <span class="material-symbols-outlined text-base">close</span>
+              </button>
+            </div>
+            <div class="max-h-[70vh] overflow-auto rounded-2xl border border-slate-800 bg-black flex items-center justify-center p-2">
+              <img id="modal-preview-proof-img" src="" class="max-w-full max-h-[65vh] object-contain rounded-xl">
+            </div>
+            <div class="flex items-center justify-end">
+              <button onclick="document.getElementById('modal-preview-proof').classList.add('hidden')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold cursor-pointer">
+                Tutup
+              </button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+      }
+      document.getElementById('modal-preview-proof-img').src = imgSrc;
+      modal.classList.remove('hidden');
+    }
+
     function renderPaymentProofCell(proof) {
       let p = String(proof || '').trim();
       if (!p || p === '-') {
         return `<span class="text-slate-500 text-[11px] italic">Belum Ada</span>`;
+      }
+      if (p.startsWith('data:image/')) {
+        return `
+          <button type="button" onclick="previewProofModal('${escapeHtml(p)}')" title="Klik untuk memperbesar foto struk"
+            class="group inline-flex items-center gap-1.5 p-1 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-cyan-400 transition-all cursor-pointer">
+            <img src="${escapeHtml(p)}" alt="Bukti" class="w-7 h-7 object-cover rounded-lg border border-slate-700 shrink-0">
+            <span class="text-[10px] text-cyan-300 font-bold pr-1">Foto Struk</span>
+          </button>
+        `;
       }
       if (p.startsWith('http://') || p.startsWith('https://')) {
         return `

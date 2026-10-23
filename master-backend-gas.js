@@ -2059,6 +2059,28 @@ function getPublicCatalog(params) {
   };
 }
 
+function saveProofImageToDrive(base64Data, orderId) {
+  try {
+    var parts = base64Data.split(",");
+    if (parts.length < 2) return base64Data;
+    var mimeMatch = parts[0].match(/:(.*?);/);
+    var mimeType = mimeMatch ? mimeMatch[1] : "image/jpeg";
+    var decoded = Utilities.base64Decode(parts[1]);
+    var ext = (mimeType.indexOf("png") !== -1) ? ".png" : (mimeType.indexOf("webp") !== -1 ? ".webp" : ".jpg");
+    var blob = Utilities.newBlob(decoded, mimeType, "Bukti_Transfer_" + orderId + ext);
+    
+    var folderName = "Bukti_Transfer_Keuanganku";
+    var folders = DriveApp.getFoldersByName(folderName);
+    var folder = folders.hasNext() ? folders.next() : DriveApp.createFolder(folderName);
+    
+    var file = folder.createFile(blob);
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    return file.getUrl();
+  } catch(e) {
+    return "[Foto Bukti: " + orderId + "]";
+  }
+}
+
 function submitPublicOrder(params) {
   var buyerName = (params.buyerName || "").trim();
   var whatsapp = (params.whatsapp || "").trim();
@@ -2066,7 +2088,7 @@ function submitPublicOrder(params) {
   var pkg = (params.package || "PRO Personal (1 Perangkat)").trim();
   var maxDevices = parseInt(params.maxDevices) || 1;
   var price = (params.price || "Rp 99.000").trim();
-  var paymentMethod = (params.paymentMethod || "Transfer BCA").trim();
+  var paymentMethod = (params.paymentMethod || "Bank Syariah Indonesia (BSI)").trim();
   var paymentProof = (params.paymentProof || "").trim();
   var voucherCode = (params.voucherCode || "").trim().toUpperCase();
   var notes = (params.notes || "").trim();
@@ -2094,6 +2116,16 @@ function submitPublicOrder(params) {
   var uniqueCode = parseInt(params.uniqueCode, 10) || computedUniqueCode;
   var uCodePadded = (uniqueCode < 10 ? "0" : "") + uniqueCode;
   var orderId = (params.orderId && !params.orderId.includes("NaN")) ? params.orderId : ("ORD-" + dateCompact + "-" + uCodePadded);
+
+  // Jika paymentProof berupa base64 foto struk, simpan langsung ke Google Drive
+  if (paymentProof && paymentProof.indexOf("data:image/") === 0) {
+    try {
+      var driveFileUrl = saveProofImageToDrive(paymentProof, orderId);
+      if (driveFileUrl) paymentProof = driveFileUrl;
+    } catch(errDrive) {
+      paymentProof = "[Foto Bukti: " + orderId + "]";
+    }
+  }
 
   var fullNotes = notes;
   var modeTag = (orderMode === "TESTING") ? "[UJI COBA] " : "";

@@ -672,15 +672,75 @@
         <!-- Bukti Pembayaran -->
         <div class="pt-3 border-t border-slate-800/80 space-y-3 text-xs">
           <div>
-            <label class="block font-semibold text-slate-300 mb-1">
-              Lampirkan Bukti Transfer (Link / Catatan):
+            <label class="block font-bold text-slate-200 mb-1.5 flex items-center justify-between">
+              <span class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-cyan-400 text-sm">photo_camera</span>
+                <span>Unggah Bukti Transfer / Foto Struk:</span>
+              </span>
+              <span class="text-[10px] text-slate-400 font-normal">(Opsional)</span>
             </label>
-            <div class="relative">
-              <span class="material-symbols-outlined absolute left-3 top-2.5 text-cyan-400 text-base">attach_file</span>
-              <input type="text" id="payment-proof" placeholder="Link screenshot Google Drive / Foto struk / No. Ref..."
-                class="w-full pl-9 pr-3.5 py-2.5 bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl text-white placeholder-slate-500 outline-none transition-all">
+
+            <!-- Dropzone Box (Pilihan Utama: Upload / Kamera) -->
+            <div id="proof-dropzone" onclick="triggerProofFileInput()"
+              class="border-2 border-dashed border-slate-700 hover:border-cyan-400/80 bg-slate-950/70 hover:bg-slate-900/60 rounded-2xl p-4 sm:p-5 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-2 group">
+              <div class="w-12 h-12 rounded-2xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner">
+                <span class="material-symbols-outlined text-2xl">add_photo_alternate</span>
+              </div>
+              <div class="space-y-0.5">
+                <p class="font-extrabold text-xs sm:text-sm text-slate-200 group-hover:text-cyan-300 transition-colors">
+                  Klik untuk Pilih Foto / Ambil dari Kamera
+                </p>
+                <p class="text-[10px] text-slate-400">
+                  Mendukung JPG, PNG, WebP (Bisa juga Paste / Ctrl+V langsung)
+                </p>
+              </div>
             </div>
-            <p class="text-[10px] text-slate-400 mt-1">Anda juga dapat melampirkan foto struk langsung di chat WhatsApp nanti.</p>
+
+            <!-- Hidden File Input -->
+            <input type="file" id="payment-proof-file" accept="image/*" class="hidden" onchange="handleProofFileSelected(event)">
+
+            <!-- Preview Card (Muncul saat foto dipilih) -->
+            <div id="proof-preview-container" class="hidden p-3 bg-slate-950/90 border border-emerald-500/40 rounded-2xl flex items-center justify-between gap-3 shadow-md">
+              <div class="flex items-center gap-3 min-w-0">
+                <img id="proof-preview-img" src="" alt="Bukti Transfer" class="w-14 h-14 object-cover rounded-xl border border-slate-700 shrink-0 shadow-sm">
+                <div class="min-w-0 space-y-0.5">
+                  <div class="flex items-center gap-1 text-emerald-400 font-bold text-xs">
+                    <span class="material-symbols-outlined text-sm">check_circle</span>
+                    <span class="truncate">Foto Berhasil Dimuat</span>
+                  </div>
+                  <p id="proof-filename" class="text-xs text-slate-200 font-medium truncate">struk-transfer.jpg</p>
+                  <p id="proof-filesize" class="text-[10px] text-slate-400 font-mono-data">120 KB (Siap Dikirim)</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button type="button" onclick="triggerProofFileInput()" title="Ganti Foto"
+                  class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-[11px] font-bold border border-slate-700 transition-all cursor-pointer">
+                  Ganti
+                </button>
+                <button type="button" onclick="removeProofImage()" title="Hapus Foto"
+                  class="p-1.5 bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 rounded-xl transition-all cursor-pointer flex items-center justify-center">
+                  <span class="material-symbols-outlined text-sm">delete</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Opsi Input Link Manual (Opsional) -->
+            <div class="mt-2.5 flex items-center justify-between">
+              <button type="button" onclick="toggleProofLinkInput()" class="text-[11px] text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-semibold cursor-pointer transition-colors">
+                <span class="material-symbols-outlined text-xs">link</span>
+                <span id="proof-link-toggle-text">Atau masukkan Link / Nomor Referensi manual</span>
+              </button>
+            </div>
+
+            <div id="proof-link-wrapper" class="hidden mt-2 relative">
+              <span class="material-symbols-outlined absolute left-3 top-2.5 text-cyan-400 text-base">link</span>
+              <input type="text" id="payment-proof" placeholder="Link screenshot Google Drive / Foto struk / No. Ref..."
+                class="w-full pl-9 pr-3.5 py-2.5 bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl text-white placeholder-slate-500 outline-none transition-all text-xs">
+            </div>
+
+            <p class="text-[10px] text-slate-400 mt-1.5">
+              💡 <b>Tips:</b> Anda juga dapat melampirkan foto struk langsung di chat WhatsApp nanti setelah menekan tombol kirim.
+            </p>
           </div>
 
           <div>
@@ -1682,6 +1742,120 @@
       }
     }
 
+    // ==========================================
+    // UPLOAD & KOMPRESI BUKTI TRANSFER OTOMATIS
+    // ==========================================
+    let currentProofBase64 = "";
+
+    function triggerProofFileInput() {
+      let fileInp = document.getElementById('payment-proof-file');
+      if (fileInp) fileInp.click();
+    }
+
+    function handleProofFileSelected(event) {
+      let file = event.target.files && event.target.files[0];
+      if (file) {
+        processProofImageFile(file);
+      }
+    }
+
+    function processProofImageFile(file) {
+      if (!file || !file.type.startsWith('image/')) {
+        alert("Harap pilih file gambar (JPG, PNG, atau WebP).");
+        return;
+      }
+
+      let reader = new FileReader();
+      reader.onload = function(e) {
+        let img = new Image();
+        img.onload = function() {
+          // Kompresi gambar client-side (maksimal dimensi 1200px untuk kejelasan teks struk & pengiriman kilat)
+          let canvas = document.createElement('canvas');
+          let maxDim = 1200;
+          let w = img.width;
+          let h = img.height;
+
+          if (w > maxDim || h > maxDim) {
+            if (w > h) {
+              h = Math.round((h * maxDim) / w);
+              w = maxDim;
+            } else {
+              w = Math.round((w * maxDim) / h);
+              h = maxDim;
+            }
+          }
+
+          canvas.width = w;
+          canvas.height = h;
+          let ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+
+          // Simpan sebagai JPEG kualitas 0.82
+          let compressedBase64 = canvas.toDataURL('image/jpeg', 0.82);
+          currentProofBase64 = compressedBase64;
+
+          // Perbarui UI Preview
+          let dropzone = document.getElementById('proof-dropzone');
+          let previewContainer = document.getElementById('proof-preview-container');
+          let previewImg = document.getElementById('proof-preview-img');
+          let fileNameEl = document.getElementById('proof-filename');
+          let fileSizeEl = document.getElementById('proof-filesize');
+
+          if (dropzone) dropzone.classList.add('hidden');
+          if (previewContainer) previewContainer.classList.remove('hidden');
+          if (previewImg) previewImg.src = compressedBase64;
+          if (fileNameEl) fileNameEl.textContent = file.name || 'struk-transfer.jpg';
+          if (fileSizeEl) {
+            let sizeKb = Math.round((compressedBase64.length * 0.75) / 1024);
+            fileSizeEl.textContent = `${sizeKb} KB (Terkompresi Cepat & Jelas)`;
+          }
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeProofImage() {
+      currentProofBase64 = "";
+      let fileInp = document.getElementById('payment-proof-file');
+      if (fileInp) fileInp.value = "";
+      let dropzone = document.getElementById('proof-dropzone');
+      let previewContainer = document.getElementById('proof-preview-container');
+      if (dropzone) dropzone.classList.remove('hidden');
+      if (previewContainer) previewContainer.classList.add('hidden');
+    }
+
+    function toggleProofLinkInput() {
+      let wrapper = document.getElementById('proof-link-wrapper');
+      let text = document.getElementById('proof-link-toggle-text');
+      if (wrapper) {
+        let isHidden = wrapper.classList.contains('hidden');
+        if (isHidden) {
+          wrapper.classList.remove('hidden');
+          if (text) text.textContent = "Sembunyikan Link / No. Referensi manual";
+        } else {
+          wrapper.classList.add('hidden');
+          if (text) text.textContent = "Atau masukkan Link / Nomor Referensi manual";
+        }
+      }
+    }
+
+    // Dukungan Paste (Ctrl+V) langsung screenshot dari clipboard
+    window.addEventListener('paste', function(e) {
+      if (e.clipboardData && e.clipboardData.items) {
+        for (let i = 0; i < e.clipboardData.items.length; i++) {
+          let item = e.clipboardData.items[i];
+          if (item.type.indexOf('image') !== -1) {
+            let file = item.getAsFile();
+            if (file) {
+              processProofImageFile(file);
+              break;
+            }
+          }
+        }
+      }
+    });
+
     async function handlePublicOrderSubmit(e) {
       e.preventDefault();
       if (!selectedPackage) {
@@ -1692,7 +1866,8 @@
       let buyerName = document.getElementById('buyer-name').value.trim();
       let email = document.getElementById('buyer-email').value.trim();
       let whatsapp = document.getElementById('buyer-wa').value.trim();
-      let paymentProof = document.getElementById('payment-proof').value.trim();
+      let manualProof = (document.getElementById('payment-proof') ? document.getElementById('payment-proof').value : '').trim();
+      let paymentProof = currentProofBase64 || manualProof;
       let notes = document.getElementById('buyer-notes').value.trim();
 
       if (!buyerName) {
@@ -1824,7 +1999,7 @@
           "📦 *Paket:* " + selectedPackage.name + " (" + selectedPackage.devices + " Perangkat)" + (catalog.orderMode === 'LIVE' ? " - v1.0" : " [v0.1 Uji Coba]") + "\n" +
           "💰 *Total Transfer:* " + finalPriceFormatted + " *(Tepat hingga 2 digit terakhir)*\n" +
           "💳 *Pembayaran via:* " + selectedPaymentMethod + "\n" +
-          "📎 *Bukti Bayar:* " + (paymentProof || "Terlampir di chat ini") + "\n" +
+          "📎 *Bukti Bayar:* " + (currentProofBase64 ? "Foto struk berhasil diunggah di sistem (dan saya lampirkan di chat ini)" : (manualProof || "Saya lampirkan foto struk di chat ini")) + "\n" +
           (notes ? "📝 *Catatan:* " + notes + "\n" : "") + "\n" +
           "Mohon diverifikasi dan dikirimkan akun lisensi resmi ke email saya. Terima kasih! 🙏✨";
       }
