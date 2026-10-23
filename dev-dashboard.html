@@ -97,15 +97,13 @@
     }
 
     /* ======================================================== */
-    /* KEUANGANKU LIGHT MODE THEME (REVERENSI RESMI index.html)*/
-    /* ======================================================== */
-    /* KEUANGANKU DEVELOPER PORTAL - COLORFUL & VIBRANT LIGHT THEME */
-    /* Rich Card Tints, Soft Gradients, and Maximum Readability */
+    /* KEUANGANKU DEVELOPER PORTAL - DEALDECK SAAS LIGHT THEME  */
+    /* Cool Lilac-Gray Canvas, Pure White Cards & Signature Blue*/
     /* ======================================================== */
     html:not(.dark) body,
     html.light body {
-      background: radial-gradient(circle at 50% 0%, #e0e7ff 0%, #f1f5f9 45%, #e2e8f0 100%) !important;
-      background-attachment: fixed !important;
+      background-color: #edf1f7 !important;
+      background-image: none !important;
       color: #0f172a !important;
     }
 
@@ -113,8 +111,8 @@
     html:not(.dark) header,
     html.light header {
       background-color: #ffffff !important;
-      border-color: #cbd5e1 !important;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
+      border-color: #e2e8f0 !important;
+      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05) !important;
     }
     html:not(.dark) header h1,
     html.light header h1 {
@@ -126,200 +124,242 @@
     html:not(.dark) header span.bg-amber-500\/20,
     html.light header span.bg-amber-500\/20 {
       background-color: #fef3c7 !important;
-      color: #92400e !important;
-      border: 1.5px solid #fde68a !important;
+      color: #b45309 !important;
+      border: 1px solid #fde68a !important;
+      border-radius: 9999px !important;
       font-weight: 800 !important;
+      padding: 3px 10px !important;
     }
     html:not(.dark) #btn-install-dev-pwa,
     html.light #btn-install-dev-pwa {
-      background-color: #fffbeb !important;
-      color: #92400e !important;
-      border: 1.5px solid #fde68a !important;
-      font-weight: 800 !important;
+      background-color: #eff6ff !important;
+      color: #2563eb !important;
+      border: 1px solid #bfdbfe !important;
+      border-radius: 12px !important;
+      font-weight: 700 !important;
     }
     html:not(.dark) #btn-install-dev-pwa:hover,
     html.light #btn-install-dev-pwa:hover {
-      background-color: #fef3c7 !important;
+      background-color: #dbeafe !important;
     }
 
     /* 2. Master Backend Status Banner */
     html:not(.dark) .master-status-banner-box,
     html.light .master-status-banner-box {
-      background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 40%, #eff6ff 100%) !important;
-      border: 1.5px solid #a7f3d0 !important;
-      box-shadow: 0 4px 12px -2px rgba(16, 185, 129, 0.08) !important;
+      background-color: #ffffff !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 20px !important;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.03) !important;
     }
     html:not(.dark) .master-status-banner-box span.bg-emerald-500\/20,
     html.light .master-status-banner-box span.bg-emerald-500\/20 {
-      background-color: #10b981 !important;
-      color: #ffffff !important;
+      background-color: #dcfce7 !important;
+      color: #15803d !important;
       border: none !important;
+      border-radius: 9999px !important;
       font-weight: 800 !important;
-      box-shadow: 0 2px 4px rgba(16, 185, 129, 0.25) !important;
+      padding: 3px 10px !important;
     }
     html:not(.dark) #dev-backend-url-display,
     html.light #dev-backend-url-display {
-      background-color: #ffffff !important;
+      background-color: #f8fafc !important;
       color: #0f172a !important;
-      border: 1px solid #cbd5e1 !important;
-      padding: 3px 10px !important;
-      border-radius: 8px !important;
+      border: 1px solid #e2e8f0 !important;
+      padding: 4px 12px !important;
+      border-radius: 10px !important;
       font-weight: 600 !important;
       font-family: monospace !important;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.03) !important;
     }
 
-    /* 3. The 4 Metric Overview Cards (Distinctive Color Tints) */
-    /* Card 1: Total Lisensi Terjual (Soft Blue) */
+    /* 3. The 4 Metric Overview Cards (DealDeck Style) */
+    /* Card 1: Total Lisensi Terjual (Featured Signature Electric Blue) */
     html:not(.dark) .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(1),
     html.light .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(1) {
-      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%) !important;
-      border: 1.5px solid #93c5fd !important;
-      box-shadow: 0 4px 12px -2px rgba(37, 99, 235, 0.12) !important;
+      background: linear-gradient(135deg, #3b57f6 0%, #2563eb 100%) !important;
+      border: none !important;
+      border-radius: 24px !important;
+      box-shadow: 0 14px 28px -4px rgba(59, 87, 246, 0.35) !important;
+      color: #ffffff !important;
+    }
+    html:not(.dark) .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(1) .w-8.h-8,
+    html.light .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(1) .w-8.h-8 {
+      background-color: #ffffff !important;
+      color: #2563eb !important;
+      border-radius: 14px !important;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1) !important;
+    }
+    html:not(.dark) .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(1) .w-8.h-8 .material-symbols-outlined,
+    html.light .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(1) .w-8.h-8 .material-symbols-outlined {
+      color: #2563eb !important;
     }
     html:not(.dark) .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(1) .text-xs.font-semibold,
     html.light .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(1) .text-xs.font-semibold {
-      color: #1e40af !important;
+      color: rgba(255, 255, 255, 0.9) !important;
       font-weight: 700 !important;
     }
     html:not(.dark) .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(1) .text-slate-500,
     html.light .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(1) .text-slate-500 {
-      color: #1d4ed8 !important;
-      font-weight: 600 !important;
+      color: rgba(255, 255, 255, 0.75) !important;
     }
     html:not(.dark) #stat-total-tokens,
     html.light #stat-total-tokens {
-      color: #1e3a8a !important;
+      color: #ffffff !important;
       font-weight: 900 !important;
     }
+    html:not(.dark) .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(1) span[class*="bg-emerald-500"],
+    html.light .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(1) span[class*="bg-emerald-500"] {
+      background-color: #22c55e !important;
+      color: #ffffff !important;
+      border: none !important;
+      border-radius: 9999px !important;
+      font-weight: 800 !important;
+      padding: 2px 8px !important;
+    }
 
-    /* Card 2: Sudah Ganti PIN (Soft Emerald) */
+    /* Cards 2, 3, 4: Pure Crisp White with Diffused Shadows */
     html:not(.dark) .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(2),
-    html.light .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(2) {
-      background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%) !important;
-      border: 1.5px solid #6ee7b7 !important;
-      box-shadow: 0 4px 12px -2px rgba(16, 185, 129, 0.12) !important;
-    }
-    html:not(.dark) .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(2) .text-xs.font-semibold,
-    html.light .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(2) .text-xs.font-semibold {
-      color: #065f46 !important;
-      font-weight: 700 !important;
-    }
-    html:not(.dark) .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(2) p[class*="text-emerald-500"],
-    html.light .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(2) p[class*="text-emerald-500"] {
-      color: #047857 !important;
-      font-weight: 600 !important;
-    }
-    html:not(.dark) #stat-pin-changed,
-    html.light #stat-pin-changed {
-      color: #064e3b !important;
-      font-weight: 900 !important;
-    }
-
-    /* Card 3: Masih Token Bawaan (Soft Warm Amber) */
+    html.light .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(2),
     html:not(.dark) .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(3),
-    html.light .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(3) {
-      background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%) !important;
-      border: 1.5px solid #fde68a !important;
-      box-shadow: 0 4px 12px -2px rgba(217, 119, 6, 0.12) !important;
-    }
-    html:not(.dark) .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(3) .text-xs.font-semibold,
-    html.light .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(3) .text-xs.font-semibold {
-      color: #92400e !important;
-      font-weight: 700 !important;
-    }
-    html:not(.dark) .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(3) p[class*="text-amber-500"],
-    html.light .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(3) p[class*="text-amber-500"] {
-      color: #b45309 !important;
-      font-weight: 600 !important;
-    }
-    html:not(.dark) #stat-using-token,
-    html.light #stat-using-token {
-      color: #78350f !important;
-      font-weight: 900 !important;
-    }
-
-    /* Card 4: Perangkat Terhubung (Soft Cyan / Sky) */
+    html.light .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(3),
     html:not(.dark) .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(4),
     html.light .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(4) {
-      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%) !important;
-      border: 1.5px solid #7dd3fc !important;
-      box-shadow: 0 4px 12px -2px rgba(2, 132, 199, 0.12) !important;
+      background-color: #ffffff !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 24px !important;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 4px 10px -2px rgba(0, 0, 0, 0.02) !important;
     }
-    html:not(.dark) .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(4) .text-xs.font-semibold,
-    html.light .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(4) .text-xs.font-semibold {
-      color: #0369a1 !important;
-      font-weight: 700 !important;
+    html:not(.dark) .grid.grid-cols-2.lg\:grid-cols-4 > div:not(:first-child) .w-8.h-8,
+    html.light .grid.grid-cols-2.lg\:grid-cols-4 > div:not(:first-child) .w-8.h-8 {
+      background-color: #f1f5f9 !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 14px !important;
     }
-    html:not(.dark) .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(4) .text-slate-500,
-    html.light .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(4) .text-slate-500 {
-      color: #0284c7 !important;
+    html:not(.dark) .grid.grid-cols-2.lg\:grid-cols-4 > div:not(:first-child) .w-8.h-8 .material-symbols-outlined,
+    html.light .grid.grid-cols-2.lg\:grid-cols-4 > div:not(:first-child) .w-8.h-8 .material-symbols-outlined {
+      color: #334155 !important;
+    }
+    html:not(.dark) .grid.grid-cols-2.lg\:grid-cols-4 > div:not(:first-child) .text-xs.font-semibold,
+    html.light .grid.grid-cols-2.lg\:grid-cols-4 > div:not(:first-child) .text-xs.font-semibold {
+      color: #64748b !important;
       font-weight: 600 !important;
     }
+    html:not(.dark) .grid.grid-cols-2.lg\:grid-cols-4 > div:not(:first-child) .text-slate-500,
+    html.light .grid.grid-cols-2.lg\:grid-cols-4 > div:not(:first-child) .text-slate-500 {
+      color: #94a3b8 !important;
+    }
+
+    /* Numbers for Cards 2, 3, 4 */
+    html:not(.dark) #stat-pin-changed,
+    html.light #stat-pin-changed,
+    html:not(.dark) #stat-using-token,
+    html.light #stat-using-token,
     html:not(.dark) #stat-active-devices,
     html.light #stat-active-devices {
-      color: #0c4a6e !important;
+      color: #0f172a !important;
       font-weight: 900 !important;
     }
 
-    /* Metric Icon Containers */
-    html:not(.dark) .grid.grid-cols-2.lg\:grid-cols-4 > div .w-8.h-8,
-    html.light .grid.grid-cols-2.lg\:grid-cols-4 > div .w-8.h-8 {
-      background-color: #ffffff !important;
-      border: 1px solid rgba(255, 255, 255, 0.9) !important;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08) !important;
+    /* Pill Badges on Cards 2, 3, 4 */
+    html:not(.dark) .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(2) span[class*="bg-emerald-500"],
+    html.light .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(2) span[class*="bg-emerald-500"] {
+      background-color: #dcfce7 !important;
+      color: #15803d !important;
+      border: none !important;
+      border-radius: 9999px !important;
+      font-weight: 700 !important;
+      padding: 2px 8px !important;
+    }
+    html:not(.dark) .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(3) span[class*="bg-amber-500"],
+    html.light .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(3) span[class*="bg-amber-500"] {
+      background-color: #fef3c7 !important;
+      color: #b45309 !important;
+      border: none !important;
+      border-radius: 9999px !important;
+      font-weight: 700 !important;
+      padding: 2px 8px !important;
+    }
+    html:not(.dark) .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(4) span[class*="bg-cyan-500"],
+    html.light .grid.grid-cols-2.lg\:grid-cols-4 > div:nth-child(4) span[class*="bg-cyan-500"] {
+      background-color: #e0f2fe !important;
+      color: #0284c7 !important;
+      border: none !important;
+      border-radius: 9999px !important;
+      font-weight: 700 !important;
+      padding: 2px 8px !important;
     }
 
     /* 4. Main Card Container & Tab Navigation */
     html:not(.dark) #dashboard-screen > main > .bg-slate-900,
     html.light #dashboard-screen > main > .bg-slate-900 {
-      background: #ffffff !important;
-      border: 1.5px solid #cbd5e1 !important;
-      box-shadow: 0 6px 20px -4px rgba(0, 0, 0, 0.06) !important;
+      background-color: #ffffff !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 24px !important;
+      box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.04) !important;
     }
     html:not(.dark) #dashboard-screen > main > .bg-slate-900 > div:first-child,
     html.light #dashboard-screen > main > .bg-slate-900 > div:first-child {
-      background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%) !important;
-      border-bottom: 1.5px solid #cbd5e1 !important;
+      background: #f8fafc !important;
+      border-bottom: 1px solid #e2e8f0 !important;
+      border-top-left-radius: 24px !important;
+      border-top-right-radius: 24px !important;
     }
 
     /* Inactive Tab Buttons */
     html:not(.dark) button[id^="tab-btn-"]:not(.bg-blue-600),
     html.light button[id^="tab-btn-"]:not(.bg-blue-600) {
       background-color: #ffffff !important;
-      color: #334155 !important;
-      border: 1.5px solid #cbd5e1 !important;
+      color: #64748b !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 14px !important;
       font-weight: 700 !important;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
     }
     html:not(.dark) button[id^="tab-btn-"]:not(.bg-blue-600):hover,
     html.light button[id^="tab-btn-"]:not(.bg-blue-600):hover {
-      background-color: #eff6ff !important;
-      color: #1d4ed8 !important;
-      border-color: #93c5fd !important;
+      background-color: #f1f5f9 !important;
+      color: #0f172a !important;
     }
     html:not(.dark) button[id^="tab-btn-"].bg-blue-600,
     html.light button[id^="tab-btn-"].bg-blue-600 {
-      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+      background: #3b57f6 !important;
       color: #ffffff !important;
-      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3) !important;
+      border: none !important;
+      border-radius: 14px !important;
+      box-shadow: 0 6px 16px -2px rgba(59, 87, 246, 0.35) !important;
       font-weight: 800 !important;
     }
 
-    /* 5. Special Banner for Formulir Pemesanan */
+    /* 5. Special Banner for Formulir Pemesanan (DealDeck Dark Anchor Box) */
     html:not(.dark) .order-form-banner-box,
     html.light .order-form-banner-box {
-      background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 50%, #f0fdf4 100%) !important;
-      border: 2px solid #93c5fd !important;
-      box-shadow: 0 6px 16px -2px rgba(37, 99, 235, 0.1) !important;
+      background: #0f172a !important;
+      border: 1px solid #1e293b !important;
+      border-radius: 24px !important;
+      color: #ffffff !important;
+      box-shadow: 0 16px 32px -6px rgba(15, 23, 42, 0.2) !important;
+    }
+    html:not(.dark) .order-form-banner-box h3,
+    html.light .order-form-banner-box h3 {
+      color: #ffffff !important;
+    }
+    html:not(.dark) .order-form-banner-box p,
+    html.light .order-form-banner-box p {
+      color: #cbd5e1 !important;
     }
     html:not(.dark) #display-order-form-url,
     html.light #display-order-form-url {
-      background-color: #ffffff !important;
-      border: 2px solid #3b82f6 !important;
-      color: #1d4ed8 !important;
-      font-weight: 800 !important;
-      box-shadow: 0 2px 4px rgba(37, 99, 235, 0.1) !important;
+      background-color: #1e293b !important;
+      border: 1px solid #334155 !important;
+      color: #38bdf8 !important;
+      font-weight: 700 !important;
+      border-radius: 12px !important;
+    }
+    html:not(.dark) .order-form-banner-box a[href="pesan.html"],
+    html.light .order-form-banner-box a[href="pesan.html"] {
+      background-color: #3b57f6 !important;
+      color: #ffffff !important;
+      border-radius: 14px !important;
+      box-shadow: 0 4px 12px rgba(59, 87, 246, 0.4) !important;
     }
 
     /* 6. Sub-panels in Katalog & Settings */
@@ -336,51 +376,52 @@
     html:not(.dark) .bg-slate-800\/60,
     html.light .bg-slate-800\/60 {
       background-color: #f8fafc !important;
-      border: 1.5px solid #cbd5e1 !important;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02) !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 16px !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
     }
 
-    /* 7. Tables in Light Mode (Crisp Header & Tinted Alternating Rows) */
+    /* 7. Tables in Light Mode */
     html:not(.dark) table thead,
     html.light table thead {
-      background: linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 100%) !important;
-      border-bottom: 2px solid #94a3b8 !important;
+      background: #f8fafc !important;
+      border-bottom: 1px solid #e2e8f0 !important;
     }
     html:not(.dark) table thead th,
     html.light table thead th {
-      color: #0f172a !important;
+      color: #64748b !important;
       font-weight: 800 !important;
       font-size: 11px !important;
       text-transform: uppercase !important;
       letter-spacing: 0.05em !important;
-      border-color: #cbd5e1 !important;
+      border-color: #e2e8f0 !important;
     }
     html:not(.dark) table tbody tr,
     html.light table tbody tr {
       background-color: #ffffff !important;
-      border-color: #e2e8f0 !important;
+      border-color: #f1f5f9 !important;
       color: #0f172a !important;
     }
     html:not(.dark) table tbody tr:nth-child(even),
     html.light table tbody tr:nth-child(even) {
-      background-color: #f8fafc !important;
+      background-color: #fcfdfe !important;
     }
     html:not(.dark) table tbody tr:hover,
     html.light table tbody tr:hover {
-      background-color: #f0f9ff !important;
+      background-color: #f1f5f9 !important;
     }
     html:not(.dark) table td,
     html.light table td {
       color: #0f172a !important;
-      border-color: #e2e8f0 !important;
+      border-color: #f1f5f9 !important;
     }
 
-    /* Master Account Row (Warm Gold / Amber Tint) */
+    /* Master Account Row */
     html:not(.dark) table tbody tr.bg-amber-500\/\[0\.04\],
     html.light table tbody tr.bg-amber-500\/\[0\.04\] {
-      background: linear-gradient(90deg, #fffbeb 0%, #fef3c7 50%, #fffbeb 100%) !important;
-      border-top: 1.5px solid #fde68a !important;
-      border-bottom: 1.5px solid #fde68a !important;
+      background: #fffbeb !important;
+      border-top: 1px solid #fde68a !important;
+      border-bottom: 1px solid #fde68a !important;
     }
 
     /* 8. High-Contrast Monospace Tokens & Badges */

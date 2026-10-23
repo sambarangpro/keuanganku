@@ -71,101 +71,118 @@
     }
 
     /* ======================================================== */
-    /* KEUANGANKU FORM PEMESANAN - ULTRA PROFESSIONAL LIGHT MODE */
-    /* Vibrant Pastel Cards, High Contrast WCAG AAA/AA System    */
+    /* KEUANGANKU FORM PEMESANAN - DEALDECK SAAS LIGHT THEME    */
+    /* Cool Lilac-Gray Canvas, Pure White Cards & Signature Blue*/
     /* ======================================================== */
     html:not(.dark) body,
     html.light body {
-      background-color: #f1f5f9 !important;
-      background-image: radial-gradient(circle at 50% 0%, #dbeafe 0%, #f1f5f9 45%, #e2e8f0 100%) !important;
-      background-attachment: fixed !important;
+      background-color: #edf1f7 !important;
+      background-image: none !important;
       color: #0f172a !important;
     }
     html:not(.dark) .pesan-header,
     html.light .pesan-header {
-      background: rgba(255, 255, 255, 0.95) !important;
-      backdrop-filter: blur(16px) !important;
-      -webkit-backdrop-filter: blur(16px) !important;
-      border-color: #cbd5e1 !important;
-      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.08) !important;
+      background: #ffffff !important;
+      border-color: #e2e8f0 !important;
+      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05) !important;
     }
     html:not(.dark) .pesan-status-bar-cover,
     html.light .pesan-status-bar-cover {
       background-color: #ffffff !important;
     }
 
-    /* Hero Banner */
+    /* Hero Banner (Signature DealDeck Electric Blue Featured Card) */
     html:not(.dark) .hero-banner-order,
     html.light .hero-banner-order {
-      background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 50%, #ecfdf5 100%) !important;
-      border: 2px solid #93c5fd !important;
-      box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.12) !important;
+      background: linear-gradient(135deg, #3b57f6 0%, #2563eb 100%) !important;
+      border: none !important;
+      border-radius: 24px !important;
+      box-shadow: 0 16px 32px -4px rgba(59, 87, 246, 0.35) !important;
+      color: #ffffff !important;
+    }
+    html:not(.dark) .hero-banner-order h2,
+    html.light .hero-banner-order h2 {
+      color: #ffffff !important;
+    }
+    html:not(.dark) .hero-banner-order p,
+    html.light .hero-banner-order p {
+      color: rgba(255, 255, 255, 0.9) !important;
     }
     html:not(.dark) #hero-status-tag,
     html.light #hero-status-tag {
-      color: #1e40af !important;
+      color: #ffffff !important;
       font-weight: 800 !important;
     }
-
-    /* Step Cards Tints */
-    html:not(.dark) #pesan-step-1,
-    html.light #pesan-step-1 {
-      background: linear-gradient(145deg, #ffffff 0%, #eff6ff 100%) !important;
-      border: 1.5px solid #bfdbfe !important;
-      box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.08) !important;
+    html:not(.dark) .hero-banner-order div.inline-flex,
+    html.light .hero-banner-order div.inline-flex {
+      background: rgba(255, 255, 255, 0.2) !important;
+      border: 1px solid rgba(255, 255, 255, 0.3) !important;
+      color: #ffffff !important;
+      border-radius: 9999px !important;
     }
+
+    /* Step Cards (Pure Crisp White, Elevated Rounded Containers) */
+    html:not(.dark) #pesan-step-1,
+    html.light #pesan-step-1,
+    html:not(.dark) #pesan-step-2,
+    html.light #pesan-step-2,
+    html:not(.dark) #pesan-step-3,
+    html.light #pesan-step-3,
+    html:not(.dark) #pesan-step-4,
+    html.light #pesan-step-4 {
+      background-color: #ffffff !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 24px !important;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 4px 10px -2px rgba(0, 0, 0, 0.02) !important;
+      color: #0f172a !important;
+    }
+    html:not(.dark) [id^="pesan-step-"] > div:first-child,
+    html.light [id^="pesan-step-"] > div:first-child {
+      border-color: #f1f5f9 !important;
+    }
+
+    /* Step Number Pills */
     html:not(.dark) #pesan-step-1 .w-8.h-8,
     html.light #pesan-step-1 .w-8.h-8 {
-      background-color: #2563eb !important;
+      background-color: #3b57f6 !important;
       color: #ffffff !important;
-      box-shadow: 0 4px 10px -2px rgba(37, 99, 235, 0.4) !important;
-    }
-
-    html:not(.dark) #pesan-step-2,
-    html.light #pesan-step-2 {
-      background: linear-gradient(145deg, #ffffff 0%, #f5f3ff 100%) !important;
-      border: 1.5px solid #ddd6fe !important;
-      box-shadow: 0 10px 25px -5px rgba(124, 58, 237, 0.08) !important;
+      border-radius: 14px !important;
+      box-shadow: 0 4px 12px -2px rgba(59, 87, 246, 0.35) !important;
     }
     html:not(.dark) #pesan-step-2 .w-8.h-8,
     html.light #pesan-step-2 .w-8.h-8 {
-      background-color: #7c3aed !important;
+      background-color: #4f46e5 !important;
       color: #ffffff !important;
-      box-shadow: 0 4px 10px -2px rgba(124, 58, 237, 0.4) !important;
-    }
-
-    html:not(.dark) #pesan-step-3,
-    html.light #pesan-step-3 {
-      background: linear-gradient(145deg, #ffffff 0%, #fffbeb 100%) !important;
-      border: 1.5px solid #fde68a !important;
-      box-shadow: 0 10px 25px -5px rgba(217, 119, 6, 0.08) !important;
+      border-radius: 14px !important;
+      box-shadow: 0 4px 12px -2px rgba(79, 70, 229, 0.35) !important;
     }
     html:not(.dark) #pesan-step-3 .w-8.h-8,
     html.light #pesan-step-3 .w-8.h-8 {
       background-color: #d97706 !important;
       color: #ffffff !important;
-      box-shadow: 0 4px 10px -2px rgba(217, 119, 6, 0.4) !important;
-    }
-
-    html:not(.dark) #pesan-step-4,
-    html.light #pesan-step-4 {
-      background: linear-gradient(145deg, #ffffff 0%, #ecfdf5 100%) !important;
-      border: 1.5px solid #a7f3d0 !important;
-      box-shadow: 0 10px 25px -5px rgba(5, 150, 105, 0.08) !important;
+      border-radius: 14px !important;
+      box-shadow: 0 4px 12px -2px rgba(217, 119, 6, 0.35) !important;
     }
     html:not(.dark) #pesan-step-4 .w-8.h-8,
     html.light #pesan-step-4 .w-8.h-8 {
       background-color: #059669 !important;
       color: #ffffff !important;
-      box-shadow: 0 4px 10px -2px rgba(5, 150, 105, 0.4) !important;
+      border-radius: 14px !important;
+      box-shadow: 0 4px 12px -2px rgba(5, 150, 105, 0.35) !important;
     }
 
-    /* Summary Card */
+    /* Summary Card (High-End Pure White with Blue Signature Accent) */
     html:not(.dark) #pesan-step-summary,
     html.light #pesan-step-summary {
-      background: linear-gradient(135deg, #ffffff 0%, #eff6ff 50%, #f0fdf4 100%) !important;
-      border: 2.5px solid #3b82f6 !important;
-      box-shadow: 0 16px 36px -6px rgba(37, 99, 235, 0.16) !important;
+      background-color: #ffffff !important;
+      border: 2px solid #3b57f6 !important;
+      border-radius: 24px !important;
+      box-shadow: 0 16px 36px -6px rgba(59, 87, 246, 0.16) !important;
+      color: #0f172a !important;
+    }
+    html:not(.dark) #pesan-step-summary .divide-slate-800 > div,
+    html.light #pesan-step-summary .divide-slate-800 > div {
+      border-color: #f1f5f9 !important;
     }
 
     /* Fallback Card Styling */
@@ -185,39 +202,51 @@
     html.light .bg-slate-950\/80 {
       background-color: #ffffff !important;
       color: #0f172a !important;
-      border-color: #cbd5e1 !important;
+      border-color: #e2e8f0 !important;
     }
 
     /* Package Cards in Light Mode */
     html:not(.dark) [id^="pkg-card-"],
     html.light [id^="pkg-card-"] {
-      background-color: #ffffff !important;
+      background-color: #f8fafc !important;
       background-image: none !important;
-      border: 1.5px solid #cbd5e1 !important;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04) !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 20px !important;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02) !important;
     }
     html:not(.dark) [id^="pkg-card-"]:hover,
     html.light [id^="pkg-card-"]:hover {
-      border-color: #60a5fa !important;
-      background-color: #f8fafc !important;
+      border-color: #3b57f6 !important;
+      background-color: #ffffff !important;
     }
     html:not(.dark) [id^="pkg-card-"].ring-blue-500,
     html.light [id^="pkg-card-"].ring-blue-500 {
-      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%) !important;
-      border-color: #2563eb !important;
-      box-shadow: 0 0 0 2.5px #2563eb, 0 8px 20px -4px rgba(37, 99, 235, 0.25) !important;
+      background: #eff6ff !important;
+      border-color: #3b57f6 !important;
+      box-shadow: 0 0 0 2px #3b57f6, 0 8px 20px -4px rgba(59, 87, 246, 0.25) !important;
+      border-radius: 20px !important;
     }
 
     /* Payment Account Cards */
     html:not(.dark) [id^="pay-card-"],
     html.light [id^="pay-card-"] {
-      background-color: #ffffff !important;
-      border: 1.5px solid #cbd5e1 !important;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04) !important;
+      background-color: #f8fafc !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 18px !important;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02) !important;
     }
     html:not(.dark) [id^="pay-card-"]:hover,
     html.light [id^="pay-card-"]:hover {
-      border-color: #34d399 !important;
+      border-color: #059669 !important;
+      background-color: #ffffff !important;
+    }
+    html:not(.dark) [id^="pay-card-"].ring-emerald-500,
+    html.light [id^="pay-card-"].ring-emerald-500 {
+      background: #ecfdf5 !important;
+      border-color: #059669 !important;
+      box-shadow: 0 0 0 2px #059669, 0 8px 20px -4px rgba(5, 150, 105, 0.2) !important;
+      border-radius: 18px !important;
+    }
       background-color: #f8fafc !important;
     }
     html:not(.dark) [id^="pay-card-"].ring-emerald-500,
