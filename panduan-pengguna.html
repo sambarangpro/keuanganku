@@ -1,9 +1,22 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Panduan Penggunaan Lengkap & Bergambar - KEUANGANKU PRO</title>
+  
+  <script>
+    (function() {
+      var savedTheme = localStorage.getItem('keuanganku_theme');
+      if (savedTheme === 'light') {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+      } else {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+      }
+    })();
+  </script>
   
   <meta name="description" content="Petunjuk Visual Lengkap Alur Pemesanan, Pengiriman Akun via Gmail, Aktivasi Perdana, Pasang PWA, Ganti PIN, Google Sheets Cloud Sync & Multi-Perangkat Keuanganku PRO.">
   <meta name="theme-color" content="#020617">
@@ -64,6 +77,81 @@
       background-color: #020617;
       z-index: 9999;
     }
+
+    /* ======================================================== */
+    /* LIGHT MODE STYLING FOR PANDUAN PENGGUNAAN               */
+    /* ======================================================== */
+    html:not(.dark) body,
+    html.light body {
+      background-color: #f8fafc !important;
+      color: #0f172a !important;
+    }
+    html:not(.dark) .guide-header,
+    html.light .guide-header {
+      background-color: rgba(255, 255, 255, 0.96) !important;
+      border-color: #e2e8f0 !important;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
+    }
+    html:not(.dark) .anti-leak-bar,
+    html.light .anti-leak-bar {
+      background-color: #ffffff !important;
+    }
+    html:not(.dark) .bg-slate-950,
+    html.light .bg-slate-950,
+    html:not(.dark) .bg-slate-900,
+    html.light .bg-slate-900,
+    html:not(.dark) .bg-slate-900\/90,
+    html.light .bg-slate-900\/90,
+    html:not(.dark) .bg-slate-900\/80,
+    html.light .bg-slate-900\/80,
+    html:not(.dark) .bg-slate-900\/60,
+    html.light .bg-slate-900\/60 {
+      background-color: #ffffff !important;
+      color: #0f172a !important;
+    }
+    html:not(.dark) .border-slate-800,
+    html.light .border-slate-800,
+    html:not(.dark) .border-slate-700,
+    html.light .border-slate-700,
+    html:not(.dark) .border-slate-800\/90,
+    html.light .border-slate-800\/90,
+    html:not(.dark) .border-slate-800\/80,
+    html.light .border-slate-800\/80 {
+      border-color: #e2e8f0 !important;
+    }
+    html:not(.dark) .text-white,
+    html.light .text-white,
+    html:not(.dark) .text-slate-100,
+    html.light .text-slate-100,
+    html:not(.dark) .text-slate-200,
+    html.light .text-slate-200 {
+      color: #0f172a !important;
+    }
+    html:not(.dark) .text-slate-300,
+    html.light .text-slate-300 {
+      color: #334155 !important;
+    }
+    html:not(.dark) .text-slate-400,
+    html.light .text-slate-400 {
+      color: #64748b !important;
+    }
+    html:not(.dark) .bg-slate-800,
+    html.light .bg-slate-800 {
+      background-color: #f1f5f9 !important;
+      color: #0f172a !important;
+      border-color: #cbd5e1 !important;
+    }
+    html:not(.dark) .mockup-showcase-stage,
+    html.light .mockup-showcase-stage {
+      background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%) !important;
+      border-color: #e2e8f0 !important;
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.07) !important;
+    }
+    html:not(.dark) footer,
+    html.light footer {
+      background-color: #ffffff !important;
+      border-color: #e2e8f0 !important;
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
@@ -91,8 +179,12 @@
         </div>
       </div>
 
-      <!-- Tombol Tunggal Sesuai Permintaan: Buka Aplikasi -->
+      <!-- Tombol: Mode Terang/Gelap & Buka Aplikasi -->
       <div class="flex items-center gap-2 shrink-0">
+        <button onclick="toggleGuideTheme()" id="btn-guide-theme" title="Ubah Mode Gelap / Terang" class="p-2 sm:px-2.5 sm:py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-semibold border border-slate-700/80 flex items-center gap-1.5 transition-all shrink-0 active:scale-95">
+          <span id="guide-theme-icon" class="material-symbols-outlined text-base">light_mode</span>
+          <span id="guide-theme-text" class="hidden sm:inline text-xs font-bold">Mode</span>
+        </button>
         <a href="index.html" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white text-xs font-bold shadow-lg shadow-blue-500/25 flex items-center gap-1.5 transition-all active:scale-95">
           <span class="material-symbols-outlined text-base">open_in_browser</span>
           <span>Buka Aplikasi</span>
@@ -130,7 +222,7 @@
       <!-- ======================================================== -->
       <!-- MULTI-DEVICE REALISTIC SHOWCASE (LAPTOP + TABLET + HP)   -->
       <!-- ======================================================== -->
-      <div class="p-4 sm:p-8 rounded-3xl bg-gradient-to-b from-slate-900/90 via-slate-950 to-slate-950 border border-slate-800 shadow-2xl relative overflow-hidden">
+      <div class="mockup-showcase-stage p-4 sm:p-8 rounded-3xl bg-gradient-to-b from-slate-900/90 via-slate-950 to-slate-950 border border-slate-800 shadow-2xl relative overflow-hidden">
         
         <!-- Ambient Inner Spotlight -->
         <div class="absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl pointer-events-none"></div>
@@ -1134,6 +1226,38 @@ function doPost(e) {
         prompt("Salin manual kode Google Apps Script di bawah ini:", GAS_SCRIPT_CODE);
       }
     }
+
+    function toggleGuideTheme() {
+      var isDark = document.documentElement.classList.toggle('dark');
+      if (isDark) {
+        document.documentElement.classList.remove('light');
+        localStorage.setItem('keuanganku_theme', 'dark');
+      } else {
+        document.documentElement.classList.add('light');
+        localStorage.setItem('keuanganku_theme', 'light');
+      }
+      updateGuideThemeUI();
+    }
+
+    function updateGuideThemeUI() {
+      var isDark = document.documentElement.classList.contains('dark');
+      var icon = document.getElementById('guide-theme-icon');
+      var text = document.getElementById('guide-theme-text');
+      if (icon) {
+        icon.textContent = isDark ? 'light_mode' : 'dark_mode';
+      }
+      if (text) {
+        text.textContent = isDark ? 'Terang' : 'Gelap';
+      }
+      var metaTheme = document.querySelector('meta[name="theme-color"]');
+      if (metaTheme) {
+        metaTheme.setAttribute('content', isDark ? '#020617' : '#ffffff');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      updateGuideThemeUI();
+    });
   </script>
 </body>
 </html>

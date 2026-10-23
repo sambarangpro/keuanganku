@@ -2,6 +2,18 @@
 <html class="light" lang="id">
 <head>
   <meta charset="utf-8"/>
+  <script>
+    (function() {
+      var savedTheme = localStorage.getItem('keuanganku_theme');
+      if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+      } else if (savedTheme === 'light') {
+        document.documentElement.classList.add('light');
+        document.documentElement.classList.remove('dark');
+      }
+    })();
+  </script>
   <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
   <title>KEUANGANKU - Financial Planner Pro</title>
   
@@ -745,7 +757,7 @@
         </button>
 
         <button onclick="toggleDarkMode()" class="p-2 rounded-full hover:bg-surface-container transition-colors flex items-center gap-1 text-xs font-bold" title="Ubah Tema Gelap/Terang">
-          <span class="material-symbols-outlined text-on-surface-variant">dark_mode</span>
+          <span id="header-theme-icon" class="material-symbols-outlined text-on-surface-variant">dark_mode</span>
         </button>
       </div>
     </div>
@@ -3602,6 +3614,7 @@
 
 
     window.onload = function() {
+      updateThemeIcon();
       checkAppLicenseOnStartup();
       loadStorageData();
       let dateInput = document.getElementById('tx-date');
@@ -4683,10 +4696,26 @@
     function formatRp(num) { if (isBalanceMasked) return "Rp •••••••"; return "Rp " + (parseFloat(num) || 0).toLocaleString('id-ID'); }
     function formatRpKebalSensor(num) { return "Rp " + (parseFloat(num) || 0).toLocaleString('id-ID'); }
     function toggleDarkMode() { 
-      document.documentElement.classList.toggle('dark'); 
+      var isDark = document.documentElement.classList.toggle('dark'); 
+      if (isDark) {
+        document.documentElement.classList.remove('light');
+        localStorage.setItem('keuanganku_theme', 'dark');
+      } else {
+        document.documentElement.classList.add('light');
+        localStorage.setItem('keuanganku_theme', 'light');
+      }
+      updateThemeIcon();
       renderMonthlyChart(); 
       if (typeof updateCategoryTrendChart === "function") updateCategoryTrendChart();
       renderDashboard();
+    }
+
+    function updateThemeIcon() {
+      var icon = document.getElementById('header-theme-icon');
+      var isDark = document.documentElement.classList.contains('dark');
+      if (icon) {
+        icon.textContent = isDark ? 'light_mode' : 'dark_mode';
+      }
     }
 
     function openCalcSub(subId) {

@@ -1,9 +1,22 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Formulir Pemesanan Resmi - Keuanganku PRO</title>
+  
+  <script>
+    (function() {
+      var savedTheme = localStorage.getItem('keuanganku_theme');
+      if (savedTheme === 'light') {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+      } else {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+      }
+    })();
+  </script>
   
   <meta name="description" content="Pesan Lisensi Resmi Keuanganku PRO v0.1 (Uji Coba) - Aplikasi Keuangan Multi-Device Tanpa Langganan Bulanan.">
   <meta name="theme-color" content="#020617">
@@ -54,14 +67,104 @@
     /* Safe Area Notch & Anti-Leak Header */
     .pesan-header {
       padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
-      background-color: #020617 !important;
+      background-color: #020617;
+    }
+
+    /* ======================================================== */
+    /* LIGHT MODE STYLING FOR FORM PEMESANAN                   */
+    /* ======================================================== */
+    html:not(.dark) body,
+    html.light body {
+      background-color: #f8fafc !important;
+      color: #0f172a !important;
+    }
+    html:not(.dark) .pesan-header,
+    html.light .pesan-header {
+      background-color: #ffffff !important;
+      border-color: #e2e8f0 !important;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
+    }
+    html:not(.dark) .pesan-status-bar-cover,
+    html.light .pesan-status-bar-cover {
+      background-color: #ffffff !important;
+    }
+    html:not(.dark) .bg-slate-950,
+    html.light .bg-slate-950,
+    html:not(.dark) .bg-slate-900,
+    html.light .bg-slate-900,
+    html:not(.dark) .bg-slate-900\/90,
+    html.light .bg-slate-900\/90,
+    html:not(.dark) .bg-slate-900\/60,
+    html.light .bg-slate-900\/60,
+    html:not(.dark) .bg-slate-900\/40,
+    html.light .bg-slate-900\/40 {
+      background-color: #ffffff !important;
+      color: #0f172a !important;
+    }
+    html:not(.dark) .border-slate-800,
+    html.light .border-slate-800,
+    html:not(.dark) .border-slate-700,
+    html.light .border-slate-700,
+    html:not(.dark) .border-slate-800\/90,
+    html.light .border-slate-800\/90,
+    html:not(.dark) .border-slate-700\/80,
+    html.light .border-slate-700\/80 {
+      border-color: #e2e8f0 !important;
+    }
+    html:not(.dark) .text-white,
+    html.light .text-white,
+    html:not(.dark) .text-slate-100,
+    html.light .text-slate-100,
+    html:not(.dark) .text-slate-200,
+    html.light .text-slate-200 {
+      color: #0f172a !important;
+    }
+    html:not(.dark) .text-slate-300,
+    html.light .text-slate-300 {
+      color: #334155 !important;
+    }
+    html:not(.dark) .text-slate-400,
+    html.light .text-slate-400 {
+      color: #64748b !important;
+    }
+    html:not(.dark) input,
+    html.light input,
+    html:not(.dark) select,
+    html.light select,
+    html:not(.dark) textarea,
+    html.light textarea {
+      background-color: #ffffff !important;
+      color: #0f172a !important;
+      border-color: #cbd5e1 !important;
+    }
+    html:not(.dark) input::placeholder,
+    html.light input::placeholder,
+    html:not(.dark) textarea::placeholder,
+    html.light textarea::placeholder {
+      color: #94a3b8 !important;
+    }
+    html:not(.dark) .bg-slate-800,
+    html.light .bg-slate-800 {
+      background-color: #f1f5f9 !important;
+      color: #0f172a !important;
+      border-color: #cbd5e1 !important;
+    }
+    html:not(.dark) .hero-banner-order,
+    html.light .hero-banner-order {
+      background: linear-gradient(135deg, #eff6ff 0%, #ffffff 50%, #f0fdf4 100%) !important;
+      border-color: #bfdbfe !important;
+    }
+    html:not(.dark) footer,
+    html.light footer {
+      background-color: #ffffff !important;
+      border-color: #e2e8f0 !important;
     }
   </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between selection:bg-blue-600 selection:text-white bg-slate-950">
 
   <!-- Status Bar Solid Cover Strip (Cegah bocor di balik jam/notif) -->
-  <div class="fixed top-0 left-0 right-0 h-[env(safe-area-inset-top,0px)] bg-[#020617] z-[60] pointer-events-none"></div>
+  <div class="pesan-status-bar-cover fixed top-0 left-0 right-0 h-[env(safe-area-inset-top,0px)] bg-[#020617] z-[60] pointer-events-none"></div>
 
   <!-- Top Ambient Glow -->
   <div class="fixed top-0 left-1/2 -translate-x-1/2 w-[600px] h-64 bg-blue-600/10 rounded-full blur-3xl pointer-events-none z-0"></div>
@@ -80,10 +183,16 @@
           <p class="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 truncate">Sambarang Production • Form Pemesanan</p>
         </div>
       </div>
-      <a href="index.html" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-[11px] sm:text-xs font-semibold border border-slate-700/80 flex items-center gap-1.5 transition-all shrink-0 shadow-sm active:scale-95">
-        <span class="material-symbols-outlined text-sm">open_in_browser</span>
-        <span class="hidden sm:inline">Buka Aplikasi</span>
-      </a>
+      <div class="flex items-center gap-2 shrink-0">
+        <button type="button" onclick="togglePesanTheme()" id="btn-pesan-theme" title="Ubah Mode Gelap / Terang" class="p-2 sm:px-2.5 sm:py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-semibold border border-slate-700/80 flex items-center gap-1.5 transition-all shrink-0 active:scale-95">
+          <span id="pesan-theme-icon" class="material-symbols-outlined text-sm">light_mode</span>
+          <span id="pesan-theme-text" class="hidden sm:inline text-xs font-bold">Mode</span>
+        </button>
+        <a href="index.html" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-[11px] sm:text-xs font-semibold border border-slate-700/80 flex items-center gap-1.5 transition-all shrink-0 shadow-sm active:scale-95">
+          <span class="material-symbols-outlined text-sm">open_in_browser</span>
+          <span class="hidden sm:inline">Buka Aplikasi</span>
+        </a>
+      </div>
     </div>
   </header>
 
@@ -91,7 +200,7 @@
   <main class="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 py-5 sm:py-6 space-y-6">
 
     <!-- Hero Card Banner -->
-    <div class="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-blue-950/60 via-slate-900 to-indigo-950/40 border border-blue-500/30 shadow-2xl relative overflow-hidden">
+    <div class="hero-banner-order p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-blue-950/60 via-slate-900 to-indigo-950/40 border border-blue-500/30 shadow-2xl relative overflow-hidden">
       <div class="relative z-10 space-y-2">
         <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[11px] font-bold">
           <span class="material-symbols-outlined text-xs">verified</span>
@@ -452,8 +561,37 @@
       return currentUniqueCode;
     }
 
+    function togglePesanTheme() {
+      var isDark = document.documentElement.classList.toggle('dark');
+      if (isDark) {
+        document.documentElement.classList.remove('light');
+        localStorage.setItem('keuanganku_theme', 'dark');
+      } else {
+        document.documentElement.classList.add('light');
+        localStorage.setItem('keuanganku_theme', 'light');
+      }
+      updatePesanThemeUI();
+    }
+
+    function updatePesanThemeUI() {
+      var isDark = document.documentElement.classList.contains('dark');
+      var icon = document.getElementById('pesan-theme-icon');
+      var text = document.getElementById('pesan-theme-text');
+      if (icon) {
+        icon.textContent = isDark ? 'light_mode' : 'dark_mode';
+      }
+      if (text) {
+        text.textContent = isDark ? 'Terang' : 'Gelap';
+      }
+      var metaTheme = document.querySelector('meta[name="theme-color"]');
+      if (metaTheme) {
+        metaTheme.setAttribute('content', isDark ? '#020617' : '#ffffff');
+      }
+    }
+
     // Inisialisasi Halaman: Render INSTAN (0 detik) lalu sinkronkan di background
     document.addEventListener('DOMContentLoaded', () => {
+      updatePesanThemeUI();
       renderPackages();
       renderPaymentAccounts();
       selectDefaultPackage();
