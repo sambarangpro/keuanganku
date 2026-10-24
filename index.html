@@ -835,18 +835,6 @@
     </div>
   </header>
 
-  <!-- FLOATING BANNER MODE DEMO IKLAN -->
-  <div id="top-demo-banner" class="hidden bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 text-slate-950 px-3 py-1.5 text-xs font-bold text-center flex items-center justify-center gap-2 shadow-md sticky top-[56px] z-30 transition-all">
-    <span class="flex items-center gap-1.5">
-      <span class="material-symbols-outlined text-sm font-bold animate-pulse">movie</span>
-      <span>MODE PERCONTOHAN IKLAN AKTIF</span>
-    </span>
-    <span class="text-slate-900/60">•</span>
-    <span class="text-[11px] font-medium hidden sm:inline text-slate-900">Data pribadi Anda tersimpan aman</span>
-    <button onclick="restoreUserRealData()" class="ml-1 px-2.5 py-0.5 bg-slate-950 hover:bg-slate-900 text-white rounded-lg text-[10px] font-bold shadow-sm transition-all cursor-pointer">
-      Kembalikan Data Asli
-    </button>
-  </div>
 
   <!-- TOAST NOTIFIKASI SINKRONISASI OTOMATIS -->
   <div id="sync-toast" class="fixed top-18 right-4 z-50 bg-slate-900/90 dark:bg-slate-800/95 text-white text-xs px-3.5 py-2.5 rounded-xl shadow-2xl border border-white/10 flex items-center gap-2 transform -translate-y-4 opacity-0 pointer-events-none transition-all duration-300">
@@ -1492,38 +1480,6 @@
                 </div>
               </section>
 
-              <!-- FITUR MODE PERCONTOHAN / IKLAN (SHOWCASE DEMO DATA - EKSKLUSIF PEMILIK) -->
-              <section id="setup-showcase-demo-section" class="hidden bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-300/80 dark:from-slate-900 dark:to-slate-900 dark:border-amber-900/60 rounded-2xl p-5 sm:p-6 shadow-sm space-y-3.5">
-                <div class="flex items-center justify-between flex-wrap gap-2">
-                  <div class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-amber-600 dark:text-amber-400 text-xl font-bold">movie_filter</span>
-                    <h2 class="font-headline-md text-headline-md font-bold text-on-surface">Mode Percontohan &amp; Konten Iklan</h2>
-                  </div>
-                  <span class="px-2.5 py-0.5 bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 text-[10px] font-extrabold rounded-full border border-amber-300 dark:border-amber-800">
-                    🎬 KHUSUS PEMILIK
-                  </span>
-                </div>
-                <p class="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
-                  Muat contoh data transaksi realistis, rekening bank, grafik diagram penuh, financial goals, dan budget bulanan yang tampak estetik & meyakinkan untuk kebutuhan <b>screenshot promosi, video reels, dan rekaman iklan</b>.
-                </p>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-                  <button onclick="activateShowcaseDemoData()" class="py-3 px-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold text-xs rounded-xl shadow-md flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
-                    <span class="material-symbols-outlined text-base font-bold">play_circle</span>
-                    <span>1. MUAT DATA PERCONTOHAN IKLAN</span>
-                  </button>
-                  <button id="btn-restore-real-data" onclick="restoreUserRealData()" class="py-3 px-4 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
-                    <span class="material-symbols-outlined text-base">history</span>
-                    <span>2. KEMBALIKAN DATA ASLI SAYA</span>
-                  </button>
-                </div>
-                <div id="demo-mode-indicator" class="hidden p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-xs text-amber-800 dark:text-amber-300 flex items-center justify-between flex-wrap gap-2">
-                  <span class="flex items-center gap-1.5 font-semibold">
-                    <span class="material-symbols-outlined text-base text-amber-500">verified</span>
-                    <span>Mode Demo Iklan Aktif. Database asli Anda aman di memori cadangan.</span>
-                  </span>
-                  <button onclick="restoreUserRealData()" class="px-2.5 py-1 bg-amber-500 text-slate-950 font-bold text-[10px] rounded-lg hover:bg-amber-400 transition-all cursor-pointer">Kembalikan Sekarang</button>
-                </div>
-              </section>
 
               <!-- FITUR PWA: PASANG APLIKASI DI PERANGKAT -->
               <section class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 dark:from-slate-900 dark:to-slate-900 dark:border-blue-900/60 rounded-2xl p-5 sm:p-6 shadow-sm space-y-3">
@@ -4912,242 +4868,17 @@
     // FITUR MODE PERCONTOHAN / IKLAN (SHOWCASE DEMO DATA)
     // ==============================================================================
     function updateDemoModeUI() {
-      let isDemo = localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true';
-      let indicator = document.getElementById('demo-mode-indicator');
-      if (indicator) {
-        if (isDemo) indicator.classList.remove('hidden');
-        else indicator.classList.add('hidden');
-      }
-      let topBanner = document.getElementById('top-demo-banner');
-      if (topBanner) {
-        if (isDemo) topBanner.classList.remove('hidden');
-        else topBanner.classList.add('hidden');
-      }
       let syncIcon = document.getElementById('header-sync-icon');
       let syncBtn = document.getElementById('header-sync-btn');
       if (syncIcon && syncBtn) {
-        if (isDemo) {
-          syncIcon.className = "material-symbols-outlined text-base text-amber-500 animate-pulse";
-          syncIcon.textContent = "movie";
-          syncBtn.title = "Mode Demo Iklan Aktif: Sinkronisasi Cloud Dijeda Sementara (Klik untuk info)";
-        } else {
-          syncIcon.className = "material-symbols-outlined text-base text-green-500";
-          syncIcon.textContent = "cloud_done";
-          syncBtn.title = "Status Sinkronisasi Cloud (Klik untuk sinkron sekarang)";
-        }
-      }
-
-      // KONTROL AKSES EKSKLUSIF: HANYA MUNCUL JIKA PEMILIK, LISENSI DEMO IKLAN, ATAU SEDANG DALAM MODE DEMO
-      let demoSection = document.getElementById('setup-showcase-demo-section');
-      if (demoSection) {
-        let isOwner = (typeof isOwnerDevice === 'function') && isOwnerDevice();
-        let lic = (typeof getSavedLicense === 'function') ? getSavedLicense() : null;
-        let isDemoToken = lic && (lic.token === 'PRO-DEMO-IKLAN-2026' || (lic.buyerName && lic.buyerName.toLowerCase().includes('demo')));
-        if (isOwner || isDemoToken || isDemo) {
-          demoSection.classList.remove('hidden');
-        } else {
-          demoSection.classList.add('hidden');
-        }
+        syncIcon.className = "material-symbols-outlined text-base text-green-500";
+        syncIcon.textContent = "cloud_done";
+        syncBtn.title = "Status Sinkronisasi Cloud (Klik untuk sinkron sekarang)";
       }
     }
 
-    function activateShowcaseDemoData(isSilent = false) {
-      // 1. Simpan backup data asli pengguna jika belum dalam mode demo atau backup belum ada
-      let hasRealBackup = !!localStorage.getItem('KEUANGANKU_USER_REAL_BACKUP');
-      let isCurrentlyFake = globalData.recentHistory && globalData.recentHistory.some(tx => 
-        tx.name === "Sarapan Pagi Roti & Kopi Barakah" || 
-        tx.name === "Kopi & Pastry Artisan Bakery"
-      );
-      
-      // Amankan data asli pengguna hanya jika saat ini data masih asli (bukan fake)
-      if (!isCurrentlyFake) {
-        try {
-          localStorage.setItem('KEUANGANKU_USER_REAL_BACKUP', JSON.stringify(globalData));
-        } catch(e) {}
-      }
-
-      // 2. Tandai mode demo aktif
-      localStorage.setItem('KEUANGANKU_IS_DEMO_MODE', 'true');
-
-      // 3. Bangun data demo yang dinamis, 100% Syar'i (Bebas Riba, Bebas Bank Konvensional, Bebas KPR Riba, Bebas Reksadana)
-      let now = new Date();
-      let y = now.getFullYear();
-      let m = String(now.getMonth() + 1).padStart(2, '0');
-      let pad = (n) => String(n).padStart(2, '0');
-      let curDay = now.getDate();
-
-      // Tanggal jatuh tempo fleksibel untuk notifikasi menagih piutang syar'i (Qardhul Hasan)
-      let recDate1 = new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000);
-      let recDate1Str = `${recDate1.getFullYear()}-${pad(recDate1.getMonth() + 1)}-${pad(recDate1.getDate())}`;
-      let recDate2 = new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000);
-      let recDate2Str = `${recDate2.getFullYear()}-${pad(recDate2.getMonth() + 1)}-${pad(recDate2.getDate())}`;
-
-      let sampleReceiptSvg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='380' viewBox='0 0 300 380'><rect width='300' height='380' fill='%23ffffff' rx='8'/><text x='150' y='36' font-family='sans-serif' font-size='16' font-weight='bold' text-anchor='middle' fill='%23111827'>TOKO HERBAL &amp; SEMBAKO BERKAH</text><text x='150' y='58' font-family='sans-serif' font-size='10' text-anchor='middle' fill='%236b7280'>Jl. Sudirman No. 88 Jakarta</text><line x1='20' y1='75' x2='280' y2='75' stroke='%23e5e7eb' stroke-width='1.5' stroke-dasharray='4'/><text x='25' y='110' font-family='sans-serif' font-size='12' fill='%23374151'>Belanja Sembako &amp; Kebutuhan Halal</text><text x='275' y='110' font-family='sans-serif' font-size='12' text-anchor='end' font-weight='bold' fill='%23111827'>Rp 620.000</text><text x='25' y='140' font-family='sans-serif' font-size='11' fill='%236b7280'>Subtotal</text><text x='275' y='140' font-family='sans-serif' font-size='11' text-anchor='end' fill='%236b7280'>Rp 620.000</text><text x='25' y='165' font-family='sans-serif' font-size='11' fill='%236b7280'>Infaq / Sedekah Kasir</text><text x='275' y='165' font-family='sans-serif' font-size='11' text-anchor='end' fill='%2316a34a'>Termasuk</text><line x1='20' y1='280' x2='280' y2='280' stroke='%23e5e7eb' stroke-width='1.5' stroke-dasharray='4'/><text x='25' y='310' font-family='sans-serif' font-size='14' font-weight='bold' fill='%23111827'>TOTAL TRANSAKSI</text><text x='275' y='310' font-family='sans-serif' font-size='14' font-weight='bold' text-anchor='end' fill='%232563eb'>Rp 620.000</text><text x='150' y='350' font-family='sans-serif' font-size='10' font-weight='bold' text-anchor='middle' fill='%2316a34a'>LUNAS - ALHAMDULILLAH SYUKRON</text></svg>";
-
-      // Transaksi bulan berjalan 100% Syar'i & Halal
-      let curMonthTransactions = [
-        { dateTime: `${pad(curDay)}/${m}/${y}, 14:15:00`, rawDate: `${y}-${m}-${pad(curDay)}`, name: "Sarapan Pagi Roti & Kopi Barakah", amount: 45000, cashflow: "Spending", category: "Makan & Minum Halal", dariAcc: "QRIS / E-Wallet Halal (GoPay Syariah)", keAcc: "- not applicable -" },
-        { dateTime: `${pad(curDay)}/${m}/${y}, 09:30:00`, rawDate: `${y}-${m}-${pad(curDay)}`, name: "Isi Bensin Pertamax Kendaraan", amount: 200000, cashflow: "Spending", category: "Transportasi & Operasional", dariAcc: "QRIS / E-Wallet Halal (GoPay Syariah)", keAcc: "- not applicable -" },
-        { dateTime: `${pad(Math.max(1, curDay-1))}/${m}/${y}, 19:45:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-1))}`, name: "Makan Malam Bersama Keluarga", amount: 385000, cashflow: "Spending", category: "Makan & Minum Halal", dariAcc: "BSI Hasanah Prioritas (Bank Syariah)", keAcc: "- not applicable -" },
-        { dateTime: `${pad(Math.max(1, curDay-2))}/${m}/${y}, 16:20:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-2))}`, name: "Belanja Mingguan Sayur & Kebutuhan Dapur", amount: 620000, cashflow: "Spending", category: "Belanja Dapur & Rumah", dariAcc: "BSI Hasanah Prioritas (Bank Syariah)", keAcc: "- not applicable -", attachments: [{ name: "struk_sembako.svg", type: "image/svg+xml", size: "2.4 KB", data: sampleReceiptSvg }] },
-        { dateTime: `${pad(Math.max(1, curDay-2))}/${m}/${y}, 11:30:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-2))}`, name: "Angsuran Pembayaran Laptop Tempo Rian", amount: 1250000, cashflow: "Pelunasan Piutang", category: "Jual Beli Tempo Laptop (Akad Murabahah Rian)", dariAcc: "- not applicable -", keAcc: "QRIS / E-Wallet Halal (GoPay Syariah)" },
-        { dateTime: `${pad(Math.max(1, curDay-3))}/${m}/${y}, 14:00:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-3))}`, name: "Pengembalian Qardhul Hasan Modal Bpk Hendra", amount: 1500000, cashflow: "Pelunasan Piutang", category: "Qardhul Hasan: Modal Usaha Katering (Bpk Hendra)", dariAcc: "- not applicable -", keAcc: "BSI Hasanah Prioritas (Bank Syariah)" },
-        { dateTime: `${pad(Math.max(1, curDay-3))}/${m}/${y}, 13:00:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-3))}`, name: "Bagi Hasil Proyek Kerjasama Desain Syirkah", amount: 4500000, cashflow: "Income", category: "Bagi Hasil Usaha Syirkah", dariAcc: "- not applicable -", keAcc: "BSI Hasanah Prioritas (Bank Syariah)" },
-        { dateTime: `${pad(Math.max(1, curDay-4))}/${m}/${y}, 10:30:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-4))}`, name: "Tagihan Listrik PLN Pascabayar", amount: 480000, cashflow: "Spending", category: "Tagihan Rutin & WiFi", dariAcc: "BSI Hasanah Prioritas (Bank Syariah)", keAcc: "- not applicable -" },
-        { dateTime: `${pad(Math.max(1, curDay-5))}/${m}/${y}, 12:15:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-5))}`, name: "Sedekah Subuh & Santunan Anak Yatim", amount: 150000, cashflow: "Spending", category: "Infaq, Sedekah & Wakaf", dariAcc: "QRIS / E-Wallet Halal (GoPay Syariah)", keAcc: "- not applicable -" },
-        { dateTime: `${pad(Math.max(1, curDay-5))}/${m}/${y}, 16:00:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-5))}`, name: "Angsuran Mesin Cetak Usaha Bulan Ini", amount: 1250000, cashflow: "Bayar Cicilan / Utang", category: "Pengadaan Mesin Percetakan (Akad Murabahah)", dariAcc: "Bank Jago Syariah (Kantong Tabungan)", keAcc: "- not applicable -" },
-        { dateTime: `${pad(Math.max(1, curDay-6))}/${m}/${y}, 15:40:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-6))}`, name: "Buku Kitab Fiqih Muamalah Kontemporer", amount: 135000, cashflow: "Spending", category: "Edukasi & Kajian Islam", dariAcc: "Uang Tunai (Cash Dompet)", keAcc: "- not applicable -" },
-        { dateTime: `${pad(Math.max(1, curDay-7))}/${m}/${y}, 11:20:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-7))}`, name: "Penyaluran Piutang Murabahah Pengadaan Laptop", amount: 4500000, cashflow: "Piutang Baru", category: "Jual Beli Tempo Laptop (Akad Murabahah Rian)", dariAcc: "BSI Hasanah Prioritas (Bank Syariah)", keAcc: "- not applicable -" },
-        { dateTime: `${pad(Math.max(1, curDay-8))}/${m}/${y}, 10:00:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-8))}`, name: "Bagi Hasil Sukuk Ritel Syariah Negara", amount: 850000, cashflow: "Income", category: "Bagi Hasil Sukuk Ritel", dariAcc: "- not applicable -", keAcc: "Bank Jago Syariah (Kantong Tabungan)" },
-        { dateTime: `${pad(Math.max(1, curDay-9))}/${m}/${y}, 17:10:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-9))}`, name: "Kitab Tafsir & Langganan Edukasi Islam", amount: 420000, cashflow: "Spending", category: "Edukasi & Kajian Islam", dariAcc: "BSI Hasanah Prioritas (Bank Syariah)", keAcc: "- not applicable -" },
-        { dateTime: `${pad(Math.max(1, curDay-10))}/${m}/${y}, 14:30:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-10))}`, name: "Angsuran Tanah Kavling Syariah Bulan Ini", amount: 3000000, cashflow: "Bayar Cicilan / Utang", category: "Cicilan Tanah Kavling Syariah (Akad Istishna')", dariAcc: "BSI Hasanah Prioritas (Bank Syariah)", keAcc: "- not applicable -" },
-        { dateTime: `${pad(Math.max(1, curDay-11))}/${m}/${y}, 11:20:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-11))}`, name: "Ganti Oli & Perawatan Mobil Operasional", amount: 350000, cashflow: "Spending", category: "Transportasi & Operasional", dariAcc: "BSI Hasanah Prioritas (Bank Syariah)", keAcc: "- not applicable -" },
-        { dateTime: `${pad(Math.max(1, curDay-12))}/${m}/${y}, 16:00:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-12))}`, name: "Madu Murni, Habbatussauda & Vitamin", amount: 250000, cashflow: "Spending", category: "Kesehatan & Pengobatan", dariAcc: "QRIS / E-Wallet Halal (GoPay Syariah)", keAcc: "- not applicable -" },
-        { dateTime: `${pad(Math.max(1, curDay-13))}/${m}/${y}, 09:15:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-13))}`, name: "Tagihan Internet WiFi Fiber 100Mbps", amount: 380000, cashflow: "Spending", category: "Tagihan Rutin & WiFi", dariAcc: "BSI Hasanah Prioritas (Bank Syariah)", keAcc: "- not applicable -" },
-        { dateTime: `${pad(Math.max(1, curDay-14))}/${m}/${y}, 15:00:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-14))}`, name: "Alokasi Pembelian Sukuk Ritel Syariah", amount: 1500000, cashflow: "Invest / Savings", category: "Sukuk Negara Ritel Syariah (SR-020)", dariAcc: "Bank Jago Syariah (Kantong Tabungan)", keAcc: "- not applicable -" },
-        { dateTime: `${pad(Math.max(1, curDay-15))}/${m}/${y}, 20:30:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-15))}`, name: "Langganan Aplikasi Qur'an & Kajian Sunnah", amount: 186000, cashflow: "Spending", category: "Edukasi & Kajian Islam", dariAcc: "Bank Jago Syariah (Kantong Tabungan)", keAcc: "- not applicable -" },
-        { dateTime: `${pad(Math.max(1, curDay-16))}/${m}/${y}, 10:00:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-16))}`, name: "Infaq Donasi Musholla & Pesantren Tahfidz", amount: 350000, cashflow: "Spending", category: "Infaq, Sedekah & Wakaf", dariAcc: "BSI Hasanah Prioritas (Bank Syariah)", keAcc: "- not applicable -" },
-        { dateTime: `${pad(Math.max(1, curDay-17))}/${m}/${y}, 13:45:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-17))}`, name: "Tabungan Impian Laptop Kerja MacBook", amount: 1000000, cashflow: "Financial Goals", category: "Beli Laptop Kerja MacBook M3", dariAcc: "BSI Hasanah Prioritas (Bank Syariah)", keAcc: "- not applicable -" },
-        { dateTime: `${pad(Math.max(1, curDay-18))}/${m}/${y}, 14:00:00`, rawDate: `${y}-${m}-${pad(Math.max(1, curDay-18))}`, name: "Belanja Kebutuhan Pokok Bulanan Rumah", amount: 1450000, cashflow: "Spending", category: "Belanja Dapur & Rumah", dariAcc: "BSI Hasanah Prioritas (Bank Syariah)", keAcc: "- not applicable -" },
-        { dateTime: `01/${m}/${y}, 08:00:00`, rawDate: `${y}-${m}-01`, name: "Gaji Pokok Profesional", amount: 18500000, cashflow: "Income", category: "Gaji Pokok Profesional", dariAcc: "- not applicable -", keAcc: "BSI Hasanah Prioritas (Bank Syariah)" },
-        { dateTime: `01/${m}/${y}, 08:30:00`, rawDate: `${y}-${m}-01`, name: "Alokasi Pos Tabungan Umroh & Kurban", amount: 3500000, cashflow: "Transfer", category: "Transfer Antar Akun", dariAcc: "BSI Hasanah Prioritas (Bank Syariah)", keAcc: "Bank Jago Syariah (Kantong Tabungan)" },
-        { dateTime: `01/${m}/${y}, 08:45:00`, rawDate: `${y}-${m}-01`, name: "Top Up Saldo E-Wallet Operasional", amount: 1000000, cashflow: "Transfer", category: "Transfer Antar Akun", dariAcc: "BSI Hasanah Prioritas (Bank Syariah)", keAcc: "QRIS / E-Wallet Halal (GoPay Syariah)" }
-      ];
-
-      // Riwayat beberapa bulan sebelumnya agar grafik Diagram Tren Kategori (Jan-Des) terisi penuh
-      let pastTransactions = [];
-      let curMonthIdx = now.getMonth();
-      for (let pastM = 0; pastM < curMonthIdx; pastM++) {
-        let pMStr = pad(pastM + 1);
-        pastTransactions.push(
-          { dateTime: `01/${pMStr}/${y}, 08:00:00`, rawDate: `${y}-${pMStr}-01`, name: "Gaji Pokok Profesional", amount: 18500000, cashflow: "Income", category: "Gaji Pokok Profesional", dariAcc: "- not applicable -", keAcc: "BSI Hasanah Prioritas (Bank Syariah)" },
-          { dateTime: `05/${pMStr}/${y}, 12:30:00`, rawDate: `${y}-${pMStr}-05`, name: "Belanja Bulanan Dapur & Sembako", amount: 2300000 + (pastM * 40000), cashflow: "Spending", category: "Belanja Dapur & Rumah", dariAcc: "BSI Hasanah Prioritas (Bank Syariah)", keAcc: "- not applicable -" },
-          { dateTime: `10/${pMStr}/${y}, 19:00:00`, rawDate: `${y}-${pMStr}-10`, name: "Restoran & Kuliner Keluarga Halal", amount: 1750000 + (pastM * 60000), cashflow: "Spending", category: "Makan & Minum Halal", dariAcc: "QRIS / E-Wallet Halal (GoPay Syariah)", keAcc: "- not applicable -" },
-          { dateTime: `15/${pMStr}/${y}, 10:15:00`, rawDate: `${y}-${pMStr}-15`, name: "Bensin & Operasional Mobil", amount: 800000 + (pastM * 25000), cashflow: "Spending", category: "Transportasi & Operasional", dariAcc: "QRIS / E-Wallet Halal (GoPay Syariah)", keAcc: "- not applicable -" },
-          { dateTime: `20/${pMStr}/${y}, 14:00:00`, rawDate: `${y}-${pMStr}-20`, name: "Internet WiFi & Tagihan", amount: 760000, cashflow: "Spending", category: "Tagihan Rutin & WiFi", dariAcc: "BSI Hasanah Prioritas (Bank Syariah)", keAcc: "- not applicable -" },
-          { dateTime: `25/${pMStr}/${y}, 09:00:00`, rawDate: `${y}-${pMStr}-25`, name: "Angsuran Tanah Kavling Syariah", amount: 3000000, cashflow: "Bayar Cicilan / Utang", category: "Cicilan Tanah Kavling Syariah (Akad Istishna')", dariAcc: "BSI Hasanah Prioritas (Bank Syariah)", keAcc: "- not applicable -" }
-        );
-      }
-
-      let demoData = {
-        appPin: globalData.appPin || globalData.ownerPassword || "123",
-        ownerPassword: globalData.ownerPassword || globalData.appPin || "123",
-        cloudUrl: globalData.cloudUrl || "",
-        startingBalance: 15000000,
-        enableCalculator: true,
-        accounts: [
-          "BSI Hasanah Prioritas (Bank Syariah)",
-          "Bank Jago Syariah (Kantong Tabungan)",
-          "QRIS / E-Wallet Halal (GoPay Syariah)",
-          "Uang Tunai (Cash Dompet)"
-        ],
-        accountDetails: {
-          "BSI Hasanah Prioritas (Bank Syariah)": { bankName: "Bank Syariah Indonesia (BSI)", accNo: "7128938192", owner: "Muh Akbar", balance: 28750000 },
-          "Bank Jago Syariah (Kantong Tabungan)": { bankName: "Bank Jago Syariah", accNo: "504172135812", owner: "Muh Akbar", balance: 16500000 },
-          "QRIS / E-Wallet Halal (GoPay Syariah)": { bankName: "GoPay Syariah", accNo: "087788197916", owner: "Muh Akbar", balance: 1250000 },
-          "Uang Tunai (Cash Dompet)": { bankName: "Dompet Fisik", accNo: "-", owner: "Muh Akbar", balance: 650000 }
-        },
-        currentBalances: {
-          "BSI Hasanah Prioritas (Bank Syariah)": 28750000,
-          "Bank Jago Syariah (Kantong Tabungan)": 16500000,
-          "QRIS / E-Wallet Halal (GoPay Syariah)": 1250000,
-          "Uang Tunai (Cash Dompet)": 650000
-        },
-        incomes: ["Gaji Pokok Profesional", "Bagi Hasil Usaha Syirkah", "Bagi Hasil Sukuk Ritel", "Hasil Usaha Mandiri", "Lainnya"],
-        spendings: ["Makan & Minum Halal", "Belanja Dapur & Rumah", "Transportasi & Operasional", "Tagihan Rutin & WiFi", "Edukasi & Kajian Islam", "Infaq, Sedekah & Wakaf", "Kesehatan & Pengobatan", "Lainnya"],
-        bills: ["Listrik PLN", "Internet WiFi Fiber", "Air PDAM", "Iuran Lingkungan / RT"],
-        routinePayments: {
-          "Tagihan Internet WiFi Fiber 100Mbps": { amount: 385000, dueDay: curDay },
-          "Tagihan Listrik PLN Pascabayar": { amount: 520000, dueDay: (curDay + 2 <= 28 ? curDay + 2 : 28) },
-          "Iuran BPJS Kesehatan Mandiri": { amount: 300000, dueDay: (curDay + 1 <= 28 ? curDay + 1 : 15) },
-          "Infaq Rutin Santri Penghafal Qur'an": { amount: 500000, dueDay: 25 }
-        },
-        monthlyBudgets: {
-          "Makan & Minum Halal": 3500000,
-          "Belanja Dapur & Rumah": 3000000,
-          "Transportasi & Operasional": 1200000,
-          "Tagihan Rutin & WiFi": 1000000,
-          "Edukasi & Kajian Islam": 1500000,
-          "Infaq, Sedekah & Wakaf": 1000000,
-          "Kesehatan & Pengobatan": 800000
-        },
-        investData: {
-          "Sukuk Negara Ritel Syariah (SR-020)": { initial: 18500000, used: 0 },
-          "Tabungan Emas Fisik Logam Mulia": { initial: 12000000, used: 0 },
-          "Deposito BSI Akad Mudharabah Mutlaqah": { initial: 25000000, used: 0 }
-        },
-        sinkingData: {
-          "Pajak & Servis Kendaraan Operasional": { target: 6000000, initial: 4500000, durationMonths: 12, deadline: `${y}-12-31`, used: 500000 },
-          "Kurban Sapi & Kambing Idul Adha 1447H": { target: 7000000, initial: 5500000, durationMonths: 10, deadline: `${y+1}-05-20`, used: 0 },
-          "Dana Safar Ibadah Umroh Keluarga": { target: 45000000, initial: 32000000, durationMonths: 12, deadline: `${y+1}-03-15`, used: 0 }
-        },
-        goalsData: {
-          "Beli Laptop Kerja MacBook M3": { target: 32000000, initial: 24000000, timeframeVal: 1, timeframeUnit: "Tahun", used: 0 },
-          "Dana Darurat Mandiri (Cash Reserve Halal)": { target: 45000000, initial: 38500000, timeframeVal: 2, timeframeUnit: "Tahun", used: 0 },
-          "Pembangunan Rumah Cash Bertahap Non-KPR": { target: 150000000, initial: 95000000, timeframeVal: 3, timeframeUnit: "Tahun", used: 0 }
-        },
-        receivablesData: {
-          "Qardhul Hasan: Modal Usaha Katering (Bpk Hendra)": {
-            total: 5000000,
-            paid: 3000000,
-            deadline: recDate1Str
-          },
-          "Jual Beli Tempo Laptop (Akad Murabahah Rian)": {
-            total: 4500000,
-            paid: 2500000,
-            deadline: recDate2Str
-          }
-        },
-        nonMoneyAssets: {
-          "Logam Mulia Emas Antam 100g": {
-            type: "Emas",
-            qty: 100,
-            unit: "Gram",
-            estimatedPrice: 1420000,
-            used: 0
-          },
-          "Perak Murni Batangan SRH": {
-            type: "Perak",
-            qty: 250,
-            unit: "Gram",
-            estimatedPrice: 18500,
-            used: 0
-          },
-          "Aset Kebun Produktif / Lahan Pertanian": {
-            type: "Lainnya",
-            qty: 500,
-            unit: "M2",
-            estimatedPrice: 350000,
-            used: 0
-          }
-        },
-        debtData: {
-          "Cicilan Tanah Kavling Syariah (Akad Istishna')": {
-            total: 180000000,
-            paid: 90000000,
-            monthlyPay: 3000000,
-            category: "Cicilan",
-            period: "Bulanan"
-          },
-          "Pengadaan Mesin Percetakan (Akad Murabahah)": {
-            total: 15000000,
-            paid: 10000000,
-            monthlyPay: 1250000,
-            category: "Cicilan",
-            period: "Setiap Tanggal 15"
-          }
-        },
-        recentHistory: curMonthTransactions.concat(pastTransactions)
-      };
-
-      globalData = demoData;
-      localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData));
-      initApp();
-      updateDemoModeUI();
-      navTo('dashboard');
-      if (!isSilent) {
-        alert("🎬 MODE PERCONTOHAN IKLAN AKTIF (100% SYAR'I & BEBAS RIBA)!\n\nSeluruh indikator terisi penuh sesuai prinsip syariah:\n• Bank Syariah (BSI Prioritas, Jago Syariah, QRIS Halal, Kas)\n• Investasi Halal (Sukuk Ritel Negara SR-020, Emas Fisik, Deposito Mudharabah BSI)\n• Pos Safar Ibadah Umroh & Kurban Idul Adha\n• Akad Qardhul Hasan & Murabahah Riil (Bebas Bunga/Riba & Bebas KPR Bank)\n• Pengingat Otomatis Nisab Zakat Mal Emas (85g)\n\nData asli Anda tersimpan aman dan sinkronisasi Cloud otomatis dijeda.");
-      }
+    function activateShowcaseDemoData() {
+      alert("Fitur percontohan iklan telah dipindahkan secara eksklusif ke Developer Dashboard (dev-dashboard.html) agar akun pribadi Anda selalu 100% aman dan murni.");
     }
 
     function restoreUserRealData() {
@@ -5182,6 +4913,19 @@
     }
     
     function initApp() { 
+      // Pembersihan otomatis: Pastikan akun pribadi selalu 100% menggunakan data asli
+      if (localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true') {
+        let backupStr = localStorage.getItem('KEUANGANKU_USER_REAL_BACKUP');
+        if (backupStr) {
+          try {
+            globalData = JSON.parse(backupStr);
+            saveStorageData();
+          } catch(e) {}
+        }
+        localStorage.removeItem('KEUANGANKU_IS_DEMO_MODE');
+        localStorage.removeItem('KEUANGANKU_USER_REAL_BACKUP');
+      }
+
       let isOwner = isOwnerDevice();
       let navCalc = document.getElementById('nav-calc');
       let dnavCalc = document.getElementById('dnav-calc');
