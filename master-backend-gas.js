@@ -613,7 +613,8 @@ function validateClientToken(params) {
     if (rowToken === tokenInput || (cleanInputToken && cleanRowToken === cleanInputToken)) {
       tokenInput = rowToken; // Gunakan format resmi canonical (dengan tanda strip)
       var buyerName = data[i][colMap.buyerName] || "";
-      var maxDevices = parseInt(data[i][colMap.maxDevices]) || 2;
+      var maxDevices = parseInt(data[i][colMap.maxDevices]) || 3;
+      if (maxDevices < 3) maxDevices = 3; // Standar lisensi resmi Keuanganku PRO Multi-Device minimal 3 perangkat
       // Berikan batas kuota prioritas pemilik/developer akun agar bebas multi-perangkat saat pengujian
       if (tokenInput === 'PRO-S8GF-HQT5-CNVE' || tokenInput === 'PRO-W9J2-RAYM-3KKL' || tokenInput === 'PRO-DEMO-IKLAN-2026' || String(buyerName).toLowerCase().includes('akbar') || String(buyerName).toLowerCase().includes('demo')) {
         maxDevices = Math.max(maxDevices, 10);
@@ -648,7 +649,12 @@ function validateClientToken(params) {
         if (pinStatus !== "PIN_CHANGED" && storedPersonalPin && storedPersonalPin.length <= 20 && !storedPersonalPin.includes("GMT")) {
           pinStatus = "PIN_CHANGED";
         } else if (pinStatus !== "PIN_CHANGED") {
-          pinStatus = "USING_TOKEN";
+          // Jika perangkat sudah >= 2 atau inputPin dikirim, pasti akun sudah dipersonalisasi
+          if (devices.length >= 2 || (inputPin && inputPin.length >= 3)) {
+            pinStatus = "PIN_CHANGED";
+          } else {
+            pinStatus = "USING_TOKEN";
+          }
         }
       }
 
@@ -690,6 +696,21 @@ function validateClientToken(params) {
               message: "PIN Pribadi salah! Masukkan PIN pribadi yang telah Anda buat sebelumnya."
             };
           }
+          if (!storedPersonalPin) {
+            // Auto-simpan PIN jika sebelumnya belum terisi
+            sheet.getRange(i + 1, colMap.personalPin + 1).setValue(inputPin);
+            storedPersonalPin = inputPin;
+          }
+        } else {
+          // JIKA PERANGKAT SUDAH TERDAFTAR (EXISTING DEVICE):
+          // Jika inputPin dikirim untuk re-autentikasi:
+          if (inputPin && storedPersonalPin && inputPin !== storedPersonalPin) {
+            logEvent("WRONG_PERSONAL_PIN_EXISTING", tokenInput, buyerName, deviceId, deviceName, "Perangkat terdaftar salah memasukkan PIN pribadi");
+            return {
+              success: false,
+              message: "PIN Pribadi salah! Masukkan PIN pribadi yang benar."
+            };
+          }
         }
       }
 
@@ -728,6 +749,7 @@ function validateClientToken(params) {
             token: tokenInput,
             buyerName: buyerName,
             pinStatus: pinStatus,
+            personalPin: storedPersonalPin,
             isPasswordChanged: (pinStatus === "PIN_CHANGED"),
             maxDevices: (pinStatus === "PIN_CHANGED" ? maxDevices : 1),
             deviceCount: devices.length,
@@ -771,6 +793,7 @@ function validateClientToken(params) {
           token: tokenInput,
           buyerName: buyerName,
           pinStatus: newPinStatus,
+          personalPin: storedPersonalPin || inputPin,
           isPasswordChanged: (newPinStatus === "PIN_CHANGED"),
           maxDevices: (newPinStatus === "PIN_CHANGED" ? maxDevices : 1),
           deviceCount: devices.length,
@@ -938,7 +961,8 @@ function authorizePairSession(params) {
   }
 
   var buyerName = rowData[colMap.buyerName] || "";
-  var maxDevices = parseInt(rowData[colMap.maxDevices]) || 2;
+  var maxDevices = parseInt(rowData[colMap.maxDevices]) || 3;
+  if (maxDevices < 3) maxDevices = 3;
   var status = String(rowData[colMap.status] || "ACTIVE").trim().toUpperCase();
   var pinStatus = String(rowData[colMap.pinStatus] || "UNCLAIMED").trim().toUpperCase();
   var storedPersonalPin = String(rowData[colMap.personalPin] || "").trim();
@@ -987,6 +1011,15 @@ function authorizePairSession(params) {
   sheet.getRange(foundRow, colMap.deviceCount + 1).setValue(devices.length);
   sheet.getRange(foundRow, colMap.usedDevices + 1).setValue(JSON.stringify(devices));
 
+  // Pastikan status pinStatus adalah PIN_CHANGED dan personalPin tersimpan di database token
+  var effectivePin = inputPin || storedPersonalPin || "";
+  if (effectivePin && effectivePin.length >= 3) {
+    pinStatus = "PIN_CHANGED";
+    storedPersonalPin = effectivePin;
+    sheet.getRange(foundRow, colMap.pinStatus + 1).setValue("PIN_CHANGED");
+    sheet.getRange(foundRow, colMap.personalPin + 1).setValue(effectivePin);
+  }
+
   logEvent("PAIR_SESSION_AUTHORIZED", tokenInput, buyerName, targetDeviceId, targetDeviceName, "Perangkat berhasil ditautkan via Scan HP WhatsApp Style");
 
   var currentCloudUrl = (colMap.cloudUrl !== undefined && data[foundRow - 1][colMap.cloudUrl]) ? String(data[foundRow - 1][colMap.cloudUrl]).trim() : "";
@@ -999,10 +1032,12 @@ function authorizePairSession(params) {
 
   // Update session di cache Google Apps Script agar PC/iPad langsung otomatis login
   sessionObj.status = "AUTHORIZED";
+  sessionObj.deviceId = targetDeviceId;
   sessionObj.licenseData = {
     token: tokenInput,
     buyerName: buyerName,
     pinStatus: pinStatus,
+    personalPin: inputPin || storedPersonalPin || "",
     isPasswordChanged: (pinStatus === "PIN_CHANGED"),
     maxDevices: maxDevices,
     deviceCount: devices.length,
@@ -1104,12 +1139,29 @@ function verifyClientStatus(params) {
       for (var d = 0; d < devices.length; d++) {
         if (devices[d].deviceId === deviceId) {
           isFound = true;
+          devices[d].lastActive = new Date().toISOString();
           break;
         }
       }
 
+      // Auto-register jika perangkat berada dalam kuota atau merupakan akun pemilik/developer
+      var isOwner = (tokenInput === 'PRO-S8GF-HQT5-CNVE' || tokenInput === 'PRO-W9J2-RAYM-3KKL' || tokenInput === 'PRO-DEMO-IKLAN-2026' || String(data[i][colMap.buyerName] || "").toLowerCase().includes('akbar'));
+      var maxDevLimit = isOwner ? Math.max(parseInt(data[i][colMap.maxDevices]) || 3, 10) : Math.max(parseInt(data[i][colMap.maxDevices]) || 3, 3);
+
       if (!isFound) {
-        return { success: true, active: false, reason: "DEVICE_REMOVED", message: "Perangkat ini telah dilepas dari lisensi." };
+        if (devices.length < maxDevLimit || isOwner) {
+          devices.push({
+            deviceId: deviceId,
+            deviceName: (params.deviceName || "Perangkat Web").trim(),
+            activatedAt: new Date().toISOString(),
+            lastActive: new Date().toISOString()
+          });
+          sheet.getRange(i + 1, colMap.deviceCount + 1).setValue(devices.length);
+          sheet.getRange(i + 1, colMap.usedDevices + 1).setValue(JSON.stringify(devices));
+          isFound = true;
+        } else {
+          return { success: true, active: false, reason: "DEVICE_REMOVED", message: "Perangkat ini telah dilepas dari lisensi." };
+        }
       }
 
       var currentCloudUrl = (colMap.cloudUrl !== undefined && data[i][colMap.cloudUrl]) ? String(data[i][colMap.cloudUrl]).trim() : "";
@@ -1126,9 +1178,10 @@ function verifyClientStatus(params) {
         active: true, 
         buyerName: data[i][colMap.buyerName],
         pinStatus: pinStatus,
+        personalPin: storedPersonalPin,
         isPasswordChanged: (pinStatus === "PIN_CHANGED"),
         deviceCount: devices.length,
-        maxDevices: parseInt(data[i][colMap.maxDevices]) || 2,
+        maxDevices: (isOwner ? maxDevLimit : Math.max(parseInt(data[i][colMap.maxDevices]) || 3, 3)),
         cloudUrl: currentCloudUrl
       };
     }
@@ -1159,7 +1212,8 @@ function clientGetDevices(params) {
       var devices = [];
       try { devices = rawDevices ? JSON.parse(rawDevices) : []; } catch(e) {}
 
-      var maxDevices = parseInt(data[i][colMap.maxDevices]) || 2;
+      var maxDevices = parseInt(data[i][colMap.maxDevices]) || 3;
+      if (maxDevices < 3) maxDevices = 3;
       // Berikan batas kuota prioritas pemilik/developer akun agar bebas multi-perangkat saat pengujian
       if (tokenInput === 'PRO-S8GF-HQT5-CNVE' || tokenInput === 'PRO-W9J2-RAYM-3KKL' || tokenInput === 'PRO-DEMO-IKLAN-2026' || String(buyerName).toLowerCase().includes('akbar') || String(buyerName).toLowerCase().includes('demo')) {
         maxDevices = Math.max(maxDevices, 10);

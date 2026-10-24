@@ -282,6 +282,10 @@
         </div>
 
         <button id="btn-bumper-login" onclick="verifyBumperPin()" class="w-full py-2.5 bg-white text-primary font-bold rounded-xl text-xs hover:bg-blue-50 shadow transition-all cursor-pointer">MASUK APLIKASI</button>
+        <div class="flex items-center justify-between text-[11px] text-blue-200 px-1 pt-0.5">
+          <button type="button" onclick="promptEmergencyMasterTokenUnlock()" class="hover:text-white underline cursor-pointer">Lupa PIN? Masuk via Token</button>
+          <button type="button" onclick="toggleBumperCloudModal(true)" class="hover:text-white underline cursor-pointer">Hubungkan Cloud</button>
+        </div>
         <p id="bumper-error-msg" class="text-[11px] text-red-200 font-semibold leading-relaxed hidden">PIN Salah! Coba lagi.</p>
         
         <div class="pt-2 border-t border-white/10 space-y-2">
@@ -2345,20 +2349,30 @@
         let res = await resp.json();
 
         if (res && res.success && res.active === false) {
-          // Lisensi diblokir atau perangkat ini telah dikeluarkan dari perangkat lain!
-          localStorage.removeItem("KEUANGANKU_LICENSE_DATA");
-          sessionStorage.removeItem("KEUANGANKU_PIN_PASSED");
-          let splashScreen = document.getElementById('splash-screen');
-          if (splashScreen) {
-            splashScreen.classList.remove('hidden', 'opacity-0');
-            switchSplashView('pin');
-          }
-          let err = document.getElementById('bumper-error-msg');
-          if (err) {
-            err.textContent = res.message || "Akses perangkat ini telah dicabut atau dikeluarkan dari perangkat lain.";
-            err.classList.remove('hidden');
+          // Lisensi diblokir secara resmi oleh Developer
+          if (res.reason === "BLOCKED") {
+            localStorage.removeItem("KEUANGANKU_LICENSE_DATA");
+            sessionStorage.removeItem("KEUANGANKU_PIN_PASSED");
+            let splashScreen = document.getElementById('splash-screen');
+            if (splashScreen) {
+              splashScreen.classList.remove('hidden', 'opacity-0');
+              switchSplashView('pin');
+            }
+            let err = document.getElementById('bumper-error-msg');
+            if (err) {
+              err.textContent = res.message || "Akses lisensi telah dinonaktifkan oleh Developer.";
+              err.classList.remove('hidden');
+            }
+          } else {
+            console.warn("verifyLicenseStatusSilently:", res.message || res.reason);
           }
         } else if (res && res.success && res.active === true) {
+          // Sinkronisasi otomatis PIN Pribadi dari Server Master
+          if (res.personalPin && res.personalPin.trim() !== '') {
+            globalData.appPin = res.personalPin.trim();
+            globalData.ownerPassword = res.personalPin.trim();
+            saveStorageData();
+          }
           // Sinkronisasi otomatis URL Cloud jika server menyediakannya dan lokal belum memilikinya
           if (res.cloudUrl && res.cloudUrl.startsWith("http")) {
             let hasLocalCloud = globalData.cloudUrl && globalData.cloudUrl.startsWith("http");
@@ -3110,9 +3124,14 @@
 
           localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(licData));
 
-          if (s.pin) {
-            globalData.appPin = s.pin;
-            globalData.ownerPassword = s.pin;
+          if (s.deviceId) {
+            localStorage.setItem("KEUANGANKU_DEVICE_ID", s.deviceId);
+          }
+
+          let activePinToSave = s.pin || (licData && licData.personalPin) || '';
+          if (activePinToSave) {
+            globalData.appPin = activePinToSave;
+            globalData.ownerPassword = activePinToSave;
             saveStorageData();
           }
           if (s.masterUrl && s.masterUrl.startsWith("http")) {
@@ -3192,8 +3211,25 @@
       showSyncToast("⚡ Mengotorisasi perangkat...");
 
       try {
-        let pinToUse = (lic.pinStatus === 'USING_TOKEN') ? lic.token : (globalData.appPin || globalData.ownerPassword || '');
-        let cloudUrlToShare = (globalData.cloudUrl && globalData.cloudUrl.startsWith("http")) ? globalData.cloudUrl : (localStorage.getItem("KEUANGANKU_CLOUD_URL") || "");
+        // Jika HP Utama sedang dalam Mode Demo Iklan, utamakan PIN dan Cloud riil dari backup asli pengguna
+        let realPinBackup = '';
+        let realCloudBackup = '';
+        try {
+          let b = localStorage.getItem('KEUANGANKU_USER_REAL_BACKUP');
+          if (b) {
+            let parsedB = JSON.parse(b);
+            if (parsedB && (parsedB.appPin || parsedB.ownerPassword)) {
+              realPinBackup = parsedB.appPin || parsedB.ownerPassword;
+            }
+            if (parsedB && parsedB.cloudUrl && parsedB.cloudUrl.startsWith("http")) {
+              realCloudBackup = parsedB.cloudUrl;
+            }
+          }
+        } catch(e) {}
+
+        let pinToUse = realPinBackup || (lic.pinStatus === 'USING_TOKEN' ? lic.token : (globalData.appPin || globalData.ownerPassword || ''));
+        let cloudUrlToShare = realCloudBackup || (globalData.cloudUrl && globalData.cloudUrl.startsWith("http") ? globalData.cloudUrl : (localStorage.getItem("KEUANGANKU_CLOUD_URL") || ""));
+
         let res = await callClientLicenseApi({
           action: 'authorize_pair_session',
           sessionId: sessionId,
@@ -3880,6 +3916,7 @@
           localStorage.setItem("KEUANGANKU_CLOUD_URL", url);
           localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData));
           
+          sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
           initApp();
           showSyncToast("✓ Berhasil terhubung ke Cloud & data dimuat!");
           setSyncStatus('synced', 'Tersinkron');
@@ -3906,6 +3943,16 @@
       }
     }
 
+    function promptEmergencyMasterTokenUnlock() {
+      let tok = prompt("PEMULIHAN KUNCI MASTER PEMILIK:\n\nMasukkan Kode Token Pembelian resmi Anda (format: PRO-XXXX-XXXX-XXXX):");
+      if (!tok || !tok.trim()) return;
+      let pinInp = document.getElementById('bumper-pin-input');
+      if (pinInp) {
+        pinInp.value = tok.trim().toUpperCase();
+        verifyBumperPin();
+      }
+    }
+
     async function verifyBumperPin() {
       let pinInput = (document.getElementById('bumper-pin-input').value || '').trim();
       let err = document.getElementById('bumper-error-msg');
@@ -3922,20 +3969,34 @@
         return;
       }
 
-      let upperInput = pinInput.toUpperCase();
+      // Deteksi jika input gabungan Token + PIN (misal: "PRO-XXXX-XXXX-XXXX 123456" atau "PRO-XXXX-XXXX-XXXX:123456")
+      let tokenPart = pinInput;
+      let pinPart = "";
+      if (pinInput.includes(":") || pinInput.includes(" ")) {
+        let parts = pinInput.split(/[:\s]+/);
+        if (parts.length >= 2 && (parts[0].toUpperCase().startsWith("PRO") || parts[0].includes("-"))) {
+          tokenPart = parts[0].trim();
+          pinPart = parts.slice(1).join("").trim();
+        }
+      }
+
+      let upperInput = tokenPart.toUpperCase();
       let cleanInput = upperInput.replace(/[^A-Z0-9]/g, '');
-      let isTokenFormat = cleanInput.startsWith('PRO') || cleanInput.length >= 8 || pinInput.includes('-');
+      let isTokenFormat = cleanInput.startsWith('PRO') || cleanInput.length >= 8 || tokenPart.includes('-');
 
       let validPin = String((globalData && globalData.appPin !== undefined && globalData.appPin !== '') ? globalData.appPin : '123').trim();
       let validPass = String((globalData && globalData.ownerPassword !== undefined && globalData.ownerPassword !== '') ? globalData.ownerPassword : '').trim();
       let lic = getSavedLicense();
 
-      // 1. Jika pengguna memasukkan PIN reguler yang cocok (misal PIN pribadi atau PIN default)
+      // 1. Jika pengguna memasukkan PIN reguler yang cocok secara lokal (PIN pribadi atau password)
+      let isCustomPin = (validPin !== "123" && validPin !== "");
+      let isCustomPass = (validPass !== "123" && validPass !== "");
       let isPinValid = (pinInput === validPin);
       let isPassValid = (validPass !== "" && pinInput === validPass);
       let isSavedTokenValid = (lic && lic.pinStatus === 'USING_TOKEN' && lic.token && (upperInput === lic.token.toUpperCase() || cleanInput === lic.token.replace(/[^A-Z0-9]/g, '').toUpperCase()));
 
-      if (isSavedTokenValid || (isPinValid && lic) || (isPassValid && lic)) {
+      // Pengguna akun pribadi dengan PIN kustom dapat langsung masuk, ATAU pengguna dengan lisensi aktif
+      if (isSavedTokenValid || (isPinValid && (lic || isCustomPin)) || (isPassValid && (lic || isCustomPass))) {
         let remCheck = document.getElementById('bumper-remember-pin');
         if (remCheck && remCheck.checked) {
           localStorage.setItem("KEUANGANKU_REMEMBER_PIN", "true");
@@ -3944,21 +4005,24 @@
           localStorage.removeItem("KEUANGANKU_REMEMBER_PIN");
           localStorage.removeItem("KEUANGANKU_SAVED_PIN");
         }
+        sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
         let splash = document.getElementById('splash-screen');
         if (splash) { splash.classList.add('opacity-0'); setTimeout(() => splash.classList.add('hidden'), 700); }
         return;
       }
 
-      // 2. Jika lisensi sudah aktif dan berstatus PIN_CHANGED, tapi pengguna malah mengetik token bawaan lama
-      if (lic && lic.pinStatus === 'PIN_CHANGED' && lic.token && (upperInput === lic.token.toUpperCase() || cleanInput === lic.token.replace(/[^A-Z0-9]/g, '').toUpperCase())) {
-        if (err) {
-          err.textContent = "Token bawaan ini sudah HANGUS! Masukkan PIN Pribadi yang telah Anda buat di menu Setup.";
-          err.classList.remove('hidden');
-        }
+      // 2. Jika lisensi sudah aktif dan pengguna memasukkan Token Pembelian resmi (Master Recovery Key)
+      if (lic && lic.token && (upperInput === lic.token.toUpperCase() || cleanInput === lic.token.replace(/[^A-Z0-9]/g, '').toUpperCase())) {
+        sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
+        sessionStorage.setItem("KEUANGANKU_SETUP_UNLOCKED", "true");
+        let splash = document.getElementById('splash-screen');
+        if (splash) { splash.classList.add('opacity-0'); setTimeout(() => splash.classList.add('hidden'), 700); }
+        playSuccessSound();
+        showSyncToast("🔓 Berhasil Masuk menggunakan Token Master Pemilik!");
         return;
       }
 
-      // 3. JIKA INPUT ADALAH TOKEN LISENSI (Misal: PRO-FEKY-P7F7-G5ZB atau PROFEKYP7F7G5ZB)
+      // 3. JIKA INPUT ADALAH TOKEN LISENSI (Atau Token + PIN)
       //    Validasi langsung ke Server Master Google Apps Script!
       if (isTokenFormat) {
         let apiUrl = getMasterLicenseServerUrl();
@@ -3982,27 +4046,70 @@
 
           let res = await callClientLicenseApi({
             action: 'validate_token',
-            token: pinInput,
+            token: tokenPart,
+            pin: pinPart,
             deviceId: devId,
             deviceName: devName
           });
 
+          // Jika token sudah dipersonalisasi di perangkat 1 dan belum menyertakan PIN:
           if (res.isBurned) {
-            if (err) {
-              err.innerHTML = "Token ini sudah dipersonalisasi di HP 1.<br>Silakan gunakan tombol <b>'Hubungkan via Scan QR'</b> di bawah untuk masuk otomatis.";
-              err.classList.remove('hidden');
+            let personalPinPrompt = prompt("Token lisensi ini telah dipersonalisasi di HP Utama.\n\nMasukkan PIN Pribadi Anda untuk mengotorisasi dan menghubungkan perangkat baru ini:");
+            if (personalPinPrompt && personalPinPrompt.trim() !== '') {
+              if (btn) btn.innerHTML = `<span class="material-symbols-outlined text-sm animate-spin">progress_activity</span> MENGOTORISASI PERANGKAT...`;
+              let retryRes = await callClientLicenseApi({
+                action: 'validate_token',
+                token: tokenPart,
+                pin: personalPinPrompt.trim(),
+                deviceId: devId,
+                deviceName: devName
+              });
+
+              if (retryRes && retryRes.success && retryRes.data) {
+                res = retryRes;
+                pinPart = personalPinPrompt.trim();
+              } else {
+                if (err) {
+                  err.textContent = (retryRes && retryRes.message) ? retryRes.message : "PIN Pribadi salah! Coba lagi.";
+                  err.classList.remove('hidden');
+                }
+                if (btn) { btn.innerHTML = origBtnHtml; btn.disabled = false; }
+                return;
+              }
+            } else {
+              if (err) {
+                err.innerHTML = "Token ini sudah dipersonalisasi di HP 1.<br>Silakan masukkan PIN Pribadi Anda atau gunakan tombol <b>'Hubungkan via Scan QR'</b> di bawah.";
+                err.classList.remove('hidden');
+              }
+              if (btn) { btn.innerHTML = origBtnHtml; btn.disabled = false; }
+              return;
             }
-            if (btn) { btn.innerHTML = origBtnHtml; btn.disabled = false; }
-            return;
           }
 
           if (res.success && res.data) {
             // Lisensi VALID & Berhasil Diaktivasi!
             localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(res.data));
-            if (res.data.pinStatus === 'USING_TOKEN') {
-              globalData.appPin = res.data.token;
-              globalData.ownerPassword = res.data.token;
-              saveStorageData();
+            
+            let finalPin = pinPart || res.data.personalPin || (res.data.pinStatus === 'USING_TOKEN' ? res.data.token : '');
+            if (finalPin) {
+              globalData.appPin = finalPin;
+              globalData.ownerPassword = finalPin;
+            }
+
+            if (res.data.cloudUrl && res.data.cloudUrl.startsWith("http")) {
+              globalData.cloudUrl = res.data.cloudUrl;
+              localStorage.setItem("KEUANGANKU_CLOUD_URL", res.data.cloudUrl);
+              if (typeof autoPullDatabaseFromCloud === 'function') {
+                autoPullDatabaseFromCloud(res.data.cloudUrl);
+              }
+            }
+            saveStorageData();
+            sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
+
+            let remCheck = document.getElementById('bumper-remember-pin');
+            if (remCheck && remCheck.checked && finalPin) {
+              localStorage.setItem("KEUANGANKU_REMEMBER_PIN", "true");
+              localStorage.setItem("KEUANGANKU_SAVED_PIN", finalPin);
             }
 
             // Jika mengaktifkan Akun Demo Iklan dan data transaksi masih kosong, otomatis isi data percontohan estetik
@@ -4042,16 +4149,127 @@
         return;
       }
 
-      // 4. Jika bukan format token, dan lisensi belum pernah diaktifkan
+      // 4. JIKA BUKAN FORMAT TOKEN (PENGGUNA MEMASUKKAN PIN)
+      //    Jika verifikasi lokal gagal, lakukan VERIFIKASI ONLINE KE SERVER MASTER & CLOUD DATABASE
+      if (lic && lic.token) {
+        if (btn) {
+          btn.innerHTML = `<span class="material-symbols-outlined text-sm animate-spin">progress_activity</span> MEMVERIFIKASI PIN...`;
+          btn.disabled = true;
+        }
+
+        try {
+          let devId = getOrCreateDeviceId();
+          let devName = detectDeviceName();
+          let activeCloud = (globalData.cloudUrl && globalData.cloudUrl.startsWith("http")) ? globalData.cloudUrl : (lic.cloudUrl || localStorage.getItem("KEUANGANKU_CLOUD_URL") || "");
+
+          // 4a. Cek PIN ke Server Master Lisensi
+          let res = await callClientLicenseApi({
+            action: 'validate_token',
+            token: lic.token,
+            pin: pinInput,
+            deviceId: devId,
+            deviceName: devName,
+            cloudUrl: activeCloud
+          });
+
+          if (res && res.success && res.data) {
+            // PIN COCOK DENGAN DATA LISENSI SERVER!
+            localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(res.data));
+            localStorage.removeItem('KEUANGANKU_IS_DEMO_MODE');
+            globalData.appPin = pinInput;
+            globalData.ownerPassword = pinInput;
+
+            if (res.data.cloudUrl && res.data.cloudUrl.startsWith("http")) {
+              globalData.cloudUrl = res.data.cloudUrl;
+              localStorage.setItem("KEUANGANKU_CLOUD_URL", res.data.cloudUrl);
+              if (typeof autoPullDatabaseFromCloud === 'function') {
+                autoPullDatabaseFromCloud(res.data.cloudUrl);
+              }
+            }
+            saveStorageData();
+            sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
+
+            let remCheck = document.getElementById('bumper-remember-pin');
+            if (remCheck && remCheck.checked) {
+              localStorage.setItem("KEUANGANKU_REMEMBER_PIN", "true");
+              localStorage.setItem("KEUANGANKU_SAVED_PIN", pinInput);
+            }
+
+            playSuccessSound();
+            showSyncToast("✓ PIN Terverifikasi di Server Master!");
+
+            let splash = document.getElementById('splash-screen');
+            if (splash) { splash.classList.add('opacity-0'); setTimeout(() => splash.classList.add('hidden'), 700); }
+
+            updateSetupLicenseDisplay(res.data);
+            updateTokenSecurityBanner(res.data);
+            updateCloudSyncLockUI(res.data);
+            renderSetupPasswordCard(res.data);
+            return;
+          }
+        } catch(netErr) {
+          console.warn("Online PIN verification note:", netErr);
+        }
+
+        // 4b. Cek PIN langsung ke database Google Sheets Cloud pengguna
+        let activeCloud = (globalData.cloudUrl && globalData.cloudUrl.startsWith("http")) ? globalData.cloudUrl : (lic ? lic.cloudUrl : "") || localStorage.getItem("KEUANGANKU_CLOUD_URL");
+        if (activeCloud && activeCloud.startsWith("http")) {
+          try {
+            let cloudFetch = await fetch(activeCloud + (activeCloud.includes('?') ? '&' : '?') + `_t=${Date.now()}`);
+            let cloudJson = await cloudFetch.json();
+            if (cloudJson && (cloudJson.appPin === pinInput || cloudJson.ownerPassword === pinInput)) {
+              // PIN COCOK DENGAN DATABASE GOOGLE SHEETS PENGGUNA!
+              globalData = cloudJson;
+              localStorage.removeItem('KEUANGANKU_IS_DEMO_MODE');
+              globalData.appPin = pinInput;
+              globalData.ownerPassword = pinInput;
+              globalData.cloudUrl = activeCloud;
+              localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData));
+              localStorage.setItem("KEUANGANKU_CLOUD_URL", activeCloud);
+              sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
+
+              // Sync juga ke master server
+              if (lic && lic.token) {
+                try {
+                  callClientLicenseApi({
+                    action: 'client_change_pin',
+                    token: lic.token,
+                    newPin: pinInput,
+                    deviceId: getOrCreateDeviceId()
+                  });
+                } catch(e) {}
+              }
+
+              let remCheck = document.getElementById('bumper-remember-pin');
+              if (remCheck && remCheck.checked) {
+                localStorage.setItem("KEUANGANKU_REMEMBER_PIN", "true");
+                localStorage.setItem("KEUANGANKU_SAVED_PIN", pinInput);
+              }
+
+              playSuccessSound();
+              showSyncToast("✓ PIN Terverifikasi & Database Dimuat!");
+
+              let splash = document.getElementById('splash-screen');
+              if (splash) { splash.classList.add('opacity-0'); setTimeout(() => splash.classList.add('hidden'), 700); }
+              initApp();
+              return;
+            }
+          } catch(e) {}
+        }
+
+        if (btn) { btn.innerHTML = origBtnHtml; btn.disabled = false; }
+      }
+
+      // 5. Jika perangkat belum memiliki lisensi sama sekali
       if (!lic) {
         if (err) {
-          err.textContent = "Aplikasi membutuhkan Aktivasi Lisensi. Masukkan Kode Token Pembelian Anda (format: PRO-XXXX-XXXX-XXXX).";
+          err.innerHTML = "Perangkat ini belum diaktivasi lisensi.<br>Masukkan <b>Kode Token Pembelian</b> Anda (format: PRO-XXXX-XXXX-XXXX) atau klik <b>'Tautkan via Barcode'</b> di bawah.";
           err.classList.remove('hidden');
         }
         return;
       }
 
-      // 5. Salah PIN reguler
+      // 6. Salah PIN reguler
       if (err) {
         err.textContent = "PIN / Password Salah! Coba lagi.";
         err.classList.remove('hidden');
@@ -4216,8 +4434,19 @@
             let currentOwnerPass = globalData.ownerPassword;
             globalData = cloudData;
             if (!globalData.cloudUrl) globalData.cloudUrl = activeCloudUrl;
-            if (!globalData.appPin && currentPin) globalData.appPin = currentPin;
-            if (!globalData.ownerPassword && currentOwnerPass) globalData.ownerPassword = currentOwnerPass;
+
+            // Pertahankan PIN riil dari Cloud jika ada (bukan default 123)
+            if (cloudData.appPin && String(cloudData.appPin).trim() !== '' && String(cloudData.appPin).trim() !== '123') {
+              globalData.appPin = String(cloudData.appPin).trim();
+            } else if (currentPin && String(currentPin).trim() !== '' && String(currentPin).trim() !== '123') {
+              globalData.appPin = String(currentPin).trim();
+            }
+
+            if (cloudData.ownerPassword && String(cloudData.ownerPassword).trim() !== '' && String(cloudData.ownerPassword).trim() !== '123') {
+              globalData.ownerPassword = String(cloudData.ownerPassword).trim();
+            } else if (currentOwnerPass && String(currentOwnerPass).trim() !== '' && String(currentOwnerPass).trim() !== '123') {
+              globalData.ownerPassword = String(currentOwnerPass).trim();
+            }
 
             localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData));
             
@@ -4472,8 +4701,24 @@
           let activePass = globalData.ownerPassword;
           globalData = data;
           globalData.cloudUrl = url;
-          if (activePin) globalData.appPin = activePin;
-          if (activePass) globalData.ownerPassword = activePass;
+
+          // PENTING: Prioritaskan PIN riil dari Cloud jika ada (jangan tertimpa default 123)
+          if (data.appPin && String(data.appPin).trim() !== '' && String(data.appPin).trim() !== '123') {
+            globalData.appPin = String(data.appPin).trim();
+          } else if (activePin && String(activePin).trim() !== '' && String(activePin).trim() !== '123') {
+            globalData.appPin = String(activePin).trim();
+          } else if (data.appPin) {
+            globalData.appPin = String(data.appPin).trim();
+          }
+
+          if (data.ownerPassword && String(data.ownerPassword).trim() !== '' && String(data.ownerPassword).trim() !== '123') {
+            globalData.ownerPassword = String(data.ownerPassword).trim();
+          } else if (activePass && String(activePass).trim() !== '' && String(activePass).trim() !== '123') {
+            globalData.ownerPassword = String(activePass).trim();
+          } else if (data.ownerPassword) {
+            globalData.ownerPassword = String(data.ownerPassword).trim();
+          }
+
           localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(data)); 
           localStorage.setItem("KEUANGANKU_CLOUD_URL", url);
           initApp();
@@ -4785,8 +5030,8 @@
       }
 
       let demoData = {
-        appPin: globalData.appPin || "123456",
-        ownerPassword: globalData.ownerPassword || "123456",
+        appPin: globalData.appPin || globalData.ownerPassword || "123",
+        ownerPassword: globalData.ownerPassword || globalData.appPin || "123",
         cloudUrl: globalData.cloudUrl || "",
         startingBalance: 15000000,
         enableCalculator: true,
@@ -4924,9 +5169,9 @@
 
       try {
         globalData = JSON.parse(backupStr);
-        localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData));
         localStorage.removeItem('KEUANGANKU_IS_DEMO_MODE');
         localStorage.removeItem('KEUANGANKU_USER_REAL_BACKUP');
+        saveStorageData();
         initApp();
         updateDemoModeUI();
         syncWithCloud(true); // Langsung sambungkan kembali ke Cloud
@@ -5002,6 +5247,18 @@
         document.getElementById('page-setup').classList.remove('hidden'); 
         let ns = document.getElementById('nav-setup'); if(ns) ns.className = "flex flex-col items-center text-primary px-4 py-1 font-bold"; 
         let dns = document.getElementById('dnav-setup'); if(dns) dns.className = "px-4 py-1.5 rounded-xl text-xs font-extrabold bg-primary text-white shadow-sm transition-all flex items-center gap-1.5"; 
+        
+        // Auto-unlock jika pengguna sudah berada di dalam aplikasi (lolos autentikasi PIN di awal atau memiliki lisensi tersimpan)
+        let isPassed = sessionStorage.getItem("KEUANGANKU_PIN_PASSED") === "true";
+        let isSetupUnlocked = sessionStorage.getItem("KEUANGANKU_SETUP_UNLOCKED") === "true";
+        let lic = (typeof getSavedLicense === 'function') ? getSavedLicense() : null;
+        if (isPassed || isSetupUnlocked || lic || isOwnerDevice()) {
+          let lockCard = document.getElementById('setup-lock-card');
+          let unlockContent = document.getElementById('setup-unlocked-content');
+          if (lockCard) lockCard.classList.add('hidden');
+          if (unlockContent) unlockContent.classList.remove('hidden');
+          sessionStorage.setItem("KEUANGANKU_SETUP_UNLOCKED", "true");
+        }
         renderSetupView(); 
       } 
       else if (page === 'kalkulator') { 
@@ -6825,13 +7082,26 @@
     function updateValuedCategoryField(objKey, itemKey, field, val) { if (!globalData[objKey][itemKey]) return; if (['deadline', 'type', 'unit'].includes(field)) globalData[objKey][itemKey][field] = val; else globalData[objKey][itemKey][field] = parseFloat(val) || 0; saveStorageData(); }
     function addRoutinePaymentItem() { let name = prompt("Masukkan nama Pembayaran Rutin baru:"); if (name && name.trim() !== "") { let clean = name.trim(); if (!globalData.routinePayments) globalData.routinePayments = {}; globalData.routinePayments[clean] = { amount: 0, dueDay: 1 }; saveStorageData(); renderSetupView(); } }
     function removeRoutinePaymentItem(key) { delete globalData.routinePayments[key]; saveStorageData(); renderSetupView(); }
-    function changeOwnerPassword() { 
+    async function changeOwnerPassword() { 
       let np = document.getElementById('new-pass-input').value; 
       if (np && np.trim() !== "") { 
         let cleanPass = np.trim();
         globalData.ownerPassword = cleanPass; 
         globalData.appPin = cleanPass;
         saveStorageData(); 
+
+        let lic = getSavedLicense();
+        if (lic && lic.token && typeof callClientLicenseApi === 'function') {
+          try {
+            callClientLicenseApi({
+              action: 'client_change_pin',
+              token: lic.token,
+              newPin: cleanPass,
+              deviceId: getOrCreateDeviceId()
+            });
+          } catch(e) {}
+        }
+
         alert("Password & PIN Akses berhasil diperbarui!"); 
         document.getElementById('new-pass-input').value = ''; 
       } 
@@ -6853,16 +7123,16 @@
       let lic = getSavedLicense();
       let cleanLicToken = (lic && lic.token) ? lic.token.toUpperCase().replace(/[^A-Z0-9]/g, '') : '';
 
-      // 1. Cek kecocokan dengan token lisensi yang sudah aktif di perangkat ini
+      // 1. Cek kecocokan dengan token lisensi yang sudah aktif di perangkat ini (Master Recovery Key)
       if (cleanLicToken && cleanP === cleanLicToken) {
-        if (lic.pinStatus === 'PIN_CHANGED') {
-          alert('Token lisensi ini sudah HANGUS! Masukkan PIN Pribadi yang telah Anda buat di menu Setup.');
-          return;
-        }
-        // Token bawaan sah sebagai kunci masuk Setup awal!
+        // Token pembelian resmi adalah KUNCI MASTER PEMILIK!
+        // Selalu buka akses Setup agar pemilik bisa mengonfigurasi & mereset PIN jika lupa
         document.getElementById('setup-lock-card').classList.add('hidden'); 
         document.getElementById('setup-unlocked-content').classList.remove('hidden'); 
+        sessionStorage.setItem("KEUANGANKU_SETUP_UNLOCKED", "true");
+        sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
         renderSetupView(); 
+        showSyncToast("🔓 Akses Setup Terbuka via Token Lisensi Master!");
         return;
       }
 
@@ -6902,7 +7172,34 @@
               showSyncToast("🎉 Lisensi Berhasil Diaktivasi! Menu Setup terbuka.");
               return;
             } else if (res && res.isBurned) {
-              alert(res.message || "Token ini sudah hangus! Masukkan PIN Pribadi Anda.");
+              let personalPinPrompt = prompt("Token ini telah dipersonalisasi di HP Utama.\n\nMasukkan PIN Pribadi Anda untuk membuka akses Setup:");
+              if (personalPinPrompt && personalPinPrompt.trim() !== '') {
+                let retryRes = await callClientLicenseApi({
+                  action: 'validate_token',
+                  token: p,
+                  pin: personalPinPrompt.trim(),
+                  deviceId: devId,
+                  deviceName: devName
+                });
+                if (retryRes && retryRes.success && retryRes.data) {
+                  localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(retryRes.data));
+                  globalData.appPin = personalPinPrompt.trim();
+                  globalData.ownerPassword = personalPinPrompt.trim();
+                  saveStorageData();
+                  updateSetupLicenseDisplay(retryRes.data);
+                  updateTokenSecurityBanner(retryRes.data);
+                  updateCloudSyncLockUI(retryRes.data);
+                  renderSetupPasswordCard(retryRes.data);
+                  document.getElementById('setup-lock-card').classList.add('hidden'); 
+                  document.getElementById('setup-unlocked-content').classList.remove('hidden'); 
+                  renderSetupView(); 
+                  showSyncToast("🎉 Lisensi Terverifikasi! Menu Setup terbuka.");
+                  return;
+                } else {
+                  alert((retryRes && retryRes.message) ? retryRes.message : "PIN Pribadi salah!");
+                  return;
+                }
+              }
               return;
             } else {
               alert((res && res.message) ? res.message : "Token lisensi tidak valid.");
@@ -6925,23 +7222,51 @@
         if (cleanP === cleanLicToken || p === lic.token) {
           document.getElementById('setup-lock-card').classList.add('hidden'); 
           document.getElementById('setup-unlocked-content').classList.remove('hidden'); 
+          sessionStorage.setItem("KEUANGANKU_SETUP_UNLOCKED", "true");
           renderSetupView(); 
           return;
         }
       }
 
-      // Jika memasukkan PIN Pribadi yang sudah diset
+      // Jika memasukkan PIN Pribadi yang sudah diset secara lokal
       if ((currentPass && p === currentPass) || (currentPin && p === currentPin)) {
         document.getElementById('setup-lock-card').classList.add('hidden'); 
         document.getElementById('setup-unlocked-content').classList.remove('hidden'); 
+        sessionStorage.setItem("KEUANGANKU_SETUP_UNLOCKED", "true");
         renderSetupView(); 
         return;
+      }
+
+      // Verifikasi PIN online jika lokal belum tersinkron
+      if (lic && lic.token) {
+        try {
+          let devId = getOrCreateDeviceId();
+          let devName = detectDeviceName();
+          let res = await callClientLicenseApi({
+            action: 'validate_token',
+            token: lic.token,
+            pin: p,
+            deviceId: devId,
+            deviceName: devName
+          });
+          if (res && res.success) {
+            globalData.appPin = p;
+            globalData.ownerPassword = p;
+            saveStorageData();
+            document.getElementById('setup-lock-card').classList.add('hidden'); 
+            document.getElementById('setup-unlocked-content').classList.remove('hidden'); 
+            sessionStorage.setItem("KEUANGANKU_SETUP_UNLOCKED", "true");
+            renderSetupView(); 
+            return;
+          }
+        } catch(e) {}
       }
 
       // 4. Default fallback 123 HANYA jika belum ada lisensi sama sekali
       if (!lic && (p === "123" || p === currentPin)) {
         document.getElementById('setup-lock-card').classList.add('hidden'); 
         document.getElementById('setup-unlocked-content').classList.remove('hidden'); 
+        sessionStorage.setItem("KEUANGANKU_SETUP_UNLOCKED", "true");
         renderSetupView(); 
         return;
       }
