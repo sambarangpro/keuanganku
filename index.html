@@ -848,10 +848,15 @@
       <div class="w-10 h-10 rounded-2xl bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 flex items-center justify-center shrink-0">
         <span class="material-symbols-outlined text-xl">upgrade</span>
       </div>
-      <div class="flex-1 space-y-1">
-        <div class="flex items-center gap-2">
-          <h4 class="font-extrabold text-sm text-white">Versi Baru Tersedia!</h4>
-          <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-cyan-400 text-slate-950">UPDATE</span>
+      <div class="flex-1 space-y-1 min-w-0">
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <h4 class="font-extrabold text-sm text-white">Versi Baru Tersedia!</h4>
+            <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-cyan-400 text-slate-950">UPDATE</span>
+          </div>
+          <button type="button" onclick="dismissAppUpdateBanner()" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white flex items-center justify-center transition-all cursor-pointer" title="Tutup Notifikasi">
+            <span class="material-symbols-outlined text-sm">close</span>
+          </button>
         </div>
         <p class="text-xs text-slate-300 leading-relaxed">
           Pembaruan fitur & perbaikan sistem baru telah siap dipasang di aplikasi Anda.
@@ -2511,29 +2516,46 @@
       let banner = document.getElementById('token-security-warning-banner');
       if (!banner) return;
 
+      if (sessionStorage.getItem('KEUANGANKU_TOKEN_BANNER_DISMISSED') === 'true') {
+        banner.classList.add('hidden');
+        banner.innerHTML = '';
+        return;
+      }
+
       if (lic && lic.pinStatus === 'USING_TOKEN') {
         banner.className = "bg-gradient-to-r from-amber-500/15 via-amber-600/10 to-orange-500/15 border border-amber-500/40 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-amber-300 shadow-sm";
         banner.innerHTML = `
-          <div class="flex items-start sm:items-center gap-3">
+          <div class="flex items-start sm:items-center gap-3 min-w-0">
             <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center shrink-0">
               <span class="material-symbols-outlined text-amber-400 text-2xl">shield_lock</span>
             </div>
-            <div class="text-xs">
+            <div class="text-xs min-w-0">
               <p class="font-bold text-amber-200 text-sm">Mode Token Pembelian (Terkunci 1 Perangkat)</p>
               <p class="text-[11px] text-amber-300/80 mt-0.5 leading-relaxed">
                 Aplikasi saat ini menggunakan Token Bawaan sebagai password. <b>Fitur Sinkronisasi Cloud terkunci</b>. Segera buat <b>PIN Pribadi</b> Anda di menu Setup untuk menghanguskan token dan membuka fitur sinkronisasi multi-perangkat!
               </p>
             </div>
           </div>
-          <button onclick="navTo('setup'); document.getElementById('setup-pass-section')?.scrollIntoView({behavior:'smooth'});" class="px-3.5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs rounded-xl whitespace-nowrap shadow-md active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0">
-            <span class="material-symbols-outlined text-sm">local_fire_department</span> BUAT PIN PRIBADI
-          </button>
+          <div class="flex items-center gap-2 shrink-0">
+            <button onclick="navTo('setup'); document.getElementById('setup-pass-section')?.scrollIntoView({behavior:'smooth'});" class="px-3.5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs rounded-xl whitespace-nowrap shadow-md active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+              <span class="material-symbols-outlined text-sm">local_fire_department</span> BUAT PIN PRIBADI
+            </button>
+            <button type="button" onclick="dismissTokenWarningBanner()" class="w-8 h-8 rounded-xl bg-amber-500/20 hover:bg-amber-500/40 text-amber-200 flex items-center justify-center transition-all cursor-pointer" title="Tutup Notifikasi">
+              <span class="material-symbols-outlined text-base">close</span>
+            </button>
+          </div>
         `;
         banner.classList.remove('hidden');
       } else {
         banner.classList.add('hidden');
         banner.innerHTML = '';
       }
+    }
+
+    function dismissTokenWarningBanner() {
+      sessionStorage.setItem('KEUANGANKU_TOKEN_BANNER_DISMISSED', 'true');
+      let banner = document.getElementById('token-security-warning-banner');
+      if (banner) banner.classList.add('hidden');
     }
 
     function updateCloudSyncLockUI(lic) {
@@ -5574,6 +5596,12 @@
       html2pdf().set(opt).from(element).save();
     }
     
+    function dismissDueAlert(alertKey) {
+      sessionStorage.setItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey, 'true');
+      checkDueDateAlerts();
+      checkReceivableAlerts();
+    }
+
     function checkDueDateAlerts() {
       let container = document.getElementById('due-date-alert-container');
       if (!container) return;
@@ -5600,6 +5628,9 @@
       // 1. CEK UTANG & CICILAN (globalData.debtData)
       if (globalData.debtData && Object.keys(globalData.debtData).length > 0) {
         Object.keys(globalData.debtData).forEach(k => {
+          let alertKey = 'debt_' + k;
+          if (sessionStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey) === 'true') return;
+
           let item = globalData.debtData[k];
           let total = parseFloat(item.total) || 0;
           let paid = parseFloat(item.paid) || 0;
@@ -5637,21 +5668,26 @@
           if (currentDay === dueDay) {
             // HARI INI JATUH TEMPO
             alertsHtml.push(`
-              <div class="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between border-2 border-red-800 animate-pulse">
-                <div class="flex items-center gap-3">
+              <div class="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between gap-3 border-2 border-red-800 animate-pulse">
+                <div class="flex items-center gap-3 min-w-0">
                   <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
                     <span class="material-symbols-outlined text-2xl">notifications_active</span>
                   </div>
-                  <div>
-                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide">🚨 JATUH TEMPO HARI INI: BAYAR ${catLabel.toUpperCase()} - ${k}</h4>
+                  <div class="min-w-0">
+                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide truncate">🚨 JATUH TEMPO HARI INI: BAYAR ${catLabel.toUpperCase()} - ${k}</h4>
                     <p class="text-[11px] sm:text-xs text-red-100 font-medium">
                       Nominal: <b>${formatRp(payAmount)}</b> | Sisa Total Utang: <b>${formatRp(unpaid)}</b>
                     </p>
                   </div>
                 </div>
-                <button onclick="quickPayEntry('${escapeForAttr(k)}', 'debt', ${payAmount})" class="shrink-0 px-4 py-2 bg-white text-red-700 font-extrabold rounded-xl text-xs shadow-md hover:bg-red-50 active:scale-95 transition-all cursor-pointer">
-                  Bayar Sekarang
-                </button>
+                <div class="flex items-center gap-2 shrink-0">
+                  <button onclick="quickPayEntry('${escapeForAttr(k)}', 'debt', ${payAmount})" class="px-3.5 sm:px-4 py-2 bg-white text-red-700 font-extrabold rounded-xl text-xs shadow-md hover:bg-red-50 active:scale-95 transition-all cursor-pointer">
+                    Bayar Sekarang
+                  </button>
+                  <button type="button" onclick="dismissDueAlert('${alertKey}')" class="w-8 h-8 rounded-xl bg-white/20 hover:bg-white/35 active:scale-90 text-white flex items-center justify-center transition-all cursor-pointer" title="Tutup Notifikasi">
+                    <span class="material-symbols-outlined text-base">close</span>
+                  </button>
+                </div>
               </div>
             `);
             sendBrowserNotification(
@@ -5666,21 +5702,26 @@
             // H-3 sampai H-1
             let diff = dueDay - currentDay;
             alertsHtml.push(`
-              <div class="bg-gradient-to-r from-amber-500 to-orange-600 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between border-2 border-amber-600">
-                <div class="flex items-center gap-3">
+              <div class="bg-gradient-to-r from-amber-500 to-orange-600 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between gap-3 border-2 border-amber-600">
+                <div class="flex items-center gap-3 min-w-0">
                   <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
                     <span class="material-symbols-outlined text-2xl">warning</span>
                   </div>
-                  <div>
-                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide">⚠️ PENGINGAT ${catLabel.toUpperCase()}: ${k} (Sisa ${diff} Hari Lagi)</h4>
+                  <div class="min-w-0">
+                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide truncate">⚠️ PENGINGAT ${catLabel.toUpperCase()}: ${k} (Sisa ${diff} Hari Lagi)</h4>
                     <p class="text-[11px] sm:text-xs text-amber-100 font-medium">
                       Jatuh tempo tgl <b>${dueDay}</b> | Nominal: <b>${formatRp(payAmount)}</b> | Sisa Utang: <b>${formatRp(unpaid)}</b>
                     </p>
                   </div>
                 </div>
-                <button onclick="quickPayEntry('${escapeForAttr(k)}', 'debt', ${payAmount})" class="shrink-0 px-4 py-2 bg-white text-amber-800 font-extrabold rounded-xl text-xs shadow-md hover:bg-amber-50 active:scale-95 transition-all cursor-pointer">
-                  Bayar Lebih Awal
-                </button>
+                <div class="flex items-center gap-2 shrink-0">
+                  <button onclick="quickPayEntry('${escapeForAttr(k)}', 'debt', ${payAmount})" class="px-3.5 sm:px-4 py-2 bg-white text-amber-800 font-extrabold rounded-xl text-xs shadow-md hover:bg-amber-50 active:scale-95 transition-all cursor-pointer">
+                    Bayar Lebih Awal
+                  </button>
+                  <button type="button" onclick="dismissDueAlert('${alertKey}')" class="w-8 h-8 rounded-xl bg-white/20 hover:bg-white/35 active:scale-90 text-white flex items-center justify-center transition-all cursor-pointer" title="Tutup Notifikasi">
+                    <span class="material-symbols-outlined text-base">close</span>
+                  </button>
+                </div>
               </div>
             `);
             sendBrowserNotification(
@@ -5695,21 +5736,26 @@
             // TERLAMBAT / SUDAH LEWAT JATUH TEMPO
             let lateDays = currentDay - dueDay;
             alertsHtml.push(`
-              <div class="bg-gradient-to-r from-rose-900 via-red-900 to-rose-950 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between border-2 border-rose-600">
-                <div class="flex items-center gap-3">
+              <div class="bg-gradient-to-r from-rose-900 via-red-900 to-rose-950 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between gap-3 border-2 border-rose-600">
+                <div class="flex items-center gap-3 min-w-0">
                   <div class="w-10 h-10 rounded-xl bg-rose-800/80 text-rose-300 flex items-center justify-center shrink-0">
                     <span class="material-symbols-outlined text-2xl animate-bounce">error</span>
                   </div>
-                  <div>
-                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide text-rose-200">‼️ LEWAT JATUH TEMPO: ${k} (Terlambat ${lateDays} Hari)</h4>
+                  <div class="min-w-0">
+                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide text-rose-200 truncate">‼️ LEWAT JATUH TEMPO: ${k} (Terlambat ${lateDays} Hari)</h4>
                     <p class="text-[11px] sm:text-xs text-rose-100 font-medium">
                       Cicilan bulan ini belum dibayar sejak tgl <b>${dueDay}</b> | Nominal: <b>${formatRp(payAmount)}</b>
                     </p>
                   </div>
                 </div>
-                <button onclick="quickPayEntry('${escapeForAttr(k)}', 'debt', ${payAmount})" class="shrink-0 px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white font-extrabold rounded-xl text-xs shadow-md border border-rose-400 active:scale-95 transition-all cursor-pointer">
-                  Bayar Segera
-                </button>
+                <div class="flex items-center gap-2 shrink-0">
+                  <button onclick="quickPayEntry('${escapeForAttr(k)}', 'debt', ${payAmount})" class="px-3.5 sm:px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white font-extrabold rounded-xl text-xs shadow-md border border-rose-400 active:scale-95 transition-all cursor-pointer">
+                    Bayar Segera
+                  </button>
+                  <button type="button" onclick="dismissDueAlert('${alertKey}')" class="w-8 h-8 rounded-xl bg-white/20 hover:bg-white/35 active:scale-90 text-white flex items-center justify-center transition-all cursor-pointer" title="Tutup Notifikasi">
+                    <span class="material-symbols-outlined text-base">close</span>
+                  </button>
+                </div>
               </div>
             `);
             sendBrowserNotification(
@@ -5727,6 +5773,9 @@
       // 2. CEK TAGIHAN RUTIN (globalData.routinePayments)
       if (globalData.routinePayments && Object.keys(globalData.routinePayments).length > 0) {
         Object.keys(globalData.routinePayments).forEach(itemKey => {
+          let alertKey = 'routine_' + itemKey;
+          if (sessionStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey) === 'true') return;
+
           let item = globalData.routinePayments[itemKey];
           let dueDay = parseInt(item.dueDay, 10) || 1;
           let amt = parseFloat(item.amount) || 0;
@@ -5747,21 +5796,26 @@
 
           if (currentDay === dueDay) {
             alertsHtml.push(`
-              <div class="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between border-2 border-red-800 animate-pulse">
-                <div class="flex items-center gap-3">
+              <div class="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between gap-3 border-2 border-red-800 animate-pulse">
+                <div class="flex items-center gap-3 min-w-0">
                   <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
                     <span class="material-symbols-outlined text-2xl">receipt_long</span>
                   </div>
-                  <div>
-                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide">🚨 JATUH TEMPO HARI INI: BAYAR TAGIHAN ${itemKey}</h4>
+                  <div class="min-w-0">
+                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide truncate">🚨 JATUH TEMPO HARI INI: BAYAR TAGIHAN ${itemKey}</h4>
                     <p class="text-[11px] sm:text-xs text-red-100 font-medium">
                       Nominal: <b>${formatRp(amt)}</b> | Jatuh tempo hari ini (Tgl ${dueDay})
                     </p>
                   </div>
                 </div>
-                <button onclick="quickPayEntry('${escapeForAttr(itemKey)}', 'routine', ${amt})" class="shrink-0 px-4 py-2 bg-white text-red-700 font-extrabold rounded-xl text-xs shadow-md hover:bg-red-50 active:scale-95 transition-all cursor-pointer">
-                  Bayar Sekarang
-                </button>
+                <div class="flex items-center gap-2 shrink-0">
+                  <button onclick="quickPayEntry('${escapeForAttr(itemKey)}', 'routine', ${amt})" class="px-3.5 sm:px-4 py-2 bg-white text-red-700 font-extrabold rounded-xl text-xs shadow-md hover:bg-red-50 active:scale-95 transition-all cursor-pointer">
+                    Bayar Sekarang
+                  </button>
+                  <button type="button" onclick="dismissDueAlert('${alertKey}')" class="w-8 h-8 rounded-xl bg-white/20 hover:bg-white/35 active:scale-90 text-white flex items-center justify-center transition-all cursor-pointer" title="Tutup Notifikasi">
+                    <span class="material-symbols-outlined text-base">close</span>
+                  </button>
+                </div>
               </div>
             `);
             sendBrowserNotification(
@@ -5775,21 +5829,26 @@
           } else if (dueDay > currentDay && (dueDay - currentDay) <= 3) {
             let diff = dueDay - currentDay;
             alertsHtml.push(`
-              <div class="bg-gradient-to-r from-amber-500 to-orange-600 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between border-2 border-amber-600">
-                <div class="flex items-center gap-3">
+              <div class="bg-gradient-to-r from-amber-500 to-orange-600 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between gap-3 border-2 border-amber-600">
+                <div class="flex items-center gap-3 min-w-0">
                   <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
                     <span class="material-symbols-outlined text-2xl">warning</span>
                   </div>
-                  <div>
-                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide">⚠️ PENGINGAT TAGIHAN: ${itemKey} (Sisa ${diff} Hari Lagi)</h4>
+                  <div class="min-w-0">
+                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide truncate">⚠️ PENGINGAT TAGIHAN: ${itemKey} (Sisa ${diff} Hari Lagi)</h4>
                     <p class="text-[11px] sm:text-xs text-amber-100 font-medium">
                       Jatuh tempo tgl <b>${dueDay}</b> | Nominal: <b>${formatRp(amt)}</b>
                     </p>
                   </div>
                 </div>
-                <button onclick="quickPayEntry('${escapeForAttr(itemKey)}', 'routine', ${amt})" class="shrink-0 px-4 py-2 bg-white text-amber-800 font-extrabold rounded-xl text-xs shadow-md hover:bg-amber-50 active:scale-95 transition-all cursor-pointer">
-                  Bayar Sekarang
-                </button>
+                <div class="flex items-center gap-2 shrink-0">
+                  <button onclick="quickPayEntry('${escapeForAttr(itemKey)}', 'routine', ${amt})" class="px-3.5 sm:px-4 py-2 bg-white text-amber-800 font-extrabold rounded-xl text-xs shadow-md hover:bg-amber-50 active:scale-95 transition-all cursor-pointer">
+                    Bayar Sekarang
+                  </button>
+                  <button type="button" onclick="dismissDueAlert('${alertKey}')" class="w-8 h-8 rounded-xl bg-white/20 hover:bg-white/35 active:scale-90 text-white flex items-center justify-center transition-all cursor-pointer" title="Tutup Notifikasi">
+                    <span class="material-symbols-outlined text-base">close</span>
+                  </button>
+                </div>
               </div>
             `);
             sendBrowserNotification(
@@ -5803,21 +5862,26 @@
           } else if (currentDay > dueDay) {
             let lateDays = currentDay - dueDay;
             alertsHtml.push(`
-              <div class="bg-gradient-to-r from-rose-900 via-red-900 to-rose-950 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between border-2 border-rose-600">
-                <div class="flex items-center gap-3">
+              <div class="bg-gradient-to-r from-rose-900 via-red-900 to-rose-950 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between gap-3 border-2 border-rose-600">
+                <div class="flex items-center gap-3 min-w-0">
                   <div class="w-10 h-10 rounded-xl bg-rose-800/80 text-rose-300 flex items-center justify-center shrink-0">
                     <span class="material-symbols-outlined text-2xl animate-bounce">error</span>
                   </div>
-                  <div>
-                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide text-rose-200">‼️ LEWAT JATUH TEMPO: TAGIHAN ${itemKey} (Terlambat ${lateDays} Hari)</h4>
+                  <div class="min-w-0">
+                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide text-rose-200 truncate">‼️ LEWAT JATUH TEMPO: TAGIHAN ${itemKey} (Terlambat ${lateDays} Hari)</h4>
                     <p class="text-[11px] sm:text-xs text-rose-100 font-medium">
                       Tagihan belum dibayar sejak tgl <b>${dueDay}</b> | Nominal: <b>${formatRp(amt)}</b>
                     </p>
                   </div>
                 </div>
-                <button onclick="quickPayEntry('${escapeForAttr(itemKey)}', 'routine', ${amt})" class="shrink-0 px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white font-extrabold rounded-xl text-xs shadow-md border border-rose-400 active:scale-95 transition-all cursor-pointer">
-                  Bayar Segera
-                </button>
+                <div class="flex items-center gap-2 shrink-0">
+                  <button onclick="quickPayEntry('${escapeForAttr(itemKey)}', 'routine', ${amt})" class="px-3.5 sm:px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white font-extrabold rounded-xl text-xs shadow-md border border-rose-400 active:scale-95 transition-all cursor-pointer">
+                    Bayar Segera
+                  </button>
+                  <button type="button" onclick="dismissDueAlert('${alertKey}')" class="w-8 h-8 rounded-xl bg-white/20 hover:bg-white/35 active:scale-90 text-white flex items-center justify-center transition-all cursor-pointer" title="Tutup Notifikasi">
+                    <span class="material-symbols-outlined text-base">close</span>
+                  </button>
+                </div>
               </div>
             `);
             sendBrowserNotification(
@@ -5848,6 +5912,9 @@
       let alertsHtml = [];
 
       Object.keys(globalData.receivablesData).forEach(k => {
+        let alertKey = 'rec_' + k;
+        if (sessionStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey) === 'true') return;
+
         let item = globalData.receivablesData[k];
         let total = parseFloat(item.total) || 0;
         let paid = parseFloat(item.paid) || 0;
@@ -5871,21 +5938,26 @@
 
           if (diffDays === 0) {
             alertsHtml.push(`
-              <div class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between border-2 border-emerald-800 animate-pulse">
-                <div class="flex items-center gap-3">
+              <div class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between gap-3 border-2 border-emerald-800 animate-pulse">
+                <div class="flex items-center gap-3 min-w-0">
                   <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
                     <span class="material-symbols-outlined text-2xl">notification_important</span>
                   </div>
-                  <div>
-                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide">🚨 JATUH TEMPO PENAGIHAN HARI INI: ${k}</h4>
+                  <div class="min-w-0">
+                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide truncate">🚨 JATUH TEMPO PENAGIHAN HARI INI: ${k}</h4>
                     <p class="text-[11px] sm:text-xs text-emerald-100 font-medium">
                       Sisa Piutang: <b>${formatRp(remaining)}</b> | Deadline Hari Ini (${item.deadline})
                     </p>
                   </div>
                 </div>
-                <button onclick="quickPayEntry('${escapeForAttr(k)}', 'receivable', ${remaining})" class="shrink-0 px-4 py-2 bg-white text-emerald-800 font-extrabold rounded-xl text-xs shadow-md hover:bg-emerald-50 active:scale-95 transition-all cursor-pointer">
-                  Catat Pelunasan
-                </button>
+                <div class="flex items-center gap-2 shrink-0">
+                  <button onclick="quickPayEntry('${escapeForAttr(k)}', 'receivable', ${remaining})" class="px-3.5 sm:px-4 py-2 bg-white text-emerald-800 font-extrabold rounded-xl text-xs shadow-md hover:bg-emerald-50 active:scale-95 transition-all cursor-pointer">
+                    Catat Pelunasan
+                  </button>
+                  <button type="button" onclick="dismissDueAlert('${alertKey}')" class="w-8 h-8 rounded-xl bg-white/20 hover:bg-white/35 active:scale-90 text-white flex items-center justify-center transition-all cursor-pointer" title="Tutup Notifikasi">
+                    <span class="material-symbols-outlined text-base">close</span>
+                  </button>
+                </div>
               </div>
             `);
             sendBrowserNotification(
@@ -5898,21 +5970,26 @@
             );
           } else if (diffDays > 0 && diffDays <= 3) {
             alertsHtml.push(`
-              <div class="bg-gradient-to-r from-teal-600 to-cyan-700 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between border-2 border-teal-800">
-                <div class="flex items-center gap-3">
+              <div class="bg-gradient-to-r from-teal-600 to-cyan-700 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between gap-3 border-2 border-teal-800">
+                <div class="flex items-center gap-3 min-w-0">
                   <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
                     <span class="material-symbols-outlined text-2xl">schedule</span>
                   </div>
-                  <div>
-                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide">⏰ JATUH TEMPO PENAGIHAN: ${k} (Sisa ${diffDays} Hari Lagi)</h4>
+                  <div class="min-w-0">
+                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide truncate">⏰ JATUH TEMPO PENAGIHAN: ${k} (Sisa ${diffDays} Hari Lagi)</h4>
                     <p class="text-[11px] sm:text-xs text-teal-100 font-medium">
                       Sisa Piutang: <b>${formatRp(remaining)}</b> | Deadline: ${item.deadline}
                     </p>
                   </div>
                 </div>
-                <button onclick="quickPayEntry('${escapeForAttr(k)}', 'receivable', ${remaining})" class="shrink-0 px-4 py-2 bg-white text-teal-900 font-extrabold rounded-xl text-xs shadow-md hover:bg-teal-50 active:scale-95 transition-all cursor-pointer">
-                  Catat Pelunasan
-                </button>
+                <div class="flex items-center gap-2 shrink-0">
+                  <button onclick="quickPayEntry('${escapeForAttr(k)}', 'receivable', ${remaining})" class="px-3.5 sm:px-4 py-2 bg-white text-teal-900 font-extrabold rounded-xl text-xs shadow-md hover:bg-teal-50 active:scale-95 transition-all cursor-pointer">
+                    Catat Pelunasan
+                  </button>
+                  <button type="button" onclick="dismissDueAlert('${alertKey}')" class="w-8 h-8 rounded-xl bg-white/20 hover:bg-white/35 active:scale-90 text-white flex items-center justify-center transition-all cursor-pointer" title="Tutup Notifikasi">
+                    <span class="material-symbols-outlined text-base">close</span>
+                  </button>
+                </div>
               </div>
             `);
             sendBrowserNotification(
@@ -5926,21 +6003,26 @@
           } else if (diffDays < 0) {
             let lateDays = Math.abs(diffDays);
             alertsHtml.push(`
-              <div class="bg-gradient-to-r from-purple-900 to-indigo-950 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between border-2 border-purple-700">
-                <div class="flex items-center gap-3">
+              <div class="bg-gradient-to-r from-purple-900 to-indigo-950 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between gap-3 border-2 border-purple-700">
+                <div class="flex items-center gap-3 min-w-0">
                   <div class="w-10 h-10 rounded-xl bg-purple-800 text-purple-300 flex items-center justify-center shrink-0">
                     <span class="material-symbols-outlined text-2xl animate-bounce">alarm_on</span>
                   </div>
-                  <div>
-                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide text-purple-200">‼️ PENAGIHAN LEWAT DEADLINE: ${k} (Terlewat ${lateDays} Hari)</h4>
+                  <div class="min-w-0">
+                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide text-purple-200 truncate">‼️ PENAGIHAN LEWAT DEADLINE: ${k} (Terlewat ${lateDays} Hari)</h4>
                     <p class="text-[11px] sm:text-xs text-purple-100 font-medium">
                       Sisa Piutang: <b>${formatRp(remaining)}</b> | Deadline: ${item.deadline}
                     </p>
                   </div>
                 </div>
-                <button onclick="quickPayEntry('${escapeForAttr(k)}', 'receivable', ${remaining})" class="shrink-0 px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-extrabold rounded-xl text-xs shadow-md border border-purple-400 active:scale-95 transition-all cursor-pointer">
-                  Catat Pelunasan
-                </button>
+                <div class="flex items-center gap-2 shrink-0">
+                  <button onclick="quickPayEntry('${escapeForAttr(k)}', 'receivable', ${remaining})" class="px-3.5 sm:px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-extrabold rounded-xl text-xs shadow-md border border-purple-400 active:scale-95 transition-all cursor-pointer">
+                    Catat Pelunasan
+                  </button>
+                  <button type="button" onclick="dismissDueAlert('${alertKey}')" class="w-8 h-8 rounded-xl bg-white/20 hover:bg-white/35 active:scale-90 text-white flex items-center justify-center transition-all cursor-pointer" title="Tutup Notifikasi">
+                    <span class="material-symbols-outlined text-base">close</span>
+                  </button>
+                </div>
               </div>
             `);
             sendBrowserNotification(
