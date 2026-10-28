@@ -1,4 +1,4 @@
-const CACHE_NAME = 'keuanganku-pwa-v0.3';
+const CACHE_NAME = 'keuanganku-pwa-v0.4';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -31,6 +31,23 @@ self.addEventListener('message', (event) => {
   if (event.data && event.data.action === 'skipWaiting') {
     self.skipWaiting();
   }
+});
+
+// Notification Click Event (Buka/fokus ke aplikasi saat notifikasi ditekan)
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow('./index.html');
+      }
+    })
+  );
 });
 
 // Activate Event

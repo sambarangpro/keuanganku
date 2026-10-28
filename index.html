@@ -881,8 +881,11 @@
       <!-- BANNER PERINGATAN MASIH MENGGUNAKAN TOKEN BAWAAN (TERKUNCI 1 DEVICE) -->
       <div id="token-security-warning-banner" class="hidden"></div>
 
-      <div id="due-date-alert-container"></div>
-      <div id="receivable-alert-container"></div>
+      <!-- BANNER IZIN NOTIFIKASI PENGINGAT (MUNCUL JIKA BELUM DIAKTIFKAN) -->
+      <div id="notif-permission-banner" class="hidden"></div>
+
+      <div id="due-date-alert-container" class="space-y-3"></div>
+      <div id="receivable-alert-container" class="space-y-3"></div>
 
       <!-- TOP HERO ROW: 2 KOLOM SEIMBANG PADA LAYAR LEBAR / DESKTOP -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 items-stretch">
@@ -1525,6 +1528,35 @@
                   </button>
                 </div>
                 <div id="update-check-status-text" class="hidden text-[11px] text-center font-medium pt-1"></div>
+              </section>
+
+              <!-- FITUR NOTIFIKASI PENGINGAT PERANGKAT (SYSTEM PUSH NOTIFICATIONS) -->
+              <section class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 dark:from-slate-900 dark:to-slate-900 dark:border-amber-900/60 rounded-2xl p-5 sm:p-6 shadow-sm space-y-3">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                  <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-amber-600 dark:text-amber-400 text-xl">notifications_active</span>
+                    <h2 class="font-headline-md text-headline-md font-bold text-on-surface">Notifikasi Pengingat Perangkat</h2>
+                  </div>
+                  <span id="setup-notif-status-badge" class="px-2.5 py-0.5 text-[10px] font-extrabold rounded-full border bg-amber-100 text-amber-700 border-amber-300">
+                    MEMUAT STATUS...
+                  </span>
+                </div>
+                <p class="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
+                  Dapatkan notifikasi pengingat otomatis di layar & bilah status HP/Laptop saat tanggal jatuh tempo pembayaran cicilan, utang, atau tagihan rutin tiba agar tidak terlewat.
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                  <button id="btn-toggle-notif-perm" onclick="requestNotificationPermissionInteractive()" class="py-3 px-4 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow-md flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
+                    <span class="material-symbols-outlined text-base">notifications</span>
+                    <span id="btn-toggle-notif-label">Aktifkan Notifikasi</span>
+                  </button>
+                  <button onclick="testSystemNotification()" class="py-3 px-4 bg-white dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-slate-700 border border-amber-300 dark:border-amber-900/60 text-amber-700 dark:text-amber-400 font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer" title="Kirim notifikasi uji coba ke perangkat ini">
+                    <span class="material-symbols-outlined text-base">send_to_mobile</span>
+                    <span>Tes Notifikasi Perangkat</span>
+                  </button>
+                </div>
+                <div id="setup-notif-hint" class="text-[10px] text-gray-500 pt-1">
+                  *Pastikan izin notifikasi diizinkan pada pengaturan browser/sistem perangkat Anda.
+                </div>
               </section>
 
               <!-- FITUR EKSKLUSIF PEMILIK (HANYA MUNCUL JIKA TERHUBUNG KE CLOUD PRIBADI) -->
@@ -3765,7 +3797,194 @@
       }
     }, 7000);
 
-    function requestNotificationPermission() { if ("Notification" in window && Notification.permission !== "granted") Notification.requestPermission(); }
+    // === SISTEM NOTIFIKASI PENGINGAT PERANGKAT (DEVICE NOTIFICATIONS) ===
+    function checkNotifPermissionBanner() {
+      let banner = document.getElementById('notif-permission-banner');
+      if (!banner) return;
+      if (!("Notification" in window)) {
+        banner.classList.add('hidden');
+        return;
+      }
+      if (Notification.permission === 'granted' || Notification.permission === 'denied' || sessionStorage.getItem('KEUANGANKU_NOTIF_BANNER_DISMISSED') === 'true') {
+        banner.classList.add('hidden');
+        return;
+      }
+      banner.innerHTML = `
+        <div class="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/10 border border-amber-500/30 rounded-2xl p-4 flex items-center justify-between gap-3 text-xs shadow-sm">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-2xl">notifications_active</span>
+            </div>
+            <div>
+              <p class="font-bold text-on-surface text-sm">Aktifkan Notifikasi Pengingat Perangkat</p>
+              <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">Dapatkan pemberitahuan otomatis di layar HP/PC saat jatuh tempo cicilan, utang, atau tagihan tiba.</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button onclick="requestNotificationPermissionInteractive()" class="px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-xs shadow-md active:scale-95 transition-all cursor-pointer flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-sm">check_circle</span>
+              <span>Aktifkan</span>
+            </button>
+            <button onclick="dismissNotifBanner()" class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer" title="Nanti Saja">
+              <span class="material-symbols-outlined text-base">close</span>
+            </button>
+          </div>
+        </div>
+      `;
+      banner.classList.remove('hidden');
+    }
+
+    function dismissNotifBanner() {
+      sessionStorage.setItem('KEUANGANKU_NOTIF_BANNER_DISMISSED', 'true');
+      let banner = document.getElementById('notif-permission-banner');
+      if (banner) banner.classList.add('hidden');
+    }
+
+    function updateNotifStatusUI() {
+      let badge = document.getElementById('setup-notif-status-badge');
+      let btn = document.getElementById('btn-toggle-notif-perm');
+      let btnLabel = document.getElementById('btn-toggle-notif-label');
+      let hint = document.getElementById('setup-notif-hint');
+      if (!badge) return;
+
+      if (!("Notification" in window)) {
+        badge.className = "px-2.5 py-0.5 text-[10px] font-extrabold rounded-full border bg-gray-100 text-gray-500 border-gray-300";
+        badge.textContent = "TIDAK DIDUKUNG";
+        if (btn) btn.disabled = true;
+        if (btnLabel) btnLabel.textContent = "Tidak Didukung Browser";
+        if (hint) hint.textContent = "*Browser ini tidak mendukung Web Push Notification.";
+        return;
+      }
+
+      let perm = Notification.permission;
+      if (perm === 'granted') {
+        badge.className = "px-2.5 py-0.5 text-[10px] font-extrabold rounded-full border bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300 border-green-300 dark:border-green-800";
+        badge.innerHTML = '<span class="inline-block w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse mr-1"></span> NOTIFIKASI AKTIF';
+        if (btn) {
+          btn.className = "py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer";
+        }
+        if (btnLabel) btnLabel.textContent = "Izin Aktif (Kirim Tes)";
+        if (hint) hint.textContent = "✓ Notifikasi pengingat jatuh tempo aktif. Pemberitahuan akan muncul otomatis di layar HP/PC Anda.";
+      } else if (perm === 'denied') {
+        badge.className = "px-2.5 py-0.5 text-[10px] font-extrabold rounded-full border bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 border-rose-300 dark:border-rose-800";
+        badge.textContent = "DIBLOKIR / DITOLAK";
+        if (btnLabel) btnLabel.textContent = "Buka Izin di Pengaturan";
+        if (hint) hint.textContent = "⚠️ Izin diblokir browser. Buka Setelan Situs / Pengaturan Browser -> Notifikasi -> Izinkan.";
+      } else {
+        badge.className = "px-2.5 py-0.5 text-[10px] font-extrabold rounded-full border bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800";
+        badge.textContent = "BELUM DIAKTIFKAN";
+        if (btnLabel) btnLabel.textContent = "Aktifkan Izin Notifikasi";
+        if (hint) hint.textContent = "*Klik tombol di atas untuk mengaktifkan notifikasi pengingat jatuh tempo pada perangkat ini.";
+      }
+    }
+
+    async function requestNotificationPermissionInteractive() {
+      if (!("Notification" in window)) {
+        alert("Maaf, browser atau perangkat ini tidak mendukung fitur Web Notification.");
+        return;
+      }
+      if (Notification.permission === 'granted') {
+        testSystemNotification();
+        return;
+      }
+      if (Notification.permission === 'denied') {
+        alert("Izin notifikasi sebelumnya telah ditolak/diblokir pada browser ini.\\n\\nCara mengaktifkannya:\\n1. Klik ikon gembok/setelan di samping alamat web (URL bar).\\n2. Pilih 'Izin' atau 'Setelan Situs'.\\n3. Ubah 'Notifikasi' menjadi 'Izinkan' (Allow).\\n4. Muat ulang halaman aplikasi.");
+        return;
+      }
+      try {
+        let result = await Notification.requestPermission();
+        updateNotifStatusUI();
+        let banner = document.getElementById('notif-permission-banner');
+        if (banner) banner.classList.add('hidden');
+
+        if (result === 'granted') {
+          sendBrowserNotification(
+            "🔔 Notifikasi Pengingat Aktif!",
+            {
+              body: "Aplikasi KEUANGANKU akan mengingatkan Anda saat ada jatuh tempo utang, cicilan, atau tagihan.",
+              tag: "welcome-notif"
+            }
+          );
+          alert("✅ Berhasil! Notifikasi pengingat perangkat telah aktif.");
+        } else {
+          alert("Izin notifikasi tidak diberikan. Pengingat tetap muncul di dashboard aplikasi.");
+        }
+      } catch (e) {
+        Notification.requestPermission((res) => {
+          updateNotifStatusUI();
+          if (res === 'granted') {
+            sendBrowserNotification("🔔 Notifikasi Pengingat Aktif!", { body: "Notifikasi pengingat telah aktif.", tag: "welcome-notif" });
+          }
+        });
+      }
+    }
+
+    function requestNotificationPermission() {
+      if ("Notification" in window && Notification.permission === "default") {
+        checkNotifPermissionBanner();
+      }
+    }
+
+    function sendBrowserNotification(title, options = {}, tag = '') {
+      if (!("Notification" in window)) return;
+      if (Notification.permission !== "granted") return;
+
+      // Anti-spam harian: jangan kirim notifikasi yang sama lebih dari sekali dalam 24 jam
+      if (tag) {
+        let storageKey = 'KEUANGANKU_NOTIF_SENT_' + tag;
+        let todayDateStr = new Date().toISOString().slice(0, 10);
+        if (localStorage.getItem(storageKey) === todayDateStr) {
+          return;
+        }
+        localStorage.setItem(storageKey, todayDateStr);
+      }
+
+      const defaultOptions = {
+        icon: './icon-192.png',
+        badge: './icon-96.png',
+        vibrate: [200, 100, 200],
+        data: { url: './index.html' },
+        tag: tag || undefined
+      };
+      const finalOptions = Object.assign(defaultOptions, options);
+
+      if (typeof swRegistration !== 'undefined' && swRegistration && swRegistration.showNotification) {
+        swRegistration.showNotification(title, finalOptions).catch(() => {
+          try { new Notification(title, finalOptions); } catch (e) {}
+        });
+      } else if ('serviceWorker' in navigator && navigator.serviceWorker.ready) {
+        navigator.serviceWorker.ready.then((reg) => {
+          reg.showNotification(title, finalOptions).catch(() => {
+            try { new Notification(title, finalOptions); } catch (e) {}
+          });
+        }).catch(() => {
+          try { new Notification(title, finalOptions); } catch (e) {}
+        });
+      } else {
+        try {
+          new Notification(title, finalOptions);
+        } catch (e) {}
+      }
+    }
+
+    function testSystemNotification() {
+      if (!("Notification" in window)) {
+        alert("Browser tidak mendukung notifikasi.");
+        return;
+      }
+      if (Notification.permission !== "granted") {
+        requestNotificationPermissionInteractive();
+        return;
+      }
+      sendBrowserNotification(
+        "🔔 Tes Pengingat Keuanganku",
+        {
+          body: "Notifikasi perangkat berfungsi optimal! Anda akan menerima pengingat otomatis saat jatuh tempo cicilan/utang tiba.",
+          tag: "test-" + Date.now()
+        }
+      );
+      alert("✓ Notifikasi tes telah dikirim ke bilah status/layar perangkat Anda!");
+    }
     
     function toggleBumperPinVisibility() {
       let inp = document.getElementById('bumper-pin-input');
@@ -5355,8 +5574,389 @@
       html2pdf().set(opt).from(element).save();
     }
     
-    function checkDueDateAlerts() { let container = document.getElementById('due-date-alert-container'); if (!container) return; container.innerHTML = ''; if (!globalData.routinePayments) return; let currentDay = new Date().getDate(); Object.keys(globalData.routinePayments).forEach(itemKey => { let item = globalData.routinePayments[itemKey]; let diff = item.dueDay - currentDay; if (diff >= 0 && diff <= 3) { let warningText = diff === 0 ? "JATUH TEMPO HARI INI!" : `Sisa ${diff} Hari Lagi (Tgl ${item.dueDay})`; container.innerHTML += `<div class="bg-red-500 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between border-2 border-red-700 animate-pulse"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-3xl">warning</span><div><h4 class="font-extrabold text-sm uppercase">WAKTUNYA BAYAR: ${itemKey}</h4><p class="text-xs text-red-100 font-medium">Nominal: <b>${formatRp(item.amount)}</b> | ${warningText}</p></div></div><button onclick="navTo('transaksi')" class="px-3 py-1.5 bg-white text-red-700 font-bold rounded-xl text-xs shadow">Bayar Sekarang</button></div>`; } }); }
-    function checkReceivableAlerts() { let container = document.getElementById('receivable-alert-container'); if (!container) return; container.innerHTML = ''; if (!globalData.receivablesData) return; let today = new Date(); today.setHours(0,0,0,0); Object.keys(globalData.receivablesData).forEach(k => { let item = globalData.receivablesData[k]; if (item.deadline) { let dDate = new Date(item.deadline); dDate.setHours(0,0,0,0); let diffDays = Math.ceil((dDate - today) / (1000 * 60 * 60 * 24)); if (diffDays <= 3 && diffDays >= 0) { let timeText = diffDays === 0 ? "JATUH TEMPO PENAGIHAN HARI INI!" : `Deadline ${diffDays} Hari Lagi (${item.deadline})`; container.innerHTML += `<div class="bg-emerald-600 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between border-2 border-emerald-800 animate-pulse"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-3xl">notification_important</span><div><h4 class="font-extrabold text-sm uppercase">WAKTUNYA MENAGIH: ${k}</h4><p class="text-xs text-emerald-100 font-medium">Nominal: <b>${formatRp(item.total)}</b> | ${timeText}</p></div></div><button onclick="navTo('transaksi')" class="px-3 py-1.5 bg-white text-emerald-800 font-bold rounded-xl text-xs shadow">Pelunasan</button></div>`; } } }); }
+    function checkDueDateAlerts() {
+      let container = document.getElementById('due-date-alert-container');
+      if (!container) return;
+      container.innerHTML = '';
+
+      let today = new Date();
+      let currentDay = today.getDate();
+      let currentMonth = today.getMonth();
+      let currentYear = today.getFullYear();
+      let alertsHtml = [];
+
+      // Helper untuk cek pembayaran pada bulan dan tahun berjalan
+      const isPaidThisMonth = (category, cashflowType) => {
+        if (!globalData.recentHistory) return false;
+        return globalData.recentHistory.some(tx => {
+          if (tx.category === category && tx.cashflow === cashflowType && tx.rawDate) {
+            let d = new Date(tx.rawDate);
+            return d.getFullYear() === currentYear && d.getMonth() === currentMonth;
+          }
+          return false;
+        });
+      };
+
+      // 1. CEK UTANG & CICILAN (globalData.debtData)
+      if (globalData.debtData && Object.keys(globalData.debtData).length > 0) {
+        Object.keys(globalData.debtData).forEach(k => {
+          let item = globalData.debtData[k];
+          let total = parseFloat(item.total) || 0;
+          let paid = parseFloat(item.paid) || 0;
+
+          // Perhitungkan transaksi riil di recentHistory
+          if (globalData.recentHistory) {
+            globalData.recentHistory.forEach(tx => {
+              if (tx.category === k) {
+                if (tx.cashflow === 'Cicilan / Utang Baru') total += tx.amount;
+                if (tx.cashflow === 'Bayar Cicilan / Utang') paid += tx.amount;
+              }
+            });
+          }
+
+          let unpaid = total - paid;
+          if (unpaid <= 0) return; // Sudah lunas, lewati
+
+          // Cek apakah cicilan bulan ini sudah dibayar
+          let alreadyPaid = isPaidThisMonth(k, 'Bayar Cicilan / Utang');
+          if (alreadyPaid) return; // Sudah bayar bulan ini, tidak perlu diingatkan lagi
+
+          // Hitung tanggal jatuh tempo
+          let period = item.period || 'Bulanan';
+          let dueDay = 25;
+          if (period.startsWith('Setiap Tanggal')) {
+            dueDay = parseInt(period.replace('Setiap Tanggal', '').trim(), 10) || 1;
+          } else if (period === 'Bulanan') {
+            dueDay = 25; // Default jatuh tempo bulanan tanggal 25
+          }
+
+          let payAmount = parseFloat(item.monthlyPay) > 0 ? parseFloat(item.monthlyPay) : unpaid;
+          if (payAmount > unpaid) payAmount = unpaid;
+          let catLabel = item.category || 'Cicilan';
+
+          if (currentDay === dueDay) {
+            // HARI INI JATUH TEMPO
+            alertsHtml.push(`
+              <div class="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between border-2 border-red-800 animate-pulse">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined text-2xl">notifications_active</span>
+                  </div>
+                  <div>
+                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide">🚨 JATUH TEMPO HARI INI: BAYAR ${catLabel.toUpperCase()} - ${k}</h4>
+                    <p class="text-[11px] sm:text-xs text-red-100 font-medium">
+                      Nominal: <b>${formatRp(payAmount)}</b> | Sisa Total Utang: <b>${formatRp(unpaid)}</b>
+                    </p>
+                  </div>
+                </div>
+                <button onclick="quickPayEntry('${escapeForAttr(k)}', 'debt', ${payAmount})" class="shrink-0 px-4 py-2 bg-white text-red-700 font-extrabold rounded-xl text-xs shadow-md hover:bg-red-50 active:scale-95 transition-all cursor-pointer">
+                  Bayar Sekarang
+                </button>
+              </div>
+            `);
+            sendBrowserNotification(
+              `🚨 Jatuh Tempo Hari Ini: Bayar ${k}`,
+              {
+                body: `Waktunya membayar ${catLabel} ${k} sebesar ${formatRp(payAmount)} hari ini (Tgl ${dueDay}).`,
+                tag: `debt-today-${k}-${currentYear}-${currentMonth}`
+              },
+              `debt-today-${k}-${currentYear}-${currentMonth}`
+            );
+          } else if (dueDay > currentDay && (dueDay - currentDay) <= 3) {
+            // H-3 sampai H-1
+            let diff = dueDay - currentDay;
+            alertsHtml.push(`
+              <div class="bg-gradient-to-r from-amber-500 to-orange-600 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between border-2 border-amber-600">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined text-2xl">warning</span>
+                  </div>
+                  <div>
+                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide">⚠️ PENGINGAT ${catLabel.toUpperCase()}: ${k} (Sisa ${diff} Hari Lagi)</h4>
+                    <p class="text-[11px] sm:text-xs text-amber-100 font-medium">
+                      Jatuh tempo tgl <b>${dueDay}</b> | Nominal: <b>${formatRp(payAmount)}</b> | Sisa Utang: <b>${formatRp(unpaid)}</b>
+                    </p>
+                  </div>
+                </div>
+                <button onclick="quickPayEntry('${escapeForAttr(k)}', 'debt', ${payAmount})" class="shrink-0 px-4 py-2 bg-white text-amber-800 font-extrabold rounded-xl text-xs shadow-md hover:bg-amber-50 active:scale-95 transition-all cursor-pointer">
+                  Bayar Lebih Awal
+                </button>
+              </div>
+            `);
+            sendBrowserNotification(
+              `⚠️ Pengingat Jatuh Tempo: ${k} (${diff} Hari Lagi)`,
+              {
+                body: `${catLabel} ${k} sebesar ${formatRp(payAmount)} jatuh tempo pada tgl ${dueDay}.`,
+                tag: `debt-h${diff}-${k}-${currentYear}-${currentMonth}`
+              },
+              `debt-h${diff}-${k}-${currentYear}-${currentMonth}`
+            );
+          } else if (currentDay > dueDay) {
+            // TERLAMBAT / SUDAH LEWAT JATUH TEMPO
+            let lateDays = currentDay - dueDay;
+            alertsHtml.push(`
+              <div class="bg-gradient-to-r from-rose-900 via-red-900 to-rose-950 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between border-2 border-rose-600">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-rose-800/80 text-rose-300 flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined text-2xl animate-bounce">error</span>
+                  </div>
+                  <div>
+                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide text-rose-200">‼️ LEWAT JATUH TEMPO: ${k} (Terlambat ${lateDays} Hari)</h4>
+                    <p class="text-[11px] sm:text-xs text-rose-100 font-medium">
+                      Cicilan bulan ini belum dibayar sejak tgl <b>${dueDay}</b> | Nominal: <b>${formatRp(payAmount)}</b>
+                    </p>
+                  </div>
+                </div>
+                <button onclick="quickPayEntry('${escapeForAttr(k)}', 'debt', ${payAmount})" class="shrink-0 px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white font-extrabold rounded-xl text-xs shadow-md border border-rose-400 active:scale-95 transition-all cursor-pointer">
+                  Bayar Segera
+                </button>
+              </div>
+            `);
+            sendBrowserNotification(
+              `‼️ TERLAMBAT: Bayar ${k}!`,
+              {
+                body: `Pembayaran ${catLabel} ${k} (${formatRp(payAmount)}) terlambat ${lateDays} hari sejak tanggal ${dueDay}.`,
+                tag: `debt-late-${k}-${currentYear}-${currentMonth}`
+              },
+              `debt-late-${k}-${currentYear}-${currentMonth}`
+            );
+          }
+        });
+      }
+
+      // 2. CEK TAGIHAN RUTIN (globalData.routinePayments)
+      if (globalData.routinePayments && Object.keys(globalData.routinePayments).length > 0) {
+        Object.keys(globalData.routinePayments).forEach(itemKey => {
+          let item = globalData.routinePayments[itemKey];
+          let dueDay = parseInt(item.dueDay, 10) || 1;
+          let amt = parseFloat(item.amount) || 0;
+
+          // Cek apakah sudah dibayar bulan ini
+          let alreadyPaid = false;
+          if (globalData.recentHistory) {
+            alreadyPaid = globalData.recentHistory.some(tx => {
+              if (tx.category === itemKey && tx.rawDate) {
+                let d = new Date(tx.rawDate);
+                return d.getFullYear() === currentYear && d.getMonth() === currentMonth;
+              }
+              return false;
+            });
+          }
+
+          if (alreadyPaid) return; // Sudah dibayar bulan ini, lewati
+
+          if (currentDay === dueDay) {
+            alertsHtml.push(`
+              <div class="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between border-2 border-red-800 animate-pulse">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined text-2xl">receipt_long</span>
+                  </div>
+                  <div>
+                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide">🚨 JATUH TEMPO HARI INI: BAYAR TAGIHAN ${itemKey}</h4>
+                    <p class="text-[11px] sm:text-xs text-red-100 font-medium">
+                      Nominal: <b>${formatRp(amt)}</b> | Jatuh tempo hari ini (Tgl ${dueDay})
+                    </p>
+                  </div>
+                </div>
+                <button onclick="quickPayEntry('${escapeForAttr(itemKey)}', 'routine', ${amt})" class="shrink-0 px-4 py-2 bg-white text-red-700 font-extrabold rounded-xl text-xs shadow-md hover:bg-red-50 active:scale-95 transition-all cursor-pointer">
+                  Bayar Sekarang
+                </button>
+              </div>
+            `);
+            sendBrowserNotification(
+              `🚨 Tagihan Jatuh Tempo Hari Ini: ${itemKey}`,
+              {
+                body: `Tagihan rutin ${itemKey} sebesar ${formatRp(amt)} jatuh tempo hari ini (Tgl ${dueDay}).`,
+                tag: `routine-today-${itemKey}-${currentYear}-${currentMonth}`
+              },
+              `routine-today-${itemKey}-${currentYear}-${currentMonth}`
+            );
+          } else if (dueDay > currentDay && (dueDay - currentDay) <= 3) {
+            let diff = dueDay - currentDay;
+            alertsHtml.push(`
+              <div class="bg-gradient-to-r from-amber-500 to-orange-600 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between border-2 border-amber-600">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined text-2xl">warning</span>
+                  </div>
+                  <div>
+                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide">⚠️ PENGINGAT TAGIHAN: ${itemKey} (Sisa ${diff} Hari Lagi)</h4>
+                    <p class="text-[11px] sm:text-xs text-amber-100 font-medium">
+                      Jatuh tempo tgl <b>${dueDay}</b> | Nominal: <b>${formatRp(amt)}</b>
+                    </p>
+                  </div>
+                </div>
+                <button onclick="quickPayEntry('${escapeForAttr(itemKey)}', 'routine', ${amt})" class="shrink-0 px-4 py-2 bg-white text-amber-800 font-extrabold rounded-xl text-xs shadow-md hover:bg-amber-50 active:scale-95 transition-all cursor-pointer">
+                  Bayar Sekarang
+                </button>
+              </div>
+            `);
+            sendBrowserNotification(
+              `⚠️ Pengingat Tagihan: ${itemKey} (${diff} Hari Lagi)`,
+              {
+                body: `Tagihan rutin ${itemKey} sebesar ${formatRp(amt)} jatuh tempo tgl ${dueDay}.`,
+                tag: `routine-h${diff}-${itemKey}-${currentYear}-${currentMonth}`
+              },
+              `routine-h${diff}-${itemKey}-${currentYear}-${currentMonth}`
+            );
+          } else if (currentDay > dueDay) {
+            let lateDays = currentDay - dueDay;
+            alertsHtml.push(`
+              <div class="bg-gradient-to-r from-rose-900 via-red-900 to-rose-950 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between border-2 border-rose-600">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-rose-800/80 text-rose-300 flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined text-2xl animate-bounce">error</span>
+                  </div>
+                  <div>
+                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide text-rose-200">‼️ LEWAT JATUH TEMPO: TAGIHAN ${itemKey} (Terlambat ${lateDays} Hari)</h4>
+                    <p class="text-[11px] sm:text-xs text-rose-100 font-medium">
+                      Tagihan belum dibayar sejak tgl <b>${dueDay}</b> | Nominal: <b>${formatRp(amt)}</b>
+                    </p>
+                  </div>
+                </div>
+                <button onclick="quickPayEntry('${escapeForAttr(itemKey)}', 'routine', ${amt})" class="shrink-0 px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white font-extrabold rounded-xl text-xs shadow-md border border-rose-400 active:scale-95 transition-all cursor-pointer">
+                  Bayar Segera
+                </button>
+              </div>
+            `);
+            sendBrowserNotification(
+              `‼️ TERLAMBAT: Tagihan ${itemKey}!`,
+              {
+                body: `Tagihan ${itemKey} (${formatRp(amt)}) terlambat ${lateDays} hari sejak tanggal ${dueDay}.`,
+                tag: `routine-late-${itemKey}-${currentYear}-${currentMonth}`
+              },
+              `routine-late-${itemKey}-${currentYear}-${currentMonth}`
+            );
+          }
+        });
+      }
+
+      container.innerHTML = alertsHtml.join('');
+    }
+
+    function checkReceivableAlerts() {
+      let container = document.getElementById('receivable-alert-container');
+      if (!container) return;
+      container.innerHTML = '';
+      if (!globalData.receivablesData || Object.keys(globalData.receivablesData).length === 0) return;
+
+      let today = new Date();
+      today.setHours(0, 0, 0, 0);
+      let currentMonth = today.getMonth();
+      let currentYear = today.getFullYear();
+      let alertsHtml = [];
+
+      Object.keys(globalData.receivablesData).forEach(k => {
+        let item = globalData.receivablesData[k];
+        let total = parseFloat(item.total) || 0;
+        let paid = parseFloat(item.paid) || 0;
+
+        if (globalData.recentHistory) {
+          globalData.recentHistory.forEach(tx => {
+            if (tx.category === k) {
+              if (tx.cashflow === 'Piutang Baru') total += tx.amount;
+              if (tx.cashflow === 'Pelunasan Piutang') paid += tx.amount;
+            }
+          });
+        }
+
+        let remaining = total - paid;
+        if (remaining <= 0) return; // Lunas, lewati
+
+        if (item.deadline) {
+          let dDate = new Date(item.deadline);
+          dDate.setHours(0, 0, 0, 0);
+          let diffDays = Math.ceil((dDate - today) / (1000 * 60 * 60 * 24));
+
+          if (diffDays === 0) {
+            alertsHtml.push(`
+              <div class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between border-2 border-emerald-800 animate-pulse">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined text-2xl">notification_important</span>
+                  </div>
+                  <div>
+                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide">🚨 JATUH TEMPO PENAGIHAN HARI INI: ${k}</h4>
+                    <p class="text-[11px] sm:text-xs text-emerald-100 font-medium">
+                      Sisa Piutang: <b>${formatRp(remaining)}</b> | Deadline Hari Ini (${item.deadline})
+                    </p>
+                  </div>
+                </div>
+                <button onclick="quickPayEntry('${escapeForAttr(k)}', 'receivable', ${remaining})" class="shrink-0 px-4 py-2 bg-white text-emerald-800 font-extrabold rounded-xl text-xs shadow-md hover:bg-emerald-50 active:scale-95 transition-all cursor-pointer">
+                  Catat Pelunasan
+                </button>
+              </div>
+            `);
+            sendBrowserNotification(
+              `🚨 Jatuh Tempo Penagihan Hari Ini: ${k}`,
+              {
+                body: `Waktunya menagih piutang ke ${k} sebesar ${formatRp(remaining)} (Deadline hari ini).`,
+                tag: `rec-today-${k}-${currentYear}-${currentMonth}`
+              },
+              `rec-today-${k}-${currentYear}-${currentMonth}`
+            );
+          } else if (diffDays > 0 && diffDays <= 3) {
+            alertsHtml.push(`
+              <div class="bg-gradient-to-r from-teal-600 to-cyan-700 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between border-2 border-teal-800">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined text-2xl">schedule</span>
+                  </div>
+                  <div>
+                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide">⏰ JATUH TEMPO PENAGIHAN: ${k} (Sisa ${diffDays} Hari Lagi)</h4>
+                    <p class="text-[11px] sm:text-xs text-teal-100 font-medium">
+                      Sisa Piutang: <b>${formatRp(remaining)}</b> | Deadline: ${item.deadline}
+                    </p>
+                  </div>
+                </div>
+                <button onclick="quickPayEntry('${escapeForAttr(k)}', 'receivable', ${remaining})" class="shrink-0 px-4 py-2 bg-white text-teal-900 font-extrabold rounded-xl text-xs shadow-md hover:bg-teal-50 active:scale-95 transition-all cursor-pointer">
+                  Catat Pelunasan
+                </button>
+              </div>
+            `);
+            sendBrowserNotification(
+              `⏰ Pengingat Penagihan: ${k} (${diffDays} Hari Lagi)`,
+              {
+                body: `Deadline penagihan piutang ${k} sebesar ${formatRp(remaining)} tersisa ${diffDays} hari lagi (${item.deadline}).`,
+                tag: `rec-h${diffDays}-${k}-${currentYear}-${currentMonth}`
+              },
+              `rec-h${diffDays}-${k}-${currentYear}-${currentMonth}`
+            );
+          } else if (diffDays < 0) {
+            let lateDays = Math.abs(diffDays);
+            alertsHtml.push(`
+              <div class="bg-gradient-to-r from-purple-900 to-indigo-950 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between border-2 border-purple-700">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-purple-800 text-purple-300 flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined text-2xl animate-bounce">alarm_on</span>
+                  </div>
+                  <div>
+                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide text-purple-200">‼️ PENAGIHAN LEWAT DEADLINE: ${k} (Terlewat ${lateDays} Hari)</h4>
+                    <p class="text-[11px] sm:text-xs text-purple-100 font-medium">
+                      Sisa Piutang: <b>${formatRp(remaining)}</b> | Deadline: ${item.deadline}
+                    </p>
+                  </div>
+                </div>
+                <button onclick="quickPayEntry('${escapeForAttr(k)}', 'receivable', ${remaining})" class="shrink-0 px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-extrabold rounded-xl text-xs shadow-md border border-purple-400 active:scale-95 transition-all cursor-pointer">
+                  Catat Pelunasan
+                </button>
+              </div>
+            `);
+            sendBrowserNotification(
+              `‼️ Penagihan Lewat Deadline: ${k}!`,
+              {
+                body: `Piutang ${k} sebesar ${formatRp(remaining)} telah melewati batas waktu pelunasan ${lateDays} hari lalu.`,
+                tag: `rec-late-${k}-${currentYear}-${currentMonth}`
+              },
+              `rec-late-${k}-${currentYear}-${currentMonth}`
+            );
+          }
+        }
+      });
+
+      container.innerHTML = alertsHtml.join('');
+    }
     function getCategoryCashflowNet(categoryName) { let net = 0, used = 0; if (!globalData.recentHistory) return { net, used }; globalData.recentHistory.forEach(tx => { if (tx.category === categoryName) { if (['Invest / Savings', 'Financial Goals', 'Income', 'Dari Asset / Saving'].includes(tx.cashflow)) net += tx.amount; if (tx.cashflow === 'Spending') used += tx.amount; } }); return { net, used }; }
     
     let walletChart = null;
@@ -5492,6 +6092,9 @@
       renderDebtRecap(); 
       renderMonthlyChart(); 
       if (document.getElementById('categoryTrendChart')) updateCategoryTrendChart(); 
+      checkDueDateAlerts();
+      checkReceivableAlerts();
+      checkNotifPermissionBanner();
     }
 
     function renderBudgetRecap() { let container = document.getElementById('budget-recap-grid'); if (!container) return; container.innerHTML = ''; if (!globalData.monthlyBudgets || Object.keys(globalData.monthlyBudgets).length === 0) { container.innerHTML = '<p class="text-center text-gray-500 text-xs py-2 col-span-2">Belum ada budget yang diatur. Silakan atur limit pengeluaran di menu Setup.</p>'; return; } let dropdown = document.getElementById('monthly-select-dropdown'); let targetMonth = dropdown ? parseInt(dropdown.value, 10) : new Date().getMonth(); let currentYear = new Date().getFullYear(); let spentThisMonth = {}; if (globalData.recentHistory) { globalData.recentHistory.forEach(tx => { if (tx.cashflow === 'Spending' && tx.rawDate) { let d = new Date(tx.rawDate); if (d.getMonth() === targetMonth && d.getFullYear() === currentYear) spentThisMonth[tx.category] = (spentThisMonth[tx.category] || 0) + tx.amount; } }); } let hasActiveBudget = false; Object.keys(globalData.monthlyBudgets).forEach(cat => { let limit = parseFloat(globalData.monthlyBudgets[cat]) || 0; if (limit > 0) { hasActiveBudget = true; let spent = spentThisMonth[cat] || 0; let sisa = limit - spent; let pct = Math.min(100, Math.round((spent / limit) * 100)); let isOver = spent > limit; let overAmt = spent - limit; let barColor = isOver ? 'bg-red-500' : (pct > 80 ? 'bg-orange-500' : 'bg-green-500'); let badgeClass = isOver ? 'bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-400' : 'bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-400'; let badgeText = isOver ? 'OVER (-' + formatRpKebalSensor(overAmt) + ')' : 'Sisa: ' + formatRpKebalSensor(sisa); container.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-2 text-xs"><div class="flex justify-between items-center"><p class="font-bold text-sm text-on-surface">${cat}</p><span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${badgeClass}">${badgeText}</span></div><div class="flex justify-between text-[10px] text-gray-500 mb-1"><span>Terpakai: <b class="${isOver ? 'text-error' : 'text-on-surface'}">${formatRpKebalSensor(spent)}</b></span><span>Limit: <b class="text-on-surface font-mono-data">${formatRpKebalSensor(limit)}</b></span></div><div class="w-full bg-gray-200 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden"><div class="${barColor} h-2.5 rounded-full transition-all duration-500" style="width: ${pct}%"></div></div></div>`; } }); if (!hasActiveBudget) container.innerHTML = '<p class="text-center text-gray-500 text-xs py-2 col-span-2">Belum ada nominal budget yang diatur. Silakan atur limit pengeluaran di menu Setup.</p>'; }
@@ -5740,12 +6343,18 @@
       }
     }
 
-    function quickPayEntry(name, type) {
-      closeRecapModal();
+    function quickPayEntry(name, type, customAmount) {
+      if (typeof closeRecapModal === 'function') closeRecapModal();
       navTo('transaksi');
       let cfSelect = document.getElementById('tx-cashflow');
       if (cfSelect) {
-        cfSelect.value = (type === 'debt') ? 'Bayar Cicilan / Utang' : 'Pelunasan Piutang';
+        if (type === 'debt') {
+          cfSelect.value = 'Bayar Cicilan / Utang';
+        } else if (type === 'routine') {
+          cfSelect.value = 'Spending';
+        } else {
+          cfSelect.value = 'Pelunasan Piutang';
+        }
         applyCashflowLogic();
       }
       let catSelect = document.getElementById('tx-category');
@@ -5754,17 +6363,28 @@
       }
       let nameInput = document.getElementById('tx-name');
       if (nameInput) {
-        nameInput.value = (type === 'debt') ? `Bayar Cicilan: ${name}` : `Pelunasan Piutang: ${name}`;
+        if (type === 'debt') nameInput.value = `Bayar Cicilan: ${name}`;
+        else if (type === 'routine') nameInput.value = `Bayar Tagihan: ${name}`;
+        else nameInput.value = `Pelunasan Piutang: ${name}`;
       }
-      if (type === 'debt' && globalData.debtData && globalData.debtData[name]) {
-        let monthly = globalData.debtData[name].monthlyPay;
-        let amtInput = document.getElementById('tx-amount');
-        if (amtInput && monthly && monthly > 0) {
-          amtInput.value = monthly.toLocaleString('id-ID');
+      let amtInput = document.getElementById('tx-amount');
+      if (amtInput) {
+        if (customAmount && parseFloat(customAmount) > 0) {
+          amtInput.value = Math.round(parseFloat(customAmount)).toLocaleString('id-ID');
+        } else if (type === 'debt' && globalData.debtData && globalData.debtData[name]) {
+          let monthly = globalData.debtData[name].monthlyPay;
+          if (monthly && monthly > 0) {
+            amtInput.value = monthly.toLocaleString('id-ID');
+          }
+        } else if (type === 'routine' && globalData.routinePayments && globalData.routinePayments[name]) {
+          let amt = globalData.routinePayments[name].amount;
+          if (amt && amt > 0) {
+            amtInput.value = amt.toLocaleString('id-ID');
+          }
         }
       }
-      let amtEl = document.getElementById('tx-amount');
-      if (amtEl) amtEl.focus();
+      let dariEl = document.getElementById('tx-dari');
+      if (dariEl) dariEl.focus();
     }
 
     let chart1 = null, chart2 = null, chart3 = null, trendChart = null;
@@ -6806,10 +7426,11 @@
       renderSetupDatabaseCards();
       loadConnectedDevices();
       updateDemoModeUI();
+      updateNotifStatusUI();
     }
 
     
-    function renderDebtListSetup() { let container = document.getElementById('setup-debt-list'); if (!container) return; container.innerHTML = ''; if (!globalData.debtData) globalData.debtData = {}; Object.keys(globalData.debtData).forEach(k => { let item = globalData.debtData[k]; let currentPeriod = item.period || 'Bulanan'; let isDateType = currentPeriod.startsWith('Setiap Tanggal'); let selectedBasePeriod = isDateType ? 'Setiap Tanggal' : currentPeriod; let selectedDateNum = isDateType ? currentPeriod.replace('Setiap Tanggal ', '') : '1'; container.innerHTML += `<div class="p-4 bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant space-y-3 text-xs"><div class="flex justify-between items-center border-b border-outline-variant/30 pb-2"><div class="flex items-center gap-2"><b class="text-sm font-bold text-primary dark:text-blue-400">${k}</b><span class="text-[10px] px-2 py-0.5 bg-primary/10 text-primary dark:text-blue-300 rounded-full font-bold">${item.category || 'Utang'}</span></div><span onclick="removeDebtItem('${k}')" class="material-symbols-outlined text-sm text-error cursor-pointer">close</span></div><div class="grid grid-cols-2 md:grid-cols-5 gap-2"><div><label class="text-[9px] uppercase font-bold text-gray-500">Kategori</label><select onchange="updateDebtField('${k}', 'category', this.value)" class="w-full p-1.5 border rounded-lg text-xs bg-surface text-on-surface"><option value="Utang" ${item.category === 'Utang' ? 'selected' : ''}>Utang</option><option value="Cicilan" ${item.category === 'Cicilan' ? 'selected' : ''}>Cicilan</option><option value="Remberg" ${item.category === 'Remberg' ? 'selected' : ''}>Remberg</option></select></div><div><label class="text-[9px] uppercase font-bold text-gray-500">Total Harus Bayar</label><input type="number" value="${item.total || 0}" onchange="updateDebtField('${k}', 'total', this.value)" class="w-full p-1.5 border rounded-lg text-xs font-mono-data bg-surface text-on-surface"></div><div><label class="text-[9px] uppercase font-bold text-gray-500">Sudah Bayar</label><input type="number" value="${item.paid || 0}" onchange="updateDebtField('${k}', 'paid', this.value)" class="w-full p-1.5 border rounded-lg text-xs font-mono-data bg-surface text-on-surface"></div><div><label class="text-[9px] uppercase font-bold text-gray-500">Nominal Pembayaran</label><input type="number" value="${item.monthlyPay || 0}" onchange="updateDebtField('${k}', 'monthlyPay', this.value)" class="w-full p-1.5 border rounded-lg text-xs font-mono-data bg-surface text-on-surface"></div><div><label class="text-[9px] uppercase font-bold text-gray-500">Bayar Setiap</label><select onchange="handleDebtPeriodChange('${k}', this.value)" class="w-full p-1.5 border rounded-lg text-xs bg-surface text-on-surface"><option value="Bulanan" ${selectedBasePeriod === 'Bulanan' ? 'selected' : ''}>Bulanan</option><option value="Mingguan" ${selectedBasePeriod === 'Mingguan' ? 'selected' : ''}>Mingguan</option><option value="Setiap Hari" ${selectedBasePeriod === 'Setiap Hari' ? 'selected' : ''}>Setiap Hari</option><option value="Tahunan" ${selectedBasePeriod === 'Tahunan' ? 'selected' : ''}>Tahunan</option><option value="Setiap Tanggal" ${selectedBasePeriod === 'Setiap Tanggal' ? 'selected' : ''}>Setiap Tanggal...</option></select></div></div><div id="debt-date-box-${k}" class="${isDateType ? '' : 'hidden'} pt-2 flex items-center gap-2"><span class="text-[10px] font-bold text-gray-500">Pilih Tanggal:</span><select onchange="updateDebtDateNum('${k}', this.value)" class="p-1 border rounded text-xs bg-surface text-on-surface">${Array.from({length: 31}, (_, i) => `<option value="${i+1}" ${selectedDateNum == (i+1) ? 'selected' : ''}>${i+1}</option>`).join('')}</select></div></div>`; }); }
+    function renderDebtListSetup() { let container = document.getElementById('setup-debt-list'); if (!container) return; container.innerHTML = ''; if (!globalData.debtData) globalData.debtData = {}; Object.keys(globalData.debtData).forEach(k => { let item = globalData.debtData[k]; let currentPeriod = item.period || 'Bulanan'; let isDateType = currentPeriod.startsWith('Setiap Tanggal'); let selectedBasePeriod = isDateType ? 'Setiap Tanggal' : currentPeriod; let selectedDateNum = isDateType ? currentPeriod.replace('Setiap Tanggal ', '') : '1'; container.innerHTML += `<div class="p-4 bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant space-y-3 text-xs"><div class="flex justify-between items-center border-b border-outline-variant/30 pb-2"><div class="flex items-center gap-2"><b class="text-sm font-bold text-primary dark:text-blue-400">${k}</b><span class="text-[10px] px-2 py-0.5 bg-primary/10 text-primary dark:text-blue-300 rounded-full font-bold">${item.category || 'Utang'}</span></div><span onclick="removeDebtItem('${k}')" class="material-symbols-outlined text-sm text-error cursor-pointer">close</span></div><div class="grid grid-cols-2 md:grid-cols-5 gap-2"><div><label class="text-[9px] uppercase font-bold text-gray-500">Kategori</label><select onchange="updateDebtField('${k}', 'category', this.value)" class="w-full p-1.5 border rounded-lg text-xs bg-surface text-on-surface"><option value="Utang" ${item.category === 'Utang' ? 'selected' : ''}>Utang</option><option value="Cicilan" ${item.category === 'Cicilan' ? 'selected' : ''}>Cicilan</option><option value="Remberg" ${item.category === 'Remberg' ? 'selected' : ''}>Remberg</option></select></div><div><label class="text-[9px] uppercase font-bold text-gray-500">Total Harus Bayar</label><input type="number" value="${item.total || 0}" onchange="updateDebtField('${k}', 'total', this.value)" class="w-full p-1.5 border rounded-lg text-xs font-mono-data bg-surface text-on-surface"></div><div><label class="text-[9px] uppercase font-bold text-gray-500">Sudah Bayar</label><input type="number" value="${item.paid || 0}" onchange="updateDebtField('${k}', 'paid', this.value)" class="w-full p-1.5 border rounded-lg text-xs font-mono-data bg-surface text-on-surface"></div><div><label class="text-[9px] uppercase font-bold text-gray-500">Nominal Pembayaran</label><input type="number" value="${item.monthlyPay || 0}" onchange="updateDebtField('${k}', 'monthlyPay', this.value)" class="w-full p-1.5 border rounded-lg text-xs font-mono-data bg-surface text-on-surface"></div><div><label class="text-[9px] uppercase font-bold text-gray-500">Bayar Setiap</label><select onchange="handleDebtPeriodChange('${k}', this.value)" class="w-full p-1.5 border rounded-lg text-xs bg-surface text-on-surface"><option value="Bulanan" ${selectedBasePeriod === 'Bulanan' ? 'selected' : ''}>Bulanan</option><option value="Mingguan" ${selectedBasePeriod === 'Mingguan' ? 'selected' : ''}>Mingguan</option><option value="Setiap Hari" ${selectedBasePeriod === 'Setiap Hari' ? 'selected' : ''}>Setiap Hari</option><option value="Tahunan" ${selectedBasePeriod === 'Tahunan' ? 'selected' : ''}>Tahunan</option><option value="Setiap Tanggal" ${selectedBasePeriod === 'Setiap Tanggal' ? 'selected' : ''}>Setiap Tanggal...</option></select></div></div><div id="debt-date-box-${k}" class="${isDateType ? '' : 'hidden'} pt-2 flex items-center justify-between flex-wrap gap-2 border-t border-outline-variant/30 mt-2"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-xs text-amber-500">alarm</span><span class="text-[10px] font-bold text-gray-500">Tanggal Jatuh Tempo Tiap Bulan:</span><select onchange="updateDebtDateNum('${k}', this.value)" class="p-1 border rounded text-xs bg-surface text-on-surface font-bold text-primary font-mono-data">${Array.from({length: 31}, (_, i) => `<option value="${i+1}" ${selectedDateNum == (i+1) ? 'selected' : ''}>Tanggal ${i+1}</option>`).join('')}</select></div><span class="text-[9px] text-primary dark:text-blue-400 font-medium">🔔 Pengingat H-3, hari H & status terlambat aktif</span></div></div>`; }); }
     function handleDebtPeriodChange(key, val) { let dateBox = document.getElementById(`debt-date-box-${key}`); if (val === 'Setiap Tanggal') { if (dateBox) dateBox.classList.remove('hidden'); updateDebtField(key, 'period', 'Setiap Tanggal 1'); } else { if (dateBox) dateBox.classList.add('hidden'); updateDebtField(key, 'period', val); } }
     function updateDebtDateNum(key, dateNum) { updateDebtField(key, 'period', `Setiap Tanggal ${dateNum}`); }
     function addDebtItemModal() { let name = prompt("Masukkan Nama Utang / Cicilan / Rembers baru:"); if (name && name.trim() !== "") { let clean = name.trim(); if (!globalData.debtData) globalData.debtData = {}; if (!globalData.debtData[clean]) { globalData.debtData[clean] = { total: 1000000, paid: 0, monthlyPay: 100000, category: "Cicilan", period: "Bulanan" }; saveStorageData(); renderSetupView(); } else alert("Nama sudah ada!"); } }
