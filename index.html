@@ -977,6 +977,84 @@
         <div id="account-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4"></div>
       </section>
 
+      <!-- SECTION DIAGRAM PERGERAKAN SALDO SEMUA REKENING / WALLET (1 BULAN) -->
+      <section class="w-full bg-white dark:bg-slate-800 border border-outline-variant rounded-3xl p-5 sm:p-7 shadow-sm space-y-4">
+        <!-- HEADER DIAGRAM -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-outline-variant/50">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-500 text-white flex items-center justify-center shadow-md shadow-blue-500/20 flex-shrink-0">
+              <span class="material-symbols-outlined text-xl sm:text-2xl">show_chart</span>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="font-title-sm font-bold text-on-surface text-sm sm:text-base">Diagram Tren Saldo Rekening & Wallet</h3>
+                <span class="px-2 py-0.5 text-[10px] font-extrabold uppercase rounded-full bg-blue-100 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">1 Bulan</span>
+              </div>
+              <p class="text-[11px] text-gray-500 mt-0.5">Pantau dinamika & fluktuasi saldo harian seluruh akun bank serta e-wallet Anda</p>
+            </div>
+          </div>
+
+          <!-- KONTROL FILTER & WAKTU -->
+          <div class="flex flex-wrap items-center gap-2">
+            <div class="flex items-center bg-surface-container-highest dark:bg-slate-700/60 rounded-xl p-1 border border-outline-variant">
+              <select id="wallet-history-range" onchange="renderWalletHistoryChart()" class="bg-transparent text-xs font-bold text-on-surface px-2.5 py-1 outline-none cursor-pointer">
+                <option value="30" selected>30 Hari Terakhir (1 Bulan)</option>
+                <option value="month">Bulan Ini Berjalan</option>
+                <option value="14">14 Hari Terakhir</option>
+                <option value="7">7 Hari Terakhir</option>
+              </select>
+            </div>
+            
+            <label class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-outline-variant bg-surface hover:bg-surface-container-high cursor-pointer text-xs font-medium text-on-surface select-none transition-all">
+              <input type="checkbox" id="wallet-history-toggle-total" onchange="renderWalletHistoryChart()" class="rounded text-primary focus:ring-0">
+              <span class="text-[11px] font-bold">Total Gabungan</span>
+            </label>
+
+            <button type="button" onclick="renderWalletHistoryChart()" title="Segarkan Diagram" class="w-8 h-8 rounded-xl border border-outline-variant bg-surface hover:bg-surface-container-high text-gray-500 hover:text-primary flex items-center justify-center transition-all active:scale-90">
+              <span class="material-symbols-outlined text-base">refresh</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- STAT MINI HIGHLIGHTS (KOTAK RINGKASAN TREN) -->
+        <div id="wallet-history-stats" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 text-xs"></div>
+
+        <!-- FILTER CHIPS INTERAKTIF: KLIK UNTUK ISOLASI/SEMBUNYIKAN SALDO DOMPET -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between text-[11px]">
+            <span class="font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1">
+              <span class="material-symbols-outlined text-sm text-primary">tune</span>
+              <span>Filter Garis Rekening (Klik untuk menyembunyikan / menampilkan):</span>
+            </span>
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="toggleAllWalletHistoryLines(true)" class="text-[10px] font-bold text-primary hover:underline">Tampilkan Semua</button>
+              <span class="text-gray-300 dark:text-gray-600">|</span>
+              <button type="button" onclick="toggleAllWalletHistoryLines(false)" class="text-[10px] font-bold text-gray-400 hover:text-error hover:underline">Sembunyikan Semua</button>
+            </div>
+          </div>
+          <div id="wallet-history-chips" class="flex flex-wrap items-center gap-1.5 sm:gap-2"></div>
+        </div>
+
+        <!-- CANVAS AREA DIAGRAM -->
+        <div class="relative w-full h-72 sm:h-80 md:h-96 rounded-2xl bg-surface-container-lowest/50 dark:bg-slate-900/40 p-2 sm:p-3 border border-outline-variant/40">
+          <canvas id="walletHistoryLineChart"></canvas>
+          <div id="wallet-history-empty" class="hidden absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
+            <span class="material-symbols-outlined text-gray-300 dark:text-gray-600 text-4xl mb-2">timeline</span>
+            <p class="text-xs font-bold text-gray-500">Belum ada data rekening yang terdaftar</p>
+            <p class="text-[11px] text-gray-400 mt-0.5">Tambahkan akun bank & e-wallet di menu Setup untuk memvisualisasikan tren grafik.</p>
+          </div>
+        </div>
+
+        <!-- FOOTER CATATAN DIAGRAM -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[10px] text-gray-400 border-t border-outline-variant/40 pt-2.5">
+          <p class="flex items-center gap-1">
+            <span class="material-symbols-outlined text-xs text-primary">info</span>
+            <span>Grafik kurva multi-layer area. Arahkan kursor atau sentuh titik tanggal untuk melihat rincian saldo harian seluruh rekening.</span>
+          </p>
+          <span class="font-mono-data font-bold text-gray-500 dark:text-gray-400 uppercase">Synchronized with Ledger & Cloud</span>
+        </div>
+      </section>
+
       <!-- BAGIAN GRID KARTU TOMBOL (REKAPITULASI & ANALISIS FINANSIAL) -->
       <section class="space-y-3 pt-2">
         <div class="flex items-center justify-between">
@@ -6376,6 +6454,398 @@
       }
     }
 
+    // ==============================================================================
+    // DIAGRAM PERGERAKAN & TREN SALDO SEMUA REKENING / WALLET (1 BULAN)
+    // ==============================================================================
+    let walletHistoryLineChart = null;
+
+    function hexToRgba(hex, alpha) {
+      if (!hex || typeof hex !== 'string') return `rgba(37,99,235,${alpha})`;
+      let c = hex.replace('#', '');
+      if (c.length === 3) c = c.split('').map(x => x + x).join('');
+      let num = parseInt(c, 16);
+      if (isNaN(num)) return `rgba(37,99,235,${alpha})`;
+      return `rgba(${(num >> 16) & 255}, ${(num >> 8) & 255}, ${num & 255}, ${alpha})`;
+    }
+
+    function renderWalletHistoryChart() {
+      let canvas = document.getElementById('walletHistoryLineChart');
+      if (!canvas) return;
+
+      let emptyEl = document.getElementById('wallet-history-empty');
+      let chipsEl = document.getElementById('wallet-history-chips');
+      let statsEl = document.getElementById('wallet-history-stats');
+      let isDark = document.documentElement.classList.contains('dark');
+      let labelColor = isDark ? '#cbd5e1' : '#475569';
+      let gridColor = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.05)';
+
+      let accounts = (globalData.accounts && Array.isArray(globalData.accounts)) ? globalData.accounts : [];
+      if (accounts.length === 0) {
+        if (walletHistoryLineChart) { walletHistoryLineChart.destroy(); walletHistoryLineChart = null; }
+        if (emptyEl) emptyEl.classList.remove('hidden');
+        if (chipsEl) chipsEl.innerHTML = '';
+        if (statsEl) statsEl.innerHTML = '';
+        return;
+      }
+      if (emptyEl) emptyEl.classList.add('hidden');
+
+      // 1. Rentang Tanggal (Default: 30 Hari Terakhir = 1 Bulan)
+      let rangeSelect = document.getElementById('wallet-history-range');
+      let rangeVal = rangeSelect ? rangeSelect.value : "30";
+      let dateList = [];
+      let now = new Date();
+
+      if (rangeVal === "month") {
+        let year = now.getFullYear();
+        let month = now.getMonth();
+        let maxDay = now.getDate();
+        for (let d = 1; d <= maxDay; d++) {
+          dateList.push(new Date(year, month, d));
+        }
+      } else {
+        let count = parseInt(rangeVal, 10) || 30;
+        for (let i = count - 1; i >= 0; i--) {
+          let d = new Date(now);
+          d.setDate(now.getDate() - i);
+          dateList.push(d);
+        }
+      }
+
+      const toIsoDay = (d) => {
+        let y = d.getFullYear();
+        let m = String(d.getMonth() + 1).padStart(2, '0');
+        let day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+      };
+
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+      let chartLabels = dateList.map(d => `${d.getDate()} ${monthNames[d.getMonth()]}`);
+      let dayKeys = dateList.map(d => toIsoDay(d));
+
+      // 2. Hitung delta arus transaksi harian per akun
+      let dailyChanges = {};
+      accounts.forEach(acc => {
+        dailyChanges[acc] = {};
+        dayKeys.forEach(k => { dailyChanges[acc][k] = 0; });
+      });
+
+      let transactions = globalData.recentHistory || [];
+      transactions.forEach(tx => {
+        if (!tx.rawDate || !tx.amount) return;
+        let txDay = (typeof tx.rawDate === 'string' && tx.rawDate.length >= 10) 
+          ? tx.rawDate.substring(0, 10) 
+          : toIsoDay(new Date(tx.rawDate));
+        let amt = Number(tx.amount) || 0;
+        if (amt <= 0) return;
+
+        let dari = tx.dariAcc;
+        let ke = tx.keAcc;
+
+        if (ke && ke !== '- not applicable -' && dailyChanges[ke] && dailyChanges[ke].hasOwnProperty(txDay)) {
+          dailyChanges[ke][txDay] += amt;
+        }
+        if (dari && dari !== '- not applicable -' && dailyChanges[dari] && dailyChanges[dari].hasOwnProperty(txDay)) {
+          dailyChanges[dari][txDay] -= amt;
+        }
+      });
+
+      // 3. Rekonstruksi saldo historis setiap akun (mundur dari saldo akhir terkini)
+      let accountTrajectories = {};
+      let totalTrajectory = new Array(dayKeys.length).fill(0);
+      let totalCurrentAll = 0;
+      let highestAccName = "";
+      let highestAccBal = -1;
+
+      accounts.forEach(acc => {
+        let cur = (globalData.currentBalances && globalData.currentBalances[acc]) ? Number(globalData.currentBalances[acc]) : 0;
+        totalCurrentAll += cur;
+        if (cur > highestAccBal) {
+          highestAccBal = cur;
+          highestAccName = acc;
+        }
+
+        let series = new Array(dayKeys.length);
+        let run = cur;
+        for (let i = dayKeys.length - 1; i >= 0; i--) {
+          series[i] = run;
+          let dayKey = dayKeys[i];
+          let delta = dailyChanges[acc][dayKey] || 0;
+          run = run - delta;
+        }
+        accountTrajectories[acc] = series;
+
+        for (let i = 0; i < series.length; i++) {
+          totalTrajectory[i] += series[i];
+        }
+      });
+
+      let totalStart = totalTrajectory[0] || 0;
+      let totalEnd = totalTrajectory[totalTrajectory.length - 1] || 0;
+      let totalDiff = totalEnd - totalStart;
+
+      // 4. Render Stat Cards
+      if (statsEl) {
+        let diffColor = totalDiff > 0 ? 'text-green-600 dark:text-green-400' : (totalDiff < 0 ? 'text-red-500' : 'text-gray-400');
+        let diffSign = totalDiff > 0 ? '+' : '';
+        statsEl.innerHTML = `
+          <div class="p-3 rounded-2xl bg-surface-container-low dark:bg-slate-700/40 border border-outline-variant/60 flex flex-col justify-between">
+            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Total Saldo Terkini</span>
+            <p class="text-sm sm:text-base font-extrabold text-primary dark:text-blue-400 font-mono-data mt-1">${formatRp(totalCurrentAll)}</p>
+          </div>
+          <div class="p-3 rounded-2xl bg-surface-container-low dark:bg-slate-700/40 border border-outline-variant/60 flex flex-col justify-between">
+            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Fluktuasi 1 Bulan</span>
+            <p class="text-xs sm:text-sm font-extrabold ${diffColor} font-mono-data mt-1">${diffSign}${formatRp(totalDiff)}</p>
+          </div>
+          <div class="p-3 rounded-2xl bg-surface-container-low dark:bg-slate-700/40 border border-outline-variant/60 flex flex-col justify-between">
+            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Saldo Terbesar</span>
+            <p class="text-xs sm:text-sm font-extrabold text-on-surface truncate mt-1">${highestAccName || '-'} <span class="font-mono-data text-[10px] opacity-75">(${formatRp(highestAccBal > 0 ? highestAccBal : 0)})</span></p>
+          </div>
+          <div class="p-3 rounded-2xl bg-surface-container-low dark:bg-slate-700/40 border border-outline-variant/60 flex flex-col justify-between">
+            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Jumlah Rekening</span>
+            <p class="text-xs sm:text-sm font-extrabold text-on-surface font-mono-data mt-1">${accounts.length} Akun / Wallet</p>
+          </div>
+        `;
+      }
+
+      // 5. Preservasi state visibility dataset
+      let hiddenMap = {};
+      if (walletHistoryLineChart) {
+        walletHistoryLineChart.data.datasets.forEach(ds => {
+          hiddenMap[ds.label] = ds.hidden || false;
+        });
+        walletHistoryLineChart.destroy();
+        walletHistoryLineChart = null;
+      }
+
+      // 6. Buat Dataset Chart.js
+      let ctx = canvas.getContext('2d');
+      let datasets = [];
+
+      let showTotalCheck = document.getElementById('wallet-history-toggle-total');
+      let isShowTotal = showTotalCheck ? showTotalCheck.checked : false;
+      if (isShowTotal) {
+        let totalColor = '#0ea5e9';
+        let totalGrad = ctx.createLinearGradient(0, 0, 0, 320);
+        totalGrad.addColorStop(0, hexToRgba(totalColor, 0.28));
+        totalGrad.addColorStop(0.7, hexToRgba(totalColor, 0.04));
+        totalGrad.addColorStop(1, hexToRgba(totalColor, 0.00));
+
+        datasets.push({
+          label: "Total Saldo Gabungan",
+          data: totalTrajectory,
+          borderColor: totalColor,
+          backgroundColor: totalGrad,
+          fill: true,
+          tension: 0.38,
+          cubicInterpolationMode: 'monotone',
+          borderWidth: 3,
+          borderDash: [5, 4],
+          pointRadius: 0,
+          pointHitRadius: 10,
+          pointHoverRadius: 6,
+          pointHoverBackgroundColor: totalColor,
+          pointHoverBorderColor: '#ffffff',
+          pointHoverBorderWidth: 2.5,
+          hidden: hiddenMap["Total Saldo Gabungan"] || false
+        });
+      }
+
+      accounts.forEach((acc, idx) => {
+        let color = WALLET_COLORS[idx % WALLET_COLORS.length];
+        let grad = ctx.createLinearGradient(0, 0, 0, 320);
+        grad.addColorStop(0, hexToRgba(color, 0.35));
+        grad.addColorStop(0.7, hexToRgba(color, 0.06));
+        grad.addColorStop(1, hexToRgba(color, 0.00));
+
+        datasets.push({
+          label: acc,
+          data: accountTrajectories[acc],
+          borderColor: color,
+          backgroundColor: grad,
+          fill: true,
+          tension: 0.38,
+          cubicInterpolationMode: 'monotone',
+          borderWidth: 2.5,
+          pointRadius: 0,
+          pointHitRadius: 12,
+          pointHoverRadius: 6,
+          pointHoverBackgroundColor: color,
+          pointHoverBorderColor: '#ffffff',
+          pointHoverBorderWidth: 2.5,
+          hidden: hiddenMap[acc] || false
+        });
+      });
+
+      // 7. Render Interactive Chips
+      if (chipsEl) {
+        chipsEl.innerHTML = '';
+        datasets.forEach((ds, dsIdx) => {
+          let isHidden = ds.hidden;
+          let curBalText = "";
+          if (ds.label === "Total Saldo Gabungan") {
+            curBalText = formatRp(totalCurrentAll);
+          } else {
+            let b = (globalData.currentBalances && globalData.currentBalances[ds.label]) ? Number(globalData.currentBalances[ds.label]) : 0;
+            curBalText = formatRp(b);
+          }
+          
+          let activeClasses = isHidden
+            ? 'opacity-40 line-through bg-surface-container-low text-gray-400 border-outline-variant'
+            : 'bg-white dark:bg-slate-700 text-on-surface shadow-xs border-outline-variant hover:border-primary';
+
+          chipsEl.innerHTML += `
+            <button type="button" onclick="toggleWalletLineSeries(${dsIdx})" class="px-2.5 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-2 transition-all active:scale-95 ${activeClasses}" title="Klik untuk sembunyikan/tampilkan garis ${ds.label}">
+              <span class="w-2.5 h-2.5 rounded-full inline-block flex-shrink-0" style="background-color: ${ds.borderColor};"></span>
+              <span class="truncate max-w-[120px] sm:max-w-none">${ds.label}</span>
+              <span class="text-[10px] font-mono-data opacity-75 font-semibold">(${curBalText})</span>
+            </button>
+          `;
+        });
+      }
+
+      // 8. Inisialisasi Chart.js
+      walletHistoryLineChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: chartLabels,
+          datasets: datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false
+          },
+          layout: {
+            padding: { top: 15, bottom: 5, left: 5, right: 10 }
+          },
+          scales: {
+            x: {
+              grid: {
+                display: true,
+                color: gridColor,
+                borderDash: [4, 4]
+              },
+              ticks: {
+                color: labelColor,
+                font: { family: 'Plus Jakarta Sans', size: 10, weight: 'bold' },
+                maxRotation: 0,
+                autoSkip: true,
+                maxTicksLimit: 8
+              }
+            },
+            y: {
+              grid: {
+                display: true,
+                color: gridColor,
+                borderDash: [4, 4]
+              },
+              ticks: {
+                color: labelColor,
+                font: { family: 'JetBrains Mono', size: 10 },
+                callback: function(value) {
+                  if (Math.abs(value) >= 1000000000) return 'Rp ' + (value / 1000000000).toFixed(1).replace('.0','') + 'M';
+                  if (Math.abs(value) >= 1000000) return 'Rp ' + (value / 1000000).toFixed(1).replace('.0','') + 'Jt';
+                  if (Math.abs(value) >= 1000) return 'Rp ' + (value / 1000).toFixed(0) + 'k';
+                  return 'Rp ' + value;
+                }
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: false
+            },
+            datalabels: {
+              display: false
+            },
+            tooltip: {
+              backgroundColor: isDark ? 'rgba(15, 23, 42, 0.92)' : 'rgba(255, 255, 255, 0.95)',
+              titleColor: isDark ? '#ffffff' : '#0f172a',
+              bodyColor: isDark ? '#cbd5e1' : '#334155',
+              borderColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)',
+              borderWidth: 1,
+              padding: 10,
+              boxPadding: 4,
+              usePointStyle: true,
+              callbacks: {
+                title: function(items) {
+                  let idx = items[0].dataIndex;
+                  let d = dateList[idx];
+                  if (!d) return items[0].label;
+                  const dayNames = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+                  return `${dayNames[d.getDay()]}, ${d.getDate()} ${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+                },
+                label: function(c) {
+                  let val = c.raw !== undefined ? c.raw : 0;
+                  return ` ${c.dataset.label}: ${formatRp(val)}`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function toggleWalletLineSeries(datasetIdx) {
+      if (!walletHistoryLineChart) return;
+      let meta = walletHistoryLineChart.getDatasetMeta(datasetIdx);
+      if (!meta) return;
+      let newHidden = !meta.hidden;
+      meta.hidden = newHidden;
+      if (walletHistoryLineChart.data.datasets[datasetIdx]) {
+        walletHistoryLineChart.data.datasets[datasetIdx].hidden = newHidden;
+      }
+      walletHistoryLineChart.update();
+      renderWalletHistoryChartChipsOnly();
+    }
+
+    function toggleAllWalletHistoryLines(showAll) {
+      if (!walletHistoryLineChart) return;
+      walletHistoryLineChart.data.datasets.forEach((ds, idx) => {
+        let meta = walletHistoryLineChart.getDatasetMeta(idx);
+        if (meta) meta.hidden = !showAll;
+        ds.hidden = !showAll;
+      });
+      walletHistoryLineChart.update();
+      renderWalletHistoryChartChipsOnly();
+    }
+
+    function renderWalletHistoryChartChipsOnly() {
+      if (!walletHistoryLineChart) return;
+      let chipsEl = document.getElementById('wallet-history-chips');
+      if (!chipsEl) return;
+      let totalCurrentAll = 0;
+      if (globalData.accounts) {
+        globalData.accounts.forEach(a => {
+          totalCurrentAll += (globalData.currentBalances && globalData.currentBalances[a]) ? Number(globalData.currentBalances[a]) : 0;
+        });
+      }
+      chipsEl.innerHTML = '';
+      walletHistoryLineChart.data.datasets.forEach((ds, dsIdx) => {
+        let isHidden = ds.hidden;
+        let curBalText = "";
+        if (ds.label === "Total Saldo Gabungan") {
+          curBalText = formatRp(totalCurrentAll);
+        } else {
+          let b = (globalData.currentBalances && globalData.currentBalances[ds.label]) ? Number(globalData.currentBalances[ds.label]) : 0;
+          curBalText = formatRp(b);
+        }
+        let activeClasses = isHidden
+          ? 'opacity-40 line-through bg-surface-container-low text-gray-400 border-outline-variant'
+          : 'bg-white dark:bg-slate-700 text-on-surface shadow-xs border-outline-variant hover:border-primary';
+
+        chipsEl.innerHTML += `
+          <button type="button" onclick="toggleWalletLineSeries(${dsIdx})" class="px-2.5 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-2 transition-all active:scale-95 ${activeClasses}" title="Klik untuk sembunyikan/tampilkan garis ${ds.label}">
+            <span class="w-2.5 h-2.5 rounded-full inline-block flex-shrink-0" style="background-color: ${ds.borderColor};"></span>
+            <span class="truncate max-w-[120px] sm:max-w-none">${ds.label}</span>
+            <span class="text-[10px] font-mono-data opacity-75 font-semibold">(${curBalText})</span>
+          </button>
+        `;
+      });
+    }
+
     function renderDashboard() { 
       let sumInvest = 0, sumSinking = 0, sumGoals = 0; 
       const calcNet = (obj) => { let total = 0; if(obj) Object.keys(obj).forEach(k => { let flow = getCategoryCashflowNet(k); let net = (obj[k].initial || 0) + flow.net - (obj[k].used || 0) - flow.used; if(net > 0) total += net; }); return total; }; 
@@ -6440,6 +6910,9 @@
 
       // Render Mini Donut Chart
       renderWalletDistChart(chartLabels, chartData, chartColors, totalBank, maxBal, topWalletName);
+
+      // Render Diagram Tren Saldo Rekening / Wallet (1 Bulan)
+      renderWalletHistoryChart();
 
       renderBudgetRecap(); 
       renderInvestRecap(); 
