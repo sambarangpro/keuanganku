@@ -503,6 +503,44 @@
     </div>
   </div>
 
+  <!-- MODAL POP-UP DIALOG PENGINGAT JATUH TEMPO -->
+  <div id="modal-due-date-popup" onclick="handleDueDateBackdropClick(event)" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-[95] flex items-center justify-center hidden opacity-0 transition-opacity duration-200 p-4 overflow-y-auto">
+    <div id="modal-due-date-card" class="bg-white dark:bg-slate-900 border border-outline-variant rounded-3xl max-w-lg w-full p-5 sm:p-6 space-y-4 shadow-2xl relative my-auto transform scale-95 transition-transform duration-200">
+      <!-- HEADER POP-UP DENGAN TOMBOL CLOSE (X) SANGAT JELAS -->
+      <div class="flex items-center justify-between border-b border-outline-variant/40 pb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-red-500/15 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-2xl animate-pulse">notifications_active</span>
+          </div>
+          <div>
+            <h3 class="font-bold text-base text-on-surface">Pengingat Jatuh Tempo</h3>
+            <p class="text-[11px] text-gray-500 dark:text-gray-400">Ada kewajiban pembayaran yang perlu diselesaikan</p>
+          </div>
+        </div>
+        <!-- TOMBOL CLOSE (X) BESAR, JELAS, DAN KONTRAS TINGGI -->
+        <button type="button" onclick="closeDueDateModalPopup()" class="w-9 h-9 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 flex items-center justify-center transition-all cursor-pointer shadow-xs active:scale-90 font-black text-lg border border-gray-300 dark:border-slate-700" title="Tutup Pop-up (✕)">
+          ✕
+        </button>
+      </div>
+
+      <!-- KONTEN DAFTAR PENGINGAT -->
+      <div id="modal-due-date-items" class="space-y-2.5 max-h-[55vh] overflow-y-auto pr-1">
+        <!-- Otomatis diisi oleh JavaScript -->
+      </div>
+
+      <!-- FOOTER POP-UP -->
+      <div class="pt-3 border-t border-outline-variant/30 flex items-center justify-between gap-2 flex-wrap">
+        <label class="flex items-center gap-2 cursor-pointer text-xs text-gray-500 dark:text-gray-400">
+          <input type="checkbox" id="chk-dont-show-due-today" onchange="toggleDismissDueToday(this.checked)" class="rounded border-gray-400 text-primary">
+          <span>Jangan tampilkan lagi pop-up ini hari ini</span>
+        </label>
+        <button type="button" onclick="closeDueDateModalPopup()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 text-white font-bold rounded-xl text-xs transition-all active:scale-95 cursor-pointer flex items-center gap-1.5 shadow-sm">
+          <span>✕ Tutup</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL PANDUAN & TRIGGER INSTAL PWA -->
   <div id="pwa-install-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300 p-4">
     <div id="pwa-install-card" class="bg-white dark:bg-slate-900 border border-outline-variant rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl transform scale-95 transition-transform duration-300 text-center">
@@ -1549,14 +1587,18 @@
                 <p class="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
                   Dapatkan notifikasi pengingat otomatis di layar & bilah status HP/Laptop saat tanggal jatuh tempo pembayaran cicilan, utang, atau tagihan rutin tiba agar tidak terlewat.
                 </p>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-                  <button id="btn-toggle-notif-perm" onclick="requestNotificationPermissionInteractive()" class="py-3 px-4 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow-md flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+                  <button id="btn-toggle-notif-perm" onclick="requestNotificationPermissionInteractive()" class="py-3 px-3 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow-md flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer">
                     <span class="material-symbols-outlined text-base">notifications</span>
-                    <span id="btn-toggle-notif-label">Aktifkan Notifikasi</span>
+                    <span id="btn-toggle-notif-label">Aktifkan Izin</span>
                   </button>
-                  <button onclick="testSystemNotification()" class="py-3 px-4 bg-white dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-slate-700 border border-amber-300 dark:border-amber-900/60 text-amber-700 dark:text-amber-400 font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer" title="Kirim notifikasi uji coba ke perangkat ini">
+                  <button onclick="testSystemNotification()" class="py-3 px-3 bg-white dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-slate-700 border border-amber-300 dark:border-amber-900/60 text-amber-700 dark:text-amber-400 font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer" title="Kirim notifikasi uji coba ke bilah status HP/PC">
                     <span class="material-symbols-outlined text-base">send_to_mobile</span>
-                    <span>Tes Notifikasi Perangkat</span>
+                    <span>Tes Notifikasi HP/PC</span>
+                  </button>
+                  <button onclick="openDueDateModalPopupDemo()" class="py-3 px-3 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer" title="Buka dialog pop-up pengingat jatuh tempo lengkap dengan tombol close (X)">
+                    <span class="material-symbols-outlined text-base">notifications_active</span>
+                    <span>Buka Pop-up Pengingat (✕)</span>
                   </button>
                 </div>
                 <div id="setup-notif-hint" class="text-[10px] text-gray-500 pt-1">
@@ -5596,6 +5638,113 @@
       html2pdf().set(opt).from(element).save();
     }
     
+    let activeDueModalItems = [];
+
+    function openDueDateModalPopup(items) {
+      let modal = document.getElementById('modal-due-date-popup');
+      let card = document.getElementById('modal-due-date-card');
+      let itemsContainer = document.getElementById('modal-due-date-items');
+      if (!modal || !itemsContainer) return;
+
+      let list = items || activeDueModalItems;
+      if (!list || list.length === 0) {
+        itemsContainer.innerHTML = '<div class="text-center py-6 text-gray-500 text-xs"><span class="material-symbols-outlined text-3xl text-green-500 block mb-1">verified</span>Semua kewajiban pembayaran dalam kondisi aman. Tidak ada tagihan atau utang yang jatuh tempo saat ini.</div>';
+      } else {
+        itemsContainer.innerHTML = list.map(it => `
+          <div class="p-3.5 rounded-2xl border ${it.borderClass} ${it.bgClass} flex items-center justify-between gap-3 text-xs shadow-xs">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-10 h-10 rounded-xl ${it.iconBgClass} flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-2xl ${it.iconColorClass}">${it.icon}</span>
+              </div>
+              <div class="min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="font-extrabold text-xs uppercase ${it.titleColorClass}">${it.title}</span>
+                  <span class="text-[9px] px-2 py-0.5 rounded-full font-extrabold ${it.badgeClass}">${it.badge}</span>
+                </div>
+                <p class="text-[11px] ${it.descColorClass} mt-0.5 leading-snug">${it.desc}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button onclick="closeDueDateModalPopup(); ${it.actionOnClick}" class="px-3.5 py-2 ${it.btnClass} font-extrabold rounded-xl text-xs shadow-sm transition-all active:scale-95 cursor-pointer">
+                ${it.actionLabel}
+              </button>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        if (card) card.classList.remove('scale-95');
+      }, 10);
+    }
+
+    function closeDueDateModalPopup() {
+      let modal = document.getElementById('modal-due-date-popup');
+      let card = document.getElementById('modal-due-date-card');
+      if (!modal) return;
+      sessionStorage.setItem('KEUANGANKU_DUE_MODAL_DISMISSED', 'true');
+      modal.classList.add('opacity-0');
+      if (card) card.classList.add('scale-95');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 200);
+    }
+
+    function handleDueDateBackdropClick(event) {
+      if (event.target.id === 'modal-due-date-popup') {
+        closeDueDateModalPopup();
+      }
+    }
+
+    function toggleDismissDueToday(isChecked) {
+      let todayStr = new Date().toISOString().slice(0, 10);
+      if (isChecked) {
+        localStorage.setItem('KEUANGANKU_DUE_MODAL_DISMISSED_DATE', todayStr);
+      } else {
+        localStorage.removeItem('KEUANGANKU_DUE_MODAL_DISMISSED_DATE');
+      }
+    }
+
+    function openDueDateModalPopupDemo() {
+      let demoItems = [
+        {
+          title: "Cicilan Motor Honda",
+          badge: "JATUH TEMPO HARI INI",
+          desc: "Nominal: <b>Rp 750.000</b> | Tgl Jatuh Tempo: <b>28</b>",
+          icon: "notifications_active",
+          borderClass: "border-red-500/50",
+          bgClass: "bg-red-500/10 dark:bg-red-950/40",
+          iconBgClass: "bg-red-500/20",
+          iconColorClass: "text-red-600 dark:text-red-400 animate-pulse",
+          titleColorClass: "text-red-700 dark:text-red-300",
+          descColorClass: "text-red-600/90 dark:text-red-300/80",
+          badgeClass: "bg-red-500/20 text-red-700 dark:text-red-300 border border-red-500/30",
+          btnClass: "bg-red-600 hover:bg-red-700 text-white",
+          actionLabel: "Bayar Sekarang",
+          actionOnClick: "navTo('transaksi')"
+        },
+        {
+          title: "Tagihan Listrik PLN",
+          badge: "H-2 LAGI",
+          desc: "Nominal: <b>Rp 350.000</b> | Jatuh tempo tgl <b>30</b>",
+          icon: "warning",
+          borderClass: "border-amber-500/50",
+          bgClass: "bg-amber-500/10 dark:bg-amber-950/40",
+          iconBgClass: "bg-amber-500/20",
+          iconColorClass: "text-amber-600 dark:text-amber-400",
+          titleColorClass: "text-amber-800 dark:text-amber-300",
+          descColorClass: "text-amber-700/90 dark:text-amber-300/80",
+          badgeClass: "bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30",
+          btnClass: "bg-amber-600 hover:bg-amber-700 text-white",
+          actionLabel: "Bayar Sekarang",
+          actionOnClick: "navTo('transaksi')"
+        }
+      ];
+      openDueDateModalPopup(demoItems);
+    }
+
     function dismissDueAlert(alertKey) {
       sessionStorage.setItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey, 'true');
       checkDueDateAlerts();
@@ -5612,6 +5761,7 @@
       let currentMonth = today.getMonth();
       let currentYear = today.getFullYear();
       let alertsHtml = [];
+      activeDueModalItems = [];
 
       // Helper untuk cek pembayaran pada bulan dan tahun berjalan
       const isPaidThisMonth = (category, cashflowType) => {
@@ -5628,9 +5778,6 @@
       // 1. CEK UTANG & CICILAN (globalData.debtData)
       if (globalData.debtData && Object.keys(globalData.debtData).length > 0) {
         Object.keys(globalData.debtData).forEach(k => {
-          let alertKey = 'debt_' + k;
-          if (sessionStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey) === 'true') return;
-
           let item = globalData.debtData[k];
           let total = parseFloat(item.total) || 0;
           let paid = parseFloat(item.paid) || 0;
@@ -5664,32 +5811,52 @@
           let payAmount = parseFloat(item.monthlyPay) > 0 ? parseFloat(item.monthlyPay) : unpaid;
           if (payAmount > unpaid) payAmount = unpaid;
           let catLabel = item.category || 'Cicilan';
+          let alertKey = 'debt_' + k;
 
           if (currentDay === dueDay) {
             // HARI INI JATUH TEMPO
-            alertsHtml.push(`
-              <div class="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between gap-3 border-2 border-red-800 animate-pulse">
-                <div class="flex items-center gap-3 min-w-0">
-                  <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                    <span class="material-symbols-outlined text-2xl">notifications_active</span>
+            activeDueModalItems.push({
+              title: `${catLabel}: ${k}`,
+              badge: "JATUH TEMPO HARI INI",
+              desc: `Nominal: <b>${formatRp(payAmount)}</b> | Sisa Total Utang: <b>${formatRp(unpaid)}</b>`,
+              icon: "notifications_active",
+              borderClass: "border-red-500/50",
+              bgClass: "bg-red-500/10 dark:bg-red-950/40",
+              iconBgClass: "bg-red-500/20",
+              iconColorClass: "text-red-600 dark:text-red-400 animate-pulse",
+              titleColorClass: "text-red-700 dark:text-red-300",
+              descColorClass: "text-red-600/90 dark:text-red-300/80",
+              badgeClass: "bg-red-500/20 text-red-700 dark:text-red-300 border border-red-500/30",
+              btnClass: "bg-red-600 hover:bg-red-700 text-white",
+              actionLabel: "Bayar Sekarang",
+              actionOnClick: `quickPayEntry('${escapeForAttr(k)}', 'debt', ${payAmount})`
+            });
+
+            if (sessionStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey) !== 'true') {
+              alertsHtml.push(`
+                <div class="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between gap-3 border-2 border-red-800 animate-pulse">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                      <span class="material-symbols-outlined text-2xl">notifications_active</span>
+                    </div>
+                    <div class="min-w-0">
+                      <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide truncate">🚨 JATUH TEMPO HARI INI: BAYAR ${catLabel.toUpperCase()} - ${k}</h4>
+                      <p class="text-[11px] sm:text-xs text-red-100 font-medium">
+                        Nominal: <b>${formatRp(payAmount)}</b> | Sisa Total Utang: <b>${formatRp(unpaid)}</b>
+                      </p>
+                    </div>
                   </div>
-                  <div class="min-w-0">
-                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide truncate">🚨 JATUH TEMPO HARI INI: BAYAR ${catLabel.toUpperCase()} - ${k}</h4>
-                    <p class="text-[11px] sm:text-xs text-red-100 font-medium">
-                      Nominal: <b>${formatRp(payAmount)}</b> | Sisa Total Utang: <b>${formatRp(unpaid)}</b>
-                    </p>
+                  <div class="flex items-center gap-2 shrink-0">
+                    <button onclick="quickPayEntry('${escapeForAttr(k)}', 'debt', ${payAmount})" class="px-3.5 sm:px-4 py-2 bg-white text-red-700 font-extrabold rounded-xl text-xs shadow-md hover:bg-red-50 active:scale-95 transition-all cursor-pointer">
+                      Bayar Sekarang
+                    </button>
+                    <button type="button" onclick="dismissDueAlert('${alertKey}')" class="w-8 h-8 rounded-xl bg-black/25 hover:bg-black/45 active:scale-90 text-white flex items-center justify-center transition-all cursor-pointer font-bold text-sm shadow-sm" title="Tutup Peringatan Ini (✕)">
+                      ✕
+                    </button>
                   </div>
                 </div>
-                <div class="flex items-center gap-2 shrink-0">
-                  <button onclick="quickPayEntry('${escapeForAttr(k)}', 'debt', ${payAmount})" class="px-3.5 sm:px-4 py-2 bg-white text-red-700 font-extrabold rounded-xl text-xs shadow-md hover:bg-red-50 active:scale-95 transition-all cursor-pointer">
-                    Bayar Sekarang
-                  </button>
-                  <button type="button" onclick="dismissDueAlert('${alertKey}')" class="w-8 h-8 rounded-xl bg-white/20 hover:bg-white/35 active:scale-90 text-white flex items-center justify-center transition-all cursor-pointer" title="Tutup Notifikasi">
-                    <span class="material-symbols-outlined text-base">close</span>
-                  </button>
-                </div>
-              </div>
-            `);
+              `);
+            }
             sendBrowserNotification(
               `🚨 Jatuh Tempo Hari Ini: Bayar ${k}`,
               {
@@ -5701,29 +5868,48 @@
           } else if (dueDay > currentDay && (dueDay - currentDay) <= 3) {
             // H-3 sampai H-1
             let diff = dueDay - currentDay;
-            alertsHtml.push(`
-              <div class="bg-gradient-to-r from-amber-500 to-orange-600 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between gap-3 border-2 border-amber-600">
-                <div class="flex items-center gap-3 min-w-0">
-                  <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                    <span class="material-symbols-outlined text-2xl">warning</span>
+            activeDueModalItems.push({
+              title: `${catLabel}: ${k}`,
+              badge: `H-${diff} LAGI`,
+              desc: `Jatuh tempo tgl <b>${dueDay}</b> | Nominal: <b>${formatRp(payAmount)}</b>`,
+              icon: "warning",
+              borderClass: "border-amber-500/50",
+              bgClass: "bg-amber-500/10 dark:bg-amber-950/40",
+              iconBgClass: "bg-amber-500/20",
+              iconColorClass: "text-amber-600 dark:text-amber-400",
+              titleColorClass: "text-amber-800 dark:text-amber-300",
+              descColorClass: "text-amber-700/90 dark:text-amber-300/80",
+              badgeClass: "bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30",
+              btnClass: "bg-amber-600 hover:bg-amber-700 text-white",
+              actionLabel: "Bayar Sekarang",
+              actionOnClick: `quickPayEntry('${escapeForAttr(k)}', 'debt', ${payAmount})`
+            });
+
+            if (sessionStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey) !== 'true') {
+              alertsHtml.push(`
+                <div class="bg-gradient-to-r from-amber-500 to-orange-600 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between gap-3 border-2 border-amber-600">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                      <span class="material-symbols-outlined text-2xl">warning</span>
+                    </div>
+                    <div class="min-w-0">
+                      <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide truncate">⚠️ PENGINGAT ${catLabel.toUpperCase()}: ${k} (Sisa ${diff} Hari Lagi)</h4>
+                      <p class="text-[11px] sm:text-xs text-amber-100 font-medium">
+                        Jatuh tempo tgl <b>${dueDay}</b> | Nominal: <b>${formatRp(payAmount)}</b> | Sisa Utang: <b>${formatRp(unpaid)}</b>
+                      </p>
+                    </div>
                   </div>
-                  <div class="min-w-0">
-                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide truncate">⚠️ PENGINGAT ${catLabel.toUpperCase()}: ${k} (Sisa ${diff} Hari Lagi)</h4>
-                    <p class="text-[11px] sm:text-xs text-amber-100 font-medium">
-                      Jatuh tempo tgl <b>${dueDay}</b> | Nominal: <b>${formatRp(payAmount)}</b> | Sisa Utang: <b>${formatRp(unpaid)}</b>
-                    </p>
+                  <div class="flex items-center gap-2 shrink-0">
+                    <button onclick="quickPayEntry('${escapeForAttr(k)}', 'debt', ${payAmount})" class="px-3.5 sm:px-4 py-2 bg-white text-amber-800 font-extrabold rounded-xl text-xs shadow-md hover:bg-amber-50 active:scale-95 transition-all cursor-pointer">
+                      Bayar Lebih Awal
+                    </button>
+                    <button type="button" onclick="dismissDueAlert('${alertKey}')" class="w-8 h-8 rounded-xl bg-black/25 hover:bg-black/45 active:scale-90 text-white flex items-center justify-center transition-all cursor-pointer font-bold text-sm shadow-sm" title="Tutup Peringatan Ini (✕)">
+                      ✕
+                    </button>
                   </div>
                 </div>
-                <div class="flex items-center gap-2 shrink-0">
-                  <button onclick="quickPayEntry('${escapeForAttr(k)}', 'debt', ${payAmount})" class="px-3.5 sm:px-4 py-2 bg-white text-amber-800 font-extrabold rounded-xl text-xs shadow-md hover:bg-amber-50 active:scale-95 transition-all cursor-pointer">
-                    Bayar Lebih Awal
-                  </button>
-                  <button type="button" onclick="dismissDueAlert('${alertKey}')" class="w-8 h-8 rounded-xl bg-white/20 hover:bg-white/35 active:scale-90 text-white flex items-center justify-center transition-all cursor-pointer" title="Tutup Notifikasi">
-                    <span class="material-symbols-outlined text-base">close</span>
-                  </button>
-                </div>
-              </div>
-            `);
+              `);
+            }
             sendBrowserNotification(
               `⚠️ Pengingat Jatuh Tempo: ${k} (${diff} Hari Lagi)`,
               {
@@ -5735,29 +5921,48 @@
           } else if (currentDay > dueDay) {
             // TERLAMBAT / SUDAH LEWAT JATUH TEMPO
             let lateDays = currentDay - dueDay;
-            alertsHtml.push(`
-              <div class="bg-gradient-to-r from-rose-900 via-red-900 to-rose-950 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between gap-3 border-2 border-rose-600">
-                <div class="flex items-center gap-3 min-w-0">
-                  <div class="w-10 h-10 rounded-xl bg-rose-800/80 text-rose-300 flex items-center justify-center shrink-0">
-                    <span class="material-symbols-outlined text-2xl animate-bounce">error</span>
+            activeDueModalItems.push({
+              title: `${catLabel}: ${k}`,
+              badge: `TERLAMBAT ${lateDays} HARI`,
+              desc: `Belum dibayar sejak tgl <b>${dueDay}</b> | Nominal: <b>${formatRp(payAmount)}</b>`,
+              icon: "error",
+              borderClass: "border-rose-500/50",
+              bgClass: "bg-rose-500/10 dark:bg-rose-950/40",
+              iconBgClass: "bg-rose-500/20",
+              iconColorClass: "text-rose-500 animate-bounce",
+              titleColorClass: "text-rose-800 dark:text-rose-200",
+              descColorClass: "text-rose-700/90 dark:text-rose-300/80",
+              badgeClass: "bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-500/30",
+              btnClass: "bg-rose-600 hover:bg-rose-700 text-white",
+              actionLabel: "Bayar Segera",
+              actionOnClick: `quickPayEntry('${escapeForAttr(k)}', 'debt', ${payAmount})`
+            });
+
+            if (sessionStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey) !== 'true') {
+              alertsHtml.push(`
+                <div class="bg-gradient-to-r from-rose-900 via-red-900 to-rose-950 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between gap-3 border-2 border-rose-600">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-10 h-10 rounded-xl bg-rose-800/80 text-rose-300 flex items-center justify-center shrink-0">
+                      <span class="material-symbols-outlined text-2xl animate-bounce">error</span>
+                    </div>
+                    <div class="min-w-0">
+                      <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide text-rose-200 truncate">‼️ LEWAT JATUH TEMPO: ${k} (Terlambat ${lateDays} Hari)</h4>
+                      <p class="text-[11px] sm:text-xs text-rose-100 font-medium">
+                        Cicilan bulan ini belum dibayar sejak tgl <b>${dueDay}</b> | Nominal: <b>${formatRp(payAmount)}</b>
+                      </p>
+                    </div>
                   </div>
-                  <div class="min-w-0">
-                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide text-rose-200 truncate">‼️ LEWAT JATUH TEMPO: ${k} (Terlambat ${lateDays} Hari)</h4>
-                    <p class="text-[11px] sm:text-xs text-rose-100 font-medium">
-                      Cicilan bulan ini belum dibayar sejak tgl <b>${dueDay}</b> | Nominal: <b>${formatRp(payAmount)}</b>
-                    </p>
+                  <div class="flex items-center gap-2 shrink-0">
+                    <button onclick="quickPayEntry('${escapeForAttr(k)}', 'debt', ${payAmount})" class="px-3.5 sm:px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white font-extrabold rounded-xl text-xs shadow-md border border-rose-400 active:scale-95 transition-all cursor-pointer">
+                      Bayar Segera
+                    </button>
+                    <button type="button" onclick="dismissDueAlert('${alertKey}')" class="w-8 h-8 rounded-xl bg-black/25 hover:bg-black/45 active:scale-90 text-white flex items-center justify-center transition-all cursor-pointer font-bold text-sm shadow-sm" title="Tutup Peringatan Ini (✕)">
+                      ✕
+                    </button>
                   </div>
                 </div>
-                <div class="flex items-center gap-2 shrink-0">
-                  <button onclick="quickPayEntry('${escapeForAttr(k)}', 'debt', ${payAmount})" class="px-3.5 sm:px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white font-extrabold rounded-xl text-xs shadow-md border border-rose-400 active:scale-95 transition-all cursor-pointer">
-                    Bayar Segera
-                  </button>
-                  <button type="button" onclick="dismissDueAlert('${alertKey}')" class="w-8 h-8 rounded-xl bg-white/20 hover:bg-white/35 active:scale-90 text-white flex items-center justify-center transition-all cursor-pointer" title="Tutup Notifikasi">
-                    <span class="material-symbols-outlined text-base">close</span>
-                  </button>
-                </div>
-              </div>
-            `);
+              `);
+            }
             sendBrowserNotification(
               `‼️ TERLAMBAT: Bayar ${k}!`,
               {
@@ -5773,12 +5978,10 @@
       // 2. CEK TAGIHAN RUTIN (globalData.routinePayments)
       if (globalData.routinePayments && Object.keys(globalData.routinePayments).length > 0) {
         Object.keys(globalData.routinePayments).forEach(itemKey => {
-          let alertKey = 'routine_' + itemKey;
-          if (sessionStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey) === 'true') return;
-
           let item = globalData.routinePayments[itemKey];
           let dueDay = parseInt(item.dueDay, 10) || 1;
           let amt = parseFloat(item.amount) || 0;
+          let alertKey = 'routine_' + itemKey;
 
           // Cek apakah sudah dibayar bulan ini
           let alreadyPaid = false;
@@ -5795,29 +5998,48 @@
           if (alreadyPaid) return; // Sudah dibayar bulan ini, lewati
 
           if (currentDay === dueDay) {
-            alertsHtml.push(`
-              <div class="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between gap-3 border-2 border-red-800 animate-pulse">
-                <div class="flex items-center gap-3 min-w-0">
-                  <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                    <span class="material-symbols-outlined text-2xl">receipt_long</span>
+            activeDueModalItems.push({
+              title: `Tagihan: ${itemKey}`,
+              badge: "JATUH TEMPO HARI INI",
+              desc: `Nominal: <b>${formatRp(amt)}</b> | Jatuh tempo hari ini (Tgl ${dueDay})`,
+              icon: "receipt_long",
+              borderClass: "border-red-500/50",
+              bgClass: "bg-red-500/10 dark:bg-red-950/40",
+              iconBgClass: "bg-red-500/20",
+              iconColorClass: "text-red-600 dark:text-red-400 animate-pulse",
+              titleColorClass: "text-red-700 dark:text-red-300",
+              descColorClass: "text-red-600/90 dark:text-red-300/80",
+              badgeClass: "bg-red-500/20 text-red-700 dark:text-red-300 border border-red-500/30",
+              btnClass: "bg-red-600 hover:bg-red-700 text-white",
+              actionLabel: "Bayar Sekarang",
+              actionOnClick: `quickPayEntry('${escapeForAttr(itemKey)}', 'routine', ${amt})`
+            });
+
+            if (sessionStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey) !== 'true') {
+              alertsHtml.push(`
+                <div class="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between gap-3 border-2 border-red-800 animate-pulse">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                      <span class="material-symbols-outlined text-2xl">receipt_long</span>
+                    </div>
+                    <div class="min-w-0">
+                      <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide truncate">🚨 JATUH TEMPO HARI INI: BAYAR TAGIHAN ${itemKey}</h4>
+                      <p class="text-[11px] sm:text-xs text-red-100 font-medium">
+                        Nominal: <b>${formatRp(amt)}</b> | Jatuh tempo hari ini (Tgl ${dueDay})
+                      </p>
+                    </div>
                   </div>
-                  <div class="min-w-0">
-                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide truncate">🚨 JATUH TEMPO HARI INI: BAYAR TAGIHAN ${itemKey}</h4>
-                    <p class="text-[11px] sm:text-xs text-red-100 font-medium">
-                      Nominal: <b>${formatRp(amt)}</b> | Jatuh tempo hari ini (Tgl ${dueDay})
-                    </p>
+                  <div class="flex items-center gap-2 shrink-0">
+                    <button onclick="quickPayEntry('${escapeForAttr(itemKey)}', 'routine', ${amt})" class="px-3.5 sm:px-4 py-2 bg-white text-red-700 font-extrabold rounded-xl text-xs shadow-md hover:bg-red-50 active:scale-95 transition-all cursor-pointer">
+                      Bayar Sekarang
+                    </button>
+                    <button type="button" onclick="dismissDueAlert('${alertKey}')" class="w-8 h-8 rounded-xl bg-black/25 hover:bg-black/45 active:scale-90 text-white flex items-center justify-center transition-all cursor-pointer font-bold text-sm shadow-sm" title="Tutup Peringatan Ini (✕)">
+                      ✕
+                    </button>
                   </div>
                 </div>
-                <div class="flex items-center gap-2 shrink-0">
-                  <button onclick="quickPayEntry('${escapeForAttr(itemKey)}', 'routine', ${amt})" class="px-3.5 sm:px-4 py-2 bg-white text-red-700 font-extrabold rounded-xl text-xs shadow-md hover:bg-red-50 active:scale-95 transition-all cursor-pointer">
-                    Bayar Sekarang
-                  </button>
-                  <button type="button" onclick="dismissDueAlert('${alertKey}')" class="w-8 h-8 rounded-xl bg-white/20 hover:bg-white/35 active:scale-90 text-white flex items-center justify-center transition-all cursor-pointer" title="Tutup Notifikasi">
-                    <span class="material-symbols-outlined text-base">close</span>
-                  </button>
-                </div>
-              </div>
-            `);
+              `);
+            }
             sendBrowserNotification(
               `🚨 Tagihan Jatuh Tempo Hari Ini: ${itemKey}`,
               {
@@ -5828,29 +6050,48 @@
             );
           } else if (dueDay > currentDay && (dueDay - currentDay) <= 3) {
             let diff = dueDay - currentDay;
-            alertsHtml.push(`
-              <div class="bg-gradient-to-r from-amber-500 to-orange-600 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between gap-3 border-2 border-amber-600">
-                <div class="flex items-center gap-3 min-w-0">
-                  <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                    <span class="material-symbols-outlined text-2xl">warning</span>
+            activeDueModalItems.push({
+              title: `Tagihan: ${itemKey}`,
+              badge: `H-${diff} LAGI`,
+              desc: `Jatuh tempo tgl <b>${dueDay}</b> | Nominal: <b>${formatRp(amt)}</b>`,
+              icon: "warning",
+              borderClass: "border-amber-500/50",
+              bgClass: "bg-amber-500/10 dark:bg-amber-950/40",
+              iconBgClass: "bg-amber-500/20",
+              iconColorClass: "text-amber-600 dark:text-amber-400",
+              titleColorClass: "text-amber-800 dark:text-amber-300",
+              descColorClass: "text-amber-700/90 dark:text-amber-300/80",
+              badgeClass: "bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30",
+              btnClass: "bg-amber-600 hover:bg-amber-700 text-white",
+              actionLabel: "Bayar Sekarang",
+              actionOnClick: `quickPayEntry('${escapeForAttr(itemKey)}', 'routine', ${amt})`
+            });
+
+            if (sessionStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey) !== 'true') {
+              alertsHtml.push(`
+                <div class="bg-gradient-to-r from-amber-500 to-orange-600 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between gap-3 border-2 border-amber-600">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                      <span class="material-symbols-outlined text-2xl">warning</span>
+                    </div>
+                    <div class="min-w-0">
+                      <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide truncate">⚠️ PENGINGAT TAGIHAN: ${itemKey} (Sisa ${diff} Hari Lagi)</h4>
+                      <p class="text-[11px] sm:text-xs text-amber-100 font-medium">
+                        Jatuh tempo tgl <b>${dueDay}</b> | Nominal: <b>${formatRp(amt)}</b>
+                      </p>
+                    </div>
                   </div>
-                  <div class="min-w-0">
-                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide truncate">⚠️ PENGINGAT TAGIHAN: ${itemKey} (Sisa ${diff} Hari Lagi)</h4>
-                    <p class="text-[11px] sm:text-xs text-amber-100 font-medium">
-                      Jatuh tempo tgl <b>${dueDay}</b> | Nominal: <b>${formatRp(amt)}</b>
-                    </p>
+                  <div class="flex items-center gap-2 shrink-0">
+                    <button onclick="quickPayEntry('${escapeForAttr(itemKey)}', 'routine', ${amt})" class="px-3.5 sm:px-4 py-2 bg-white text-amber-800 font-extrabold rounded-xl text-xs shadow-md hover:bg-amber-50 active:scale-95 transition-all cursor-pointer">
+                      Bayar Sekarang
+                    </button>
+                    <button type="button" onclick="dismissDueAlert('${alertKey}')" class="w-8 h-8 rounded-xl bg-black/25 hover:bg-black/45 active:scale-90 text-white flex items-center justify-center transition-all cursor-pointer font-bold text-sm shadow-sm" title="Tutup Peringatan Ini (✕)">
+                      ✕
+                    </button>
                   </div>
                 </div>
-                <div class="flex items-center gap-2 shrink-0">
-                  <button onclick="quickPayEntry('${escapeForAttr(itemKey)}', 'routine', ${amt})" class="px-3.5 sm:px-4 py-2 bg-white text-amber-800 font-extrabold rounded-xl text-xs shadow-md hover:bg-amber-50 active:scale-95 transition-all cursor-pointer">
-                    Bayar Sekarang
-                  </button>
-                  <button type="button" onclick="dismissDueAlert('${alertKey}')" class="w-8 h-8 rounded-xl bg-white/20 hover:bg-white/35 active:scale-90 text-white flex items-center justify-center transition-all cursor-pointer" title="Tutup Notifikasi">
-                    <span class="material-symbols-outlined text-base">close</span>
-                  </button>
-                </div>
-              </div>
-            `);
+              `);
+            }
             sendBrowserNotification(
               `⚠️ Pengingat Tagihan: ${itemKey} (${diff} Hari Lagi)`,
               {
@@ -5861,29 +6102,48 @@
             );
           } else if (currentDay > dueDay) {
             let lateDays = currentDay - dueDay;
-            alertsHtml.push(`
-              <div class="bg-gradient-to-r from-rose-900 via-red-900 to-rose-950 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between gap-3 border-2 border-rose-600">
-                <div class="flex items-center gap-3 min-w-0">
-                  <div class="w-10 h-10 rounded-xl bg-rose-800/80 text-rose-300 flex items-center justify-center shrink-0">
-                    <span class="material-symbols-outlined text-2xl animate-bounce">error</span>
+            activeDueModalItems.push({
+              title: `Tagihan: ${itemKey}`,
+              badge: `TERLAMBAT ${lateDays} HARI`,
+              desc: `Tagihan belum dibayar sejak tgl <b>${dueDay}</b> | Nominal: <b>${formatRp(amt)}</b>`,
+              icon: "error",
+              borderClass: "border-rose-500/50",
+              bgClass: "bg-rose-500/10 dark:bg-rose-950/40",
+              iconBgClass: "bg-rose-500/20",
+              iconColorClass: "text-rose-500 animate-bounce",
+              titleColorClass: "text-rose-800 dark:text-rose-200",
+              descColorClass: "text-rose-700/90 dark:text-rose-300/80",
+              badgeClass: "bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-500/30",
+              btnClass: "bg-rose-600 hover:bg-rose-700 text-white",
+              actionLabel: "Bayar Segera",
+              actionOnClick: `quickPayEntry('${escapeForAttr(itemKey)}', 'routine', ${amt})`
+            });
+
+            if (sessionStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey) !== 'true') {
+              alertsHtml.push(`
+                <div class="bg-gradient-to-r from-rose-900 via-red-900 to-rose-950 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between gap-3 border-2 border-rose-600">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-10 h-10 rounded-xl bg-rose-800/80 text-rose-300 flex items-center justify-center shrink-0">
+                      <span class="material-symbols-outlined text-2xl animate-bounce">error</span>
+                    </div>
+                    <div class="min-w-0">
+                      <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide text-rose-200 truncate">‼️ LEWAT JATUH TEMPO: TAGIHAN ${itemKey} (Terlambat ${lateDays} Hari)</h4>
+                      <p class="text-[11px] sm:text-xs text-rose-100 font-medium">
+                        Tagihan belum dibayar sejak tgl <b>${dueDay}</b> | Nominal: <b>${formatRp(amt)}</b>
+                      </p>
+                    </div>
                   </div>
-                  <div class="min-w-0">
-                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide text-rose-200 truncate">‼️ LEWAT JATUH TEMPO: TAGIHAN ${itemKey} (Terlambat ${lateDays} Hari)</h4>
-                    <p class="text-[11px] sm:text-xs text-rose-100 font-medium">
-                      Tagihan belum dibayar sejak tgl <b>${dueDay}</b> | Nominal: <b>${formatRp(amt)}</b>
-                    </p>
+                  <div class="flex items-center gap-2 shrink-0">
+                    <button onclick="quickPayEntry('${escapeForAttr(itemKey)}', 'routine', ${amt})" class="px-3.5 sm:px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white font-extrabold rounded-xl text-xs shadow-md border border-rose-400 active:scale-95 transition-all cursor-pointer">
+                      Bayar Segera
+                    </button>
+                    <button type="button" onclick="dismissDueAlert('${alertKey}')" class="w-8 h-8 rounded-xl bg-black/25 hover:bg-black/45 active:scale-90 text-white flex items-center justify-center transition-all cursor-pointer font-bold text-sm shadow-sm" title="Tutup Peringatan Ini (✕)">
+                      ✕
+                    </button>
                   </div>
                 </div>
-                <div class="flex items-center gap-2 shrink-0">
-                  <button onclick="quickPayEntry('${escapeForAttr(itemKey)}', 'routine', ${amt})" class="px-3.5 sm:px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white font-extrabold rounded-xl text-xs shadow-md border border-rose-400 active:scale-95 transition-all cursor-pointer">
-                    Bayar Segera
-                  </button>
-                  <button type="button" onclick="dismissDueAlert('${alertKey}')" class="w-8 h-8 rounded-xl bg-white/20 hover:bg-white/35 active:scale-90 text-white flex items-center justify-center transition-all cursor-pointer" title="Tutup Notifikasi">
-                    <span class="material-symbols-outlined text-base">close</span>
-                  </button>
-                </div>
-              </div>
-            `);
+              `);
+            }
             sendBrowserNotification(
               `‼️ TERLAMBAT: Tagihan ${itemKey}!`,
               {
@@ -5897,6 +6157,18 @@
       }
 
       container.innerHTML = alertsHtml.join('');
+
+      // Auto-popup modal jika ada utang/tagihan jatuh tempo dan belum ditutup hari ini
+      if (activeDueModalItems.length > 0) {
+        let todayStr = new Date().toISOString().slice(0, 10);
+        let dismissedDate = localStorage.getItem('KEUANGANKU_DUE_MODAL_DISMISSED_DATE');
+        let dismissedSession = sessionStorage.getItem('KEUANGANKU_DUE_MODAL_DISMISSED') === 'true';
+        if (dismissedDate !== todayStr && !dismissedSession) {
+          setTimeout(() => {
+            openDueDateModalPopup();
+          }, 500);
+        }
+      }
     }
 
     function checkReceivableAlerts() {
@@ -5912,9 +6184,6 @@
       let alertsHtml = [];
 
       Object.keys(globalData.receivablesData).forEach(k => {
-        let alertKey = 'rec_' + k;
-        if (sessionStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey) === 'true') return;
-
         let item = globalData.receivablesData[k];
         let total = parseFloat(item.total) || 0;
         let paid = parseFloat(item.paid) || 0;
@@ -5935,31 +6204,34 @@
           let dDate = new Date(item.deadline);
           dDate.setHours(0, 0, 0, 0);
           let diffDays = Math.ceil((dDate - today) / (1000 * 60 * 60 * 24));
+          let alertKey = 'rec_' + k;
 
           if (diffDays === 0) {
-            alertsHtml.push(`
-              <div class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between gap-3 border-2 border-emerald-800 animate-pulse">
-                <div class="flex items-center gap-3 min-w-0">
-                  <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                    <span class="material-symbols-outlined text-2xl">notification_important</span>
+            if (sessionStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey) !== 'true') {
+              alertsHtml.push(`
+                <div class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between gap-3 border-2 border-emerald-800 animate-pulse">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                      <span class="material-symbols-outlined text-2xl">notification_important</span>
+                    </div>
+                    <div class="min-w-0">
+                      <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide truncate">🚨 JATUH TEMPO PENAGIHAN HARI INI: ${k}</h4>
+                      <p class="text-[11px] sm:text-xs text-emerald-100 font-medium">
+                        Sisa Piutang: <b>${formatRp(remaining)}</b> | Deadline Hari Ini (${item.deadline})
+                      </p>
+                    </div>
                   </div>
-                  <div class="min-w-0">
-                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide truncate">🚨 JATUH TEMPO PENAGIHAN HARI INI: ${k}</h4>
-                    <p class="text-[11px] sm:text-xs text-emerald-100 font-medium">
-                      Sisa Piutang: <b>${formatRp(remaining)}</b> | Deadline Hari Ini (${item.deadline})
-                    </p>
+                  <div class="flex items-center gap-2 shrink-0">
+                    <button onclick="quickPayEntry('${escapeForAttr(k)}', 'receivable', ${remaining})" class="px-3.5 sm:px-4 py-2 bg-white text-emerald-800 font-extrabold rounded-xl text-xs shadow-md hover:bg-emerald-50 active:scale-95 transition-all cursor-pointer">
+                      Catat Pelunasan
+                    </button>
+                    <button type="button" onclick="dismissDueAlert('${alertKey}')" class="w-8 h-8 rounded-xl bg-black/25 hover:bg-black/45 active:scale-90 text-white flex items-center justify-center transition-all cursor-pointer font-bold text-sm shadow-sm" title="Tutup Peringatan Ini (✕)">
+                      ✕
+                    </button>
                   </div>
                 </div>
-                <div class="flex items-center gap-2 shrink-0">
-                  <button onclick="quickPayEntry('${escapeForAttr(k)}', 'receivable', ${remaining})" class="px-3.5 sm:px-4 py-2 bg-white text-emerald-800 font-extrabold rounded-xl text-xs shadow-md hover:bg-emerald-50 active:scale-95 transition-all cursor-pointer">
-                    Catat Pelunasan
-                  </button>
-                  <button type="button" onclick="dismissDueAlert('${alertKey}')" class="w-8 h-8 rounded-xl bg-white/20 hover:bg-white/35 active:scale-90 text-white flex items-center justify-center transition-all cursor-pointer" title="Tutup Notifikasi">
-                    <span class="material-symbols-outlined text-base">close</span>
-                  </button>
-                </div>
-              </div>
-            `);
+              `);
+            }
             sendBrowserNotification(
               `🚨 Jatuh Tempo Penagihan Hari Ini: ${k}`,
               {
@@ -5969,29 +6241,31 @@
               `rec-today-${k}-${currentYear}-${currentMonth}`
             );
           } else if (diffDays > 0 && diffDays <= 3) {
-            alertsHtml.push(`
-              <div class="bg-gradient-to-r from-teal-600 to-cyan-700 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between gap-3 border-2 border-teal-800">
-                <div class="flex items-center gap-3 min-w-0">
-                  <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                    <span class="material-symbols-outlined text-2xl">schedule</span>
+            if (sessionStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey) !== 'true') {
+              alertsHtml.push(`
+                <div class="bg-gradient-to-r from-teal-600 to-cyan-700 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between gap-3 border-2 border-teal-800">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                      <span class="material-symbols-outlined text-2xl">schedule</span>
+                    </div>
+                    <div class="min-w-0">
+                      <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide truncate">⏰ JATUH TEMPO PENAGIHAN: ${k} (Sisa ${diffDays} Hari Lagi)</h4>
+                      <p class="text-[11px] sm:text-xs text-teal-100 font-medium">
+                        Sisa Piutang: <b>${formatRp(remaining)}</b> | Deadline: ${item.deadline}
+                      </p>
+                    </div>
                   </div>
-                  <div class="min-w-0">
-                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide truncate">⏰ JATUH TEMPO PENAGIHAN: ${k} (Sisa ${diffDays} Hari Lagi)</h4>
-                    <p class="text-[11px] sm:text-xs text-teal-100 font-medium">
-                      Sisa Piutang: <b>${formatRp(remaining)}</b> | Deadline: ${item.deadline}
-                    </p>
+                  <div class="flex items-center gap-2 shrink-0">
+                    <button onclick="quickPayEntry('${escapeForAttr(k)}', 'receivable', ${remaining})" class="px-3.5 sm:px-4 py-2 bg-white text-teal-900 font-extrabold rounded-xl text-xs shadow-md hover:bg-teal-50 active:scale-95 transition-all cursor-pointer">
+                      Catat Pelunasan
+                    </button>
+                    <button type="button" onclick="dismissDueAlert('${alertKey}')" class="w-8 h-8 rounded-xl bg-black/25 hover:bg-black/45 active:scale-90 text-white flex items-center justify-center transition-all cursor-pointer font-bold text-sm shadow-sm" title="Tutup Peringatan Ini (✕)">
+                      ✕
+                    </button>
                   </div>
                 </div>
-                <div class="flex items-center gap-2 shrink-0">
-                  <button onclick="quickPayEntry('${escapeForAttr(k)}', 'receivable', ${remaining})" class="px-3.5 sm:px-4 py-2 bg-white text-teal-900 font-extrabold rounded-xl text-xs shadow-md hover:bg-teal-50 active:scale-95 transition-all cursor-pointer">
-                    Catat Pelunasan
-                  </button>
-                  <button type="button" onclick="dismissDueAlert('${alertKey}')" class="w-8 h-8 rounded-xl bg-white/20 hover:bg-white/35 active:scale-90 text-white flex items-center justify-center transition-all cursor-pointer" title="Tutup Notifikasi">
-                    <span class="material-symbols-outlined text-base">close</span>
-                  </button>
-                </div>
-              </div>
-            `);
+              `);
+            }
             sendBrowserNotification(
               `⏰ Pengingat Penagihan: ${k} (${diffDays} Hari Lagi)`,
               {
@@ -6002,29 +6276,31 @@
             );
           } else if (diffDays < 0) {
             let lateDays = Math.abs(diffDays);
-            alertsHtml.push(`
-              <div class="bg-gradient-to-r from-purple-900 to-indigo-950 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between gap-3 border-2 border-purple-700">
-                <div class="flex items-center gap-3 min-w-0">
-                  <div class="w-10 h-10 rounded-xl bg-purple-800 text-purple-300 flex items-center justify-center shrink-0">
-                    <span class="material-symbols-outlined text-2xl animate-bounce">alarm_on</span>
+            if (sessionStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey) !== 'true') {
+              alertsHtml.push(`
+                <div class="bg-gradient-to-r from-purple-900 to-indigo-950 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between gap-3 border-2 border-purple-700">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-10 h-10 rounded-xl bg-purple-800 text-purple-300 flex items-center justify-center shrink-0">
+                      <span class="material-symbols-outlined text-2xl animate-bounce">alarm_on</span>
+                    </div>
+                    <div class="min-w-0">
+                      <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide text-purple-200 truncate">‼️ PENAGIHAN LEWAT DEADLINE: ${k} (Terlewat ${lateDays} Hari)</h4>
+                      <p class="text-[11px] sm:text-xs text-purple-100 font-medium">
+                        Sisa Piutang: <b>${formatRp(remaining)}</b> | Deadline: ${item.deadline}
+                      </p>
+                    </div>
                   </div>
-                  <div class="min-w-0">
-                    <h4 class="font-extrabold text-xs sm:text-sm uppercase tracking-wide text-purple-200 truncate">‼️ PENAGIHAN LEWAT DEADLINE: ${k} (Terlewat ${lateDays} Hari)</h4>
-                    <p class="text-[11px] sm:text-xs text-purple-100 font-medium">
-                      Sisa Piutang: <b>${formatRp(remaining)}</b> | Deadline: ${item.deadline}
-                    </p>
+                  <div class="flex items-center gap-2 shrink-0">
+                    <button onclick="quickPayEntry('${escapeForAttr(k)}', 'receivable', ${remaining})" class="px-3.5 sm:px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-extrabold rounded-xl text-xs shadow-md border border-purple-400 active:scale-95 transition-all cursor-pointer">
+                      Catat Pelunasan
+                    </button>
+                    <button type="button" onclick="dismissDueAlert('${alertKey}')" class="w-8 h-8 rounded-xl bg-black/25 hover:bg-black/45 active:scale-90 text-white flex items-center justify-center transition-all cursor-pointer font-bold text-sm shadow-sm" title="Tutup Peringatan Ini (✕)">
+                      ✕
+                    </button>
                   </div>
                 </div>
-                <div class="flex items-center gap-2 shrink-0">
-                  <button onclick="quickPayEntry('${escapeForAttr(k)}', 'receivable', ${remaining})" class="px-3.5 sm:px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-extrabold rounded-xl text-xs shadow-md border border-purple-400 active:scale-95 transition-all cursor-pointer">
-                    Catat Pelunasan
-                  </button>
-                  <button type="button" onclick="dismissDueAlert('${alertKey}')" class="w-8 h-8 rounded-xl bg-white/20 hover:bg-white/35 active:scale-90 text-white flex items-center justify-center transition-all cursor-pointer" title="Tutup Notifikasi">
-                    <span class="material-symbols-outlined text-base">close</span>
-                  </button>
-                </div>
-              </div>
-            `);
+              `);
+            }
             sendBrowserNotification(
               `‼️ Penagihan Lewat Deadline: ${k}!`,
               {
