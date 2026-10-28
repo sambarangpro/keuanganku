@@ -988,18 +988,25 @@
             <div>
               <div class="flex items-center gap-2">
                 <h3 class="font-title-sm font-bold text-on-surface text-sm sm:text-base">Diagram Tren Saldo Rekening & Wallet</h3>
-                <span class="px-2 py-0.5 text-[10px] font-extrabold uppercase rounded-full bg-blue-100 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">1 Bulan</span>
+                <span id="wallet-history-badge" class="px-2.5 py-0.5 text-[10px] font-extrabold uppercase rounded-full bg-blue-100 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 shadow-xs">30 Hari (1 Bulan)</span>
               </div>
-              <p class="text-[11px] text-gray-500 mt-0.5">Pantau dinamika & fluktuasi saldo harian seluruh akun bank serta e-wallet Anda</p>
+              <p class="text-[11px] text-gray-500 mt-0.5">Pantau dinamika fluktuasi saldo harian seluruh akun bank serta e-wallet antar bulan</p>
             </div>
           </div>
 
           <!-- KONTROL FILTER & WAKTU -->
           <div class="flex flex-wrap items-center gap-2">
             <div class="flex items-center bg-surface-container-highest dark:bg-slate-700/60 rounded-xl p-1 border border-outline-variant">
-              <select id="wallet-history-range" onchange="renderWalletHistoryChart()" class="bg-transparent text-xs font-bold text-on-surface px-2.5 py-1 outline-none cursor-pointer">
+              <select id="wallet-history-range" onchange="onWalletHistoryRangeChange()" class="bg-transparent text-xs font-bold text-on-surface px-2 py-1 outline-none cursor-pointer">
                 <option value="30" selected>30 Hari Terakhir (1 Bulan)</option>
                 <option value="month">Bulan Ini Berjalan</option>
+                <option value="prev_month">Bulan Lalu Penuh</option>
+                <option value="2months">Antara 2 Bulan (Bulan Lalu - Bulan Ini)</option>
+                <option value="3months">Antara 3 Bulan (Kuartal)</option>
+                <option value="6months">Antara 6 Bulan (Semester)</option>
+                <option value="ytd">Tahun Ini (Januari - Sekarang)</option>
+                <option value="custom_range">📅 Kustom Rentang Antara Bulan...</option>
+                <option value="custom_single">📅 Pilih 1 Bulan Spesifik...</option>
                 <option value="14">14 Hari Terakhir</option>
                 <option value="7">7 Hari Terakhir</option>
               </select>
@@ -1013,6 +1020,98 @@
             <button type="button" onclick="renderWalletHistoryChart()" title="Segarkan Diagram" class="w-8 h-8 rounded-xl border border-outline-variant bg-surface hover:bg-surface-container-high text-gray-500 hover:text-primary flex items-center justify-center transition-all active:scale-90">
               <span class="material-symbols-outlined text-base">refresh</span>
             </button>
+          </div>
+        </div>
+
+        <!-- SUB-FILTER BAR: RENTANG ANTARA BULAN (KUSTOM DARI BULAN X S/D BULAN Y) -->
+        <div id="wallet-history-custom-range-bar" class="hidden p-3 rounded-2xl bg-surface-container-low dark:bg-slate-700/50 border border-blue-500/30 flex flex-wrap items-center justify-between gap-3 text-xs animate-fadeIn">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="font-bold text-primary dark:text-blue-400 flex items-center gap-1 text-xs">
+              <span class="material-symbols-outlined text-sm">date_range</span>
+              <span>Filter Antara Bulan:</span>
+            </span>
+
+            <!-- Dari Bulan -->
+            <div class="flex items-center gap-1.5 bg-white dark:bg-slate-800 px-2.5 py-1.5 rounded-xl border border-outline-variant shadow-xs">
+              <span class="text-[10px] text-gray-400 font-bold uppercase">Dari:</span>
+              <select id="wallet-range-from-month" onchange="renderWalletHistoryChart()" class="bg-transparent text-xs font-bold text-on-surface outline-none cursor-pointer">
+                <option value="0">Januari</option>
+                <option value="1">Februari</option>
+                <option value="2">Maret</option>
+                <option value="3">April</option>
+                <option value="4">Mei</option>
+                <option value="5">Juni</option>
+                <option value="6">Juli</option>
+                <option value="7">Agustus</option>
+                <option value="8">September</option>
+                <option value="9">Oktober</option>
+                <option value="10">November</option>
+                <option value="11">Desember</option>
+              </select>
+              <select id="wallet-range-from-year" onchange="renderWalletHistoryChart()" class="bg-transparent text-xs font-bold text-on-surface outline-none cursor-pointer font-mono-data">
+              </select>
+            </div>
+
+            <span class="text-gray-400 font-extrabold text-xs">s/d</span>
+
+            <!-- Sampai Bulan -->
+            <div class="flex items-center gap-1.5 bg-white dark:bg-slate-800 px-2.5 py-1.5 rounded-xl border border-outline-variant shadow-xs">
+              <span class="text-[10px] text-gray-400 font-bold uppercase">Sampai:</span>
+              <select id="wallet-range-to-month" onchange="renderWalletHistoryChart()" class="bg-transparent text-xs font-bold text-on-surface outline-none cursor-pointer">
+                <option value="0">Januari</option>
+                <option value="1">Februari</option>
+                <option value="2">Maret</option>
+                <option value="3">April</option>
+                <option value="4">Mei</option>
+                <option value="5">Juni</option>
+                <option value="6">Juli</option>
+                <option value="7">Agustus</option>
+                <option value="8">September</option>
+                <option value="9">Oktober</option>
+                <option value="10">November</option>
+                <option value="11">Desember</option>
+              </select>
+              <select id="wallet-range-to-year" onchange="renderWalletHistoryChart()" class="bg-transparent text-xs font-bold text-on-surface outline-none cursor-pointer font-mono-data">
+              </select>
+            </div>
+          </div>
+
+          <!-- Presets Cepat Antara Bulan -->
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="text-[10px] text-gray-400 font-bold uppercase mr-0.5">Preset:</span>
+            <button type="button" onclick="setWalletMonthRangePreset(0, 4)" class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 transition-all active:scale-95">Jan - Mei</button>
+            <button type="button" onclick="setWalletMonthRangePreset(0, 9)" class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-all active:scale-95">Jan - Okt</button>
+            <button type="button" onclick="setWalletMonthRangePreset(new Date().getMonth() - 1, new Date().getMonth())" class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-800 transition-all active:scale-95">2 Bln Terakhir</button>
+            <button type="button" onclick="setWalletMonthRangePreset(new Date().getMonth() - 2, new Date().getMonth())" class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-300 hover:bg-sky-200 dark:hover:bg-sky-800 transition-all active:scale-95">3 Bln Terakhir</button>
+          </div>
+        </div>
+
+        <!-- SUB-FILTER BAR: PILIH 1 BULAN SPESIFIK -->
+        <div id="wallet-history-custom-single-bar" class="hidden p-3 rounded-2xl bg-surface-container-low dark:bg-slate-700/50 border border-blue-500/30 flex flex-wrap items-center justify-between gap-3 text-xs animate-fadeIn">
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-primary dark:text-blue-400 flex items-center gap-1 text-xs">
+              <span class="material-symbols-outlined text-sm">calendar_month</span>
+              <span>Pilih Bulan Spesifik:</span>
+            </span>
+
+            <div class="flex items-center gap-1.5 bg-white dark:bg-slate-800 px-2.5 py-1.5 rounded-xl border border-outline-variant shadow-xs">
+              <select id="wallet-single-month" onchange="renderWalletHistoryChart()" class="bg-transparent text-xs font-bold text-on-surface outline-none cursor-pointer">
+                <option value="0">Januari</option>
+                <option value="1">Februari</option>
+                <option value="2">Maret</option>
+                <option value="3">April</option>
+                <option value="4">Mei</option>
+                <option value="5">Juni</option>
+                <option value="6">Juli</option>
+                <option value="7">Agustus</option>
+                <option value="8">September</option>
+                <option value="9">Oktober</option>
+                <option value="10">November</option>
+                <option value="11">Desember</option>
+              </select>
+              <select id="wallet-single-year" onchange="renderWalletHistoryChart()" class="bg-transparent text-xs font-bold text-on-surface outline-none cursor-pointer font-mono-data">
+              </select>
+            </div>
           </div>
         </div>
 
@@ -6455,7 +6554,7 @@
     }
 
     // ==============================================================================
-    // DIAGRAM PERGERAKAN & TREN SALDO SEMUA REKENING / WALLET (1 BULAN)
+    // DIAGRAM PERGERAKAN & TREN SALDO SEMUA REKENING / WALLET (1 BULAN & ANTARA BULAN)
     // ==============================================================================
     let walletHistoryLineChart = null;
 
@@ -6468,9 +6567,97 @@
       return `rgba(${(num >> 16) & 255}, ${(num >> 8) & 255}, ${num & 255}, ${alpha})`;
     }
 
+    function onWalletHistoryRangeChange() {
+      let rangeSelect = document.getElementById('wallet-history-range');
+      let val = rangeSelect ? rangeSelect.value : "30";
+      
+      let customRangeBar = document.getElementById('wallet-history-custom-range-bar');
+      let customSingleBar = document.getElementById('wallet-history-custom-single-bar');
+
+      if (customRangeBar) {
+        if (val === "custom_range") customRangeBar.classList.remove('hidden');
+        else customRangeBar.classList.add('hidden');
+      }
+      if (customSingleBar) {
+        if (val === "custom_single") customSingleBar.classList.remove('hidden');
+        else customSingleBar.classList.add('hidden');
+      }
+
+      renderWalletHistoryChart();
+    }
+
+    function initWalletRangeYearDropdowns() {
+      let now = new Date();
+      let curYear = now.getFullYear();
+      let curMonth = now.getMonth();
+      let years = [curYear - 2, curYear - 1, curYear, curYear + 1];
+
+      ['wallet-range-from-year', 'wallet-range-to-year', 'wallet-single-year'].forEach(id => {
+        let el = document.getElementById(id);
+        if (el && el.options.length === 0) {
+          years.forEach(y => {
+            let opt = document.createElement('option');
+            opt.value = y;
+            opt.textContent = y;
+            if (y === curYear) opt.selected = true;
+            el.appendChild(opt);
+          });
+        }
+      });
+
+      let fMonthEl = document.getElementById('wallet-range-from-month');
+      let tMonthEl = document.getElementById('wallet-range-to-month');
+      let sMonthEl = document.getElementById('wallet-single-month');
+
+      if (fMonthEl && !fMonthEl.dataset.initialized) {
+        fMonthEl.value = String(Math.max(0, curMonth - 1));
+        fMonthEl.dataset.initialized = "true";
+      }
+      if (tMonthEl && !tMonthEl.dataset.initialized) {
+        tMonthEl.value = String(curMonth);
+        tMonthEl.dataset.initialized = "true";
+      }
+      if (sMonthEl && !sMonthEl.dataset.initialized) {
+        sMonthEl.value = String(curMonth);
+        sMonthEl.dataset.initialized = "true";
+      }
+    }
+
+    function setWalletMonthRangePreset(fromM, toM, fromY, toY) {
+      let now = new Date();
+      let currentYear = now.getFullYear();
+      let fYear = fromY !== undefined ? fromY : currentYear;
+      let tYear = toY !== undefined ? toY : currentYear;
+      
+      while (fromM < 0) { fromM += 12; fYear--; }
+      while (toM < 0) { toM += 12; tYear--; }
+
+      let rangeSelect = document.getElementById('wallet-history-range');
+      if (rangeSelect) rangeSelect.value = "custom_range";
+
+      let customRangeBar = document.getElementById('wallet-history-custom-range-bar');
+      if (customRangeBar) customRangeBar.classList.remove('hidden');
+      let customSingleBar = document.getElementById('wallet-history-custom-single-bar');
+      if (customSingleBar) customSingleBar.classList.add('hidden');
+
+      let fMonthEl = document.getElementById('wallet-range-from-month');
+      let fYearEl = document.getElementById('wallet-range-from-year');
+      let tMonthEl = document.getElementById('wallet-range-to-month');
+      let tYearEl = document.getElementById('wallet-range-to-year');
+
+      if (fMonthEl) fMonthEl.value = String(fromM);
+      if (fYearEl) fYearEl.value = String(fYear);
+      if (tMonthEl) tMonthEl.value = String(toM);
+      if (tYearEl) tYearEl.value = String(tYear);
+
+      renderWalletHistoryChart();
+    }
+
     function renderWalletHistoryChart() {
       let canvas = document.getElementById('walletHistoryLineChart');
       if (!canvas) return;
+
+      initWalletRangeYearDropdowns();
 
       let emptyEl = document.getElementById('wallet-history-empty');
       let chipsEl = document.getElementById('wallet-history-chips');
@@ -6489,27 +6676,97 @@
       }
       if (emptyEl) emptyEl.classList.add('hidden');
 
-      // 1. Rentang Tanggal (Default: 30 Hari Terakhir = 1 Bulan)
+      // 1. Rentang Tanggal & Bulan
       let rangeSelect = document.getElementById('wallet-history-range');
       let rangeVal = rangeSelect ? rangeSelect.value : "30";
       let dateList = [];
       let now = new Date();
+      let curYear = now.getFullYear();
+      let curMonth = now.getMonth();
+      let startDate = null;
+      let endDate = null;
+      let badgeText = "30 Hari (1 Bulan)";
+
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+      const fullMonthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
 
       if (rangeVal === "month") {
-        let year = now.getFullYear();
-        let month = now.getMonth();
-        let maxDay = now.getDate();
-        for (let d = 1; d <= maxDay; d++) {
-          dateList.push(new Date(year, month, d));
+        startDate = new Date(curYear, curMonth, 1);
+        endDate = new Date(curYear, curMonth + 1, 0);
+        badgeText = `Bulan ${fullMonthNames[curMonth]} ${curYear}`;
+      } else if (rangeVal === "prev_month") {
+        let pM = curMonth - 1;
+        let pY = curYear;
+        if (pM < 0) { pM = 11; pY--; }
+        startDate = new Date(pY, pM, 1);
+        endDate = new Date(pY, pM + 1, 0);
+        badgeText = `Bulan ${fullMonthNames[pM]} ${pY}`;
+      } else if (rangeVal === "2months") {
+        let pM = curMonth - 1;
+        let pY = curYear;
+        if (pM < 0) { pM = 11; pY--; }
+        startDate = new Date(pY, pM, 1);
+        endDate = new Date(curYear, curMonth + 1, 0);
+        badgeText = `${monthNames[pM]} ${pY} - ${monthNames[curMonth]} ${curYear}`;
+      } else if (rangeVal === "3months") {
+        let pM = curMonth - 2;
+        let pY = curYear;
+        while (pM < 0) { pM += 12; pY--; }
+        startDate = new Date(pY, pM, 1);
+        endDate = new Date(curYear, curMonth + 1, 0);
+        badgeText = `3 Bulan (${monthNames[pM]} - ${monthNames[curMonth]} ${curYear})`;
+      } else if (rangeVal === "6months") {
+        let pM = curMonth - 5;
+        let pY = curYear;
+        while (pM < 0) { pM += 12; pY--; }
+        startDate = new Date(pY, pM, 1);
+        endDate = new Date(curYear, curMonth + 1, 0);
+        badgeText = `6 Bulan (${monthNames[pM]} - ${monthNames[curMonth]} ${curYear})`;
+      } else if (rangeVal === "ytd") {
+        startDate = new Date(curYear, 0, 1);
+        endDate = new Date(curYear, curMonth + 1, 0);
+        badgeText = `Jan - ${monthNames[curMonth]} ${curYear}`;
+      } else if (rangeVal === "custom_single") {
+        let sM = parseInt(document.getElementById('wallet-single-month') ? document.getElementById('wallet-single-month').value : curMonth, 10);
+        let sY = parseInt(document.getElementById('wallet-single-year') ? document.getElementById('wallet-single-year').value : curYear, 10);
+        startDate = new Date(sY, sM, 1);
+        endDate = new Date(sY, sM + 1, 0);
+        badgeText = `Bulan ${fullMonthNames[sM]} ${sY}`;
+      } else if (rangeVal === "custom_range") {
+        let fM = parseInt(document.getElementById('wallet-range-from-month') ? document.getElementById('wallet-range-from-month').value : Math.max(0, curMonth - 1), 10);
+        let fY = parseInt(document.getElementById('wallet-range-from-year') ? document.getElementById('wallet-range-from-year').value : curYear, 10);
+        let tM = parseInt(document.getElementById('wallet-range-to-month') ? document.getElementById('wallet-range-to-month').value : curMonth, 10);
+        let tY = parseInt(document.getElementById('wallet-range-to-year') ? document.getElementById('wallet-range-to-year').value : curYear, 10);
+        startDate = new Date(fY, fM, 1);
+        endDate = new Date(tY, tM + 1, 0);
+        if (startDate > endDate) {
+          let tmp = startDate; startDate = endDate; endDate = tmp;
+          let tmpM = fM; fM = tM; tM = tmpM;
+          let tmpY = fY; fY = tY; tY = tmpY;
         }
+        badgeText = (fY === tY) 
+          ? `${monthNames[fM]} - ${monthNames[tM]} ${tY}` 
+          : `${monthNames[fM]} ${fY} - ${monthNames[tM]} ${tY}`;
       } else {
         let count = parseInt(rangeVal, 10) || 30;
-        for (let i = count - 1; i >= 0; i--) {
-          let d = new Date(now);
-          d.setDate(now.getDate() - i);
-          dateList.push(d);
-        }
+        startDate = new Date(now);
+        startDate.setDate(now.getDate() - (count - 1));
+        endDate = new Date(now);
+        badgeText = count === 30 ? "30 Hari (1 Bulan)" : `${count} Hari Terakhir`;
       }
+
+      let cDate = new Date(startDate);
+      cDate.setHours(0, 0, 0, 0);
+      let targetEndDate = new Date(endDate);
+      targetEndDate.setHours(0, 0, 0, 0);
+
+      while (cDate <= targetEndDate) {
+        dateList.push(new Date(cDate));
+        cDate.setDate(cDate.getDate() + 1);
+      }
+
+      let badgeEl = document.getElementById('wallet-history-badge');
+      if (badgeEl) badgeEl.textContent = badgeText;
 
       const toIsoDay = (d) => {
         let y = d.getFullYear();
@@ -6518,15 +6775,24 @@
         return `${y}-${m}-${day}`;
       };
 
-      const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
       let chartLabels = dateList.map(d => `${d.getDate()} ${monthNames[d.getMonth()]}`);
-      let dayKeys = dateList.map(d => toIsoDay(d));
 
-      // 2. Hitung delta arus transaksi harian per akun
+      // Timeline penuh dari startDate sampai max(targetEndDate, now)
+      let timelineEnd = (targetEndDate > now) ? new Date(targetEndDate) : new Date(now);
+      timelineEnd.setHours(0, 0, 0, 0);
+      let allDays = [];
+      let tc = new Date(startDate);
+      tc.setHours(0, 0, 0, 0);
+      while (tc <= timelineEnd) {
+        allDays.push(toIsoDay(tc));
+        tc.setDate(tc.getDate() + 1);
+      }
+
+      // 2. Hitung delta transaksi per akun
       let dailyChanges = {};
       accounts.forEach(acc => {
         dailyChanges[acc] = {};
-        dayKeys.forEach(k => { dailyChanges[acc][k] = 0; });
+        allDays.forEach(k => { dailyChanges[acc][k] = 0; });
       });
 
       let transactions = globalData.recentHistory || [];
@@ -6549,12 +6815,16 @@
         }
       });
 
-      // 3. Rekonstruksi saldo historis setiap akun (mundur dari saldo akhir terkini)
+      // 3. Rekonstruksi saldo historis setiap akun
       let accountTrajectories = {};
-      let totalTrajectory = new Array(dayKeys.length).fill(0);
+      let totalTrajectory = new Array(dateList.length).fill(0);
       let totalCurrentAll = 0;
       let highestAccName = "";
       let highestAccBal = -1;
+
+      let todayKey = toIsoDay(now);
+      let todayIdx = allDays.indexOf(todayKey);
+      if (todayIdx === -1) todayIdx = allDays.length - 1;
 
       accounts.forEach(acc => {
         let cur = (globalData.currentBalances && globalData.currentBalances[acc]) ? Number(globalData.currentBalances[acc]) : 0;
@@ -6564,14 +6834,23 @@
           highestAccName = acc;
         }
 
-        let series = new Array(dayKeys.length);
+        let dayValMap = {};
+        for (let i = todayIdx; i < allDays.length; i++) {
+          dayValMap[allDays[i]] = cur;
+        }
         let run = cur;
-        for (let i = dayKeys.length - 1; i >= 0; i--) {
-          series[i] = run;
-          let dayKey = dayKeys[i];
-          let delta = dailyChanges[acc][dayKey] || 0;
+        for (let i = todayIdx; i >= 0; i--) {
+          let dk = allDays[i];
+          dayValMap[dk] = run;
+          let delta = dailyChanges[acc][dk] || 0;
           run = run - delta;
         }
+
+        let series = dateList.map(d => {
+          let k = toIsoDay(d);
+          return dayValMap[k] !== undefined ? dayValMap[k] : cur;
+        });
+
         accountTrajectories[acc] = series;
 
         for (let i = 0; i < series.length; i++) {
@@ -6593,7 +6872,7 @@
             <p class="text-sm sm:text-base font-extrabold text-primary dark:text-blue-400 font-mono-data mt-1">${formatRp(totalCurrentAll)}</p>
           </div>
           <div class="p-3 rounded-2xl bg-surface-container-low dark:bg-slate-700/40 border border-outline-variant/60 flex flex-col justify-between">
-            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Fluktuasi 1 Bulan</span>
+            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider truncate">Fluktuasi (${badgeText})</span>
             <p class="text-xs sm:text-sm font-extrabold ${diffColor} font-mono-data mt-1">${diffSign}${formatRp(totalDiff)}</p>
           </div>
           <div class="p-3 rounded-2xl bg-surface-container-low dark:bg-slate-700/40 border border-outline-variant/60 flex flex-col justify-between">
@@ -6601,8 +6880,8 @@
             <p class="text-xs sm:text-sm font-extrabold text-on-surface truncate mt-1">${highestAccName || '-'} <span class="font-mono-data text-[10px] opacity-75">(${formatRp(highestAccBal > 0 ? highestAccBal : 0)})</span></p>
           </div>
           <div class="p-3 rounded-2xl bg-surface-container-low dark:bg-slate-700/40 border border-outline-variant/60 flex flex-col justify-between">
-            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Jumlah Rekening</span>
-            <p class="text-xs sm:text-sm font-extrabold text-on-surface font-mono-data mt-1">${accounts.length} Akun / Wallet</p>
+            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Rentang Waktu</span>
+            <p class="text-xs sm:text-sm font-extrabold text-on-surface font-mono-data mt-1">${dateList.length} Hari (${monthNames[startDate.getMonth()]} - ${monthNames[endDate.getMonth()]})</p>
           </div>
         `;
       }
@@ -6732,7 +7011,15 @@
                 font: { family: 'Plus Jakarta Sans', size: 10, weight: 'bold' },
                 maxRotation: 0,
                 autoSkip: true,
-                maxTicksLimit: 8
+                maxTicksLimit: (dateList.length > 90) ? 8 : (dateList.length > 40 ? 10 : 8),
+                callback: function(val, index) {
+                  let d = dateList[index];
+                  if (!d) return "";
+                  if (dateList.length > 60) {
+                    return monthNames[d.getMonth()];
+                  }
+                  return `${d.getDate()} ${monthNames[d.getMonth()]}`;
+                }
               }
             },
             y: {
