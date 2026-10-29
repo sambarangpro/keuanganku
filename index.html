@@ -209,8 +209,8 @@
 
 
 
-  <!-- BUMPER SPLASH SCREEN -->
-  <div id="splash-screen" class="fixed inset-0 bg-gradient-to-br from-navy-dark via-primary to-tertiary z-50 flex flex-col items-center justify-center text-white transition-opacity duration-700 p-4 overflow-y-auto">
+  <!-- BUMPER SPLASH SCREEN (LAYAR KUNCI PIN MASTER) -->
+  <div id="splash-screen" class="fixed inset-0 bg-gradient-to-br from-navy-dark via-primary to-tertiary z-[100] flex flex-col items-center justify-center text-white transition-opacity duration-700 p-4 overflow-y-auto">
     <div class="text-center space-y-4 p-5 sm:p-6 max-w-xs sm:max-w-sm w-full bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 shadow-2xl my-auto">
       <div class="w-14 h-14 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto shadow-xl border border-white/20 animate-pulse-logo">
         <span class="material-symbols-outlined text-white" style="font-size: 32px;">account_balance_wallet</span>
@@ -3411,11 +3411,7 @@
           if (statusText) statusText.innerHTML = `<span class="text-emerald-300 font-bold">✓ Terverifikasi! Membuka aplikasi...</span>`;
 
           setTimeout(() => {
-            let splash = document.getElementById('splash-screen');
-            if (splash) {
-              splash.classList.add('opacity-0');
-              setTimeout(() => splash.classList.add('hidden'), 700);
-            }
+            hideSplashScreenAndTriggerAlerts();
             updateSetupLicenseDisplay(licData);
             updateTokenSecurityBanner(licData);
             updateCloudSyncLockUI(licData);
@@ -3971,13 +3967,7 @@
             }
           }
 
-          sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
-
-          let splashScreen = document.getElementById('splash-screen');
-          if (splashScreen) {
-            splashScreen.classList.add('opacity-0');
-            setTimeout(() => splashScreen.classList.add('hidden'), 700);
-          }
+          hideSplashScreenAndTriggerAlerts();
 
           updateSetupLicenseDisplay(res.data);
           updateTokenSecurityBanner(res.data);
@@ -4011,7 +4001,42 @@
       }
     }
 
+    // ==============================================================================
+    // PERLINDUNGAN PRIVASI: STATUS AUTENTIKASI PIN / SPLASH SCREEN
+    // ==============================================================================
+    function getLocalDateStr() {
+      let d = new Date();
+      let year = d.getFullYear();
+      let month = String(d.getMonth() + 1).padStart(2, '0');
+      let day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
 
+    function isUserAuthenticated() {
+      let isPassed = sessionStorage.getItem("KEUANGANKU_PIN_PASSED") === "true";
+      let splash = document.getElementById('splash-screen');
+      let isSplashActive = splash && !splash.classList.contains('hidden');
+      return isPassed && !isSplashActive;
+    }
+
+    function hideSplashScreenAndTriggerAlerts() {
+      sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
+      let splash = document.getElementById('splash-screen');
+      if (splash) {
+        splash.classList.add('opacity-0');
+        setTimeout(() => {
+          splash.classList.add('hidden');
+          // Setelah layar PIN berhasil dibuka & disembunyikan, periksa pengingat secara aman
+          if (typeof checkDueDateAlerts === 'function') checkDueDateAlerts();
+          if (typeof checkReceivableAlerts === 'function') checkReceivableAlerts();
+          if (typeof checkNotifPermissionBanner === 'function') checkNotifPermissionBanner();
+        }, 700);
+      } else {
+        if (typeof checkDueDateAlerts === 'function') checkDueDateAlerts();
+        if (typeof checkReceivableAlerts === 'function') checkReceivableAlerts();
+        if (typeof checkNotifPermissionBanner === 'function') checkNotifPermissionBanner();
+      }
+    }
 
     window.onload = function() {
       updateThemeIcon();
@@ -4060,6 +4085,7 @@
 
     // === SISTEM NOTIFIKASI PENGINGAT PERANGKAT (DEVICE NOTIFICATIONS) ===
     function checkNotifPermissionBanner() {
+      if (!isUserAuthenticated()) return;
       let banner = document.getElementById('notif-permission-banner');
       if (!banner) return;
       if (!("Notification" in window)) {
@@ -4187,6 +4213,7 @@
     }
 
     function sendBrowserNotification(title, options = {}, tag = '') {
+      if (!isUserAuthenticated()) return;
       if (!("Notification" in window)) return;
       if (Notification.permission !== "granted") return;
 
@@ -4356,12 +4383,7 @@
           initApp();
           showSyncToast("✓ Berhasil terhubung ke Cloud & data dimuat!");
           setSyncStatus('synced', 'Tersinkron');
-
-          let splash = document.getElementById('splash-screen');
-          if (splash) {
-            splash.classList.add('opacity-0');
-            setTimeout(() => splash.classList.add('hidden'), 700);
-          }
+          hideSplashScreenAndTriggerAlerts();
         } else {
           if (errEl) {
             errEl.textContent = "Data di Cloud tidak sesuai format atau masih kosong.";
@@ -4441,18 +4463,14 @@
           localStorage.removeItem("KEUANGANKU_REMEMBER_PIN");
           localStorage.removeItem("KEUANGANKU_SAVED_PIN");
         }
-        sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
-        let splash = document.getElementById('splash-screen');
-        if (splash) { splash.classList.add('opacity-0'); setTimeout(() => splash.classList.add('hidden'), 700); }
+        hideSplashScreenAndTriggerAlerts();
         return;
       }
 
       // 2. Jika lisensi sudah aktif dan pengguna memasukkan Token Pembelian resmi (Master Recovery Key)
       if (lic && lic.token && (upperInput === lic.token.toUpperCase() || cleanInput === lic.token.replace(/[^A-Z0-9]/g, '').toUpperCase())) {
-        sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
         sessionStorage.setItem("KEUANGANKU_SETUP_UNLOCKED", "true");
-        let splash = document.getElementById('splash-screen');
-        if (splash) { splash.classList.add('opacity-0'); setTimeout(() => splash.classList.add('hidden'), 700); }
+        hideSplashScreenAndTriggerAlerts();
         playSuccessSound();
         showSyncToast("🔓 Berhasil Masuk menggunakan Token Master Pemilik!");
         return;
@@ -4558,8 +4576,7 @@
             playSuccessSound();
             showSyncToast("🎉 Lisensi Berhasil Diaktivasi!");
 
-            let splash = document.getElementById('splash-screen');
-            if (splash) { splash.classList.add('opacity-0'); setTimeout(() => splash.classList.add('hidden'), 700); }
+            hideSplashScreenAndTriggerAlerts();
 
             updateSetupLicenseDisplay(res.data);
             updateTokenSecurityBanner(res.data);
@@ -4634,8 +4651,7 @@
             playSuccessSound();
             showSyncToast("✓ PIN Terverifikasi di Server Master!");
 
-            let splash = document.getElementById('splash-screen');
-            if (splash) { splash.classList.add('opacity-0'); setTimeout(() => splash.classList.add('hidden'), 700); }
+            hideSplashScreenAndTriggerAlerts();
 
             updateSetupLicenseDisplay(res.data);
             updateTokenSecurityBanner(res.data);
@@ -4685,8 +4701,7 @@
               playSuccessSound();
               showSyncToast("✓ PIN Terverifikasi & Database Dimuat!");
 
-              let splash = document.getElementById('splash-screen');
-              if (splash) { splash.classList.add('opacity-0'); setTimeout(() => splash.classList.add('hidden'), 700); }
+              hideSplashScreenAndTriggerAlerts();
               initApp();
               return;
             }
@@ -5838,6 +5853,7 @@
     let activeDueModalItems = [];
 
     function openDueDateModalPopup(items) {
+      if (!isUserAuthenticated()) return;
       let modal = document.getElementById('modal-due-date-popup');
       let card = document.getElementById('modal-due-date-card');
       let itemsContainer = document.getElementById('modal-due-date-items');
@@ -5865,6 +5881,11 @@
               <button onclick="closeDueDateModalPopup(); ${it.actionOnClick}" class="px-3.5 py-2 ${it.btnClass} font-extrabold rounded-xl text-xs shadow-sm transition-all active:scale-95 cursor-pointer">
                 ${it.actionLabel}
               </button>
+              ${it.alertKey ? `
+                <button type="button" onclick="dismissModalItem('${it.alertKey}')" class="w-8 h-8 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-600 dark:text-gray-300 flex items-center justify-center font-black text-xs cursor-pointer shadow-xs active:scale-90 border border-outline-variant/60" title="Tutup pengingat pos ini (✕)">
+                  ✕
+                </button>
+              ` : ''}
             </div>
           </div>
         `).join('');
@@ -5877,18 +5898,44 @@
       }, 10);
     }
 
+    function dismissModalItem(alertKey) {
+      if (!alertKey) return;
+      let todayStr = getLocalDateStr();
+      localStorage.setItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey + '_' + todayStr, 'true');
+      sessionStorage.setItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey, 'true');
+      activeDueModalItems = activeDueModalItems.filter(it => it.alertKey !== alertKey);
+      if (activeDueModalItems.length === 0) {
+        closeDueDateModalPopup();
+      } else {
+        openDueDateModalPopup(activeDueModalItems);
+      }
+      checkDueDateAlerts();
+    }
+
     function closeDueDateModalPopup() {
       let modal = document.getElementById('modal-due-date-popup');
       let card = document.getElementById('modal-due-date-card');
       if (!modal) return;
-      let todayStr = new Date().toISOString().slice(0, 10);
+      let todayStr = getLocalDateStr();
       // Begitu ditutup dengan tombol ✕ atau Tutup, jangan tampilkan lagi untuk hari ini
       localStorage.setItem('KEUANGANKU_DUE_MODAL_DISMISSED_DATE', todayStr);
       sessionStorage.setItem('KEUANGANKU_DUE_MODAL_DISMISSED', 'true');
+
+      // Tandai juga semua item yang ada di pop-up sebagai sudah dilihat & ditutup hari ini
+      if (activeDueModalItems && activeDueModalItems.length > 0) {
+        activeDueModalItems.forEach(it => {
+          if (it.alertKey) {
+            localStorage.setItem('KEUANGANKU_DISMISSED_ALERT_' + it.alertKey + '_' + todayStr, 'true');
+            sessionStorage.setItem('KEUANGANKU_DISMISSED_ALERT_' + it.alertKey, 'true');
+          }
+        });
+      }
+
       modal.classList.add('opacity-0');
       if (card) card.classList.add('scale-95');
       setTimeout(() => {
         modal.classList.add('hidden');
+        checkDueDateAlerts();
       }, 200);
     }
 
@@ -5899,7 +5946,7 @@
     }
 
     function toggleDismissDueToday(isChecked) {
-      let todayStr = new Date().toISOString().slice(0, 10);
+      let todayStr = getLocalDateStr();
       if (isChecked) {
         localStorage.setItem('KEUANGANKU_DUE_MODAL_DISMISSED_DATE', todayStr);
       } else {
@@ -5953,7 +6000,7 @@
     }
 
     function dismissDueAlert(alertKey) {
-      let todayStr = new Date().toISOString().slice(0, 10);
+      let todayStr = getLocalDateStr();
       localStorage.setItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey + '_' + todayStr, 'true');
       sessionStorage.setItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey, 'true');
       checkDueDateAlerts();
@@ -5961,6 +6008,8 @@
     }
 
     function checkDueDateAlerts() {
+      // PERLINDUNGAN PRIVASI: Jangan jalankan atau tampilkan pop-up jika pengguna belum melewati layar PIN
+      if (!isUserAuthenticated()) return;
       let container = document.getElementById('due-date-alert-container');
       if (!container) return;
       container.innerHTML = '';
@@ -5969,7 +6018,7 @@
       let currentDay = today.getDate();
       let currentMonth = today.getMonth();
       let currentYear = today.getFullYear();
-      let todayStr = today.toISOString().slice(0, 10);
+      let todayStr = getLocalDateStr();
       let alertsHtml = [];
       activeDueModalItems = [];
 
@@ -6031,24 +6080,25 @@
 
           if (currentDay === dueDay) {
             // HARI INI JATUH TEMPO
-            activeDueModalItems.push({
-              title: `${catLabel}: ${k}`,
-              badge: "JATUH TEMPO HARI INI",
-              desc: `Nominal: <b>${formatRp(payAmount)}</b> | Sisa Total Utang: <b>${formatRp(unpaid)}</b>`,
-              icon: "notifications_active",
-              borderClass: "border-red-500/50",
-              bgClass: "bg-red-500/10 dark:bg-red-950/40",
-              iconBgClass: "bg-red-500/20",
-              iconColorClass: "text-red-600 dark:text-red-400 animate-pulse",
-              titleColorClass: "text-red-700 dark:text-red-300",
-              descColorClass: "text-red-600/90 dark:text-red-300/80",
-              badgeClass: "bg-red-500/20 text-red-700 dark:text-red-300 border border-red-500/30",
-              btnClass: "bg-red-600 hover:bg-red-700 text-white",
-              actionLabel: "Bayar Sekarang",
-              actionOnClick: `quickPayEntry('${escapeForAttr(k)}', 'debt', ${payAmount})`
-            });
-
             if (!isAlertDismissed(alertKey)) {
+              activeDueModalItems.push({
+                alertKey: alertKey,
+                title: `${catLabel}: ${k}`,
+                badge: "JATUH TEMPO HARI INI",
+                desc: `Nominal: <b>${formatRp(payAmount)}</b> | Sisa Total Utang: <b>${formatRp(unpaid)}</b>`,
+                icon: "notifications_active",
+                borderClass: "border-red-500/50",
+                bgClass: "bg-red-500/10 dark:bg-red-950/40",
+                iconBgClass: "bg-red-500/20",
+                iconColorClass: "text-red-600 dark:text-red-400 animate-pulse",
+                titleColorClass: "text-red-700 dark:text-red-300",
+                descColorClass: "text-red-600/90 dark:text-red-300/80",
+                badgeClass: "bg-red-500/20 text-red-700 dark:text-red-300 border border-red-500/30",
+                btnClass: "bg-red-600 hover:bg-red-700 text-white",
+                actionLabel: "Bayar Sekarang",
+                actionOnClick: `quickPayEntry('${escapeForAttr(k)}', 'debt', ${payAmount})`
+              });
+
               alertsHtml.push(`
                 <div class="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between gap-3 border-2 border-red-800 animate-pulse">
                   <div class="flex items-center gap-3 min-w-0">
@@ -6072,36 +6122,38 @@
                   </div>
                 </div>
               `);
+
+              sendBrowserNotification(
+                `🚨 Jatuh Tempo Hari Ini: Bayar ${k}`,
+                {
+                  body: `Waktunya membayar ${catLabel} ${k} sebesar ${formatRp(payAmount)} hari ini (Tgl ${dueDay}).`,
+                  tag: `debt-today-${k}-${currentYear}-${currentMonth}`
+                },
+                `debt-today-${k}-${currentYear}-${currentMonth}`
+              );
             }
-            sendBrowserNotification(
-              `🚨 Jatuh Tempo Hari Ini: Bayar ${k}`,
-              {
-                body: `Waktunya membayar ${catLabel} ${k} sebesar ${formatRp(payAmount)} hari ini (Tgl ${dueDay}).`,
-                tag: `debt-today-${k}-${currentYear}-${currentMonth}`
-              },
-              `debt-today-${k}-${currentYear}-${currentMonth}`
-            );
           } else if (dueDay > currentDay && (dueDay - currentDay) <= 3) {
             // H-3 sampai H-1
             let diff = dueDay - currentDay;
-            activeDueModalItems.push({
-              title: `${catLabel}: ${k}`,
-              badge: `H-${diff} LAGI`,
-              desc: `Jatuh tempo tgl <b>${dueDay}</b> | Nominal: <b>${formatRp(payAmount)}</b>`,
-              icon: "warning",
-              borderClass: "border-amber-500/50",
-              bgClass: "bg-amber-500/10 dark:bg-amber-950/40",
-              iconBgClass: "bg-amber-500/20",
-              iconColorClass: "text-amber-600 dark:text-amber-400",
-              titleColorClass: "text-amber-800 dark:text-amber-300",
-              descColorClass: "text-amber-700/90 dark:text-amber-300/80",
-              badgeClass: "bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30",
-              btnClass: "bg-amber-600 hover:bg-amber-700 text-white",
-              actionLabel: "Bayar Sekarang",
-              actionOnClick: `quickPayEntry('${escapeForAttr(k)}', 'debt', ${payAmount})`
-            });
-
             if (!isAlertDismissed(alertKey)) {
+              activeDueModalItems.push({
+                alertKey: alertKey,
+                title: `${catLabel}: ${k}`,
+                badge: `H-${diff} LAGI`,
+                desc: `Jatuh tempo tgl <b>${dueDay}</b> | Nominal: <b>${formatRp(payAmount)}</b>`,
+                icon: "warning",
+                borderClass: "border-amber-500/50",
+                bgClass: "bg-amber-500/10 dark:bg-amber-950/40",
+                iconBgClass: "bg-amber-500/20",
+                iconColorClass: "text-amber-600 dark:text-amber-400",
+                titleColorClass: "text-amber-800 dark:text-amber-300",
+                descColorClass: "text-amber-700/90 dark:text-amber-300/80",
+                badgeClass: "bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30",
+                btnClass: "bg-amber-600 hover:bg-amber-700 text-white",
+                actionLabel: "Bayar Sekarang",
+                actionOnClick: `quickPayEntry('${escapeForAttr(k)}', 'debt', ${payAmount})`
+              });
+
               alertsHtml.push(`
                 <div class="bg-gradient-to-r from-amber-500 to-orange-600 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between gap-3 border-2 border-amber-600">
                   <div class="flex items-center gap-3 min-w-0">
@@ -6125,36 +6177,38 @@
                   </div>
                 </div>
               `);
+
+              sendBrowserNotification(
+                `⚠️ Pengingat Jatuh Tempo: ${k} (${diff} Hari Lagi)`,
+                {
+                  body: `${catLabel} ${k} sebesar ${formatRp(payAmount)} jatuh tempo pada tgl ${dueDay}.`,
+                  tag: `debt-h${diff}-${k}-${currentYear}-${currentMonth}`
+                },
+                `debt-h${diff}-${k}-${currentYear}-${currentMonth}`
+              );
             }
-            sendBrowserNotification(
-              `⚠️ Pengingat Jatuh Tempo: ${k} (${diff} Hari Lagi)`,
-              {
-                body: `${catLabel} ${k} sebesar ${formatRp(payAmount)} jatuh tempo pada tgl ${dueDay}.`,
-                tag: `debt-h${diff}-${k}-${currentYear}-${currentMonth}`
-              },
-              `debt-h${diff}-${k}-${currentYear}-${currentMonth}`
-            );
           } else if (currentDay > dueDay) {
             // TERLAMBAT / SUDAH LEWAT JATUH TEMPO
             let lateDays = currentDay - dueDay;
-            activeDueModalItems.push({
-              title: `${catLabel}: ${k}`,
-              badge: `TERLAMBAT ${lateDays} HARI`,
-              desc: `Belum dibayar sejak tgl <b>${dueDay}</b> | Nominal: <b>${formatRp(payAmount)}</b>`,
-              icon: "error",
-              borderClass: "border-rose-500/50",
-              bgClass: "bg-rose-500/10 dark:bg-rose-950/40",
-              iconBgClass: "bg-rose-500/20",
-              iconColorClass: "text-rose-500 animate-bounce",
-              titleColorClass: "text-rose-800 dark:text-rose-200",
-              descColorClass: "text-rose-700/90 dark:text-rose-300/80",
-              badgeClass: "bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-500/30",
-              btnClass: "bg-rose-600 hover:bg-rose-700 text-white",
-              actionLabel: "Bayar Segera",
-              actionOnClick: `quickPayEntry('${escapeForAttr(k)}', 'debt', ${payAmount})`
-            });
-
             if (!isAlertDismissed(alertKey)) {
+              activeDueModalItems.push({
+                alertKey: alertKey,
+                title: `${catLabel}: ${k}`,
+                badge: `TERLAMBAT ${lateDays} HARI`,
+                desc: `Belum dibayar sejak tgl <b>${dueDay}</b> | Nominal: <b>${formatRp(payAmount)}</b>`,
+                icon: "error",
+                borderClass: "border-rose-500/50",
+                bgClass: "bg-rose-500/10 dark:bg-rose-950/40",
+                iconBgClass: "bg-rose-500/20",
+                iconColorClass: "text-rose-500 animate-bounce",
+                titleColorClass: "text-rose-800 dark:text-rose-200",
+                descColorClass: "text-rose-700/90 dark:text-rose-300/80",
+                badgeClass: "bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-500/30",
+                btnClass: "bg-rose-600 hover:bg-rose-700 text-white",
+                actionLabel: "Bayar Segera",
+                actionOnClick: `quickPayEntry('${escapeForAttr(k)}', 'debt', ${payAmount})`
+              });
+
               alertsHtml.push(`
                 <div class="bg-gradient-to-r from-rose-900 via-red-900 to-rose-950 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between gap-3 border-2 border-rose-600">
                   <div class="flex items-center gap-3 min-w-0">
@@ -6178,15 +6232,16 @@
                   </div>
                 </div>
               `);
+
+              sendBrowserNotification(
+                `‼️ TERLAMBAT: Bayar ${k}!`,
+                {
+                  body: `Pembayaran ${catLabel} ${k} (${formatRp(payAmount)}) terlambat ${lateDays} hari sejak tanggal ${dueDay}.`,
+                  tag: `debt-late-${k}-${currentYear}-${currentMonth}`
+                },
+                `debt-late-${k}-${currentYear}-${currentMonth}`
+              );
             }
-            sendBrowserNotification(
-              `‼️ TERLAMBAT: Bayar ${k}!`,
-              {
-                body: `Pembayaran ${catLabel} ${k} (${formatRp(payAmount)}) terlambat ${lateDays} hari sejak tanggal ${dueDay}.`,
-                tag: `debt-late-${k}-${currentYear}-${currentMonth}`
-              },
-              `debt-late-${k}-${currentYear}-${currentMonth}`
-            );
           }
         });
       }
@@ -6214,24 +6269,25 @@
           if (alreadyPaid) return; // Sudah dibayar bulan ini, lewati
 
           if (currentDay === dueDay) {
-            activeDueModalItems.push({
-              title: `Tagihan: ${itemKey}`,
-              badge: "JATUH TEMPO HARI INI",
-              desc: `Nominal: <b>${formatRp(amt)}</b> | Jatuh tempo hari ini (Tgl ${dueDay})`,
-              icon: "receipt_long",
-              borderClass: "border-red-500/50",
-              bgClass: "bg-red-500/10 dark:bg-red-950/40",
-              iconBgClass: "bg-red-500/20",
-              iconColorClass: "text-red-600 dark:text-red-400 animate-pulse",
-              titleColorClass: "text-red-700 dark:text-red-300",
-              descColorClass: "text-red-600/90 dark:text-red-300/80",
-              badgeClass: "bg-red-500/20 text-red-700 dark:text-red-300 border border-red-500/30",
-              btnClass: "bg-red-600 hover:bg-red-700 text-white",
-              actionLabel: "Bayar Sekarang",
-              actionOnClick: `quickPayEntry('${escapeForAttr(itemKey)}', 'routine', ${amt})`
-            });
-
             if (!isAlertDismissed(alertKey)) {
+              activeDueModalItems.push({
+                alertKey: alertKey,
+                title: `Tagihan: ${itemKey}`,
+                badge: "JATUH TEMPO HARI INI",
+                desc: `Nominal: <b>${formatRp(amt)}</b> | Jatuh tempo hari ini (Tgl ${dueDay})`,
+                icon: "receipt_long",
+                borderClass: "border-red-500/50",
+                bgClass: "bg-red-500/10 dark:bg-red-950/40",
+                iconBgClass: "bg-red-500/20",
+                iconColorClass: "text-red-600 dark:text-red-400 animate-pulse",
+                titleColorClass: "text-red-700 dark:text-red-300",
+                descColorClass: "text-red-600/90 dark:text-red-300/80",
+                badgeClass: "bg-red-500/20 text-red-700 dark:text-red-300 border border-red-500/30",
+                btnClass: "bg-red-600 hover:bg-red-700 text-white",
+                actionLabel: "Bayar Sekarang",
+                actionOnClick: `quickPayEntry('${escapeForAttr(itemKey)}', 'routine', ${amt})`
+              });
+
               alertsHtml.push(`
                 <div class="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between gap-3 border-2 border-red-800 animate-pulse">
                   <div class="flex items-center gap-3 min-w-0">
@@ -6255,35 +6311,37 @@
                   </div>
                 </div>
               `);
+
+              sendBrowserNotification(
+                `🚨 Tagihan Jatuh Tempo Hari Ini: ${itemKey}`,
+                {
+                  body: `Tagihan rutin ${itemKey} sebesar ${formatRp(amt)} jatuh tempo hari ini (Tgl ${dueDay}).`,
+                  tag: `routine-today-${itemKey}-${currentYear}-${currentMonth}`
+                },
+                `routine-today-${itemKey}-${currentYear}-${currentMonth}`
+              );
             }
-            sendBrowserNotification(
-              `🚨 Tagihan Jatuh Tempo Hari Ini: ${itemKey}`,
-              {
-                body: `Tagihan rutin ${itemKey} sebesar ${formatRp(amt)} jatuh tempo hari ini (Tgl ${dueDay}).`,
-                tag: `routine-today-${itemKey}-${currentYear}-${currentMonth}`
-              },
-              `routine-today-${itemKey}-${currentYear}-${currentMonth}`
-            );
           } else if (dueDay > currentDay && (dueDay - currentDay) <= 3) {
             let diff = dueDay - currentDay;
-            activeDueModalItems.push({
-              title: `Tagihan: ${itemKey}`,
-              badge: `H-${diff} LAGI`,
-              desc: `Jatuh tempo tgl <b>${dueDay}</b> | Nominal: <b>${formatRp(amt)}</b>`,
-              icon: "warning",
-              borderClass: "border-amber-500/50",
-              bgClass: "bg-amber-500/10 dark:bg-amber-950/40",
-              iconBgClass: "bg-amber-500/20",
-              iconColorClass: "text-amber-600 dark:text-amber-400",
-              titleColorClass: "text-amber-800 dark:text-amber-300",
-              descColorClass: "text-amber-700/90 dark:text-amber-300/80",
-              badgeClass: "bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30",
-              btnClass: "bg-amber-600 hover:bg-amber-700 text-white",
-              actionLabel: "Bayar Sekarang",
-              actionOnClick: `quickPayEntry('${escapeForAttr(itemKey)}', 'routine', ${amt})`
-            });
-
             if (!isAlertDismissed(alertKey)) {
+              activeDueModalItems.push({
+                alertKey: alertKey,
+                title: `Tagihan: ${itemKey}`,
+                badge: `H-${diff} LAGI`,
+                desc: `Jatuh tempo tgl <b>${dueDay}</b> | Nominal: <b>${formatRp(amt)}</b>`,
+                icon: "warning",
+                borderClass: "border-amber-500/50",
+                bgClass: "bg-amber-500/10 dark:bg-amber-950/40",
+                iconBgClass: "bg-amber-500/20",
+                iconColorClass: "text-amber-600 dark:text-amber-400",
+                titleColorClass: "text-amber-800 dark:text-amber-300",
+                descColorClass: "text-amber-700/90 dark:text-amber-300/80",
+                badgeClass: "bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30",
+                btnClass: "bg-amber-600 hover:bg-amber-700 text-white",
+                actionLabel: "Bayar Sekarang",
+                actionOnClick: `quickPayEntry('${escapeForAttr(itemKey)}', 'routine', ${amt})`
+              });
+
               alertsHtml.push(`
                 <div class="bg-gradient-to-r from-amber-500 to-orange-600 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between gap-3 border-2 border-amber-600">
                   <div class="flex items-center gap-3 min-w-0">
@@ -6307,35 +6365,37 @@
                   </div>
                 </div>
               `);
+
+              sendBrowserNotification(
+                `⚠️ Pengingat Tagihan: ${itemKey} (${diff} Hari Lagi)`,
+                {
+                  body: `Tagihan rutin ${itemKey} sebesar ${formatRp(amt)} jatuh tempo tgl ${dueDay}.`,
+                  tag: `routine-h${diff}-${itemKey}-${currentYear}-${currentMonth}`
+                },
+                `routine-h${diff}-${itemKey}-${currentYear}-${currentMonth}`
+              );
             }
-            sendBrowserNotification(
-              `⚠️ Pengingat Tagihan: ${itemKey} (${diff} Hari Lagi)`,
-              {
-                body: `Tagihan rutin ${itemKey} sebesar ${formatRp(amt)} jatuh tempo tgl ${dueDay}.`,
-                tag: `routine-h${diff}-${itemKey}-${currentYear}-${currentMonth}`
-              },
-              `routine-h${diff}-${itemKey}-${currentYear}-${currentMonth}`
-            );
           } else if (currentDay > dueDay) {
             let lateDays = currentDay - dueDay;
-            activeDueModalItems.push({
-              title: `Tagihan: ${itemKey}`,
-              badge: `TERLAMBAT ${lateDays} HARI`,
-              desc: `Tagihan belum dibayar sejak tgl <b>${dueDay}</b> | Nominal: <b>${formatRp(amt)}</b>`,
-              icon: "error",
-              borderClass: "border-rose-500/50",
-              bgClass: "bg-rose-500/10 dark:bg-rose-950/40",
-              iconBgClass: "bg-rose-500/20",
-              iconColorClass: "text-rose-500 animate-bounce",
-              titleColorClass: "text-rose-800 dark:text-rose-200",
-              descColorClass: "text-rose-700/90 dark:text-rose-300/80",
-              badgeClass: "bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-500/30",
-              btnClass: "bg-rose-600 hover:bg-rose-700 text-white",
-              actionLabel: "Bayar Segera",
-              actionOnClick: `quickPayEntry('${escapeForAttr(itemKey)}', 'routine', ${amt})`
-            });
-
             if (!isAlertDismissed(alertKey)) {
+              activeDueModalItems.push({
+                alertKey: alertKey,
+                title: `Tagihan: ${itemKey}`,
+                badge: `TERLAMBAT ${lateDays} HARI`,
+                desc: `Tagihan belum dibayar sejak tgl <b>${dueDay}</b> | Nominal: <b>${formatRp(amt)}</b>`,
+                icon: "error",
+                borderClass: "border-rose-500/50",
+                bgClass: "bg-rose-500/10 dark:bg-rose-950/40",
+                iconBgClass: "bg-rose-500/20",
+                iconColorClass: "text-rose-500 animate-bounce",
+                titleColorClass: "text-rose-800 dark:text-rose-200",
+                descColorClass: "text-rose-700/90 dark:text-rose-300/80",
+                badgeClass: "bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-500/30",
+                btnClass: "bg-rose-600 hover:bg-rose-700 text-white",
+                actionLabel: "Bayar Segera",
+                actionOnClick: `quickPayEntry('${escapeForAttr(itemKey)}', 'routine', ${amt})`
+              });
+
               alertsHtml.push(`
                 <div class="bg-gradient-to-r from-rose-900 via-red-900 to-rose-950 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between gap-3 border-2 border-rose-600">
                   <div class="flex items-center gap-3 min-w-0">
@@ -6359,15 +6419,16 @@
                   </div>
                 </div>
               `);
+
+              sendBrowserNotification(
+                `‼️ TERLAMBAT: Tagihan ${itemKey}!`,
+                {
+                  body: `Tagihan ${itemKey} (${formatRp(amt)}) terlambat ${lateDays} hari sejak tanggal ${dueDay}.`,
+                  tag: `routine-late-${itemKey}-${currentYear}-${currentMonth}`
+                },
+                `routine-late-${itemKey}-${currentYear}-${currentMonth}`
+              );
             }
-            sendBrowserNotification(
-              `‼️ TERLAMBAT: Tagihan ${itemKey}!`,
-              {
-                body: `Tagihan ${itemKey} (${formatRp(amt)}) terlambat ${lateDays} hari sejak tanggal ${dueDay}.`,
-                tag: `routine-late-${itemKey}-${currentYear}-${currentMonth}`
-              },
-              `routine-late-${itemKey}-${currentYear}-${currentMonth}`
-            );
           }
         });
       }
@@ -6378,7 +6439,7 @@
       if (activeDueModalItems.length > 0) {
         let isAutoPopupEnabled = localStorage.getItem('KEUANGANKU_AUTO_POPUP_ENABLED') !== 'false';
         if (isAutoPopupEnabled) {
-          let todayStr = new Date().toISOString().slice(0, 10);
+          let todayStr = getLocalDateStr();
           let dismissedDate = localStorage.getItem('KEUANGANKU_DUE_MODAL_DISMISSED_DATE');
           let dismissedSession = sessionStorage.getItem('KEUANGANKU_DUE_MODAL_DISMISSED') === 'true';
           if (dismissedDate !== todayStr && !dismissedSession) {
@@ -6391,6 +6452,8 @@
     }
 
     function checkReceivableAlerts() {
+      // PERLINDUNGAN PRIVASI: Jangan jalankan jika pengguna belum melewati layar PIN
+      if (!isUserAuthenticated()) return;
       let container = document.getElementById('receivable-alert-container');
       if (!container) return;
       container.innerHTML = '';
@@ -6400,7 +6463,7 @@
       today.setHours(0, 0, 0, 0);
       let currentMonth = today.getMonth();
       let currentYear = today.getFullYear();
-      let todayStr = today.toISOString().slice(0, 10);
+      let todayStr = getLocalDateStr();
       let alertsHtml = [];
 
       const isAlertDismissed = (key) => {
@@ -7003,19 +7066,11 @@
         });
       });
 
-      // 7. Render Interactive Chips
+      // 7. Render Interactive Chips (Filter Garis Rekening)
       if (chipsEl) {
         chipsEl.innerHTML = '';
         datasets.forEach((ds, dsIdx) => {
           let isHidden = ds.hidden;
-          let curBalText = "";
-          if (ds.label === "Total Saldo Gabungan") {
-            curBalText = formatRp(totalCurrentAll);
-          } else {
-            let b = (globalData.currentBalances && globalData.currentBalances[ds.label]) ? Number(globalData.currentBalances[ds.label]) : 0;
-            curBalText = formatRp(b);
-          }
-          
           let activeClasses = isHidden
             ? 'opacity-40 line-through bg-surface-container-low text-gray-400 border-outline-variant'
             : 'bg-white dark:bg-slate-700 text-on-surface shadow-xs border-outline-variant hover:border-primary';
@@ -7023,8 +7078,7 @@
           chipsEl.innerHTML += `
             <button type="button" onclick="toggleWalletLineSeries(${dsIdx})" class="px-2.5 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-2 transition-all active:scale-95 ${activeClasses}" title="Klik untuk sembunyikan/tampilkan garis ${ds.label}">
               <span class="w-2.5 h-2.5 rounded-full inline-block flex-shrink-0" style="background-color: ${ds.borderColor};"></span>
-              <span class="truncate max-w-[120px] sm:max-w-none">${ds.label}</span>
-              <span class="text-[10px] font-mono-data opacity-75 font-semibold">(${curBalText})</span>
+              <span class="truncate max-w-[140px] sm:max-w-none">${ds.label}</span>
             </button>
           `;
         });
@@ -7157,22 +7211,9 @@
       if (!walletHistoryLineChart) return;
       let chipsEl = document.getElementById('wallet-history-chips');
       if (!chipsEl) return;
-      let totalCurrentAll = 0;
-      if (globalData.accounts) {
-        globalData.accounts.forEach(a => {
-          totalCurrentAll += (globalData.currentBalances && globalData.currentBalances[a]) ? Number(globalData.currentBalances[a]) : 0;
-        });
-      }
       chipsEl.innerHTML = '';
       walletHistoryLineChart.data.datasets.forEach((ds, dsIdx) => {
         let isHidden = ds.hidden;
-        let curBalText = "";
-        if (ds.label === "Total Saldo Gabungan") {
-          curBalText = formatRp(totalCurrentAll);
-        } else {
-          let b = (globalData.currentBalances && globalData.currentBalances[ds.label]) ? Number(globalData.currentBalances[ds.label]) : 0;
-          curBalText = formatRp(b);
-        }
         let activeClasses = isHidden
           ? 'opacity-40 line-through bg-surface-container-low text-gray-400 border-outline-variant'
           : 'bg-white dark:bg-slate-700 text-on-surface shadow-xs border-outline-variant hover:border-primary';
@@ -7180,8 +7221,7 @@
         chipsEl.innerHTML += `
           <button type="button" onclick="toggleWalletLineSeries(${dsIdx})" class="px-2.5 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-2 transition-all active:scale-95 ${activeClasses}" title="Klik untuk sembunyikan/tampilkan garis ${ds.label}">
             <span class="w-2.5 h-2.5 rounded-full inline-block flex-shrink-0" style="background-color: ${ds.borderColor};"></span>
-            <span class="truncate max-w-[120px] sm:max-w-none">${ds.label}</span>
-            <span class="text-[10px] font-mono-data opacity-75 font-semibold">(${curBalText})</span>
+            <span class="truncate max-w-[140px] sm:max-w-none">${ds.label}</span>
           </button>
         `;
       });
