@@ -969,6 +969,9 @@
         </div>
       </div>
 
+      <!-- EXCLUSIVE OWNER FEATURE: INDIKATOR KETAHANAN KAS (EMERGENCY RUNWAY METER) -->
+      <div id="owner-runway-container" class="hidden"></div>
+
       <section class="space-y-3 pt-1">
         <div class="flex items-center justify-between">
           <h3 class="font-title-sm font-bold flex items-center gap-2 text-on-surface"><span class="material-symbols-outlined text-primary">account_balance</span> <span>Saldo Per Akun</span></h3>
@@ -1817,9 +1820,19 @@
                 <p class="text-[11px] text-indigo-800 dark:text-indigo-200 leading-relaxed">
                   Menu Kalkulator Bisnis & Usaha (HPP Konveksi/Sablon, Modal Usaha, Murabahah). Menu ini <b>hanya muncul untuk Anda</b> dan disembunyikan total dari pengguna lain/kerabat.
                 </p>
-                <div class="flex items-center gap-3 pt-2 bg-white dark:bg-slate-800 p-3 rounded-xl border border-indigo-100 dark:border-indigo-900">
-                  <input type="checkbox" id="setup-enable-calc" onchange="toggleCalculatorFeature(this.checked)" class="w-5 h-5 rounded text-indigo-600 border-outline-variant cursor-pointer focus:ring-indigo-500">
-                  <label for="setup-enable-calc" class="text-xs font-bold text-gray-700 dark:text-gray-300 cursor-pointer">Aktifkan Menu Navigasi Kalkulator Bisnis & Finansial</label>
+                <div class="space-y-2 pt-2">
+                  <div class="flex items-center gap-3 bg-white dark:bg-slate-800 p-3 rounded-xl border border-indigo-100 dark:border-indigo-900">
+                    <input type="checkbox" id="setup-enable-calc" onchange="toggleCalculatorFeature(this.checked)" class="w-5 h-5 rounded text-indigo-600 border-outline-variant cursor-pointer focus:ring-indigo-500">
+                    <label for="setup-enable-calc" class="text-xs font-bold text-gray-700 dark:text-gray-300 cursor-pointer">Aktifkan Menu Navigasi Kalkulator Bisnis & Finansial</label>
+                  </div>
+                  <div class="flex items-center gap-3 bg-white dark:bg-slate-800 p-3 rounded-xl border border-indigo-100 dark:border-indigo-900">
+                    <input type="checkbox" id="setup-enable-runway" onchange="toggleRunwayFeature(this.checked)" class="w-5 h-5 rounded text-indigo-600 border-outline-variant cursor-pointer focus:ring-indigo-500">
+                    <label for="setup-enable-runway" class="text-xs font-bold text-gray-700 dark:text-gray-300 cursor-pointer">Aktifkan Fitur Uji Coba: Indikator Ketahanan Kas (Emergency Runway)</label>
+                  </div>
+                  <div class="flex items-center gap-3 bg-white dark:bg-slate-800 p-3 rounded-xl border border-indigo-100 dark:border-indigo-900">
+                    <input type="checkbox" id="setup-enable-countdown-goals" onchange="toggleCountdownGoalsFeature(this.checked)" class="w-5 h-5 rounded text-indigo-600 border-outline-variant cursor-pointer focus:ring-indigo-500">
+                    <label for="setup-enable-countdown-goals" class="text-xs font-bold text-gray-700 dark:text-gray-300 cursor-pointer">Aktifkan Fitur Uji Coba: Visual Moodboard & Hitung Mundur Impian (Goals)</label>
+                  </div>
                 </div>
                 <div class="pt-3 border-t border-indigo-200/60 dark:border-indigo-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                   <div>
@@ -4755,6 +4768,8 @@
     const DEFAULT_DATA = { 
       appPin: "123", ownerPassword: "123", cloudUrl: "", startingBalance: 0, 
       enableCalculator: false,
+      enableRunwayMeter: true,
+      enableCountdownGoals: true,
       accounts: ["Rekening Bank", "E-Wallet", "Uang Tunai (Cash)"], 
       accountDetails: { "Rekening Bank": { bankName: "Bank", accNo: "-", owner: "-", balance: 0 } }, 
       currentBalances: { "Rekening Bank": 0, "E-Wallet": 0, "Uang Tunai (Cash)": 0 }, 
@@ -4975,6 +4990,8 @@
       if (globalData.appPin === undefined) globalData.appPin = globalData.ownerPassword || "123";
       if (!globalData.cloudUrl) globalData.cloudUrl = "";
       if (globalData.enableCalculator === undefined) globalData.enableCalculator = false;
+      if (globalData.enableRunwayMeter === undefined) globalData.enableRunwayMeter = true;
+      if (globalData.enableCountdownGoals === undefined) globalData.enableCountdownGoals = true;
       if (!globalData.monthlyBudgets) globalData.monthlyBudgets = {}; 
       if (!globalData.lastUpdated) globalData.lastUpdated = Date.now();
       
@@ -5082,6 +5099,20 @@
       if ((!val || !isOwnerDevice()) && !document.getElementById('page-kalkulator').classList.contains('hidden')) {
         navTo('dashboard');
       }
+    }
+
+    function toggleRunwayFeature(val) {
+      if (!isOwnerDevice()) val = false;
+      globalData.enableRunwayMeter = val;
+      saveStorageData();
+      renderDashboard();
+    }
+
+    function toggleCountdownGoalsFeature(val) {
+      if (!isOwnerDevice()) val = false;
+      globalData.enableCountdownGoals = val;
+      saveStorageData();
+      renderDashboard();
     }
 
     async function saveStorageData() {
@@ -7243,6 +7274,155 @@
       });
     }
 
+    function calculateEmergencyRunway() {
+      let totalLiquid = 0;
+      if (globalData.currentBalances) {
+        Object.keys(globalData.currentBalances).forEach(acc => {
+          let b = parseFloat(globalData.currentBalances[acc]) || 0;
+          if (b > 0) totalLiquid += b;
+        });
+      }
+
+      let historyList = globalData.recentHistory || [];
+      let spendingByMonth = {};
+
+      historyList.forEach(tx => {
+        if ((tx.cashflow === 'Spending' || tx.cashflow === 'Bayar Cicilan / Utang') && tx.amount > 0 && tx.rawDate) {
+          let d = new Date(tx.rawDate);
+          let mKey = `${d.getFullYear()}-${d.getMonth()}`;
+          spendingByMonth[mKey] = (spendingByMonth[mKey] || 0) + tx.amount;
+        }
+      });
+
+      let monthsRecorded = Object.keys(spendingByMonth);
+      let avgMonthlyExpense = 0;
+
+      if (monthsRecorded.length > 0) {
+        let sum = monthsRecorded.reduce((acc, k) => acc + spendingByMonth[k], 0);
+        avgMonthlyExpense = Math.round(sum / monthsRecorded.length);
+      } else {
+        if (globalData.monthlyBudgets) {
+          avgMonthlyExpense = Object.values(globalData.monthlyBudgets).reduce((acc, v) => acc + (parseFloat(v) || 0), 0);
+        }
+      }
+
+      let runwayMonths = 0;
+      if (avgMonthlyExpense > 0) {
+        runwayMonths = parseFloat((totalLiquid / avgMonthlyExpense).toFixed(1));
+      } else if (totalLiquid > 0) {
+        runwayMonths = 12;
+      }
+
+      let dailyBurnRate = avgMonthlyExpense > 0 ? Math.round(avgMonthlyExpense / 30) : 0;
+
+      return {
+        totalLiquid,
+        avgMonthlyExpense,
+        runwayMonths,
+        dailyBurnRate
+      };
+    }
+
+    function renderEmergencyRunway() {
+      let container = document.getElementById('owner-runway-container');
+      if (!container) return;
+      let isOwner = isOwnerDevice();
+      if (!isOwner || globalData.enableRunwayMeter === false) {
+        container.classList.add('hidden');
+        container.innerHTML = '';
+        return;
+      }
+      container.classList.remove('hidden');
+
+      let stats = calculateEmergencyRunway();
+      let m = stats.runwayMonths;
+      let isMasked = (typeof isBalanceMasked !== 'undefined') && isBalanceMasked;
+
+      let badgeColor = "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800";
+      let statusText = "🛡️ SANGAT AMAN (Ideal > 6 Bulan)";
+      let barGradient = "from-emerald-500 to-teal-500";
+      let advice = "Ketahanan kas Anda sangat kokoh. Total saldo likuid Anda mampu menopang kebutuhan tanpa ada pemasukan baru selama lebih dari 6 bulan.";
+
+      if (m < 1) {
+        badgeColor = "bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300 border-rose-200 dark:border-rose-800";
+        statusText = "🚨 ZONA DARURAT (< 1 Bulan)";
+        barGradient = "from-rose-500 to-red-600";
+        advice = "Cadangan kas saat ini berada di bawah 1 bulan pengeluaran. Sangat disarankan untuk memprioritaskan kebutuhan pokok dan memperbesar dana cadangan.";
+      } else if (m < 3) {
+        badgeColor = "bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border-amber-200 dark:border-amber-800";
+        statusText = "⚠️ PERLU WASPADA (1 - 3 Bulan)";
+        barGradient = "from-amber-500 to-orange-500";
+        advice = "Ketahanan kas cukup untuk kebutuhan singkat, namun masih di bawah standar ideal dana darurat 3 - 6 bulan pengeluaran.";
+      } else if (m < 6) {
+        badgeColor = "bg-blue-100 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300 border-blue-200 dark:border-blue-800";
+        statusText = "⚖️ CUKUP SEHAT (3 - 6 Bulan)";
+        barGradient = "from-blue-500 to-cyan-500";
+        advice = "Kondisi kas memenuhi standar dana darurat. Pertahankan arus kas ini dan lanjutkan pos tabungan/investasi secara berkala.";
+      }
+
+      let progressPct = Math.min(100, Math.round((m / 6) * 100));
+
+      container.innerHTML = `
+        <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-5 sm:p-6 border border-indigo-500/30 shadow-xl space-y-4 relative overflow-hidden">
+          <div class="absolute -right-16 -top-16 w-60 h-60 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-2xl bg-indigo-500/20 text-cyan-400 border border-cyan-400/30 flex items-center justify-center flex-shrink-0">
+                <span class="material-symbols-outlined text-xl">shield</span>
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <h3 class="font-title-sm font-bold text-sm sm:text-base text-white">Indikator Ketahanan Kas (Emergency Runway)</h3>
+                  <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-cyan-400 text-slate-950 tracking-wider">UJI COBA PEMILIK</span>
+                </div>
+                <p class="text-[11px] text-slate-300 mt-0.5">Estimasi berapa lama total saldo rekening kas Anda mampu bertahan tanpa pemasukan</p>
+              </div>
+            </div>
+            <span class="px-3 py-1 rounded-full text-[10px] font-extrabold border ${badgeColor} self-start sm:self-auto">${statusText}</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+            <div class="md:col-span-4 flex items-baseline gap-2">
+              <span class="text-4xl sm:text-5xl font-extrabold font-mono-data text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-white to-blue-200">
+                ${isMasked ? '•••' : m}
+              </span>
+              <span class="text-lg font-bold text-slate-300">Bulan</span>
+              <span class="text-xs text-slate-400 ml-1">(~${isMasked ? '•••' : Math.round(m * 30)} Hari)</span>
+            </div>
+
+            <div class="md:col-span-8 space-y-2">
+              <div class="flex justify-between text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                <span>0 Bln (Kritis)</span>
+                <span>1 Bln</span>
+                <span>3 Bln (Standar)</span>
+                <span>6+ Bln (Ideal)</span>
+              </div>
+              <div class="w-full bg-slate-800/80 h-3 rounded-full overflow-hidden border border-white/10 p-0.5">
+                <div class="h-full rounded-full bg-gradient-to-r ${barGradient} transition-all duration-700 shadow-sm" style="width: ${progressPct}%"></div>
+              </div>
+              <p class="text-[11px] text-slate-300 leading-relaxed italic">${advice}</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-white/10 text-xs">
+            <div class="p-3 bg-white/5 rounded-2xl border border-white/5 space-y-1">
+              <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Likuiditas Kas Aktif</span>
+              <p class="text-sm sm:text-base font-extrabold text-cyan-300 font-mono-data">${formatRp(stats.totalLiquid)}</p>
+            </div>
+            <div class="p-3 bg-white/5 rounded-2xl border border-white/5 space-y-1">
+              <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Rata-rata Pengeluaran</span>
+              <p class="text-sm sm:text-base font-extrabold text-slate-200 font-mono-data">${formatRp(stats.avgMonthlyExpense)} <span class="text-[10px] font-normal text-slate-400">/bln</span></p>
+            </div>
+            <div class="p-3 bg-white/5 rounded-2xl border border-white/5 space-y-1">
+              <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Burn Rate Harian</span>
+              <p class="text-sm sm:text-base font-extrabold text-amber-300 font-mono-data">~${formatRp(stats.dailyBurnRate)} <span class="text-[10px] font-normal text-slate-400">/hari</span></p>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
     function renderDashboard() { 
       let sumInvest = 0, sumSinking = 0, sumGoals = 0; 
       const calcNet = (obj) => { let total = 0; if(obj) Object.keys(obj).forEach(k => { let flow = getCategoryCashflowNet(k); let net = (obj[k].initial || 0) + flow.net - (obj[k].used || 0) - flow.used; if(net > 0) total += net; }); return total; }; 
@@ -7311,6 +7491,9 @@
       // Render Diagram Tren Saldo Rekening / Wallet (1 Bulan)
       renderWalletHistoryChart();
 
+      // Render Indikator Ketahanan Kas (Emergency Runway) - EKSKLUSIF OWNER
+      renderEmergencyRunway();
+
       renderBudgetRecap(); 
       renderInvestRecap(); 
       renderSinkingRecap(); 
@@ -7329,7 +7512,118 @@
     function updateBudgetLimit(cat, val) { if (!globalData.monthlyBudgets) globalData.monthlyBudgets = {}; globalData.monthlyBudgets[cat] = parseFloat(val.replace(/\./g, '')) || 0; saveStorageData(); renderDashboard(); }
     function renderInvestRecap() { let grid = document.getElementById('invest-recap-grid'); if (!grid) return; grid.innerHTML = ''; if (!globalData.investData) return; Object.keys(globalData.investData).forEach(k => { let item = globalData.investData[k]; let flow = getCategoryCashflowNet(k); let totalMoney = (item.initial || 0) + flow.net; let used = (item.used || 0) + flow.used; let sisa = totalMoney - used; grid.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-1 text-xs"><p class="font-bold text-primary dark:text-blue-400 text-sm">${k}</p><div class="flex justify-between"><span>Saldo Awal + Masuk:</span><span class="font-mono-data font-bold">${formatRp(totalMoney)}</span></div><div class="flex justify-between text-error"><span>Terpakai (Used):</span><span class="font-mono-data font-bold">${formatRp(used)}</span></div><div class="flex justify-between text-green-600 dark:text-green-400 font-bold border-t border-outline-variant/40 pt-1"><span>Sisa Uang:</span><span class="font-mono-data">${formatRp(sisa)}</span></div></div>`; }); }
     function renderSinkingRecap() { let container = document.getElementById('sinking-recap-grid'); if (!container) return; container.innerHTML = ''; if (!globalData.sinkingData) return; let today = new Date(); Object.keys(globalData.sinkingData).forEach(k => { let item = globalData.sinkingData[k]; let flow = getCategoryCashflowNet(k); let targetPerMonth = (item.target || 0) / (item.durationMonths || 1); let current = (item.initial || 0) + flow.net; let used = (item.used || 0) + flow.used; let sisa = current - used; let daysLeftText = "Durasi Terjadwal"; if (item.deadline) { let diffDays = Math.ceil((new Date(item.deadline) - today) / (1000 * 60 * 60 * 24)); daysLeftText = diffDays > 0 ? (Math.floor(diffDays / 30) > 0 ? `${Math.floor(diffDays/30)} Bulan` : `${diffDays} Hari lagi`) : "Lewat"; } let pct = Math.min(100, Math.round((current / (item.target || 1)) * 100)); container.innerHTML += `<div class="p-3.5 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-2.5 text-xs"><div class="flex justify-between items-center"><p class="font-bold text-tertiary dark:text-indigo-400 text-sm">${k}</p><span class="text-[10px] px-2.5 py-0.5 bg-tertiary/10 text-tertiary dark:text-indigo-300 rounded-full font-bold">Sisa Waktu: ${daysLeftText}</span></div><div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-[11px]"><div><span class="text-gray-500">Target Nominal:</span><br/><b class="font-mono-data">${formatRp(item.target)}</b></div><div><span class="text-gray-500">Target / Bulan:</span><br/><b class="font-mono-data text-primary dark:text-blue-400">${formatRp(targetPerMonth)}</b></div><div><span class="text-gray-500">Terkumpul (Cashflow):</span><br/><b class="font-mono-data text-green-600 dark:text-green-400">${formatRp(current)}</b></div><div><span class="text-gray-500">Terpakai:</span><br/><b class="font-mono-data text-error">${formatRp(used)}</b></div></div><div><div class="flex justify-between text-[10px] font-bold mb-1"><span>Progress (${pct}%)</span><span>Sisa Uang: ${formatRp(sisa)}</span></div><div class="w-full bg-gray-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden"><div class="bg-tertiary dark:bg-indigo-500 h-2 rounded-full" style="width: ${pct}%"></div></div></div></div>`; }); }
-    function renderGoalsRecap() { let container = document.getElementById('goals-recap-grid'); if (!container) return; container.innerHTML = ''; if (!globalData.goalsData) return; Object.keys(globalData.goalsData).forEach(k => { let item = globalData.goalsData[k]; let flow = getCategoryCashflowNet(k); let current = (item.initial || 0) + flow.net; let used = (item.used || 0) + flow.used; let sisa = current - used; let pct = Math.min(100, Math.round((current / (item.target || 1)) * 100)); container.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-2 text-xs"><div class="flex justify-between items-center"><p class="font-bold text-secondary dark:text-sky-400 text-sm">${k}</p><span class="text-[10px] px-2 py-0.5 bg-secondary/10 text-secondary dark:text-sky-300 rounded-full font-bold">Waktu: ${item.timeframeVal || '-'} ${item.timeframeUnit || 'Tahun'}</span></div><div class="grid grid-cols-4 gap-2 text-[11px]"><div><span class="text-gray-500">Target Nominal:</span><br/><b class="font-mono-data">${formatRp(item.target)}</b></div><div><span class="text-gray-500">Terkumpul:</span><br/><b class="font-mono-data text-green-600 dark:text-green-400">${formatRp(current)}</b></div><div><span class="text-gray-500">Terpakai:</span><br/><b class="font-mono-data text-error">${formatRp(used)}</b></div><div><span class="text-gray-500">Sisa Uang:</span><br/><b class="font-mono-data text-primary dark:text-blue-400">${formatRp(sisa)}</b></div></div><div><div class="flex justify-between text-[10px] font-bold mb-1"><span>Progress Goal (${pct}%)</span><span>Kekurangan Target: ${formatRp(item.target - current > 0 ? item.target - current : 0)}</span></div><div class="w-full bg-gray-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden"><div class="bg-secondary dark:bg-sky-500 h-2 rounded-full" style="width: ${pct}%"></div></div></div></div>`; }); }
+    function renderGoalsRecap() { 
+      let container = document.getElementById('goals-recap-grid'); 
+      if (!container) return; 
+      container.innerHTML = ''; 
+      if (!globalData.goalsData) return; 
+      let isOwner = isOwnerDevice();
+      let today = new Date();
+
+      Object.keys(globalData.goalsData).forEach(k => { 
+        let item = globalData.goalsData[k]; 
+        let flow = getCategoryCashflowNet(k); 
+        let current = (item.initial || 0) + flow.net; 
+        let used = (item.used || 0) + flow.used; 
+        let sisa = current - used; 
+        let pct = Math.min(100, Math.round((current / (item.target || 1)) * 100)); 
+
+        if (!isOwner || globalData.enableCountdownGoals === false) {
+          container.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 border border-outline-variant rounded-xl space-y-2 text-xs"><div class="flex justify-between items-center"><p class="font-bold text-secondary dark:text-sky-400 text-sm">${k}</p><span class="text-[10px] px-2 py-0.5 bg-secondary/10 text-secondary dark:text-sky-300 rounded-full font-bold">Waktu: ${item.timeframeVal || '-'} ${item.timeframeUnit || 'Tahun'}</span></div><div class="grid grid-cols-4 gap-2 text-[11px]"><div><span class="text-gray-500">Target Nominal:</span><br/><b class="font-mono-data">${formatRp(item.target)}</b></div><div><span class="text-gray-500">Terkumpul:</span><br/><b class="font-mono-data text-green-600 dark:text-green-400">${formatRp(current)}</b></div><div><span class="text-gray-500">Terpakai:</span><br/><b class="font-mono-data text-error">${formatRp(used)}</b></div><div><span class="text-gray-500">Sisa Uang:</span><br/><b class="font-mono-data text-primary dark:text-blue-400">${formatRp(sisa)}</b></div></div><div><div class="flex justify-between text-[10px] font-bold mb-1"><span>Progress Goal (${pct}%)</span><span>Kekurangan Target: ${formatRp(item.target - current > 0 ? item.target - current : 0)}</span></div><div class="w-full bg-gray-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden"><div class="bg-secondary dark:bg-sky-500 h-2 rounded-full" style="width: ${pct}%"></div></div></div></div>`;
+        } else {
+          // FITUR UJI COBA PEMILIK: Visual Moodboard & Hitung Mundur Impian (Goals)
+          let hasDeadline = item.deadline && item.deadline.trim() !== "";
+          let diffDays = 0;
+          let monthsRemaining = 1;
+          let countdownPill = "";
+
+          if (hasDeadline) {
+            let dlDate = new Date(item.deadline);
+            diffDays = Math.ceil((dlDate - today) / (1000 * 60 * 60 * 24));
+            monthsRemaining = Math.max(1, Math.ceil(diffDays / 30));
+            if (diffDays > 0) {
+              countdownPill = `<span class="text-[10px] px-2.5 py-0.5 bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 rounded-full font-bold flex items-center gap-1">
+                <span class="material-symbols-outlined text-xs text-indigo-500">hourglass_top</span>
+                <span>${diffDays} Hari Lagi (~${monthsRemaining} Bulan)</span>
+              </span>`;
+            } else {
+              countdownPill = `<span class="text-[10px] px-2.5 py-0.5 bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 rounded-full font-bold">🏁 Waktu Target Telah Tiba</span>`;
+            }
+          } else {
+            countdownPill = `<span class="text-[10px] px-2.5 py-0.5 bg-secondary/10 text-secondary dark:text-sky-300 rounded-full font-bold">Waktu: ${item.timeframeVal || '-'} ${item.timeframeUnit || 'Tahun'}</span>`;
+          }
+
+          let shortfall = item.target - current;
+          let perMonth = (shortfall > 0 && monthsRemaining > 0) ? Math.ceil(shortfall / monthsRemaining) : 0;
+          let perWeek = perMonth > 0 ? Math.ceil(perMonth / 4) : 0;
+
+          let goalEmoji = item.emoji || "";
+          if (!goalEmoji) {
+            let lk = k.toLowerCase();
+            if (lk.includes('nikah') || lk.includes('kawin') || lk.includes('wedding')) goalEmoji = "💍";
+            else if (lk.includes('rumah') || lk.includes('kpr') || lk.includes('tanah')) goalEmoji = "🏡";
+            else if (lk.includes('mobil') || lk.includes('motor') || lk.includes('kendaraan')) goalEmoji = "🚗";
+            else if (lk.includes('umroh') || lk.includes('haji')) goalEmoji = "🕋";
+            else if (lk.includes('usaha') || lk.includes('modal') || lk.includes('bisnis') || lk.includes('clothes')) goalEmoji = "👔";
+            else if (lk.includes('laptop') || lk.includes('hp') || lk.includes('gadget') || lk.includes('iphone')) goalEmoji = "📱";
+            else if (lk.includes('liburan') || lk.includes('travel') || lk.includes('trip')) goalEmoji = "✈️";
+            else goalEmoji = "🎯";
+          }
+
+          container.innerHTML += `
+            <div class="p-4 bg-white dark:bg-slate-900 border border-outline-variant hover:border-secondary rounded-2xl space-y-3 text-xs shadow-xs transition-all relative overflow-hidden group">
+              <div class="flex justify-between items-start gap-2">
+                <div class="flex items-center gap-2.5">
+                  <span class="text-2xl">${goalEmoji}</span>
+                  <div>
+                    <p class="font-bold text-secondary dark:text-sky-400 text-sm flex items-center gap-1.5">
+                      <span>${k}</span>
+                    </p>
+                    <p class="text-[10px] text-gray-400">Target: ${hasDeadline ? item.deadline : (item.timeframeVal ? item.timeframeVal + ' ' + (item.timeframeUnit || 'Tahun') : 'Jangka Panjang')}</p>
+                  </div>
+                </div>
+                ${countdownPill}
+              </div>
+
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] p-2.5 bg-surface-container-low dark:bg-slate-800/60 rounded-xl border border-outline-variant/50">
+                <div><span class="text-gray-400 text-[10px]">Target Nominal</span><br/><b class="font-mono-data text-on-surface">${formatRp(item.target)}</b></div>
+                <div><span class="text-gray-400 text-[10px]">Terkumpul</span><br/><b class="font-mono-data text-green-600 dark:text-green-400">${formatRp(current)}</b></div>
+                <div><span class="text-gray-400 text-[10px]">Terpakai</span><br/><b class="font-mono-data text-error">${formatRp(used)}</b></div>
+                <div><span class="text-gray-400 text-[10px]">Sisa Kas Goal</span><br/><b class="font-mono-data text-primary dark:text-blue-400">${formatRp(sisa)}</b></div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-[10px] font-bold mb-1">
+                  <span class="text-gray-500">Progress (${pct}%)</span>
+                  <span class="${shortfall > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-green-600 dark:text-green-400'}">Kekurangan: ${formatRp(shortfall > 0 ? shortfall : 0)}</span>
+                </div>
+                <div class="w-full bg-gray-200 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden">
+                  <div class="bg-gradient-to-r from-sky-500 to-indigo-600 h-2.5 rounded-full transition-all duration-500" style="width: ${pct}%"></div>
+                </div>
+              </div>
+
+              ${shortfall > 0 ? `
+                <div class="p-2.5 bg-sky-50 dark:bg-sky-950/40 rounded-xl border border-sky-200 dark:border-sky-900/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div class="flex items-center gap-1.5 text-[11px] text-sky-900 dark:text-sky-200">
+                    <span class="material-symbols-outlined text-sm text-sky-600">savings</span>
+                    <span>Perlu nabung: <b class="font-mono-data text-sky-700 dark:text-sky-300">${formatRp(perMonth)}</b>/bln <span class="opacity-75">(~${formatRp(perWeek)}/mgg)</span></span>
+                  </div>
+                  <button type="button" onclick="quickPayEntry('${escapeForAttr(k)}', 'goals', ${perMonth})" class="px-3 py-1 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-bold text-[10px] shadow-xs active:scale-95 transition-all flex items-center justify-center gap-1 cursor-pointer w-full sm:w-auto">
+                    <span class="material-symbols-outlined text-xs">add</span>
+                    <span>Nabung Sekarang</span>
+                  </button>
+                </div>
+              ` : `
+                <div class="p-2 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-800 text-center text-emerald-700 dark:text-emerald-300 text-[11px] font-bold flex items-center justify-center gap-1">
+                  <span class="material-symbols-outlined text-sm">celebration</span>
+                  <span>Target Keuangan ini telah 100% Tercapai! Selamat!</span>
+                </div>
+              `}
+            </div>
+          `;
+        }
+      }); 
+    }
     function escapeForAttr(str) { return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
 
     function renderReceivablesRecap() { 
@@ -7580,6 +7874,8 @@
           cfSelect.value = 'Bayar Cicilan / Utang';
         } else if (type === 'routine') {
           cfSelect.value = 'Spending';
+        } else if (type === 'goals') {
+          cfSelect.value = 'Financial Goals';
         } else {
           cfSelect.value = 'Pelunasan Piutang';
         }
@@ -7593,6 +7889,7 @@
       if (nameInput) {
         if (type === 'debt') nameInput.value = `Bayar Cicilan: ${name}`;
         else if (type === 'routine') nameInput.value = `Bayar Tagihan: ${name}`;
+        else if (type === 'goals') nameInput.value = `Setor Tabungan: ${name}`;
         else nameInput.value = `Pelunasan Piutang: ${name}`;
       }
       let amtInput = document.getElementById('tx-amount');
@@ -8571,7 +8868,7 @@
       } else if (catId === 'sinking') {
         renderValuedCategoryList('sinkingData', 'setup-sinking-list', ['initial', 'target', 'deadline', 'durationMonths']);
       } else if (catId === 'goals') {
-        renderValuedCategoryList('goalsData', 'setup-goals-list', ['initial', 'target', 'timeframeVal']);
+        renderValuedCategoryList('goalsData', 'setup-goals-list', isOwnerDevice() ? ['initial', 'target', 'deadline', 'timeframeVal'] : ['initial', 'target', 'timeframeVal']);
       } else if (catId === 'receivables') {
         renderValuedCategoryList('receivablesData', 'setup-receivables-list', ['total', 'deadline', 'paid']);
       } else if (catId === 'nonmoney') {
@@ -8636,9 +8933,9 @@
       let sb = document.getElementById('setup-starting-balance'); if (sb) sb.value = globalData.startingBalance || 0; 
       let rContainer = document.getElementById('setup-routine-list'); if (rContainer) { rContainer.innerHTML = ''; if (!globalData.routinePayments) globalData.routinePayments = {}; Object.keys(globalData.routinePayments).forEach(k => { let item = globalData.routinePayments[k]; rContainer.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant flex items-center justify-between gap-2 text-xs"><b class="font-bold text-primary dark:text-blue-400 w-1/3">${k}</b><div class="grid grid-cols-2 gap-2 w-2/3"><input type="number" value="${item.amount||0}" placeholder="Nominal" onchange="globalData.routinePayments['${k}'].amount=parseFloat(this.value)||0; saveStorageData();" class="p-1.5 border rounded-lg font-mono-data bg-surface text-on-surface"><div class="flex items-center gap-1"><input type="number" min="1" max="31" value="${item.dueDay||1}" placeholder="Tgl" onchange="globalData.routinePayments['${k}'].dueDay=parseInt(this.value,10)||1;" class="p-1.5 border rounded-lg font-mono-data w-16 bg-surface text-on-surface"><span onclick="removeRoutinePaymentItem('${k}')" class="material-symbols-outlined text-sm text-error cursor-pointer">close</span></div></div></div>`; }); } 
       let accContainer = document.getElementById('setup-account-list'); if (accContainer && globalData.accounts) { accContainer.innerHTML = ''; if (!globalData.accountDetails) globalData.accountDetails = {}; globalData.accounts.forEach((acc, idx) => { let bal = globalData.currentBalances[acc] || 0; let dt = globalData.accountDetails[acc] || { bankName: acc, accNo: "", owner: "" }; accContainer.innerHTML += `<div class="p-4 bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant space-y-3"><div class="flex justify-between items-center border-b border-outline-variant/40 pb-2"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary dark:text-blue-400">account_balance</span><b class="text-sm font-bold text-on-surface">${acc}</b></div><button onclick="removeAccountItem(${idx})" class="text-xs text-error font-bold flex items-center gap-0.5 hover:underline"><span class="material-symbols-outlined text-sm">close</span> Hapus Akun</button></div><div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs"><div><label class="text-[10px] text-gray-500 font-bold uppercase">Nama Bank / E-Wallet</label><input type="text" value="${dt.bankName||acc}" onchange="updateAccountDetail('${acc}', 'bankName', this.value)" class="w-full bg-white dark:bg-slate-800 text-on-surface border rounded-lg p-1.5 font-bold"></div><div><label class="text-[10px] text-gray-500 font-bold uppercase">Nomor Rekening</label><input type="text" value="${dt.accNo||''}" placeholder="Contoh: 712345..." onchange="updateAccountDetail('${acc}', 'accNo', this.value)" class="w-full bg-white dark:bg-slate-800 text-on-surface border rounded-lg p-1.5 font-mono-data"></div><div><label class="text-[10px] text-gray-500 font-bold uppercase">Atas Nama (a.n)</label><input type="text" value="${dt.owner||''}" placeholder="Pemilik" onchange="updateAccountDetail('${acc}', 'owner', this.value)" class="w-full bg-white dark:bg-slate-800 text-on-surface border rounded-lg p-1.5 font-bold"></div><div><label class="text-[10px] text-gray-500 font-bold uppercase">Saldo Awal (Rp)</label><input type="number" value="${bal}" onchange="updateAccountBalance('${acc}', this.value)" class="w-full bg-white dark:bg-slate-800 text-on-surface border border-primary/50 rounded-lg p-1.5 font-mono-data font-bold text-primary dark:text-blue-400"></div></div></div>`; }); } 
-      renderSimpleCategoryTags('incomes', 'setup-income-tags'); renderSimpleCategoryTags('bills', 'setup-bills-list'); renderSimpleCategoryTags('spendings', 'setup-spending-tags'); renderValuedCategoryList('investData', 'setup-invest-list', ['initial']); renderValuedCategoryList('sinkingData', 'setup-sinking-list', ['initial', 'target', 'deadline', 'durationMonths']); renderValuedCategoryList('goalsData', 'setup-goals-list', ['initial', 'target', 'timeframeVal']); renderValuedCategoryList('receivablesData', 'setup-receivables-list', ['total', 'deadline', 'paid']); renderValuedCategoryList('nonMoneyAssets', 'setup-nonmoney-list', ['qty', 'estimatedPrice', 'type', 'unit']); renderDebtListSetup(); 
-      let cloudInput = document.getElementById('setup-cloud-url'); if (cloudInput) cloudInput.value = globalData.cloudUrl || ""; 
       let isOwner = isOwnerDevice();
+      renderSimpleCategoryTags('incomes', 'setup-income-tags'); renderSimpleCategoryTags('bills', 'setup-bills-list'); renderSimpleCategoryTags('spendings', 'setup-spending-tags'); renderValuedCategoryList('investData', 'setup-invest-list', ['initial']); renderValuedCategoryList('sinkingData', 'setup-sinking-list', ['initial', 'target', 'deadline', 'durationMonths']); renderValuedCategoryList('goalsData', 'setup-goals-list', isOwner ? ['initial', 'target', 'deadline', 'timeframeVal'] : ['initial', 'target', 'timeframeVal']); renderValuedCategoryList('receivablesData', 'setup-receivables-list', ['total', 'deadline', 'paid']); renderValuedCategoryList('nonMoneyAssets', 'setup-nonmoney-list', ['qty', 'estimatedPrice', 'type', 'unit']); renderDebtListSetup(); 
+      let cloudInput = document.getElementById('setup-cloud-url'); if (cloudInput) cloudInput.value = globalData.cloudUrl || ""; 
       let ownerSection = document.getElementById('setup-owner-feature-section');
       if (ownerSection) {
         if (isOwner) ownerSection.classList.remove('hidden');
@@ -8646,6 +8943,10 @@
       }
       let calcToggle = document.getElementById('setup-enable-calc'); 
       if (calcToggle) calcToggle.checked = isOwner && (globalData.enableCalculator !== false);
+      let runwayToggle = document.getElementById('setup-enable-runway');
+      if (runwayToggle) runwayToggle.checked = isOwner && (globalData.enableRunwayMeter !== false);
+      let countdownToggle = document.getElementById('setup-enable-countdown-goals');
+      if (countdownToggle) countdownToggle.checked = isOwner && (globalData.enableCountdownGoals !== false);
       let budgetContainer = document.getElementById('setup-budget-list'); if (budgetContainer) { budgetContainer.innerHTML = ''; if (!globalData.monthlyBudgets) globalData.monthlyBudgets = {}; if (globalData.spendings && globalData.spendings.length > 0) { globalData.spendings.forEach(cat => { let limit = globalData.monthlyBudgets[cat] || 0; budgetContainer.innerHTML += `<div class="flex justify-between items-center bg-surface-container dark:bg-slate-900 p-2 rounded-lg border border-outline-variant/40 mb-2 text-xs"><span class="font-bold w-1/2">${cat}</span><div class="w-1/2 relative"><span class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-[10px]">Rp</span><input type="text" value="${limit.toLocaleString('id-ID')}" oninput="formatInputNominal(this)" onchange="updateBudgetLimit('${cat}', this.value)" placeholder="Limit Budget..." class="w-full pl-6 pr-2 py-1.5 border rounded-lg font-mono-data bg-white dark:bg-slate-800 text-on-surface font-bold text-right outline-none focus:border-primary"></div></div>`; }); } else { budgetContainer.innerHTML = '<p class="text-xs text-gray-500">Silakan tambahkan kategori Spending terlebih dahulu.</p>'; } } 
       let currentLic = getSavedLicense();
       updateSetupLicenseDisplay(currentLic);
