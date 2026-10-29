@@ -866,11 +866,6 @@
           <span id="header-sync-icon" class="material-symbols-outlined text-base text-green-500">cloud_done</span>
         </button>
 
-        <!-- TOMBOL SENSOR SALDO / MODE PRIVASI (HEADER) -->
-        <button id="header-privacy-btn" onclick="toggleBalanceMask()" class="p-2 rounded-xl bg-surface-container dark:bg-slate-800 border border-outline-variant/60 hover:border-primary active:scale-95 transition-all shadow-sm flex items-center justify-center text-on-surface-variant hover:text-primary cursor-pointer" title="Mode Privasi (Sensor / Tampilkan Saldo)">
-          <span id="header-privacy-icon" class="material-symbols-outlined text-base">visibility</span>
-        </button>
-
         <button onclick="toggleDarkMode()" class="p-2 rounded-full hover:bg-surface-container transition-colors flex items-center gap-1 text-xs font-bold cursor-pointer" title="Ubah Tema Gelap/Terang">
           <span id="header-theme-icon" class="material-symbols-outlined text-on-surface-variant">dark_mode</span>
         </button>
@@ -4733,28 +4728,13 @@
     }
 
     function updatePrivacyUI() {
-      let iconHeader = document.getElementById('header-privacy-icon');
-      let btnHeader = document.getElementById('header-privacy-btn');
       let iconFab = document.getElementById('icon-mask-balance-fab');
       let btnFab = document.getElementById('btn-mask-balance-fab');
-
-      if (iconHeader) {
-        iconHeader.textContent = isBalanceMasked ? "visibility_off" : "visibility";
-      }
-      if (btnHeader) {
-        if (isBalanceMasked) {
-          btnHeader.classList.add('bg-amber-100', 'dark:bg-amber-950/70', 'text-amber-700', 'dark:text-amber-300', 'border-amber-300', 'dark:border-amber-700');
-          btnHeader.title = "Mode Privasi Aktif: Saldo disensor (Klik untuk tampilkan)";
-        } else {
-          btnHeader.classList.remove('bg-amber-100', 'dark:bg-amber-950/70', 'text-amber-700', 'dark:text-amber-300', 'border-amber-300', 'dark:border-amber-700');
-          btnHeader.title = "Mode Privasi Nonaktif (Klik untuk sembunyikan saldo)";
-        }
-      }
       if (iconFab) {
         iconFab.textContent = isBalanceMasked ? "visibility_off" : "visibility";
       }
       if (btnFab) {
-        btnFab.title = isBalanceMasked ? "Mode Privasi Aktif (Klik untuk tampilkan saldo)" : "Mode Privasi Nonaktif (Klik untuk sembunyikan saldo)";
+        btnFab.title = isBalanceMasked ? "Tampilkan Saldo" : "Sembunyikan Saldo";
       }
     }
 
@@ -4766,7 +4746,6 @@
       updatePrivacyUI();
       renderDashboard();
       renderHistoryTable();
-      showSyncToast(isBalanceMasked ? "🔒 Mode Privasi Aktif (Saldo Disensor)" : "👁️ Mode Privasi Nonaktif (Saldo Ditampilkan)");
     }
 
     function playSuccessSound() { try { let ctx = new (window.AudioContext || window.webkitAudioContext)(); let osc = ctx.createOscillator(); let gain = ctx.createGain(); osc.type = 'sine'; osc.connect(gain); gain.connect(ctx.destination); let now = ctx.currentTime; osc.frequency.setValueAtTime(523.25, now); osc.frequency.setValueAtTime(659.25, now + 0.08); osc.frequency.setValueAtTime(783.99, now + 0.16); gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45); osc.start(now); osc.stop(now + 0.45); } catch(e) {} }
