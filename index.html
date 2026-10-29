@@ -524,6 +524,42 @@
     </div>
   </div>
 
+  <!-- MODAL PILIH AKUN PRIBADI UNTUK RUNWAY & ZAKAT -->
+  <div id="modal-runway-accounts" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300 p-4">
+    <div id="modal-runway-accounts-card" class="bg-white dark:bg-slate-900 border border-outline-variant rounded-3xl p-5 sm:p-6 max-w-md w-full space-y-4 shadow-2xl transform scale-95 transition-transform duration-300">
+      <div class="flex justify-between items-start border-b border-outline-variant/60 pb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-cyan-100 dark:bg-cyan-950 text-cyan-600 dark:text-cyan-400 border border-cyan-300 dark:border-cyan-800 flex items-center justify-center">
+            <span class="material-symbols-outlined text-2xl">account_balance_wallet</span>
+          </div>
+          <div>
+            <h3 class="font-headline-md font-bold text-on-surface text-base">Pilih Rekening Kas Pribadi</h3>
+            <p class="text-[10px] text-gray-400">Kecualikan kas kecil / rekening non-pribadi</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeRunwayAccountsModal()" class="w-8 h-8 rounded-full hover:bg-surface-container text-gray-400 hover:text-error flex items-center justify-center transition-colors">
+          <span class="material-symbols-outlined text-xl">close</span>
+        </button>
+      </div>
+
+      <div class="space-y-2 text-xs">
+        <p class="text-[11px] text-gray-600 dark:text-gray-300 leading-relaxed">
+          Hilangkan tanda centang pada rekening yang <b>bukan uang pribadi Anda</b> (seperti Kas Kecil kantor, dana titipan, atau modal pihak lain). Rekening yang tidak dicentang otomatis <b>tidak dihitung</b> dalam <b>Ketahanan Kas (Runway)</b> maupun <b>Zakat Maal</b>.
+        </p>
+        <div id="runway-modal-account-list" class="space-y-2 max-h-64 overflow-y-auto p-1 pr-2">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-outline-variant/60 flex items-center justify-between gap-2">
+        <span id="runway-modal-excluded-count" class="text-[10px] text-gray-400 font-medium"></span>
+        <button type="button" onclick="closeRunwayAccountsModal()" class="px-5 py-2 bg-primary text-white font-bold rounded-xl text-xs hover:brightness-110 shadow transition-all cursor-pointer">
+          Selesai & Simpan
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL SUKSES -->
   <div id="success-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
     <div class="bg-white dark:bg-slate-900 border border-outline-variant rounded-2xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl transform scale-95 transition-transform duration-300" id="success-card">
@@ -1945,6 +1981,16 @@
                   <div class="flex items-center gap-3 bg-white dark:bg-slate-800 p-3 rounded-xl border border-indigo-100 dark:border-indigo-900">
                     <input type="checkbox" id="setup-enable-runway" onchange="toggleRunwayFeature(this.checked)" class="w-5 h-5 rounded text-indigo-600 border-outline-variant cursor-pointer focus:ring-indigo-500">
                     <label for="setup-enable-runway" class="text-xs font-bold text-gray-700 dark:text-gray-300 cursor-pointer">Aktifkan Fitur Uji Coba: Indikator Ketahanan Kas (Emergency Runway)</label>
+                  </div>
+                  <div id="setup-runway-account-box" class="p-3 bg-white dark:bg-slate-800 rounded-xl border border-indigo-100 dark:border-indigo-900 space-y-2 text-xs">
+                    <div class="flex items-center justify-between flex-wrap gap-1">
+                      <span class="font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-sm text-indigo-600">account_balance_wallet</span>
+                        <span>Rekening Kas Pribadi yang Dihitung (Runway & Zakat)</span>
+                      </span>
+                      <span class="text-[10px] text-gray-400">Hilangkan centang jika bukan uang pribadi</span>
+                    </div>
+                    <div id="setup-runway-account-checkboxes" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 pt-1"></div>
                   </div>
                   <div class="flex items-center gap-3 bg-white dark:bg-slate-800 p-3 rounded-xl border border-indigo-100 dark:border-indigo-900">
                     <input type="checkbox" id="setup-enable-countdown-goals" onchange="toggleCountdownGoalsFeature(this.checked)" class="w-5 h-5 rounded text-indigo-600 border-outline-variant cursor-pointer focus:ring-indigo-500">
@@ -4918,6 +4964,7 @@
       zakatGoldPrice: 1450000,
       zakatHaulStartDate: "",
       zakatDeductDebt: false,
+      runwayExcludedAccounts: [],
       accounts: ["Rekening Bank", "E-Wallet", "Uang Tunai (Cash)"], 
       accountDetails: { "Rekening Bank": { bankName: "Bank", accNo: "-", owner: "-", balance: 0 } }, 
       currentBalances: { "Rekening Bank": 0, "E-Wallet": 0, "Uang Tunai (Cash)": 0 }, 
@@ -5144,6 +5191,15 @@
       if (!globalData.zakatGoldPrice) globalData.zakatGoldPrice = 1450000;
       if (globalData.zakatDeductDebt === undefined) globalData.zakatDeductDebt = false;
       if (globalData.zakatHaulStartDate === undefined) globalData.zakatHaulStartDate = "";
+      if (globalData.runwayExcludedAccounts === undefined) globalData.runwayExcludedAccounts = [];
+      // Auto-detect rekening Kas Kecil / Petty Cash jika ada di daftar akun
+      if (globalData.accounts && Array.isArray(globalData.accounts)) {
+        globalData.accounts.forEach(a => {
+          if (/kas\s*kecil|petty/i.test(a) && !globalData.runwayExcludedAccounts.includes(a)) {
+            globalData.runwayExcludedAccounts.push(a);
+          }
+        });
+      }
       if (!globalData.monthlyBudgets) globalData.monthlyBudgets = {}; 
       if (!globalData.lastUpdated) globalData.lastUpdated = Date.now();
       
@@ -5258,6 +5314,112 @@
       globalData.enableRunwayMeter = val;
       saveStorageData();
       renderDashboard();
+    }
+
+    function openRunwayAccountsModal() {
+      let modal = document.getElementById('modal-runway-accounts');
+      let card = document.getElementById('modal-runway-accounts-card');
+      if (!modal || !card) return;
+      renderRunwayAccountsModalContent();
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        card.classList.remove('scale-95');
+        card.classList.add('scale-100');
+      }, 10);
+    }
+
+    function closeRunwayAccountsModal() {
+      let modal = document.getElementById('modal-runway-accounts');
+      let card = document.getElementById('modal-runway-accounts-card');
+      if (!modal || !card) return;
+      modal.classList.add('opacity-0');
+      card.classList.remove('scale-100');
+      card.classList.add('scale-95');
+      setTimeout(() => modal.classList.add('hidden'), 300);
+    }
+
+    function renderRunwayAccountsModalContent() {
+      let list = document.getElementById('runway-modal-account-list');
+      let countEl = document.getElementById('runway-modal-excluded-count');
+      if (!list) return;
+      list.innerHTML = '';
+
+      let accounts = globalData.accounts || [];
+      let excluded = globalData.runwayExcludedAccounts || [];
+      let isMasked = (typeof isBalanceMasked !== 'undefined') && isBalanceMasked;
+
+      if (accounts.length === 0) {
+        list.innerHTML = '<p class="text-xs text-gray-500 py-3 text-center">Belum ada akun rekening yang didaftarkan.</p>';
+        return;
+      }
+
+      accounts.forEach(acc => {
+        let isIncluded = !excluded.includes(acc);
+        let bal = (globalData.currentBalances && globalData.currentBalances[acc]) ? globalData.currentBalances[acc] : 0;
+        let cardClass = isIncluded 
+          ? 'bg-blue-50/70 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800' 
+          : 'bg-surface dark:bg-slate-800 border-outline-variant opacity-60';
+
+        list.innerHTML += `
+          <label class="flex items-center justify-between p-3 rounded-2xl border ${cardClass} cursor-pointer hover:border-primary transition-all">
+            <div class="flex items-center gap-3">
+              <input type="checkbox" ${isIncluded ? 'checked' : ''} onchange="toggleRunwayAccountInclusion('${escapeForAttr(acc)}', this.checked)" class="w-4 h-4 rounded text-primary focus:ring-0 cursor-pointer">
+              <div>
+                <span class="font-bold text-xs text-on-surface block">${acc}</span>
+                <span class="text-[10px] ${isIncluded ? 'text-primary dark:text-blue-300 font-medium' : 'text-rose-500 font-bold'}">
+                  ${isIncluded ? '✅ Dihitung sebagai kas pribadi' : '🚫 Dikecualikan (bukan uang pribadi)'}
+                </span>
+              </div>
+            </div>
+            <span class="font-mono-data font-bold text-xs ${isIncluded ? 'text-on-surface' : 'text-gray-400 line-through'}">
+              ${isMasked ? '••••••' : formatRp(bal)}
+            </span>
+          </label>
+        `;
+      });
+
+      if (countEl) {
+        countEl.textContent = excluded.length > 0 ? `${excluded.length} rekening non-pribadi dikecualikan` : "Semua rekening aktif";
+      }
+    }
+
+    function toggleRunwayAccountInclusion(acc, isIncluded) {
+      if (!globalData.runwayExcludedAccounts) globalData.runwayExcludedAccounts = [];
+      if (isIncluded) {
+        globalData.runwayExcludedAccounts = globalData.runwayExcludedAccounts.filter(a => a !== acc);
+      } else {
+        if (!globalData.runwayExcludedAccounts.includes(acc)) {
+          globalData.runwayExcludedAccounts.push(acc);
+        }
+      }
+      saveStorageData();
+      renderDashboard();
+      renderRunwayAccountsModalContent();
+      renderSetupRunwayAccounts();
+    }
+
+    function renderSetupRunwayAccounts() {
+      let box = document.getElementById('setup-runway-account-checkboxes');
+      if (!box) return;
+      box.innerHTML = '';
+      let accounts = globalData.accounts || [];
+      let excluded = globalData.runwayExcludedAccounts || [];
+      let isMasked = (typeof isBalanceMasked !== 'undefined') && isBalanceMasked;
+
+      accounts.forEach(acc => {
+        let isIncluded = !excluded.includes(acc);
+        let bal = (globalData.currentBalances && globalData.currentBalances[acc]) ? globalData.currentBalances[acc] : 0;
+        box.innerHTML += `
+          <label class="flex items-center justify-between p-2 rounded-xl border ${isIncluded ? 'bg-indigo-50/50 dark:bg-indigo-950/20 border-indigo-200 dark:border-indigo-800' : 'bg-surface dark:bg-slate-800 border-outline-variant opacity-60'} cursor-pointer text-xs">
+            <div class="flex items-center gap-2">
+              <input type="checkbox" ${isIncluded ? 'checked' : ''} onchange="toggleRunwayAccountInclusion('${escapeForAttr(acc)}', this.checked)" class="rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+              <span class="font-bold text-on-surface">${acc}</span>
+            </div>
+            <span class="text-[10px] text-gray-500 font-mono-data">${isMasked ? '•••' : formatRp(bal)}</span>
+          </label>
+        `;
+      });
     }
 
     function toggleCountdownGoalsFeature(val) {
@@ -7550,8 +7712,10 @@
 
     function calculateEmergencyRunway() {
       let totalLiquid = 0;
+      let excluded = globalData.runwayExcludedAccounts || [];
       if (globalData.currentBalances) {
         Object.keys(globalData.currentBalances).forEach(acc => {
+          if (excluded.includes(acc)) return; // Lewati akun yang bukan uang pribadi!
           let b = parseFloat(globalData.currentBalances[acc]) || 0;
           if (b > 0) totalLiquid += b;
         });
@@ -7562,6 +7726,7 @@
 
       historyList.forEach(tx => {
         if ((tx.cashflow === 'Spending' || tx.cashflow === 'Bayar Cicilan / Utang') && tx.amount > 0 && tx.rawDate) {
+          if (tx.dari && excluded.includes(tx.dari)) return; // Lewati pengeluaran dari kas kecil / non-pribadi!
           let d = new Date(tx.rawDate);
           let mKey = `${d.getFullYear()}-${d.getMonth()}`;
           spendingByMonth[mKey] = (spendingByMonth[mKey] || 0) + tx.amount;
@@ -7593,7 +7758,8 @@
         totalLiquid,
         avgMonthlyExpense,
         runwayMonths,
-        dailyBurnRate
+        dailyBurnRate,
+        excludedAccounts: excluded
       };
     }
 
@@ -7646,15 +7812,31 @@
                 <span class="material-symbols-outlined text-xl">shield</span>
               </div>
               <div>
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 flex-wrap">
                   <h3 class="font-title-sm font-bold text-sm sm:text-base text-white">Indikator Ketahanan Kas (Emergency Runway)</h3>
                   <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-cyan-400 text-slate-950 tracking-wider">UJI COBA PEMILIK</span>
                 </div>
-                <p class="text-[11px] text-slate-300 mt-0.5">Estimasi berapa lama total saldo rekening kas Anda mampu bertahan tanpa pemasukan</p>
+                <p class="text-[11px] text-slate-300 mt-0.5">Estimasi berapa lama saldo rekening kas pribadi Anda mampu bertahan tanpa pemasukan</p>
               </div>
             </div>
-            <span class="px-3 py-1 rounded-full text-[10px] font-extrabold border ${badgeColor} self-start sm:self-auto">${statusText}</span>
+            <div class="flex items-center gap-2 flex-wrap self-start sm:self-auto">
+              <button type="button" onclick="openRunwayAccountsModal()" class="px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 border border-white/15 text-slate-200 text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer" title="Pilih rekening mana saja yang dihitung sebagai kas pribadi">
+                <span class="material-symbols-outlined text-xs text-cyan-400">filter_alt</span>
+                <span>${stats.excludedAccounts.length > 0 ? `Filter Kas (${stats.excludedAccounts.length} Dikecualikan)` : 'Pilih Akun Pribadi'}</span>
+              </button>
+              <span class="px-3 py-1 rounded-full text-[10px] font-extrabold border ${badgeColor}">${statusText}</span>
+            </div>
           </div>
+
+          ${stats.excludedAccounts.length > 0 ? `
+            <div class="p-2.5 px-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-200 flex items-center justify-between gap-2 flex-wrap">
+              <span class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm text-amber-300">block</span>
+                <span>Mengecualikan rekening non-pribadi: <b class="text-white">${stats.excludedAccounts.join(', ')}</b> (tidak dihitung di Runway & Zakat)</span>
+              </span>
+              <button type="button" onclick="openRunwayAccountsModal()" class="text-cyan-300 hover:underline text-[10px] font-bold cursor-pointer">Kelola Akun</button>
+            </div>
+          ` : ''}
 
           <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
             <div class="md:col-span-4 flex items-baseline gap-2">
@@ -7681,7 +7863,7 @@
 
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-white/10 text-xs">
             <div class="p-3 bg-white/5 rounded-2xl border border-white/5 space-y-1">
-              <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Likuiditas Kas Aktif</span>
+              <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Likuiditas Kas Pribadi</span>
               <p class="text-sm sm:text-base font-extrabold text-cyan-300 font-mono-data">${formatRp(stats.totalLiquid)}</p>
             </div>
             <div class="p-3 bg-white/5 rounded-2xl border border-white/5 space-y-1">
@@ -7701,12 +7883,14 @@
       let goldPrice = parseFloat(globalData.zakatGoldPrice) || 1450000;
       let nisabGrams = 85;
       let nisabNominal = nisabGrams * goldPrice;
+      let excluded = globalData.runwayExcludedAccounts || [];
 
-      // Kas Likuid (Seluruh saldo rekening dan e-wallet aktif)
+      // Kas Likuid (HANYA milik pribadi penuh / Al-Milkut Taam, lewati rekening non-pribadi / Kas Kecil)
       let totalCash = 0;
       if (globalData.currentBalances) {
-        Object.values(globalData.currentBalances).forEach(b => {
-          totalCash += (parseFloat(b) || 0);
+        Object.keys(globalData.currentBalances).forEach(acc => {
+          if (excluded.includes(acc)) return; // Lewati kas non-pribadi / titipan!
+          totalCash += (parseFloat(globalData.currentBalances[acc]) || 0);
         });
       }
 
@@ -7770,7 +7954,8 @@
         haulStartDate,
         haulDaysElapsed,
         haulDaysRemaining,
-        isHaulComplete
+        isHaulComplete,
+        excludedAccounts: excluded
       };
     }
 
@@ -7860,6 +8045,12 @@
                     </span>
                   ` : ''}
                 </div>
+                ${stats.excludedAccounts && stats.excludedAccounts.length > 0 ? `
+                  <div class="mt-2 text-[10px] text-emerald-300/90 flex items-center justify-between gap-1 bg-black/20 p-1.5 px-2.5 rounded-lg border border-emerald-500/20">
+                    <span>Mengecualikan non-pribadi: <b class="text-white">${stats.excludedAccounts.join(', ')}</b> (syarat Fiqh <i>Al-Milkut Taam</i>)</span>
+                    <button type="button" onclick="openRunwayAccountsModal()" class="text-amber-300 hover:underline font-bold cursor-pointer">Ubah</button>
+                  </div>
+                ` : ''}
               </div>
 
               <!-- Nisab Meter & Progress Bar -->
@@ -9482,6 +9673,15 @@
       if (calcToggle) calcToggle.checked = isOwner && (globalData.enableCalculator !== false);
       let runwayToggle = document.getElementById('setup-enable-runway');
       if (runwayToggle) runwayToggle.checked = isOwner && (globalData.enableRunwayMeter !== false);
+      let runwayBox = document.getElementById('setup-runway-account-box');
+      if (runwayBox) {
+        if (isOwner && (globalData.enableRunwayMeter !== false)) {
+          runwayBox.classList.remove('hidden');
+          renderSetupRunwayAccounts();
+        } else {
+          runwayBox.classList.add('hidden');
+        }
+      }
       let countdownToggle = document.getElementById('setup-enable-countdown-goals');
       if (countdownToggle) countdownToggle.checked = isOwner && (globalData.enableCountdownGoals !== false);
       let zakatToggle = document.getElementById('setup-enable-zakat');
