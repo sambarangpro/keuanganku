@@ -1778,6 +1778,26 @@
                     <span>Buka Pop-up Pengingat (✕)</span>
                   </button>
                 </div>
+
+                <!-- KONTROL PREFERENSI POP-UP MELAYANG OTOMATIS -->
+                <div class="pt-2 border-t border-amber-200/70 dark:border-amber-900/40">
+                  <div class="flex items-center justify-between gap-3 p-3 bg-white/80 dark:bg-slate-800/80 rounded-xl border border-amber-200 dark:border-amber-900/60 shadow-2xs">
+                    <div class="space-y-0.5">
+                      <div class="flex items-center gap-1.5 font-bold text-xs text-on-surface">
+                        <span class="material-symbols-outlined text-sm text-amber-600 dark:text-amber-400">auto_awesome_motion</span>
+                        <span>Pop-Up Melayang Otomatis Saat Buka Aplikasi</span>
+                      </div>
+                      <p class="text-[10px] text-gray-500 dark:text-gray-400 leading-tight">
+                        Jika dinonaktifkan, pop-up dialog di tengah layar tidak akan muncul otomatis saat membuka aplikasi. Peringatan tetap ada di kartu dashboard.
+                      </p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                      <input type="checkbox" id="setup-toggle-auto-due-popup" onchange="toggleAutoDuePopupSetting(this.checked)" class="sr-only peer" checked>
+                      <div class="w-11 h-6 bg-gray-300 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+                    </label>
+                  </div>
+                </div>
+
                 <div id="setup-notif-hint" class="text-[10px] text-gray-500 pt-1">
                   *Pastikan izin notifikasi diizinkan pada pengaturan browser/sistem perangkat Anda.
                 </div>
@@ -2378,18 +2398,18 @@
     let isBalanceMasked = true;
     let globalData = {};
 
-    // PALET WARNA DOMPET (HARMONIS & SINKRON DENGAN DIAGRAM)
+    // PALET WARNA DOMPET (HARMONIS & SINKRON DENGAN DIAGRAM GELOMBANG)
     const WALLET_COLORS = [
-      '#2563eb', // Biru
-      '#10b981', // Hijau Emerald
-      '#8b5cf6', // Ungu Violet
-      '#f59e0b', // Amber Oranye
-      '#ec4899', // Pink
+      '#f97316', // Oranye Sunset / Coral (Sesuai referensi gambar kurva atas)
+      '#8b5cf6', // Ungu Violet (Sesuai referensi gambar kurva bawah)
       '#06b6d4', // Cyan
+      '#10b981', // Hijau Emerald
+      '#3b82f6', // Biru Royal
+      '#ec4899', // Pink
+      '#eab308', // Amber Gold
       '#f43f5e', // Rose
       '#14b8a6', // Teal
-      '#6366f1', // Indigo
-      '#84cc16'  // Lime
+      '#6366f1'  // Indigo
     ];
 
     // ==============================================================================
@@ -5861,6 +5881,9 @@
       let modal = document.getElementById('modal-due-date-popup');
       let card = document.getElementById('modal-due-date-card');
       if (!modal) return;
+      let todayStr = new Date().toISOString().slice(0, 10);
+      // Begitu ditutup dengan tombol ✕ atau Tutup, jangan tampilkan lagi untuk hari ini
+      localStorage.setItem('KEUANGANKU_DUE_MODAL_DISMISSED_DATE', todayStr);
       sessionStorage.setItem('KEUANGANKU_DUE_MODAL_DISMISSED', 'true');
       modal.classList.add('opacity-0');
       if (card) card.classList.add('scale-95');
@@ -5881,6 +5904,13 @@
         localStorage.setItem('KEUANGANKU_DUE_MODAL_DISMISSED_DATE', todayStr);
       } else {
         localStorage.removeItem('KEUANGANKU_DUE_MODAL_DISMISSED_DATE');
+      }
+    }
+
+    function toggleAutoDuePopupSetting(isEnabled) {
+      localStorage.setItem('KEUANGANKU_AUTO_POPUP_ENABLED', isEnabled ? 'true' : 'false');
+      if (typeof showSyncToast === 'function') {
+        showSyncToast(isEnabled ? "✓ Pop-Up pengingat otomatis diaktifkan" : "✓ Pop-Up pengingat otomatis dinonaktifkan");
       }
     }
 
@@ -5923,6 +5953,8 @@
     }
 
     function dismissDueAlert(alertKey) {
+      let todayStr = new Date().toISOString().slice(0, 10);
+      localStorage.setItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey + '_' + todayStr, 'true');
       sessionStorage.setItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey, 'true');
       checkDueDateAlerts();
       checkReceivableAlerts();
@@ -5937,7 +5969,14 @@
       let currentDay = today.getDate();
       let currentMonth = today.getMonth();
       let currentYear = today.getFullYear();
+      let todayStr = today.toISOString().slice(0, 10);
       let alertsHtml = [];
+      activeDueModalItems = [];
+
+      const isAlertDismissed = (key) => {
+        return sessionStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + key) === 'true' ||
+               localStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + key + '_' + todayStr) === 'true';
+      };
       activeDueModalItems = [];
 
       // Helper untuk cek pembayaran pada bulan dan tahun berjalan
@@ -6009,7 +6048,7 @@
               actionOnClick: `quickPayEntry('${escapeForAttr(k)}', 'debt', ${payAmount})`
             });
 
-            if (sessionStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey) !== 'true') {
+            if (!isAlertDismissed(alertKey)) {
               alertsHtml.push(`
                 <div class="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between gap-3 border-2 border-red-800 animate-pulse">
                   <div class="flex items-center gap-3 min-w-0">
@@ -6062,7 +6101,7 @@
               actionOnClick: `quickPayEntry('${escapeForAttr(k)}', 'debt', ${payAmount})`
             });
 
-            if (sessionStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey) !== 'true') {
+            if (!isAlertDismissed(alertKey)) {
               alertsHtml.push(`
                 <div class="bg-gradient-to-r from-amber-500 to-orange-600 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between gap-3 border-2 border-amber-600">
                   <div class="flex items-center gap-3 min-w-0">
@@ -6115,7 +6154,7 @@
               actionOnClick: `quickPayEntry('${escapeForAttr(k)}', 'debt', ${payAmount})`
             });
 
-            if (sessionStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey) !== 'true') {
+            if (!isAlertDismissed(alertKey)) {
               alertsHtml.push(`
                 <div class="bg-gradient-to-r from-rose-900 via-red-900 to-rose-950 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between gap-3 border-2 border-rose-600">
                   <div class="flex items-center gap-3 min-w-0">
@@ -6192,7 +6231,7 @@
               actionOnClick: `quickPayEntry('${escapeForAttr(itemKey)}', 'routine', ${amt})`
             });
 
-            if (sessionStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey) !== 'true') {
+            if (!isAlertDismissed(alertKey)) {
               alertsHtml.push(`
                 <div class="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between gap-3 border-2 border-red-800 animate-pulse">
                   <div class="flex items-center gap-3 min-w-0">
@@ -6244,7 +6283,7 @@
               actionOnClick: `quickPayEntry('${escapeForAttr(itemKey)}', 'routine', ${amt})`
             });
 
-            if (sessionStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey) !== 'true') {
+            if (!isAlertDismissed(alertKey)) {
               alertsHtml.push(`
                 <div class="bg-gradient-to-r from-amber-500 to-orange-600 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between gap-3 border-2 border-amber-600">
                   <div class="flex items-center gap-3 min-w-0">
@@ -6296,7 +6335,7 @@
               actionOnClick: `quickPayEntry('${escapeForAttr(itemKey)}', 'routine', ${amt})`
             });
 
-            if (sessionStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey) !== 'true') {
+            if (!isAlertDismissed(alertKey)) {
               alertsHtml.push(`
                 <div class="bg-gradient-to-r from-rose-900 via-red-900 to-rose-950 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between gap-3 border-2 border-rose-600">
                   <div class="flex items-center gap-3 min-w-0">
@@ -6337,13 +6376,16 @@
 
       // Auto-popup modal jika ada utang/tagihan jatuh tempo dan belum ditutup hari ini
       if (activeDueModalItems.length > 0) {
-        let todayStr = new Date().toISOString().slice(0, 10);
-        let dismissedDate = localStorage.getItem('KEUANGANKU_DUE_MODAL_DISMISSED_DATE');
-        let dismissedSession = sessionStorage.getItem('KEUANGANKU_DUE_MODAL_DISMISSED') === 'true';
-        if (dismissedDate !== todayStr && !dismissedSession) {
-          setTimeout(() => {
-            openDueDateModalPopup();
-          }, 500);
+        let isAutoPopupEnabled = localStorage.getItem('KEUANGANKU_AUTO_POPUP_ENABLED') !== 'false';
+        if (isAutoPopupEnabled) {
+          let todayStr = new Date().toISOString().slice(0, 10);
+          let dismissedDate = localStorage.getItem('KEUANGANKU_DUE_MODAL_DISMISSED_DATE');
+          let dismissedSession = sessionStorage.getItem('KEUANGANKU_DUE_MODAL_DISMISSED') === 'true';
+          if (dismissedDate !== todayStr && !dismissedSession) {
+            setTimeout(() => {
+              openDueDateModalPopup();
+            }, 500);
+          }
         }
       }
     }
@@ -6358,7 +6400,13 @@
       today.setHours(0, 0, 0, 0);
       let currentMonth = today.getMonth();
       let currentYear = today.getFullYear();
+      let todayStr = today.toISOString().slice(0, 10);
       let alertsHtml = [];
+
+      const isAlertDismissed = (key) => {
+        return sessionStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + key) === 'true' ||
+               localStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + key + '_' + todayStr) === 'true';
+      };
 
       Object.keys(globalData.receivablesData).forEach(k => {
         let item = globalData.receivablesData[k];
@@ -6384,7 +6432,7 @@
           let alertKey = 'rec_' + k;
 
           if (diffDays === 0) {
-            if (sessionStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey) !== 'true') {
+            if (!isAlertDismissed(alertKey)) {
               alertsHtml.push(`
                 <div class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between gap-3 border-2 border-emerald-800 animate-pulse">
                   <div class="flex items-center gap-3 min-w-0">
@@ -6418,7 +6466,7 @@
               `rec-today-${k}-${currentYear}-${currentMonth}`
             );
           } else if (diffDays > 0 && diffDays <= 3) {
-            if (sessionStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey) !== 'true') {
+            if (!isAlertDismissed(alertKey)) {
               alertsHtml.push(`
                 <div class="bg-gradient-to-r from-teal-600 to-cyan-700 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between gap-3 border-2 border-teal-800">
                   <div class="flex items-center gap-3 min-w-0">
@@ -6453,7 +6501,7 @@
             );
           } else if (diffDays < 0) {
             let lateDays = Math.abs(diffDays);
-            if (sessionStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey) !== 'true') {
+            if (!isAlertDismissed(alertKey)) {
               alertsHtml.push(`
                 <div class="bg-gradient-to-r from-purple-900 to-indigo-950 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between gap-3 border-2 border-purple-700">
                   <div class="flex items-center gap-3 min-w-0">
@@ -6905,8 +6953,8 @@
       if (isShowTotal) {
         let totalColor = '#0ea5e9';
         let totalGrad = ctx.createLinearGradient(0, 0, 0, 320);
-        totalGrad.addColorStop(0, hexToRgba(totalColor, 0.28));
-        totalGrad.addColorStop(0.7, hexToRgba(totalColor, 0.04));
+        totalGrad.addColorStop(0, hexToRgba(totalColor, 0.35));
+        totalGrad.addColorStop(0.5, hexToRgba(totalColor, 0.12));
         totalGrad.addColorStop(1, hexToRgba(totalColor, 0.00));
 
         datasets.push({
@@ -6915,16 +6963,16 @@
           borderColor: totalColor,
           backgroundColor: totalGrad,
           fill: true,
-          tension: 0.38,
+          tension: 0.42,
           cubicInterpolationMode: 'monotone',
           borderWidth: 3,
           borderDash: [5, 4],
           pointRadius: 0,
-          pointHitRadius: 10,
-          pointHoverRadius: 6,
+          pointHitRadius: 12,
+          pointHoverRadius: 7,
           pointHoverBackgroundColor: totalColor,
           pointHoverBorderColor: '#ffffff',
-          pointHoverBorderWidth: 2.5,
+          pointHoverBorderWidth: 3,
           hidden: hiddenMap["Total Saldo Gabungan"] || false
         });
       }
@@ -6932,8 +6980,8 @@
       accounts.forEach((acc, idx) => {
         let color = WALLET_COLORS[idx % WALLET_COLORS.length];
         let grad = ctx.createLinearGradient(0, 0, 0, 320);
-        grad.addColorStop(0, hexToRgba(color, 0.35));
-        grad.addColorStop(0.7, hexToRgba(color, 0.06));
+        grad.addColorStop(0, hexToRgba(color, 0.40));
+        grad.addColorStop(0.5, hexToRgba(color, 0.14));
         grad.addColorStop(1, hexToRgba(color, 0.00));
 
         datasets.push({
@@ -6942,15 +6990,15 @@
           borderColor: color,
           backgroundColor: grad,
           fill: true,
-          tension: 0.38,
+          tension: 0.42,
           cubicInterpolationMode: 'monotone',
-          borderWidth: 2.5,
+          borderWidth: 2.8,
           pointRadius: 0,
-          pointHitRadius: 12,
-          pointHoverRadius: 6,
+          pointHitRadius: 14,
+          pointHoverRadius: 7,
           pointHoverBackgroundColor: color,
           pointHoverBorderColor: '#ffffff',
-          pointHoverBorderWidth: 2.5,
+          pointHoverBorderWidth: 3,
           hidden: hiddenMap[acc] || false
         });
       });
@@ -7001,10 +7049,13 @@
           },
           scales: {
             x: {
+              border: {
+                display: false
+              },
               grid: {
                 display: true,
                 color: gridColor,
-                borderDash: [4, 4]
+                borderDash: [3, 4]
               },
               ticks: {
                 color: labelColor,
@@ -7023,10 +7074,13 @@
               }
             },
             y: {
+              border: {
+                display: false
+              },
               grid: {
                 display: true,
                 color: gridColor,
-                borderDash: [4, 4]
+                borderDash: [3, 4]
               },
               ticks: {
                 color: labelColor,
