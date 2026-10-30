@@ -370,10 +370,6 @@
         </div>
 
         <button id="btn-bumper-login" onclick="verifyBumperPin()" class="w-full py-2.5 bg-white text-primary font-bold rounded-xl text-xs hover:bg-blue-50 shadow transition-all cursor-pointer">MASUK APLIKASI</button>
-        <button type="button" onclick="promptEmergencyMasterTokenUnlock()" class="w-full py-2 bg-gradient-to-r from-blue-600/30 to-cyan-600/30 hover:from-blue-600/40 hover:to-cyan-600/40 text-cyan-200 hover:text-white border border-cyan-400/30 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm" title="Masuk cepat menggunakan hak akses lisensi pemilik terdaftar">
-          <span class="material-symbols-outlined text-sm text-cyan-300">verified_user</span>
-          <span>Masuk Instan Pemilik / Lupa PIN</span>
-        </button>
         <div class="flex items-center justify-between text-[11px] text-blue-200 px-1 pt-0.5">
           <button type="button" onclick="promptEmergencyMasterTokenUnlock()" class="hover:text-white underline cursor-pointer">Lupa PIN? Masuk via Token</button>
           <button type="button" onclick="toggleBumperCloudModal(true)" class="hover:text-white underline cursor-pointer">Hubungkan Cloud</button>
@@ -10850,7 +10846,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v2.2';
+              let currentCacheInApp = 'keuanganku-pwa-v2.3';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
