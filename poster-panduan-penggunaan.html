@@ -1338,27 +1338,29 @@
           </div>
 
           <pre class="p-3 bg-slate-900 rounded-xl overflow-x-auto text-[10px] font-mono-code text-slate-300 custom-scroll leading-relaxed"><code>function doGet(e) {
-  var doc = PropertiesService.getScriptProperties();
-  var data = doc.getProperty("KEUANGANKU_DATA");
-  if (!data) {
-    return ContentService.createTextOutput(JSON.stringify({ status: "empty" }))
+  try {
+    var data = readLargeData();
+    if (!data) {
+      return ContentService.createTextOutput(JSON.stringify({ status: "empty" }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    return ContentService.createTextOutput(data)
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: err.toString() }))
       .setMimeType(ContentService.MimeType.JSON);
   }
-  return ContentService.createTextOutput(data)
-    .setMimeType(ContentService.MimeType.JSON);
 }
 
 function doPost(e) {
   try {
     var rawData = e.postData.contents;
-    var doc = PropertiesService.getScriptProperties();
-    doc.setProperty("KEUANGANKU_DATA", rawData);
-    
-    // Cadangan fisik ke Cell A1 Spreadsheet Google Anda
-    try {
-      var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-      sheet.getRange("A1").setValue(rawData);
-    } catch(err) {}
+    if (!rawData || rawData.trim() === "") {
+      return ContentService.createTextOutput(JSON.stringify({ status: "error", message: "Data kosong" }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    saveLargeData(rawData);
 
     return ContentService.createTextOutput(JSON.stringify({ status: "success", timestamp: new Date() }))
       .setMimeType(ContentService.MimeType.JSON);
@@ -1366,6 +1368,63 @@ function doPost(e) {
     return ContentService.createTextOutput(JSON.stringify({ status: "error", message: err.toString() }))
       .setMimeType(ContentService.MimeType.JSON);
   }
+}
+
+function saveLargeData(dataString) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("DATABASE_KEUANGANKU");
+  if (!sheet) {
+    sheet = ss.insertSheet("DATABASE_KEUANGANKU");
+  }
+  sheet.clear();
+
+  // Chunking 40.000 karakter per baris (Aman dari limit 50.000 karakter per sel & bebas batas 9KB)
+  var CHUNK_SIZE = 40000;
+  var chunks = [];
+  for (var i = 0; i < dataString.length; i += CHUNK_SIZE) {
+    chunks.push([dataString.substring(i, i + CHUNK_SIZE)]);
+  }
+  if (chunks.length > 0) {
+    sheet.getRange(1, 1, chunks.length, 1).setValues(chunks);
+  }
+
+  // Simpan juga ke Properties jika ukuran kecil (< 8 KB)
+  try {
+    if (dataString.length < 8000) {
+      PropertiesService.getScriptProperties().setProperty("KEUANGANKU_DATA", dataString);
+    } else {
+      PropertiesService.getScriptProperties().deleteProperty("KEUANGANKU_DATA");
+    }
+  } catch(e) {}
+}
+
+function readLargeData() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("DATABASE_KEUANGANKU");
+  if (sheet) {
+    var lastRow = sheet.getLastRow();
+    if (lastRow > 0) {
+      var values = sheet.getRange(1, 1, lastRow, 1).getValues();
+      var result = "";
+      for (var i = 0; i < values.length; i++) {
+        result += values[i][0];
+      }
+      if (result && result.trim().startsWith("{")) return result.trim();
+    }
+  }
+
+  // Fallback jika belum pernah disimpan via chunking
+  try {
+    var oldProp = PropertiesService.getScriptProperties().getProperty("KEUANGANKU_DATA");
+    if (oldProp) return oldProp;
+  } catch(e) {}
+
+  try {
+    var a1 = ss.getActiveSheet().getRange("A1").getValue();
+    if (a1 && typeof a1 === 'string' && a1.indexOf("accounts") !== -1) return a1;
+  } catch(e) {}
+
+  return null;
 }</code></pre>
         </div>
       </section>
@@ -1592,27 +1651,29 @@ function doPost(e) {
   <!-- SCRIPT 1-KLIK SALIN KODE GOOGLE APPS SCRIPT -->
   <script>
     const GAS_SCRIPT_CODE = `function doGet(e) {
-  var doc = PropertiesService.getScriptProperties();
-  var data = doc.getProperty("KEUANGANKU_DATA");
-  if (!data) {
-    return ContentService.createTextOutput(JSON.stringify({ status: "empty" }))
+  try {
+    var data = readLargeData();
+    if (!data) {
+      return ContentService.createTextOutput(JSON.stringify({ status: "empty" }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    return ContentService.createTextOutput(data)
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: err.toString() }))
       .setMimeType(ContentService.MimeType.JSON);
   }
-  return ContentService.createTextOutput(data)
-    .setMimeType(ContentService.MimeType.JSON);
 }
 
 function doPost(e) {
   try {
     var rawData = e.postData.contents;
-    var doc = PropertiesService.getScriptProperties();
-    doc.setProperty("KEUANGANKU_DATA", rawData);
-    
-    // Cadangan fisik ke Cell A1 Spreadsheet Google Anda
-    try {
-      var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-      sheet.getRange("A1").setValue(rawData);
-    } catch(err) {}
+    if (!rawData || rawData.trim() === "") {
+      return ContentService.createTextOutput(JSON.stringify({ status: "error", message: "Data kosong" }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    saveLargeData(rawData);
 
     return ContentService.createTextOutput(JSON.stringify({ status: "success", timestamp: new Date() }))
       .setMimeType(ContentService.MimeType.JSON);
@@ -1620,6 +1681,60 @@ function doPost(e) {
     return ContentService.createTextOutput(JSON.stringify({ status: "error", message: err.toString() }))
       .setMimeType(ContentService.MimeType.JSON);
   }
+}
+
+function saveLargeData(dataString) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("DATABASE_KEUANGANKU");
+  if (!sheet) {
+    sheet = ss.insertSheet("DATABASE_KEUANGANKU");
+  }
+  sheet.clear();
+
+  var CHUNK_SIZE = 40000;
+  var chunks = [];
+  for (var i = 0; i < dataString.length; i += CHUNK_SIZE) {
+    chunks.push([dataString.substring(i, i + CHUNK_SIZE)]);
+  }
+  if (chunks.length > 0) {
+    sheet.getRange(1, 1, chunks.length, 1).setValues(chunks);
+  }
+
+  try {
+    if (dataString.length < 8000) {
+      PropertiesService.getScriptProperties().setProperty("KEUANGANKU_DATA", dataString);
+    } else {
+      PropertiesService.getScriptProperties().deleteProperty("KEUANGANKU_DATA");
+    }
+  } catch(e) {}
+}
+
+function readLargeData() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("DATABASE_KEUANGANKU");
+  if (sheet) {
+    var lastRow = sheet.getLastRow();
+    if (lastRow > 0) {
+      var values = sheet.getRange(1, 1, lastRow, 1).getValues();
+      var result = "";
+      for (var i = 0; i < values.length; i++) {
+        result += values[i][0];
+      }
+      if (result && result.trim().startsWith("{")) return result.trim();
+    }
+  }
+
+  try {
+    var oldProp = PropertiesService.getScriptProperties().getProperty("KEUANGANKU_DATA");
+    if (oldProp) return oldProp;
+  } catch(e) {}
+
+  try {
+    var a1 = ss.getActiveSheet().getRange("A1").getValue();
+    if (a1 && typeof a1 === 'string' && a1.indexOf("accounts") !== -1) return a1;
+  } catch(e) {}
+
+  return null;
 }`;
 
     function copyAppsScriptCode() {

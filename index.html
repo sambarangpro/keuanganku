@@ -560,6 +560,75 @@
     </div>
   </div>
 
+  <!-- MODAL SCRIPT CLOUD GOOGLE APPS SCRIPT (DUKUNGAN BUKTI BAYAR & CHUNKING) -->
+  <div id="modal-cloud-script" class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300 p-4">
+    <div id="modal-cloud-script-card" class="bg-white dark:bg-slate-900 border border-indigo-500/30 rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl transform scale-95 transition-transform duration-300 overflow-hidden text-on-surface">
+      <!-- Modal Header -->
+      <div class="p-4 sm:p-5 border-b border-outline-variant/60 flex items-center justify-between bg-gradient-to-r from-indigo-950 via-slate-900 to-blue-950 text-white sticky top-0 z-10">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-indigo-500/20 text-cyan-400 border border-indigo-400/40 flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-2xl">cloud_sync</span>
+          </div>
+          <div>
+            <h3 class="font-headline-md font-extrabold text-sm sm:text-base text-white">Kode Script Cloud Google Sheets (v2.5)</h3>
+            <p class="text-[10px] text-cyan-300/90">Dukungan Penuh Multi-Row Chunking (Bebas Limit 9KB & Foto Bukti Bayar)</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeCloudScriptModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors">
+          <span class="material-symbols-outlined text-xl">close</span>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-4 sm:p-6 overflow-y-auto space-y-4 text-xs leading-relaxed text-on-surface">
+        <div class="p-3.5 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-2xl space-y-2">
+          <div class="flex items-center gap-2 text-blue-900 dark:text-blue-200 font-bold">
+            <span class="material-symbols-outlined text-base text-blue-600 dark:text-blue-400">info</span>
+            <span>Mengapa Transaksi dengan Bukti Bayar Butuh Script Ini?</span>
+          </div>
+          <p class="text-[11px] text-gray-700 dark:text-gray-300 leading-relaxed">
+            Google Apps Script bawaan membatasi penyimpanan teks maksimal <b>9 KB</b> per data. Saat Anda mengunggah <b>foto struk / bukti transfer</b>, ukuran data menjadi sekitar 30–80 KB sehingga ditolak oleh script lama.
+          </p>
+          <p class="text-[11px] text-blue-800 dark:text-blue-300 font-semibold leading-relaxed">
+            ✓ Script baru ini menggunakan teknik <b>Multi-Row Chunking</b> otomatis di Google Sheets. Ribuan riwayat transaksi dan puluhan foto bukti bayar akan tersimpan lancar & tersinkron sempurna antar HP dan Laptop!
+          </p>
+        </div>
+
+        <!-- 3 Langkah Update Praktis -->
+        <div class="p-3.5 bg-surface-container-low dark:bg-slate-800/80 border border-outline-variant/60 rounded-2xl space-y-2">
+          <span class="font-bold text-primary dark:text-blue-400 block text-xs">Cara Pasang / Perbarui (Hanya 1 Menit):</span>
+          <ol class="list-decimal list-inside space-y-1.5 text-[11px] text-gray-700 dark:text-gray-300 leading-relaxed">
+            <li>Buka Spreadsheet Google Anda di browser ➔ klik menu <b>Ekstensi ➔ Apps Script</b>.</li>
+            <li>Hapus seluruh kode lama di layar, lalu klik tombol <b class="text-primary dark:text-blue-400">"SALIN KODE SCRIPT"</b> di bawah dan tempelkan (<b>Ctrl + V</b>).</li>
+            <li>Klik tombol biru <b>Terapkan (Deploy)</b> di kanan atas ➔ pilih <b>Kelola Penerapan (Manage Deployments)</b> ➔ klik ikon pensil (<b>Edit</b>) ➔ ubah Versi jadi <b>"Versi Baru" (New Version)</b> ➔ klik <b>Terapkan</b>.</li>
+          </ol>
+          <p class="text-[10px] text-gray-500 italic pt-1">
+            *Catatan: Link Web App Anda <b>TIDAK AKAN BERUBAH</b>, jadi tidak perlu memasukkan ulang link di aplikasi.
+          </p>
+        </div>
+
+        <!-- Tombol Salin Cepat -->
+        <div class="flex items-center justify-between pt-1">
+          <span class="text-[11px] font-bold text-gray-600 dark:text-gray-400">Kode Script Google Apps Script:</span>
+          <button type="button" onclick="copyModernCloudScript()" id="btn-copy-cloud-script" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-extrabold rounded-xl text-xs flex items-center gap-1.5 shadow active:scale-95 transition-all cursor-pointer">
+            <span class="material-symbols-outlined text-sm">content_copy</span>
+            <span id="btn-copy-cloud-script-text">SALIN KODE SCRIPT (1-KLIK)</span>
+          </button>
+        </div>
+
+        <pre class="p-3 bg-slate-950 text-slate-200 rounded-2xl border border-outline-variant text-[10px] font-mono-data overflow-x-auto max-h-56 leading-relaxed select-all" id="cloud-script-code-display"></pre>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-3 sm:p-4 border-t border-outline-variant bg-surface dark:bg-slate-800 flex items-center justify-between gap-2">
+        <span class="text-[10px] text-gray-500">Versi 2.5 Multi-Row Chunking</span>
+        <button type="button" onclick="closeCloudScriptModal()" class="px-5 py-2 bg-surface-container hover:bg-surface-container-high border rounded-xl text-xs font-bold text-on-surface transition-colors cursor-pointer">
+          Tutup
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL SUKSES -->
   <div id="success-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
     <div class="bg-white dark:bg-slate-900 border border-outline-variant rounded-2xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl transform scale-95 transition-transform duration-300" id="success-card">
@@ -1828,11 +1897,15 @@
                 </p>
                 <input type="text" id="setup-cloud-url" placeholder="https://script.google.com/macros/s/..." onchange="updateCloudUrl(this.value)" class="w-full p-2.5 border border-blue-300 rounded-xl text-xs font-mono-data bg-white dark:bg-slate-900 text-on-surface mt-1 outline-none focus:border-blue-500">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3 border-b border-blue-200/50 dark:border-blue-800/50 pb-4">
-                  <button id="btn-upload-cloud" onclick="forceUploadToCloud()" class="py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] uppercase rounded-xl shadow flex items-center justify-center gap-2 transition-all">
+                  <button id="btn-upload-cloud" onclick="forceUploadToCloud()" class="py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] uppercase rounded-xl shadow flex items-center justify-center gap-2 transition-all cursor-pointer">
                     <span class="material-symbols-outlined text-base">cloud_upload</span> PAKSA UPLOAD KE CLOUD
                   </button>
-                  <button id="btn-download-cloud" onclick="forceDownloadFromCloud()" class="py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold text-[11px] uppercase rounded-xl shadow flex items-center justify-center gap-2 transition-all">
+                  <button id="btn-download-cloud" onclick="forceDownloadFromCloud()" class="py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold text-[11px] uppercase rounded-xl shadow flex items-center justify-center gap-2 transition-all cursor-pointer">
                     <span class="material-symbols-outlined text-base">cloud_download</span> PAKSA TARIK DARI CLOUD
+                  </button>
+                  <button type="button" onclick="openCloudScriptModal()" class="md:col-span-2 py-2.5 px-3 bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-700 hover:brightness-110 text-white font-extrabold text-xs rounded-xl shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer">
+                    <span class="material-symbols-outlined text-base">code</span>
+                    <span>Salin Script Cloud Google Sheets (Dukungan Foto/Bukti Bayar & Data Besar)</span>
                   </button>
                 </div>
                 <div class="pt-3 border-t border-blue-200/50 dark:border-blue-800/50 space-y-2">
@@ -5140,6 +5213,12 @@
               });
             } catch(e) {}
             setSyncStatus('synced', 'Tersinkron');
+            if (isManualClick && localTxCount > cloudTxCount) {
+              let hasAtt = (globalData.recentHistory || []).some(tx => tx.attachments && tx.attachments.length > 0);
+              if (hasAtt) {
+                showSyncToast("ℹ️ Mengirim transaksi dengan lampiran ke Cloud...");
+              }
+            }
           } else {
             setSyncStatus('synced', 'Tersinkron');
             if (isManualClick) {
@@ -5551,6 +5630,197 @@
       if (dariEl) dariEl.focus();
     }
 
+    const MODERN_CLOUD_APPS_SCRIPT = `/**
+ * ==============================================================================
+ * KEUANGANKU CLOUD SCRIPT (v2.5 - MULTI-ROW CHUNKING & DUKUNGAN BUKTI BAYAR)
+ * Sambarang Production - Personal Database Sync Engine
+ * Mendukung foto bukti transfer/struk, PDF, dan ribuan riwayat transaksi
+ * Bebas dari batas Google ScriptProperties (9KB) & Limit Sel (50.000 karakter)
+ * ==============================================================================
+ */
+
+function doGet(e) {
+  try {
+    var data = readLargeData();
+    if (!data) {
+      return ContentService.createTextOutput(JSON.stringify({ 
+        status: "empty", 
+        accounts: [], 
+        recentHistory: [],
+        message: "Database Cloud kosong. Silakan klik 'Paksa Upload ke Cloud' di aplikasi."
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    return ContentService.createTextOutput(data)
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doPost(e) {
+  try {
+    var rawData = "";
+    if (e && e.postData && e.postData.contents) {
+      rawData = e.postData.contents;
+    }
+    if (!rawData || rawData.trim() === "") {
+      return ContentService.createTextOutput(JSON.stringify({ status: "error", message: "Data kosong" }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    saveLargeData(rawData);
+
+    return ContentService.createTextOutput(JSON.stringify({ 
+      status: "success", 
+      message: "Data keuangan berhasil disimpan dengan multi-row chunking", 
+      timestamp: new Date() 
+    })).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function saveLargeData(dataString) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("DATABASE_KEUANGANKU");
+  if (!sheet) {
+    sheet = ss.insertSheet("DATABASE_KEUANGANKU");
+  }
+  sheet.clear();
+  sheet.getRange("A1:B1").setValues([["Cadangan JSON Database Keuangan (Multi-Row Chunking)", "Diperbarui: " + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss")]]);
+  sheet.getRange("A1:B1").setFontWeight("bold").setBackground("#0f172a").setFontColor("#38bdf8");
+
+  // Chunking 40.000 karakter per baris di kolom A (Aman dari limit 50.000 per sel)
+  var CHUNK_SIZE = 40000;
+  var chunks = [];
+  for (var i = 0; i < dataString.length; i += CHUNK_SIZE) {
+    chunks.push([dataString.substring(i, i + CHUNK_SIZE)]);
+  }
+  if (chunks.length > 0) {
+    sheet.getRange(2, 1, chunks.length, 1).setValues(chunks);
+  }
+
+  // Simpan juga ke ScriptProperties jika ukuran kecil (< 8 KB) sebagai cache instan
+  try {
+    if (dataString.length < 8000) {
+      PropertiesService.getScriptProperties().setProperty("KEUANGANKU_DATA", dataString);
+    } else {
+      PropertiesService.getScriptProperties().deleteProperty("KEUANGANKU_DATA");
+    }
+  } catch(e) {}
+
+  // Format tabel transaksi rapi di tab 'Transaksi' agar pengguna juga bisa baca di Google Sheets
+  try {
+    var parsed = JSON.parse(dataString);
+    formatReadableSheets(ss, parsed);
+  } catch(pErr) {}
+}
+
+function readLargeData() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("DATABASE_KEUANGANKU");
+  if (sheet) {
+    var lastRow = sheet.getLastRow();
+    if (lastRow >= 2) {
+      var values = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
+      var result = "";
+      for (var i = 0; i < values.length; i++) {
+        result += values[i][0];
+      }
+      if (result && result.trim().startsWith("{")) return result.trim();
+    }
+  }
+
+  // Fallback 1: Cek ScriptProperties lama
+  try {
+    var oldProp = PropertiesService.getScriptProperties().getProperty("KEUANGANKU_DATA");
+    if (oldProp && oldProp.trim().startsWith("{")) return oldProp.trim();
+  } catch(e) {}
+
+  // Fallback 2: Cek Cell A1 / A2 lama
+  try {
+    var oldSheet = ss.getSheetByName("Database_Keuangan") || ss.getActiveSheet();
+    var a2 = oldSheet.getRange("A2").getValue();
+    if (a2 && typeof a2 === 'string' && a2.indexOf("accounts") !== -1) return a2;
+    var a1 = oldSheet.getRange("A1").getValue();
+    if (a1 && typeof a1 === 'string' && a1.indexOf("accounts") !== -1) return a1;
+  } catch(e) {}
+
+  return null;
+}
+
+function formatReadableSheets(ss, parsed) {
+  if (!parsed || !ss) return;
+  // Tab Transaksi
+  if (parsed.recentHistory && Array.isArray(parsed.recentHistory)) {
+    var txSheet = ss.getSheetByName("Transaksi") || ss.insertSheet("Transaksi");
+    txSheet.clear();
+    txSheet.appendRow(["Tanggal", "Cashflow", "Kategori", "Nama Transaksi", "Dari Akun", "Ke Akun", "Nominal (Rp)", "Lampiran Bukti"]);
+    txSheet.getRange("A1:H1").setFontWeight("bold").setBackground("#0f172a").setFontColor("#38bdf8");
+    txSheet.setFrozenRows(1);
+    var rows = [];
+    parsed.recentHistory.forEach(function(tx) {
+      var hasAtt = (tx.attachments && tx.attachments.length > 0) ? (tx.attachments.length + " Bukti Bayar") : "-";
+      rows.push([
+        String(tx.date || ""),
+        String(tx.cashflow || ""),
+        String(tx.category || "-"),
+        String(tx.name || ""),
+        String(tx.dariAcc || "-"),
+        String(tx.keAcc || "-"),
+        Number(tx.amount) || 0,
+        hasAtt
+      ]);
+    });
+    if (rows.length > 0) {
+      txSheet.getRange(2, 1, rows.length, 8).setValues(rows);
+      txSheet.getRange(2, 7, rows.length, 1).setNumberFormat("#,##0");
+    }
+  }
+}`;
+
+    function openCloudScriptModal() {
+      let modal = document.getElementById('modal-cloud-script');
+      let card = document.getElementById('modal-cloud-script-card');
+      let display = document.getElementById('cloud-script-code-display');
+      if (display) display.textContent = MODERN_CLOUD_APPS_SCRIPT;
+      if (!modal || !card) return;
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        card.classList.remove('scale-95');
+        card.classList.add('scale-100');
+      }, 10);
+    }
+
+    function closeCloudScriptModal() {
+      let modal = document.getElementById('modal-cloud-script');
+      let card = document.getElementById('modal-cloud-script-card');
+      if (!modal || !card) return;
+      modal.classList.add('opacity-0');
+      card.classList.remove('scale-100');
+      card.classList.add('scale-95');
+      setTimeout(() => modal.classList.add('hidden'), 300);
+    }
+
+    function copyModernCloudScript() {
+      let btnText = document.getElementById('btn-copy-cloud-script-text');
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(MODERN_CLOUD_APPS_SCRIPT).then(() => {
+          if (btnText) btnText.innerHTML = "✓ KODE BERHASIL DISALIN!";
+          setTimeout(() => {
+            if (btnText) btnText.innerHTML = "SALIN KODE SCRIPT (1-KLIK)";
+          }, 3000);
+        }).catch(() => {
+          prompt("Salin manual kode Google Apps Script di bawah ini:", MODERN_CLOUD_APPS_SCRIPT);
+        });
+      } else {
+        prompt("Salin manual kode Google Apps Script di bawah ini:", MODERN_CLOUD_APPS_SCRIPT);
+      }
+    }
+
     async function saveStorageData() {
       globalData.lastUpdated = Date.now();
       lastSyncTimestamp = Date.now();
@@ -5610,9 +5880,37 @@
           headers: { "Content-Type": "text/plain;charset=utf-8" }, 
           body: JSON.stringify(globalData) 
         });
-        setSyncStatus('synced', 'Tersinkron');
-        showSyncToast("🎉 Database berhasil di-upload ke Google Sheets!");
-        alert("BERHASIL! Data aplikasi ini telah di-upload ke Google Spreadsheet Anda.\n\nSilakan cek Google Sheets Anda, sekarang sudah terdapat:\n1. Tab 'Database_Keuangan' (Cadangan Lengkap JSON)\n2. Tab 'Transaksi' (Tabel Riwayat Transaksi Keuangan)\n3. Tab 'Rekening_Saldo' (Tabel Rekening & Saldo Terkini)");
+
+        // Verifikasi otomatis penerimaan Cloud
+        let isVerified = false;
+        try {
+          await new Promise(r => setTimeout(r, 1200));
+          let verifyUrl = globalData.cloudUrl + (globalData.cloudUrl.includes('?') ? '&' : '?') + `_t=${Date.now()}`;
+          let checkRes = await fetch(verifyUrl);
+          let checkJson = await checkRes.json();
+          if (checkJson && checkJson.recentHistory && checkJson.recentHistory.length >= (globalData.recentHistory || []).length) {
+            isVerified = true;
+          }
+        } catch(vErr) {}
+
+        if (isVerified) {
+          setSyncStatus('synced', 'Tersinkron');
+          showSyncToast("🎉 Database berhasil di-upload ke Google Sheets!");
+          alert("BERHASIL! Seluruh database dan riwayat transaksi (termasuk foto bukti bayar) telah tersimpan aman di Google Spreadsheet Anda.\n\nPerangkat Anda yang lain sekarang bisa langsung menarik data ini!");
+        } else {
+          let hasAttachments = (globalData.recentHistory || []).some(tx => tx.attachments && tx.attachments.length > 0);
+          if (hasAttachments) {
+            setSyncStatus('error', 'Perlu Update Script Cloud');
+            let doOpen = confirm("PERHATIAN SINKRONISASI BUKTI BAYAR:\n\nTransaksi Anda aman tersimpan di perangkat ini, namun Google Sheets Anda belum menerima data karena script Apps Script di Google Sheets Anda masih versi lama (terkena limit 9KB Google).\n\nApakah Anda ingin membuka dan menyalin Script Cloud Terbaru sekarang?");
+            if (doOpen) {
+              openCloudScriptModal();
+            }
+          } else {
+            setSyncStatus('synced', 'Tersinkron');
+            showSyncToast("Database terkirim ke Cloud.");
+            alert("BERHASIL! Data aplikasi ini telah di-upload ke Google Spreadsheet Anda.");
+          }
+        }
       } catch(e) { alert("Gagal mengupload data. Pastikan koneksi internet lancar dan link Anda benar."); }
       if (btn) btn.innerHTML = originalText;
     }
@@ -8750,8 +9048,8 @@
       let isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
       
       if (isPdf) {
-        if (file.size > 2.5 * 1024 * 1024) {
-          alert(`File PDF "${file.name}" terlalu besar (${formatBytes(file.size)}). Maksimal ukuran file PDF adalah 2.5MB agar sinkronisasi Cloud tetap cepat.`);
+        if (file.size > 1.2 * 1024 * 1024) {
+          alert(`File PDF "${file.name}" terlalu besar (${formatBytes(file.size)}). Maksimal ukuran file struk PDF adalah 1.2MB agar sinkronisasi Cloud tetap cepat & hemat kuota.`);
           return null;
         }
         return new Promise((resolve) => {
@@ -8769,11 +9067,11 @@
         });
       }
 
-      // Handle Image (JPG, PNG, HEIC, WebP)
+      // Handle Image (JPG, PNG, HEIC, WebP) - Kompresi cerdas dioptimalkan untuk bukti bayar
       let blobToProcess = file;
       if (isHeic && window.heic2any) {
         try {
-          let convertedBlob = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.75 });
+          let convertedBlob = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.65 });
           blobToProcess = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
         } catch(err) {
           console.warn("Gagal konversi HEIC dengan heic2any, fallback ke reader biasa:", err);
@@ -8786,7 +9084,8 @@
           let dataUrl = e.target.result;
           let img = new Image();
           img.onload = () => {
-            let maxDim = 1100;
+            // Resolusi 900px sangat tajam untuk membaca struk transfer bank/nota, namun berukuran sangat hemat (30-60 KB)
+            let maxDim = 900;
             let w = img.width, h = img.height;
             if (w > maxDim || h > maxDim) {
               if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
@@ -8797,10 +9096,10 @@
             canvas.height = h;
             let ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, w, h);
-            let compressedData = canvas.toDataURL('image/jpeg', 0.72);
+            let compressedData = canvas.toDataURL('image/jpeg', 0.65);
             resolve({
               id: 'att_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
-              name: file.name.replace(/\.(heic|heif)$/i, '.jpg'),
+              name: file.name.replace(/\.(heic|heif|png|webp)$/i, '.jpg'),
               type: 'image/jpeg',
               data: compressedData,
               size: formatBytes(compressedData.length * 0.75)

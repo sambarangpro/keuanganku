@@ -1,4 +1,4 @@
-const CACHE_NAME = 'keuanganku-pwa-v1.6';
+const CACHE_NAME = 'keuanganku-pwa-v1.7';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

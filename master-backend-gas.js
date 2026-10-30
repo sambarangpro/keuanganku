@@ -255,15 +255,23 @@ function saveFinancialDataToSheets(rawData, parsedData) {
     var ss = getSpreadsheet();
     if (!ss) return;
 
-    // 1. Cadangan Full JSON ke Sheet Database_Keuangan
+// 1. Cadangan Full JSON ke Sheet Database_Keuangan dengan teknik Chunking (Aman dari limit 50.000 karakter per sel)
     var dbSheet = ss.getSheetByName("Database_Keuangan");
     if (!dbSheet) {
       dbSheet = ss.insertSheet("Database_Keuangan");
-      dbSheet.appendRow(["Cadangan JSON Database Keuangan", "Status Terakhir"]);
-      dbSheet.getRange("A1:B1").setFontWeight("bold").setBackground("#1e293b").setFontColor("#38bdf8");
     }
-    dbSheet.getRange("A2").setValue(rawData);
-    dbSheet.getRange("B2").setValue("Diperbarui: " + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss"));
+    dbSheet.clear();
+    dbSheet.getRange("A1:B1").setValues([["Cadangan JSON Database Keuangan (Chunking)", "Diperbarui: " + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss")]]);
+    dbSheet.getRange("A1:B1").setFontWeight("bold").setBackground("#1e293b").setFontColor("#38bdf8");
+
+    var CHUNK_SIZE = 40000;
+    var chunks = [];
+    for (var i = 0; i < rawData.length; i += CHUNK_SIZE) {
+      chunks.push([rawData.substring(i, i + CHUNK_SIZE)]);
+    }
+    if (chunks.length > 0) {
+      dbSheet.getRange(2, 1, chunks.length, 1).setValues(chunks);
+    }
 
     // 2. Format & Update Sheet Transaksi jika ada riwayat transaksi
     if (parsedData && parsedData.recentHistory && Array.isArray(parsedData.recentHistory)) {
@@ -326,6 +334,20 @@ function saveFinancialDataToSheets(rawData, parsedData) {
   }
 }
 
+function readFinancialDataFromSheets(ss) {
+  if (!ss) return null;
+  var dbSheet = ss.getSheetByName("Database_Keuangan");
+  if (!dbSheet) return null;
+  var lastRow = dbSheet.getLastRow();
+  if (lastRow < 2) return null;
+  var values = dbSheet.getRange(2, 1, lastRow - 1, 1).getValues();
+  var result = "";
+  for (var i = 0; i < values.length; i++) {
+    result += values[i][0];
+  }
+  return (result && String(result).trim().startsWith("{")) ? String(result).trim() : null;
+}
+
 function doGet(e) {
   var params = (e && e.parameter) ? e.parameter : {};
 
@@ -335,23 +357,17 @@ function doGet(e) {
   }
 
   // 2. Jika TIDAK ada parameter action, ini adalah permintaan GET Sinkronisasi Data Keuangan
-  var doc = PropertiesService.getScriptProperties();
-  var data = doc.getProperty("KEUANGANKU_DATA");
+  var data = null;
+  try {
+    var doc = PropertiesService.getScriptProperties();
+    data = doc.getProperty("KEUANGANKU_DATA");
+  } catch(eProp) {}
 
-  // Jika di PropertiesService belum ada, coba baca dari tab Database_Keuangan cell A2
+  // Jika di PropertiesService belum ada (atau data besar yang disimpan via chunking), baca dari tab Database_Keuangan
   if (!data) {
     try {
       var ss = getSpreadsheet();
-      if (ss) {
-        var dbSheet = ss.getSheetByName("Database_Keuangan");
-        if (dbSheet) {
-          var val = dbSheet.getRange("A2").getValue();
-          if (val && String(val).trim().startsWith("{")) {
-            data = String(val).trim();
-            doc.setProperty("KEUANGANKU_DATA", data);
-          }
-        }
-      }
+      data = readFinancialDataFromSheets(ss);
     } catch(err) {}
   }
 
@@ -392,11 +408,17 @@ function doPost(e) {
   // Ini adalah UPLOAD SINKRONISASI DATABASE KEUANGAN PENGGUNA!
   try {
     if (rawData) {
-      // Simpan ke Script Properties untuk sinkronisasi instan berkecepatan tinggi
-      var doc = PropertiesService.getScriptProperties();
-      doc.setProperty("KEUANGANKU_DATA", rawData);
+      // Simpan ke Script Properties HANYA jika ukuran di bawah kuota (8KB) untuk respon instan
+      try {
+        var doc = PropertiesService.getScriptProperties();
+        if (rawData.length < 8000) {
+          doc.setProperty("KEUANGANKU_DATA", rawData);
+        } else {
+          doc.deleteProperty("KEUANGANKU_DATA"); // Bersihkan agar doGet otomatis baca chunking dari Spreadsheet
+        }
+      } catch(pErr) {}
 
-      // Simpan & format ke tab Spreadsheet fisik
+      // Simpan & format ke tab Spreadsheet fisik (dengan chunking aman)
       saveFinancialDataToSheets(rawData, params);
 
       return ContentService.createTextOutput(JSON.stringify({
@@ -555,14 +577,29 @@ function handleRequest(params) {
       // API SINKRONISASI DATA KEUANGAN PENGGUNA
       // -------------------------------------------------------------
       case "get_financial_data":
-        var savedData = PropertiesService.getScriptProperties().getProperty("KEUANGANKU_DATA") || "{}";
-        return ContentService.createTextOutput(savedData).setMimeType(ContentService.MimeType.JSON);
+        var savedData = null;
+        try {
+          savedData = PropertiesService.getScriptProperties().getProperty("KEUANGANKU_DATA");
+        } catch(e) {}
+        if (!savedData) {
+          try {
+            var ssGet = getSpreadsheet();
+            savedData = readFinancialDataFromSheets(ssGet);
+          } catch(e) {}
+        }
+        return ContentService.createTextOutput(savedData || "{}").setMimeType(ContentService.MimeType.JSON);
 
       case "save_financial_data":
         if (params.data) {
           var dataStr = typeof params.data === 'string' ? params.data : JSON.stringify(params.data);
           var parsedObj = typeof params.data === 'string' ? JSON.parse(params.data) : params.data;
-          PropertiesService.getScriptProperties().setProperty("KEUANGANKU_DATA", dataStr);
+          try {
+            if (dataStr.length < 8000) {
+              PropertiesService.getScriptProperties().setProperty("KEUANGANKU_DATA", dataStr);
+            } else {
+              PropertiesService.getScriptProperties().deleteProperty("KEUANGANKU_DATA");
+            }
+          } catch(e) {}
           saveFinancialDataToSheets(dataStr, parsedObj);
         }
         result = { success: true, message: "Data keuangan berhasil disimpan." };
