@@ -67,9 +67,26 @@
     }
   </script>
   <style>
-    /* CRITICAL ANTI-FOUC (Flash of Unstyled Content): Mencegah kebocoran layout sebelum CSS & Tailwind selesai dimuat */
+    /* CRITICAL ANTI-FOUC (Flash of Unstyled Content): Mencegah kebocoran layout sebelum script dimuat */
     .hidden {
-      display: none !important;
+      display: none;
+    }
+    @media (min-width: 768px) {
+      .md\:flex {
+        display: flex !important;
+      }
+      .md\:inline-flex {
+        display: inline-flex !important;
+      }
+      .md\:block {
+        display: block !important;
+      }
+      .md\:grid {
+        display: grid !important;
+      }
+      .md\:hidden {
+        display: none !important;
+      }
     }
     #splash-screen {
       position: fixed !important;
@@ -10833,7 +10850,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v2.1';
+              let currentCacheInApp = 'keuanganku-pwa-v2.2';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
