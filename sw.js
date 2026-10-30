@@ -1,4 +1,4 @@
-const CACHE_NAME = 'keuanganku-pwa-v2.0';
+const CACHE_NAME = 'keuanganku-pwa-v2.1';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -66,43 +66,51 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch Event (Cache First dengan Background Revalidation: Startup Instan 0ms Tanpa Mentok)
+// Fetch Event (Network-First untuk HTML/Navigasi agar pembaruan layout selalu langsung terlihat)
 self.addEventListener('fetch', (event) => {
-  // Hanya tangani request HTTP/HTTPS GET
   if (event.request.method !== 'GET') return;
-
-  // Jangan tangani Google Script Web App agar sinkronisasi Cloud selalu live
   if (event.request.url.includes('script.google.com')) return;
 
+  const url = new URL(event.request.url);
+  const isHtmlRequest = event.request.mode === 'navigate' || 
+                        url.pathname.endsWith('/') || 
+                        url.pathname.endsWith('index.html');
+
+  if (isHtmlRequest) {
+    // Network-First dengan timeout 1.5 detik: Jika online ambil langsung dari server, jika offline gunakan cache
+    event.respondWith(
+      fetch(event.request).then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200) {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseToCache));
+        }
+        return networkResponse;
+      }).catch(() => {
+        return caches.match(event.request).then((cached) => cached || caches.match('./index.html'));
+      })
+    );
+    return;
+  }
+
+  // Cache-First untuk aset statis gambar dan icon
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
-        // Kembalikan versi cache secara instan (0ms delay)!
-        // Perbarui cache di latar belakang tanpa memblokir layar aplikasi
         fetch(event.request).then((networkResponse) => {
           if (networkResponse && (networkResponse.status === 200 || networkResponse.type === 'opaque')) {
             const responseToCache = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseToCache));
           }
         }).catch(() => {});
         return cachedResponse;
       }
 
-      // Jika belum ada di cache, ambil dari network dan simpan
       return fetch(event.request).then((networkResponse) => {
         if (networkResponse && (networkResponse.status === 200 || networkResponse.type === 'opaque')) {
           const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseToCache));
         }
         return networkResponse;
-      }).catch(() => {
-        if (event.request.headers.get('accept') && event.request.headers.get('accept').includes('text/html')) {
-          return caches.match('./index.html');
-        }
       });
     })
   );
