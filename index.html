@@ -1725,21 +1725,30 @@
         <!-- ========================================== -->
         <div id="setup-view-pengaturan" class="space-y-6">
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-            <!-- KOLOM KIRI: KEAMANAN, LISENSI & PERANGKAT -->
+            
+            <!-- ======================================================== -->
+            <!-- KOLOM KIRI: KEAMANAN, LISENSI RESMI & FITUR EKSKLUSIF    -->
+            <!-- ======================================================== -->
             <div class="space-y-6">
-              <!-- KARTU PENGATURAN PASSWORD / PIN PRIBADI (HANGUSKAN TOKEN) -->
-              <section id="setup-pass-section" class="bg-white dark:bg-slate-800 border border-outline-variant/60 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
+              
+              <!-- 1. KARTU PENGATURAN PASSWORD / PIN PRIBADI -->
+              <section id="setup-pass-section" class="bg-white dark:bg-slate-800/95 border border-outline-variant/60 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4 transition-all">
                 <div class="flex items-center justify-between flex-wrap gap-2">
-                  <div class="flex items-center gap-2">
-                    <span id="setup-pass-icon" class="material-symbols-outlined text-amber-500 text-xl">key</span>
-                    <h2 id="setup-pass-title" class="font-headline-md text-headline-md font-bold text-on-surface">Ubah Password & PIN Akses</h2>
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center border border-amber-500/20">
+                      <span id="setup-pass-icon" class="material-symbols-outlined text-xl">key</span>
+                    </div>
+                    <div>
+                      <h2 id="setup-pass-title" class="font-headline-md text-base sm:text-lg font-bold text-on-surface">Ubah Password & PIN Akses</h2>
+                      <p class="text-[10px] text-gray-500 dark:text-gray-400">Proteksi login dan kunci keamanan multi-perangkat</p>
+                    </div>
                   </div>
-                  <span id="setup-pass-badge" class="px-2.5 py-0.5 text-[10px] font-extrabold rounded-full border bg-amber-500/15 text-amber-500 border-amber-500/30">
+                  <span id="setup-pass-badge" class="px-2.5 py-1 text-[10px] font-extrabold rounded-full border bg-amber-500/15 text-amber-500 border-amber-500/30">
                     MASIH TOKEN BAWAAN
                   </span>
                 </div>
 
-                <div id="setup-pass-info-box" class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs leading-relaxed space-y-1">
+                <div id="setup-pass-info-box" class="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs leading-relaxed space-y-1">
                   <p class="font-bold flex items-center gap-1.5 text-amber-800 dark:text-amber-300">
                     <span class="material-symbols-outlined text-sm">security</span> Kunci Keamanan Anti-Sharing
                   </p>
@@ -1750,25 +1759,28 @@
 
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
                   <div class="sm:col-span-2 relative flex items-center">
-                    <input type="password" id="new-pass-input" placeholder="Masukkan PIN Pribadi Baru (4-12 Karakter)" class="w-full p-2.5 pr-10 border rounded-xl text-xs font-mono-data bg-surface text-on-surface tracking-wider">
+                    <input type="password" id="new-pass-input" placeholder="Masukkan PIN Pribadi Baru (4-12 Karakter)" class="w-full p-2.5 pr-10 border rounded-xl text-xs font-mono-data bg-surface text-on-surface tracking-wider outline-none focus:border-primary">
                     <button type="button" onclick="toggleNewPassVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface flex items-center justify-center p-1 cursor-pointer focus:outline-none" title="Lihat / Sembunyikan PIN">
                       <span class="material-symbols-outlined text-lg" id="new-pass-eye-icon">visibility</span>
                     </button>
                   </div>
-                  <button id="btn-save-personal-pin" onclick="handleBurnTokenAndSetPin()" class="w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs rounded-xl shadow flex items-center justify-center gap-1.5 transition-all">
+                  <button id="btn-save-personal-pin" onclick="handleBurnTokenAndSetPin()" class="w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs rounded-xl shadow flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95">
                     <span class="material-symbols-outlined text-sm">local_fire_department</span> BUAT PIN & HANGUSKAN
                   </button>
                 </div>
               </section>
 
-              <!-- LISENSI RESMI & DEVICE STATUS (MODERN ROYAL BLUE & SLATE THEME) -->
-              <section class="bg-slate-900/90 border border-slate-800 hover:border-slate-700/80 rounded-2xl p-5 sm:p-6 shadow-xl space-y-4 text-white transition-all">
+              <!-- 2. LISENSI RESMI & DEVICE STATUS (DARK ROYAL SLATE THEME) -->
+              <section class="bg-slate-900 border border-slate-800 hover:border-slate-700/80 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4 text-white transition-all">
                 <div class="flex items-center justify-between flex-wrap gap-2">
                   <div class="flex items-center gap-2.5 cursor-pointer select-none" onclick="handleSecretDevTap()" title="Lisensi Resmi Keuanganku PRO">
-                    <div class="w-8 h-8 rounded-xl bg-blue-600/15 border border-blue-500/30 text-blue-400 flex items-center justify-center">
-                      <span class="material-symbols-outlined text-lg">verified_user</span>
+                    <div class="w-9 h-9 rounded-xl bg-blue-600/20 border border-blue-500/30 text-blue-400 flex items-center justify-center">
+                      <span class="material-symbols-outlined text-xl">verified_user</span>
                     </div>
-                    <h2 class="font-headline-md text-base sm:text-lg font-bold text-white tracking-tight">Lisensi Resmi Keuanganku PRO</h2>
+                    <div>
+                      <h2 class="font-headline-md text-base sm:text-lg font-bold text-white tracking-tight">Lisensi Resmi Keuanganku PRO</h2>
+                      <p class="text-[10px] text-slate-400">Status kepemilikan dan autentikasi multi-perangkat</p>
+                    </div>
                   </div>
                   <span id="setup-license-badge" class="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-extrabold rounded-full flex items-center gap-1.5 shadow-sm">
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> TERAKTIVASI (RESMI)
@@ -1776,7 +1788,7 @@
                 </div>
 
                 <!-- 4 Kolom Info Lisensi -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-slate-950/60 p-4 rounded-xl border border-slate-800/80">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80">
                   <div class="space-y-0.5">
                     <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Kode Lisensi Anda</p>
                     <p id="setup-license-token" class="font-mono-data font-bold text-blue-400 text-sm select-all">-</p>
@@ -1864,16 +1876,141 @@
                   </a>
                 </div>
               </section>
+
+              <!-- 3. FITUR EKSKLUSIF PEMILIK (DIPINDAHKAN KE SINI AGAR SEIMBANG & ELEGAN) -->
+              <section id="setup-owner-feature-section" class="bg-white dark:bg-slate-800/95 border border-indigo-500/30 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4 transition-all hidden">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center border border-indigo-500/20">
+                      <span class="material-symbols-outlined text-xl">admin_panel_settings</span>
+                    </div>
+                    <div>
+                      <h2 class="font-headline-md text-base sm:text-lg font-bold text-indigo-950 dark:text-indigo-100">Fitur Eksklusif Pemilik</h2>
+                      <p class="text-[10px] text-gray-500 dark:text-gray-400">Modul finansial strategis khusus pemilik aplikasi</p>
+                    </div>
+                  </div>
+                  <span class="px-2.5 py-1 bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 text-[10px] font-extrabold rounded-full flex items-center gap-1 border border-indigo-200 dark:border-indigo-800">
+                    👑 KHUSUS PEMILIK
+                  </span>
+                </div>
+
+                <p class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed bg-indigo-50/60 dark:bg-indigo-950/30 p-3 rounded-2xl border border-indigo-100 dark:border-indigo-900/40">
+                  Modul ini <b>hanya aktif untuk Anda</b> sebagai pemilik resmi dan disembunyikan total dari perangkat pengguna lain / kerabat.
+                </p>
+
+                <!-- Daftar Checkbox Modul Eksklusif -->
+                <div class="space-y-2.5 pt-1">
+                  <!-- Modul 1: Kalkulator Bisnis -->
+                  <div class="flex items-start gap-3 bg-surface-container dark:bg-slate-900/80 p-3.5 rounded-2xl border border-outline-variant/60 hover:border-indigo-500/30 transition-colors">
+                    <input type="checkbox" id="setup-enable-calc" onchange="toggleCalculatorFeature(this.checked)" class="w-5 h-5 rounded text-indigo-600 border-outline-variant cursor-pointer focus:ring-indigo-500 shrink-0 mt-0.5">
+                    <label for="setup-enable-calc" class="text-xs cursor-pointer select-none">
+                      <span class="font-bold text-on-surface block">Aktifkan Menu Navigasi Kalkulator Bisnis & Finansial</span>
+                      <span class="text-[11px] text-gray-500 dark:text-gray-400 block mt-0.5">HPP Konveksi / Sablon, Analisis Modal Usaha, dan Kalkulator Akad Murabahah.</span>
+                    </label>
+                  </div>
+
+                  <!-- Modul 2: Emergency Runway -->
+                  <div class="bg-surface-container dark:bg-slate-900/80 p-3.5 rounded-2xl border border-outline-variant/60 hover:border-indigo-500/30 transition-colors space-y-3">
+                    <div class="flex items-start gap-3">
+                      <input type="checkbox" id="setup-enable-runway" onchange="toggleRunwayFeature(this.checked)" class="w-5 h-5 rounded text-indigo-600 border-outline-variant cursor-pointer focus:ring-indigo-500 shrink-0 mt-0.5">
+                      <label for="setup-enable-runway" class="text-xs cursor-pointer select-none">
+                        <span class="font-bold text-on-surface block">Aktifkan Indikator Ketahanan Kas (Emergency Runway)</span>
+                        <span class="text-[11px] text-gray-500 dark:text-gray-400 block mt-0.5">Pantau berapa bulan kas bertahan untuk pengeluaran darurat.</span>
+                      </label>
+                    </div>
+
+                    <!-- Filter Rekening Kas Pribadi (Diatur Grid 2 Kolom agar Lega) -->
+                    <div id="setup-runway-account-box" class="p-3 bg-white dark:bg-slate-800 rounded-xl border border-indigo-100 dark:border-indigo-900 space-y-2 text-xs">
+                      <div class="flex items-center justify-between flex-wrap gap-1 border-b border-outline-variant/40 pb-1.5">
+                        <span class="font-bold text-gray-700 dark:text-gray-200 flex items-center gap-1.5">
+                          <span class="material-symbols-outlined text-sm text-indigo-600">account_balance_wallet</span>
+                          <span>Rekening Kas Pribadi yang Dihitung (Runway & Zakat)</span>
+                        </span>
+                        <span class="text-[10px] text-gray-400">Hilangkan centang jika bukan uang pribadi</span>
+                      </div>
+                      <div id="setup-runway-account-checkboxes" class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1"></div>
+                    </div>
+                  </div>
+
+                  <!-- Modul 3: Visual Moodboard & Goals -->
+                  <div class="flex items-start gap-3 bg-surface-container dark:bg-slate-900/80 p-3.5 rounded-2xl border border-outline-variant/60 hover:border-indigo-500/30 transition-colors">
+                    <input type="checkbox" id="setup-enable-countdown-goals" onchange="toggleCountdownGoalsFeature(this.checked)" class="w-5 h-5 rounded text-indigo-600 border-outline-variant cursor-pointer focus:ring-indigo-500 shrink-0 mt-0.5">
+                    <label for="setup-enable-countdown-goals" class="text-xs cursor-pointer select-none">
+                      <span class="font-bold text-on-surface block">Aktifkan Visual Moodboard & Hitung Mundur Impian (Goals)</span>
+                      <span class="text-[11px] text-gray-500 dark:text-gray-400 block mt-0.5">Tampilan kartu visual target impian dengan progres dinamis.</span>
+                    </label>
+                  </div>
+
+                  <!-- Modul 4: Zakat Maal & Nisab Hub -->
+                  <div class="bg-surface-container dark:bg-slate-900/80 p-3.5 rounded-2xl border border-outline-variant/60 hover:border-indigo-500/30 transition-colors space-y-3">
+                    <div class="flex items-start gap-3">
+                      <input type="checkbox" id="setup-enable-zakat" onchange="toggleZakatFeature(this.checked)" class="w-5 h-5 rounded text-indigo-600 border-outline-variant cursor-pointer focus:ring-indigo-500 shrink-0 mt-0.5">
+                      <div class="flex-1">
+                        <label for="setup-enable-zakat" class="text-xs cursor-pointer select-none block">
+                          <span class="font-bold text-on-surface inline-flex items-center gap-1.5">
+                            <span>Zakat Maal & Nisab Hub</span>
+                            <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">SYARI BAZNAS/MUI</span>
+                          </span>
+                          <span class="text-[11px] text-gray-500 dark:text-gray-400 block mt-0.5">Kalkulator otomatis Zakat Simpanan (Kas + Emas) berdasar Nisab 85 gr emas & Haul 1 tahun dengan dalil Al-Qur'an & Hadits Shahih.</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <!-- Konfigurasi Parameter Zakat -->
+                    <div id="setup-zakat-config-box" class="p-3.5 bg-white dark:bg-slate-800 rounded-xl border border-indigo-100 dark:border-indigo-900 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs hidden">
+                      <div>
+                        <label class="text-[10px] font-bold text-gray-500 uppercase block mb-1">Harga Emas Murni Acuan (Rp/Gram)</label>
+                        <div class="relative">
+                          <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-xs">Rp</span>
+                          <input type="text" id="setup-zakat-gold-price" oninput="formatInputNominal(this)" onchange="updateZakatGoldPrice(this.value.replace(/\D/g, ''))" class="w-full pl-8 pr-3 py-1.5 border rounded-lg font-mono-data bg-surface text-on-surface font-bold text-xs" placeholder="1.450.000">
+                        </div>
+                        <span class="text-[9px] text-gray-400 mt-1 block">Nisab 85 gram = <span id="setup-zakat-nisab-preview" class="font-bold text-emerald-600">Rp 123.250.000</span></span>
+                      </div>
+                      <div>
+                        <label class="text-[10px] font-bold text-gray-500 uppercase block mb-1">Pengurang Utang Jatuh Tempo</label>
+                        <label class="flex items-center gap-2 cursor-pointer mt-1">
+                          <input type="checkbox" id="setup-zakat-deduct-debt" onchange="toggleZakatDeductDebt(this.checked)" class="rounded text-indigo-600">
+                          <span class="text-xs text-gray-700 dark:text-gray-300 font-medium">Kurangkan Utang Jatuh Tempo dari Total Harta</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Footer Banner Portal Developer -->
+                <div class="pt-3 border-t border-indigo-100 dark:border-indigo-900/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <p class="text-xs font-bold text-indigo-950 dark:text-indigo-100 flex items-center gap-1.5">
+                      <span class="material-symbols-outlined text-sm text-indigo-600">terminal</span>
+                      <span>Master Developer & License Portal</span>
+                    </p>
+                    <p class="text-[10px] text-gray-500 dark:text-gray-400">Kelola kuota lisensi, token pembeli baru, cabut perangkat, dan pantau log audit.</p>
+                  </div>
+                  <a href="dev-dashboard.html" target="_blank" class="px-3.5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-md shrink-0 active:scale-95">
+                    <span class="material-symbols-outlined text-sm">open_in_new</span>
+                    <span>Buka Dev Dashboard</span>
+                  </a>
+                </div>
+              </section>
+
             </div>
 
-            <!-- KOLOM KANAN: CLOUD SYNC & FITUR TAMBAHAN -->
+            <!-- ======================================================== -->
+            <!-- KOLOM KANAN: CLOUD SYNC, NOTIFIKASI & SISTEM APLIKASI    -->
+            <!-- ======================================================== -->
             <div class="space-y-6">
-              <!-- FITUR CLOUD & SINKRONISASI -->
-              <section id="setup-cloud-section" class="bg-blue-50/70 border border-blue-200 dark:bg-blue-900/30 dark:border-blue-800 rounded-2xl p-5 sm:p-6 shadow-sm space-y-3">
+
+              <!-- 1. KONEKSI CLOUD & AUTO-SYNC -->
+              <section id="setup-cloud-section" class="bg-white dark:bg-slate-800/95 border border-blue-500/30 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4 transition-all">
                 <div class="flex items-center justify-between flex-wrap gap-2">
-                  <div class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-blue-600">cloud_sync</span>
-                    <h2 class="font-headline-md text-headline-md font-bold text-blue-900 dark:text-blue-100">Koneksi Cloud & Auto-Sync</h2>
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-blue-600/10 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-500/20">
+                      <span class="material-symbols-outlined text-xl">cloud_sync</span>
+                    </div>
+                    <div>
+                      <h2 class="font-headline-md text-base sm:text-lg font-bold text-blue-950 dark:text-blue-100">Koneksi Cloud & Auto-Sync</h2>
+                      <p class="text-[10px] text-gray-500 dark:text-gray-400">Sinkronisasi otomatis multi-perangkat via Google Sheets</p>
+                    </div>
                   </div>
                   <span id="setup-cloud-status-badge" class="px-2.5 py-1 bg-green-100 dark:bg-green-950/80 text-green-700 dark:text-green-300 text-[10px] font-extrabold rounded-full flex items-center gap-1.5 border border-green-200 dark:border-green-800">
                     <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> AUTO-SYNC AKTIF
@@ -1881,7 +2018,7 @@
                 </div>
 
                 <!-- NOTIFIKASI KUNCI JIKA MASIH MENGGUNAKAN TOKEN BAWAAN -->
-                <div id="cloud-sync-lock-notice" class="hidden p-3.5 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-900 dark:text-amber-200 text-xs flex items-start gap-2.5">
+                <div id="cloud-sync-lock-notice" class="hidden p-3.5 rounded-2xl bg-amber-500/15 border border-amber-500/40 text-amber-900 dark:text-amber-200 text-xs flex items-start gap-2.5">
                   <span class="material-symbols-outlined text-amber-500 text-lg shrink-0 mt-0.5">lock</span>
                   <div class="space-y-1">
                     <p class="font-bold text-amber-800 dark:text-amber-300">Fitur Sinkronisasi Cloud Terkunci</p>
@@ -1891,40 +2028,51 @@
                   </div>
                 </div>
 
-                <p class="text-[11px] text-blue-800 dark:text-blue-200 leading-relaxed">
-                  Masukkan Link Web App Google Sheets Anda untuk mengaktifkan sinkronisasi otomatis multi-perangkat. 
-                  <b>Data otomatis tersinkron</b> saat aplikasi dibuka, berpindah menu, beralih tab/layar HP, atau setelah menginput transaksi di perangkat lain. Anda juga bisa menekan tombol awan di Header kapan saja.
+                <p class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed bg-blue-50/60 dark:bg-blue-950/30 p-3 rounded-2xl border border-blue-100 dark:border-blue-900/40">
+                  Masukkan Link Web App Google Sheets Anda. <b>Data otomatis tersinkron</b> saat membuka aplikasi, berpindah menu, atau input transaksi di HP/PC lain.
                 </p>
-                <input type="text" id="setup-cloud-url" placeholder="https://script.google.com/macros/s/..." onchange="updateCloudUrl(this.value)" class="w-full p-2.5 border border-blue-300 rounded-xl text-xs font-mono-data bg-white dark:bg-slate-900 text-on-surface mt-1 outline-none focus:border-blue-500">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3 border-b border-blue-200/50 dark:border-blue-800/50 pb-4">
-                  <button id="btn-upload-cloud" onclick="forceUploadToCloud()" class="py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] uppercase rounded-xl shadow flex items-center justify-center gap-2 transition-all cursor-pointer">
-                    <span class="material-symbols-outlined text-base">cloud_upload</span> PAKSA UPLOAD KE CLOUD
-                  </button>
-                  <button id="btn-download-cloud" onclick="forceDownloadFromCloud()" class="py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold text-[11px] uppercase rounded-xl shadow flex items-center justify-center gap-2 transition-all cursor-pointer">
-                    <span class="material-symbols-outlined text-base">cloud_download</span> PAKSA TARIK DARI CLOUD
-                  </button>
-                  <button type="button" onclick="openCloudScriptModal()" class="md:col-span-2 py-2.5 px-3 bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-700 hover:brightness-110 text-white font-extrabold text-xs rounded-xl shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer">
+
+                <div>
+                  <label class="text-[10px] font-bold text-gray-500 uppercase block mb-1">Link Web App Google Sheets (Cloud Key)</label>
+                  <input type="text" id="setup-cloud-url" placeholder="https://script.google.com/macros/s/..." onchange="updateCloudUrl(this.value)" class="w-full p-2.5 border border-blue-300 dark:border-blue-700 rounded-xl text-xs font-mono-data bg-surface text-on-surface outline-none focus:border-blue-500">
+                </div>
+
+                <!-- Grid Tombol Sinkronisasi Utama -->
+                <div class="space-y-2 pt-1 border-b border-outline-variant/40 pb-4">
+                  <div class="grid grid-cols-2 gap-2.5">
+                    <button id="btn-upload-cloud" onclick="forceUploadToCloud()" class="py-2.5 px-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95">
+                      <span class="material-symbols-outlined text-base">cloud_upload</span>
+                      <span>PAKSA UPLOAD CLOUD</span>
+                    </button>
+                    <button id="btn-download-cloud" onclick="forceDownloadFromCloud()" class="py-2.5 px-3 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95">
+                      <span class="material-symbols-outlined text-base">cloud_download</span>
+                      <span>PAKSA TARIK CLOUD</span>
+                    </button>
+                  </div>
+                  <button type="button" onclick="openCloudScriptModal()" class="w-full py-2.5 px-3 bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-700 hover:brightness-110 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95">
                     <span class="material-symbols-outlined text-base">code</span>
                     <span>Salin Script Cloud Google Sheets (Dukungan Foto/Bukti Bayar & Data Besar)</span>
                   </button>
                 </div>
-                <div class="pt-3 border-t border-blue-200/50 dark:border-blue-800/50 space-y-2">
+
+                <!-- Cadangan Manual (Export & Import) -->
+                <div class="pt-1 space-y-2">
                   <div class="flex items-center justify-between">
-                    <p class="text-[11px] text-blue-900 dark:text-blue-200 font-bold flex items-center gap-1.5">
+                    <p class="text-xs text-on-surface font-bold flex items-center gap-1.5">
                       <span class="material-symbols-outlined text-sm text-blue-600">save_as</span>
                       <span>Cadangan Manual (Backup & Restore Offline)</span>
                     </p>
                     <span class="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">File & Teks • Tanpa Internet</span>
                   </div>
-                  <p class="text-[10px] text-blue-800/80 dark:text-blue-300/80 leading-relaxed">
-                    <b>Fungsi:</b> Simpan seluruh data keuangan Anda ke file <b>.json</b> atau salin kode teks (<b>CADANGKAN / EXPORT</b>), dan pulihkan data di HP/laptop lain dengan memilih file atau menempel teks (<b>PULIHKAN / IMPORT</b>). Bebas kendala limit browser!
+                  <p class="text-[10px] text-gray-500 dark:text-gray-400 leading-relaxed">
+                    Simpan seluruh data ke file <b>.json</b> atau pulihkan data di HP/laptop lain tanpa kuota internet.
                   </p>
                   <div class="grid grid-cols-2 gap-2 pt-1">
-                    <button onclick="openManualBackupModal('export')" class="py-2.5 px-3 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 font-bold text-[11px] rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer" title="Download File Cadangan .json atau Salin Teks Database">
+                    <button onclick="openManualBackupModal('export')" class="py-2.5 px-3 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 font-bold text-[11px] rounded-xl shadow-2xs flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer" title="Download File Cadangan .json atau Salin Teks Database">
                       <span class="material-symbols-outlined text-sm">download</span>
                       <span>1. CADANGKAN (EXPORT)</span>
                     </button>
-                    <button onclick="openManualBackupModal('import')" class="py-2.5 px-3 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 font-bold text-[11px] rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer" title="Pilih File Cadangan .json atau Tempel Teks Database">
+                    <button onclick="openManualBackupModal('import')" class="py-2.5 px-3 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 font-bold text-[11px] rounded-xl shadow-2xs flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer" title="Pilih File Cadangan .json atau Tempel Teks Database">
                       <span class="material-symbols-outlined text-sm">upload_file</span>
                       <span>2. PULIHKAN (IMPORT)</span>
                     </button>
@@ -1932,92 +2080,52 @@
                 </div>
               </section>
 
-
-              <!-- FITUR PWA: PASANG APLIKASI DI PERANGKAT -->
-              <section class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 dark:from-slate-900 dark:to-slate-900 dark:border-blue-900/60 rounded-2xl p-5 sm:p-6 shadow-sm space-y-3">
+              <!-- 2. NOTIFIKASI PENGINGAT PERANGKAT -->
+              <section class="bg-white dark:bg-slate-800/95 border border-amber-500/30 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4 transition-all">
                 <div class="flex items-center justify-between flex-wrap gap-2">
-                  <div class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-primary text-xl">download_for_offline</span>
-                    <h2 class="font-headline-md text-headline-md font-bold text-on-surface">Pasang Aplikasi di Perangkat Ini</h2>
-                  </div>
-                  <span class="px-2.5 py-0.5 bg-blue-100 dark:bg-blue-950 text-primary text-[10px] font-extrabold rounded-full border border-blue-200 dark:border-blue-800">
-                    📱 ANDROID • iOS • PC
-                  </span>
-                </div>
-                <p class="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
-                  Pasang KEUANGANKU langsung di layar utama HP atau desktop laptop Anda untuk akses instan tanpa bilah browser. Memiliki ikon aplikasi tersendiri dan siap dibuka secara offline.
-                </p>
-                <button onclick="triggerPWAInstall()" class="w-full py-3 bg-primary hover:bg-primary-container text-white font-bold text-xs rounded-xl shadow flex items-center justify-center gap-2 transition-all active:scale-95">
-                  <span class="material-symbols-outlined text-base">add_to_home_screen</span> PASANG / INSTAL APLIKASI SEKARANG
-                </button>
-              </section>
-
-              <!-- FITUR PEMBARUAN SISTEM APLIKASI (UPDATE MANAGER) -->
-              <section class="bg-gradient-to-r from-cyan-50 to-blue-50 border border-cyan-200 dark:from-slate-900 dark:to-slate-900 dark:border-cyan-900/60 rounded-2xl p-5 sm:p-6 shadow-sm space-y-3">
-                <div class="flex items-center justify-between flex-wrap gap-2">
-                  <div class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-cyan-600 dark:text-cyan-400 text-xl">system_update</span>
-                    <h2 class="font-headline-md text-headline-md font-bold text-on-surface">Pembaruan Versi Aplikasi</h2>
-                  </div>
-                  <span class="px-2.5 py-0.5 bg-cyan-100 dark:bg-cyan-950 text-cyan-700 dark:text-cyan-300 text-[10px] font-extrabold rounded-full border border-cyan-200 dark:border-cyan-800">
-                    VERSI AKTIF: v0.1 (Uji Coba)
-                  </span>
-                </div>
-                <p class="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
-                  Jika Anda telah memperbarui kode di GitHub atau ingin memastikan aplikasi di HP/Laptop yang terinstal mendapatkan fitur terbaru, gunakan tombol di bawah untuk memeriksa dan memasang pembaruan secara instan.
-                </p>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-                  <button id="btn-check-app-update" onclick="checkAppUpdatesManual()" class="py-3 px-4 bg-primary hover:bg-primary-container text-white font-bold text-xs rounded-xl shadow-md flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
-                    <span id="icon-check-app-update" class="material-symbols-outlined text-base">sync</span>
-                    <span>PERIKSA PEMBARUAN (UPDATE)</span>
-                  </button>
-                  <button onclick="forceHardRefreshApp()" class="py-3 px-4 bg-white dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-slate-700 border border-rose-300 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer" title="Bersihkan cache browser dan muat ulang halaman">
-                    <span class="material-symbols-outlined text-base">delete_sweep</span>
-                    <span>BERSIHKAN CACHE & MUAT ULANG</span>
-                  </button>
-                </div>
-                <div id="update-check-status-text" class="hidden text-[11px] text-center font-medium pt-1"></div>
-              </section>
-
-              <!-- FITUR NOTIFIKASI PENGINGAT PERANGKAT (SYSTEM PUSH NOTIFICATIONS) -->
-              <section class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 dark:from-slate-900 dark:to-slate-900 dark:border-amber-900/60 rounded-2xl p-5 sm:p-6 shadow-sm space-y-3">
-                <div class="flex items-center justify-between flex-wrap gap-2">
-                  <div class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-amber-600 dark:text-amber-400 text-xl">notifications_active</span>
-                    <h2 class="font-headline-md text-headline-md font-bold text-on-surface">Notifikasi Pengingat Perangkat</h2>
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-500/20">
+                      <span class="material-symbols-outlined text-xl">notifications_active</span>
+                    </div>
+                    <div>
+                      <h2 class="font-headline-md text-base sm:text-lg font-bold text-on-surface">Notifikasi Pengingat Perangkat</h2>
+                      <p class="text-[10px] text-gray-500 dark:text-gray-400">Pengingat jatuh tempo tagihan & utang di HP/PC</p>
+                    </div>
                   </div>
                   <span id="setup-notif-status-badge" class="px-2.5 py-0.5 text-[10px] font-extrabold rounded-full border bg-amber-100 text-amber-700 border-amber-300">
                     MEMUAT STATUS...
                   </span>
                 </div>
-                <p class="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
-                  Dapatkan notifikasi pengingat otomatis di layar & bilah status HP/Laptop saat tanggal jatuh tempo pembayaran cicilan, utang, atau tagihan rutin tiba agar tidak terlewat.
+
+                <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                  Dapatkan notifikasi otomatis di layar & bilah status HP/Laptop saat tanggal jatuh tempo pembayaran cicilan, utang, atau tagihan rutin tiba.
                 </p>
+
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
-                  <button id="btn-toggle-notif-perm" onclick="requestNotificationPermissionInteractive()" class="py-3 px-3 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow-md flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer">
+                  <button id="btn-toggle-notif-perm" onclick="requestNotificationPermissionInteractive()" class="py-2.5 px-3 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer">
                     <span class="material-symbols-outlined text-base">notifications</span>
                     <span id="btn-toggle-notif-label">Aktifkan Izin</span>
                   </button>
-                  <button onclick="testSystemNotification()" class="py-3 px-3 bg-white dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-slate-700 border border-amber-300 dark:border-amber-900/60 text-amber-700 dark:text-amber-400 font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer" title="Kirim notifikasi uji coba ke bilah status HP/PC">
+                  <button onclick="testSystemNotification()" class="py-2.5 px-3 bg-surface dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-slate-700 border border-amber-300 dark:border-amber-900/60 text-amber-700 dark:text-amber-400 font-bold text-xs rounded-xl shadow-2xs flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer" title="Kirim notifikasi uji coba ke bilah status HP/PC">
                     <span class="material-symbols-outlined text-base">send_to_mobile</span>
                     <span>Tes Notifikasi HP/PC</span>
                   </button>
-                  <button onclick="openDueDateModalPopupDemo()" class="py-3 px-3 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer" title="Buka dialog pop-up pengingat jatuh tempo lengkap dengan tombol close (X)">
+                  <button onclick="openDueDateModalPopupDemo()" class="py-2.5 px-3 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer" title="Buka dialog pop-up pengingat jatuh tempo lengkap dengan tombol close (X)">
                     <span class="material-symbols-outlined text-base">notifications_active</span>
-                    <span>Buka Pop-up Pengingat (✕)</span>
+                    <span>Buka Pop-up (✕)</span>
                   </button>
                 </div>
 
-                <!-- KONTROL PREFERENSI POP-UP MELAYANG OTOMATIS -->
-                <div class="pt-2 border-t border-amber-200/70 dark:border-amber-900/40">
-                  <div class="flex items-center justify-between gap-3 p-3 bg-white/80 dark:bg-slate-800/80 rounded-xl border border-amber-200 dark:border-amber-900/60 shadow-2xs">
+                <!-- Kontrol Switch Pop-up Melayang -->
+                <div class="pt-2 border-t border-outline-variant/40">
+                  <div class="flex items-center justify-between gap-3 p-3 bg-surface-container dark:bg-slate-900/80 rounded-2xl border border-outline-variant/60">
                     <div class="space-y-0.5">
                       <div class="flex items-center gap-1.5 font-bold text-xs text-on-surface">
                         <span class="material-symbols-outlined text-sm text-amber-600 dark:text-amber-400">auto_awesome_motion</span>
                         <span>Pop-Up Melayang Otomatis Saat Buka Aplikasi</span>
                       </div>
                       <p class="text-[10px] text-gray-500 dark:text-gray-400 leading-tight">
-                        Jika dinonaktifkan, pop-up dialog di tengah layar tidak akan muncul otomatis saat membuka aplikasi. Peringatan tetap ada di kartu dashboard.
+                        Jika dinonaktifkan, pop-up dialog di tengah layar tidak akan muncul otomatis. Peringatan tetap ada di kartu dashboard.
                       </p>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer shrink-0">
@@ -2027,96 +2135,78 @@
                   </div>
                 </div>
 
-                <div id="setup-notif-hint" class="text-[10px] text-gray-500 pt-1">
+                <div id="setup-notif-hint" class="text-[10px] text-gray-500 pt-0.5">
                   *Pastikan izin notifikasi diizinkan pada pengaturan browser/sistem perangkat Anda.
                 </div>
               </section>
 
-              <!-- FITUR EKSKLUSIF PEMILIK (HANYA MUNCUL JIKA TERHUBUNG KE CLOUD PRIBADI) -->
-              <section id="setup-owner-feature-section" class="bg-indigo-50 border border-indigo-200 dark:bg-indigo-900/30 dark:border-indigo-800 rounded-2xl p-5 sm:p-6 shadow-sm space-y-3 hidden">
+              <!-- 3. PASANG APLIKASI DI PERANGKAT INI (PWA) -->
+              <section class="bg-white dark:bg-slate-800/95 border border-outline-variant/60 rounded-3xl p-5 sm:p-6 shadow-sm space-y-3 transition-all">
                 <div class="flex items-center justify-between flex-wrap gap-2">
-                  <div class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-indigo-600">admin_panel_settings</span>
-                    <h2 class="font-headline-md text-headline-md font-bold text-indigo-900 dark:text-indigo-100">Fitur Eksklusif Pemilik</h2>
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-blue-500/10 text-primary dark:text-blue-400 flex items-center justify-center border border-blue-500/20">
+                      <span class="material-symbols-outlined text-xl">download_for_offline</span>
+                    </div>
+                    <div>
+                      <h2 class="font-headline-md text-base sm:text-lg font-bold text-on-surface">Pasang Aplikasi di Perangkat Ini</h2>
+                      <p class="text-[10px] text-gray-500 dark:text-gray-400">Instalasi PWA untuk akses cepat & offline</p>
+                    </div>
                   </div>
-                  <span class="px-2.5 py-1 bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 text-[10px] font-extrabold rounded-full flex items-center gap-1 border border-indigo-200 dark:border-indigo-800">
-                    👑 KHUSUS PEMILIK
+                  <span class="px-2.5 py-0.5 bg-blue-100 dark:bg-blue-950 text-primary text-[10px] font-extrabold rounded-full border border-blue-200 dark:border-blue-800">
+                    📱 ANDROID • iOS • PC
                   </span>
                 </div>
-                <p class="text-[11px] text-indigo-800 dark:text-indigo-200 leading-relaxed">
-                  Menu Kalkulator Bisnis & Usaha (HPP Konveksi/Sablon, Modal Usaha, Murabahah). Menu ini <b>hanya muncul untuk Anda</b> dan disembunyikan total dari pengguna lain/kerabat.
+                <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                  Pasang KEUANGANKU langsung di layar utama HP atau desktop laptop Anda untuk akses instan tanpa bilah browser. Memiliki ikon tersendiri dan siap dibuka secara offline.
                 </p>
-                <div class="space-y-2 pt-2">
-                  <div class="flex items-center gap-3 bg-white dark:bg-slate-800 p-3 rounded-xl border border-indigo-100 dark:border-indigo-900">
-                    <input type="checkbox" id="setup-enable-calc" onchange="toggleCalculatorFeature(this.checked)" class="w-5 h-5 rounded text-indigo-600 border-outline-variant cursor-pointer focus:ring-indigo-500">
-                    <label for="setup-enable-calc" class="text-xs font-bold text-gray-700 dark:text-gray-300 cursor-pointer">Aktifkan Menu Navigasi Kalkulator Bisnis & Finansial</label>
-                  </div>
-                  <div class="flex items-center gap-3 bg-white dark:bg-slate-800 p-3 rounded-xl border border-indigo-100 dark:border-indigo-900">
-                    <input type="checkbox" id="setup-enable-runway" onchange="toggleRunwayFeature(this.checked)" class="w-5 h-5 rounded text-indigo-600 border-outline-variant cursor-pointer focus:ring-indigo-500">
-                    <label for="setup-enable-runway" class="text-xs font-bold text-gray-700 dark:text-gray-300 cursor-pointer">Aktifkan Fitur Uji Coba: Indikator Ketahanan Kas (Emergency Runway)</label>
-                  </div>
-                  <div id="setup-runway-account-box" class="p-3 bg-white dark:bg-slate-800 rounded-xl border border-indigo-100 dark:border-indigo-900 space-y-2 text-xs">
-                    <div class="flex items-center justify-between flex-wrap gap-1">
-                      <span class="font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
-                        <span class="material-symbols-outlined text-sm text-indigo-600">account_balance_wallet</span>
-                        <span>Rekening Kas Pribadi yang Dihitung (Runway & Zakat)</span>
-                      </span>
-                      <span class="text-[10px] text-gray-400">Hilangkan centang jika bukan uang pribadi</span>
-                    </div>
-                    <div id="setup-runway-account-checkboxes" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 pt-1"></div>
-                  </div>
-                  <div class="flex items-center gap-3 bg-white dark:bg-slate-800 p-3 rounded-xl border border-indigo-100 dark:border-indigo-900">
-                    <input type="checkbox" id="setup-enable-countdown-goals" onchange="toggleCountdownGoalsFeature(this.checked)" class="w-5 h-5 rounded text-indigo-600 border-outline-variant cursor-pointer focus:ring-indigo-500">
-                    <label for="setup-enable-countdown-goals" class="text-xs font-bold text-gray-700 dark:text-gray-300 cursor-pointer">Aktifkan Fitur Uji Coba: Visual Moodboard & Hitung Mundur Impian (Goals)</label>
-                  </div>
-                  <div class="flex items-center gap-3 bg-white dark:bg-slate-800 p-3 rounded-xl border border-indigo-100 dark:border-indigo-900">
-                    <input type="checkbox" id="setup-enable-zakat" onchange="toggleZakatFeature(this.checked)" class="w-5 h-5 rounded text-indigo-600 border-outline-variant cursor-pointer focus:ring-indigo-500">
-                    <div class="flex-1">
-                      <label for="setup-enable-zakat" class="text-xs font-bold text-gray-700 dark:text-gray-300 cursor-pointer flex items-center gap-1.5">
-                        <span>Aktifkan Fitur Uji Coba: Zakat Maal & Nisab Hub (Syariah BAZNAS & MUI)</span>
-                        <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">SYARI</span>
-                      </label>
-                      <p class="text-[10px] text-gray-500 mt-0.5">Kalkulator otomatis Zakat Simpanan (Kas + Emas) berdasar Nisab 85 gr emas & Haul 1 tahun dengan dalil Al-Qur'an & Hadits Shahih.</p>
-                    </div>
-                  </div>
-                  <div id="setup-zakat-config-box" class="p-3 bg-white dark:bg-slate-800 rounded-xl border border-indigo-100 dark:border-indigo-900 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs hidden">
-                    <div>
-                      <label class="text-[10px] font-bold text-gray-500 uppercase block mb-1">Harga Emas Murni Acuan (Rp/Gram)</label>
-                      <div class="relative">
-                        <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-xs">Rp</span>
-                        <input type="text" id="setup-zakat-gold-price" oninput="formatInputNominal(this)" onchange="updateZakatGoldPrice(this.value.replace(/\D/g, ''))" class="w-full pl-8 pr-3 py-1.5 border rounded-lg font-mono-data bg-surface text-on-surface font-bold text-xs" placeholder="1.450.000">
-                      </div>
-                      <span class="text-[9px] text-gray-400 mt-1 block">Nisab 85 gram = <span id="setup-zakat-nisab-preview" class="font-bold text-emerald-600">Rp 123.250.000</span></span>
-                    </div>
-                    <div>
-                      <label class="text-[10px] font-bold text-gray-500 uppercase block mb-1">Pengurang Utang Jatuh Tempo</label>
-                      <label class="flex items-center gap-2 cursor-pointer mt-1">
-                        <input type="checkbox" id="setup-zakat-deduct-debt" onchange="toggleZakatDeductDebt(this.checked)" class="rounded text-indigo-600">
-                        <span class="text-xs text-gray-700 dark:text-gray-300 font-medium">Kurangkan Utang Jatuh Tempo dari Total Harta</span>
-                      </label>
-                    </div>
-                  </div>
-                </div>
-                <div class="pt-3 border-t border-indigo-200/60 dark:border-indigo-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-                  <div>
-                    <p class="text-xs font-bold text-indigo-950 dark:text-indigo-100 flex items-center gap-1.5">
-                      <span class="material-symbols-outlined text-sm text-indigo-600">terminal</span>
-                      <span>Master Developer & License Portal</span>
-                    </p>
-                    <p class="text-[10px] text-indigo-800/80 dark:text-indigo-300/80">Kelola kuota lisensi, terbitkan token pembeli baru, cabut perangkat hilang, dan pantau log audit.</p>
-                  </div>
-                  <a href="dev-dashboard.html" target="_blank" class="px-3.5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-md shrink-0">
-                    <span class="material-symbols-outlined text-sm">open_in_new</span>
-                    <span>Buka Dev Dashboard</span>
-                  </a>
-                </div>
+                <button onclick="triggerPWAInstall()" class="w-full py-2.5 bg-primary hover:bg-primary-container text-white font-bold text-xs rounded-xl shadow flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
+                  <span class="material-symbols-outlined text-base">add_to_home_screen</span> PASANG / INSTAL APLIKASI SEKARANG
+                </button>
               </section>
+
+              <!-- 4. PEMBARUAN VERSI APLIKASI (UPDATE MANAGER) -->
+              <section class="bg-white dark:bg-slate-800/95 border border-cyan-500/30 rounded-3xl p-5 sm:p-6 shadow-sm space-y-3 transition-all">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center border border-cyan-500/20">
+                      <span class="material-symbols-outlined text-xl">system_update</span>
+                    </div>
+                    <div>
+                      <h2 class="font-headline-md text-base sm:text-lg font-bold text-on-surface">Pembaruan Versi Aplikasi</h2>
+                      <p class="text-[10px] text-gray-500 dark:text-gray-400">Sinkronkan patch sistem dan bersihkan cache</p>
+                    </div>
+                  </div>
+                  <span class="px-2.5 py-0.5 bg-cyan-100 dark:bg-cyan-950 text-cyan-700 dark:text-cyan-300 text-[10px] font-extrabold rounded-full border border-cyan-200 dark:border-cyan-800">
+                    VERSI AKTIF: v0.1 (Uji Coba)
+                  </span>
+                </div>
+                <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                  Gunakan tombol di bawah untuk memeriksa pembaruan fitur terbaru dari GitHub atau membersihkan cache browser.
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                  <button id="btn-check-app-update" onclick="checkAppUpdatesManual()" class="py-2.5 px-3 bg-primary hover:bg-primary-container text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
+                    <span id="icon-check-app-update" class="material-symbols-outlined text-base">sync</span>
+                    <span>PERIKSA PEMBARUAN</span>
+                  </button>
+                  <button onclick="forceHardRefreshApp()" class="py-2.5 px-3 bg-surface dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-slate-700 border border-rose-300 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 font-bold text-xs rounded-xl shadow-2xs flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer" title="Bersihkan cache browser dan muat ulang halaman">
+                    <span class="material-symbols-outlined text-base">delete_sweep</span>
+                    <span>BERSIHKAN CACHE & RESET</span>
+                  </button>
+                </div>
+                <div id="update-check-status-text" class="hidden text-[11px] text-center font-medium pt-1"></div>
+              </section>
+
             </div>
+
           </div>
 
-          <button onclick="manualSaveSetup()" class="w-full py-4 bg-primary text-white font-extrabold text-sm rounded-2xl shadow-lg hover:brightness-110 flex items-center justify-center gap-2 transition-all">
-            <span class="material-symbols-outlined">save</span> SIMPAN SELURUH PENGATURAN
-          </button>
+          <!-- TOMBOL SIMPAN UTAMA DI BAGIAN BAWAH -->
+          <div class="pt-2">
+            <button onclick="manualSaveSetup()" class="w-full py-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:brightness-110 text-white font-extrabold text-sm rounded-2xl shadow-lg hover:shadow-xl flex items-center justify-center gap-2.5 transition-all active:scale-[0.99] cursor-pointer">
+              <span class="material-symbols-outlined text-xl">save</span>
+              <span>SIMPAN SELURUH PENGATURAN</span>
+            </button>
+          </div>
         </div>
 
         <!-- ========================================== -->
