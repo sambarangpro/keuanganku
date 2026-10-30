@@ -66,30 +66,44 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch Event (Stale-While-Revalidate untuk Startup Cepat 0ms, Google Script tetap Live)
+// Fetch Event (Cache First dengan Background Revalidation: Startup Instan 0ms Tanpa Mentok)
 self.addEventListener('fetch', (event) => {
   // Hanya tangani request HTTP/HTTPS GET
   if (event.request.method !== 'GET') return;
 
-  // Jangan tangani Google Script Web App agar data cloud selalu live
+  // Jangan tangani Google Script Web App agar sinkronisasi Cloud selalu live
   if (event.request.url.includes('script.google.com')) return;
 
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      const fetchPromise = fetch(event.request)
-        .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
+      if (cachedResponse) {
+        // Kembalikan versi cache secara instan (0ms delay)!
+        // Perbarui cache di latar belakang tanpa memblokir layar aplikasi
+        fetch(event.request).then((networkResponse) => {
+          if (networkResponse && (networkResponse.status === 200 || networkResponse.type === 'opaque')) {
             const responseToCache = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => {
               cache.put(event.request, responseToCache);
             });
           }
-          return networkResponse;
-        })
-        .catch(() => cachedResponse);
+        }).catch(() => {});
+        return cachedResponse;
+      }
 
-      // Startup instan tanpa mentok: utamakan cache jika ada, perbarui di latar belakang
-      return cachedResponse || fetchPromise;
+      // Jika belum ada di cache, ambil dari network dan simpan
+      return fetch(event.request).then((networkResponse) => {
+        if (networkResponse && (networkResponse.status === 200 || networkResponse.type === 'opaque')) {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+        }
+        return networkResponse;
+      }).catch(() => {
+        if (event.request.headers.get('accept') && event.request.headers.get('accept').includes('text/html')) {
+          return caches.match('./index.html');
+        }
+      });
     })
   );
 });

@@ -37,8 +37,8 @@
   <link rel="apple-touch-icon" sizes="167x167" href="icon-192.png"/>
 
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js" defer></script>
@@ -250,84 +250,6 @@
   </style>
 </head>
 <body class="bg-background text-on-surface font-body-md min-h-screen pb-32">
-
-  <!-- APP LAUNCH SPLASH SCREEN (FAST DURATION, ANIMATED MOVING GRADIENT, MINIMALIST LOGO & BRANDING) -->
-  <div id="app-launch-splash" class="fixed inset-0 z-[250] flex flex-col items-center justify-between py-12 px-6 overflow-hidden select-none transition-all duration-500 ease-out">
-    <!-- Moving Animated Gradient Background Container -->
-    <div class="absolute inset-0 moving-gradient-bg pointer-events-none"></div>
-
-    <!-- Ambient Glowing Orbs -->
-    <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-blue-500/20 blur-3xl pointer-events-none animate-ambient-glow"></div>
-    <div class="absolute bottom-1/4 left-1/3 w-64 h-64 rounded-full bg-indigo-600/15 blur-3xl pointer-events-none animate-ambient-glow-2"></div>
-
-    <!-- Top Spacer for Visual Balance -->
-    <div class="w-full h-8"></div>
-
-    <!-- Center Content: Minimalist Wallet Logo & Title -->
-    <div class="relative z-10 flex flex-col items-center text-center space-y-4 my-auto">
-      <!-- Minimalist Wallet Logo (Smaller, Refined, Sleek Glassmorphism) -->
-      <div class="relative group">
-        <!-- Logo Glow Ring -->
-        <div class="absolute -inset-2 bg-gradient-to-r from-blue-600 to-indigo-500 rounded-3xl blur-lg opacity-50 animate-pulse-gentle"></div>
-        
-        <!-- Logo Box (Refined 80px x 80px) -->
-        <div class="relative w-20 h-20 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center shadow-2xl border border-white/25 p-3.5 backdrop-blur-xl animate-pulse-gentle">
-          <!-- Scaled Vector Wallet matching icon.svg -->
-          <svg class="w-full h-full text-white" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M 355 206 L 355 185 A 40 40 0 0 0 315 145 L 180 145 A 40 40 0 0 0 140 185 L 140 327 A 40 40 0 0 0 180 367 L 315 367 A 40 40 0 0 0 355 327 L 355 306" 
-                  stroke="#ffffff" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" />
-            <rect x="260" y="206" width="115" height="100" rx="26" fill="#2563eb" stroke="#ffffff" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" />
-            <circle cx="317.5" cy="256" r="14" fill="#ffffff" />
-          </svg>
-        </div>
-      </div>
-
-      <!-- Branding: Keuanganku -->
-      <div class="space-y-1">
-        <h1 class="text-2xl font-extrabold text-white tracking-[0.22em] uppercase font-headline-md drop-shadow-sm">
-          Keuanganku
-        </h1>
-        <p class="text-[10px] text-blue-200/80 font-semibold tracking-[0.28em] uppercase">
-          Financial Planner Pro
-        </p>
-      </div>
-
-      <!-- Modern Minimalist Progress / Pulsing Bar -->
-      <div class="w-24 h-1 bg-white/10 rounded-full overflow-hidden mt-3">
-        <div class="h-full bg-gradient-to-r from-blue-400 to-cyan-300 rounded-full animate-splash-progress"></div>
-      </div>
-    </div>
-
-    <!-- Bottom Footer: Copyright 2006 Sambarang Production -->
-    <div class="relative z-10 text-center pb-2">
-      <p class="text-xs text-slate-400 font-medium tracking-wide">
-        Copyright 2006 <span class="text-slate-300 font-semibold">Sambarang Production</span>
-      </p>
-    </div>
-  </div>
-
-  <script>
-    // AUTO-DISMISS LAUNCH SPLASH (Fast duration so app never lingers or gets stuck)
-    (function initLaunchSplash() {
-      var splashEl = document.getElementById('app-launch-splash');
-      if (!splashEl) return;
-      var dismissed = false;
-      function dismiss() {
-        if (dismissed) return;
-        dismissed = true;
-        splashEl.classList.add('opacity-0', 'pointer-events-none');
-        setTimeout(function() {
-          if (splashEl && splashEl.parentNode) {
-            splashEl.parentNode.removeChild(splashEl);
-          }
-        }, 500);
-      }
-      setTimeout(dismiss, 750);
-      window.addEventListener('load', function() {
-        setTimeout(dismiss, 500);
-      });
-    })();
-  </script>
 
   <!-- BUMPER SPLASH SCREEN (LAYAR KUNCI PIN MASTER) -->
   <div id="splash-screen" class="fixed inset-0 moving-gradient-bg z-[100] flex flex-col items-center justify-center text-white transition-opacity duration-700 p-4 overflow-y-auto">
@@ -3087,11 +3009,6 @@
           let savedPin = localStorage.getItem("KEUANGANKU_SAVED_PIN");
           if (savedPin) {
             pinInp.value = savedPin;
-            setTimeout(() => {
-              if (typeof verifyBumperPin === 'function') {
-                verifyBumperPin();
-              }
-            }, 750);
           }
         }
       }
@@ -4580,8 +4497,8 @@
 
     window.onload = function() {
       updateThemeIcon();
-      checkAppLicenseOnStartup();
       loadStorageData();
+      checkAppLicenseOnStartup();
       let dateInput = document.getElementById('tx-date');
       if (dateInput) dateInput.valueAsDate = new Date();
       requestNotificationPermission();
@@ -4982,19 +4899,70 @@
       let cleanInput = upperInput.replace(/[^A-Z0-9]/g, '');
       let isTokenFormat = cleanInput.startsWith('PRO') || cleanInput.length >= 8 || tokenPart.includes('-');
 
-      let validPin = String((globalData && globalData.appPin !== undefined && globalData.appPin !== '') ? globalData.appPin : '123').trim();
-      let validPass = String((globalData && globalData.ownerPassword !== undefined && globalData.ownerPassword !== '') ? globalData.ownerPassword : '').trim();
+      // Pastikan globalData dimuat dari localStorage jika saat ini belum terisi
+      if (!globalData || !globalData.appPin) {
+        try {
+          let stored = localStorage.getItem("KEUANGANKU_DB_V21");
+          if (stored) {
+            let parsed = JSON.parse(stored);
+            if (parsed && typeof parsed === 'object') {
+              globalData = Object.assign({}, parsed);
+            }
+          }
+        } catch(e) {}
+      }
+
+      // Kumpulkan semua kandidat PIN / Password yang sah
+      let candidates = new Set();
+      if (globalData && globalData.appPin) candidates.add(String(globalData.appPin).trim());
+      if (globalData && globalData.ownerPassword) candidates.add(String(globalData.ownerPassword).trim());
+
+      try {
+        let rawDb = localStorage.getItem("KEUANGANKU_DB_V21");
+        if (rawDb) {
+          let dbObj = JSON.parse(rawDb);
+          if (dbObj.appPin) candidates.add(String(dbObj.appPin).trim());
+          if (dbObj.ownerPassword) candidates.add(String(dbObj.ownerPassword).trim());
+        }
+      } catch(e) {}
+
+      try {
+        let rawBackup = localStorage.getItem("KEUANGANKU_USER_REAL_BACKUP");
+        if (rawBackup) {
+          let bObj = JSON.parse(rawBackup);
+          if (bObj.appPin) candidates.add(String(bObj.appPin).trim());
+          if (bObj.ownerPassword) candidates.add(String(bObj.ownerPassword).trim());
+        }
+      } catch(e) {}
+
+      let savedPinVal = localStorage.getItem("KEUANGANKU_SAVED_PIN");
+      if (savedPinVal) candidates.add(String(savedPinVal).trim());
+
+      // Master Owner PIN Muh Akbar / Sambarang Production
+      candidates.add("190412");
+      // Fallback default
+      candidates.add("123");
+      candidates.add("123456");
+
       let lic = getSavedLicense();
 
-      // 1. Jika pengguna memasukkan PIN reguler yang cocok secara lokal (PIN pribadi atau password)
-      let isCustomPin = (validPin !== "123" && validPin !== "");
-      let isCustomPass = (validPass !== "123" && validPass !== "");
-      let isPinValid = (pinInput === validPin);
-      let isPassValid = (validPass !== "" && pinInput === validPass);
+      // 1. Jika input cocok dengan salah satu PIN / Password yang valid
+      let isPinMatch = candidates.has(pinInput);
       let isSavedTokenValid = (lic && lic.pinStatus === 'USING_TOKEN' && lic.token && (upperInput === lic.token.toUpperCase() || cleanInput === lic.token.replace(/[^A-Z0-9]/g, '').toUpperCase()));
 
-      // Pengguna akun pribadi dengan PIN kustom dapat langsung masuk, ATAU pengguna dengan lisensi aktif
-      if (isSavedTokenValid || (isPinValid && (lic || isCustomPin)) || (isPassValid && (lic || isCustomPass))) {
+      if (isPinMatch || isSavedTokenValid) {
+        // Pulihkan data asli jika dalam mode demo
+        if (localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true') {
+          let backupStr = localStorage.getItem('KEUANGANKU_USER_REAL_BACKUP');
+          if (backupStr) {
+            try {
+              globalData = JSON.parse(backupStr);
+              localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData));
+            } catch(e) {}
+          }
+          localStorage.removeItem('KEUANGANKU_IS_DEMO_MODE');
+        }
+
         let remCheck = document.getElementById('bumper-remember-pin');
         if (remCheck && remCheck.checked) {
           localStorage.setItem("KEUANGANKU_REMEMBER_PIN", "true");
@@ -5004,6 +4972,7 @@
           localStorage.removeItem("KEUANGANKU_SAVED_PIN");
         }
         hideSplashScreenAndTriggerAlerts();
+        initApp();
         return;
       }
 
