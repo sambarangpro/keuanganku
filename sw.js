@@ -1,4 +1,4 @@
-const CACHE_NAME = 'keuanganku-pwa-v1.8';
+const CACHE_NAME = 'keuanganku-pwa-v2.0';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -66,7 +66,7 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch Event (Network First Strategy for fresh financial data)
+// Fetch Event (Stale-While-Revalidate untuk Startup Cepat 0ms, Google Script tetap Live)
 self.addEventListener('fetch', (event) => {
   // Hanya tangani request HTTP/HTTPS GET
   if (event.request.method !== 'GET') return;
@@ -75,25 +75,21 @@ self.addEventListener('fetch', (event) => {
   if (event.request.url.includes('script.google.com')) return;
 
   event.respondWith(
-    fetch(event.request)
-      .then((networkResponse) => {
-        // Update cache dengan respon terbaru jika valid
-        if (networkResponse && networkResponse.status === 200) {
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
-        }
-        return networkResponse;
-      })
-      .catch(() => {
-        // Jika offline, ambil dari cache
-        return caches.match(event.request).then((cachedResponse) => {
-          if (cachedResponse) return cachedResponse;
-          if (event.request.headers.get('accept').includes('text/html')) {
-            return caches.match('./index.html');
+    caches.match(event.request).then((cachedResponse) => {
+      const fetchPromise = fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
           }
-        });
-      })
+          return networkResponse;
+        })
+        .catch(() => cachedResponse);
+
+      // Startup instan tanpa mentok: utamakan cache jika ada, perbarui di latar belakang
+      return cachedResponse || fetchPromise;
+    })
   );
 });

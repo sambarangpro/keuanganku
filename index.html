@@ -37,13 +37,13 @@
   <link rel="apple-touch-icon" sizes="167x167" href="icon-192.png"/>
 
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js" defer></script>
   
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -202,22 +202,152 @@
     .animate-pulse-logo { animation: pulseLogo 1.5s infinite; }
     @keyframes scanLaser { 0% { top: 6%; opacity: 0.3; } 50% { opacity: 1; } 100% { top: 92%; opacity: 0.3; } }
     .animate-scanner-laser { animation: scanLaser 2s ease-in-out infinite alternate; }
+
+    /* Moving Animated Gradient Background for Splash Screen */
+    @keyframes splashGradientFlow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .moving-gradient-bg {
+      background: linear-gradient(-45deg, #020617, #070e28, #111a44, #1e1b4b, #0c1a32, #030712);
+      background-size: 350% 350%;
+      animation: splashGradientFlow 8s ease infinite;
+    }
+
+    @keyframes ambientGlow1 {
+      0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.3; }
+      100% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.6; }
+    }
+    .animate-ambient-glow {
+      animation: ambientGlow1 5s ease-in-out infinite alternate;
+    }
+
+    @keyframes ambientGlow2 {
+      0% { transform: scale(0.85); opacity: 0.2; }
+      100% { transform: scale(1.15); opacity: 0.5; }
+    }
+    .animate-ambient-glow-2 {
+      animation: ambientGlow2 6s ease-in-out infinite alternate;
+    }
+
+    @keyframes splashProgress {
+      0% { width: 0%; }
+      60% { width: 85%; }
+      100% { width: 100%; }
+    }
+    .animate-splash-progress {
+      animation: splashProgress 0.75s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    @keyframes pulseGentle {
+      0%, 100% { transform: scale(1); box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.3); }
+      50% { transform: scale(1.04); box-shadow: 0 20px 35px -5px rgba(37, 99, 235, 0.5); }
+    }
+    .animate-pulse-gentle {
+      animation: pulseGentle 2.2s ease-in-out infinite;
+    }
   </style>
 </head>
 <body class="bg-background text-on-surface font-body-md min-h-screen pb-32">
 
+  <!-- APP LAUNCH SPLASH SCREEN (FAST DURATION, ANIMATED MOVING GRADIENT, MINIMALIST LOGO & BRANDING) -->
+  <div id="app-launch-splash" class="fixed inset-0 z-[250] flex flex-col items-center justify-between py-12 px-6 overflow-hidden select-none transition-all duration-500 ease-out">
+    <!-- Moving Animated Gradient Background Container -->
+    <div class="absolute inset-0 moving-gradient-bg pointer-events-none"></div>
 
+    <!-- Ambient Glowing Orbs -->
+    <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-blue-500/20 blur-3xl pointer-events-none animate-ambient-glow"></div>
+    <div class="absolute bottom-1/4 left-1/3 w-64 h-64 rounded-full bg-indigo-600/15 blur-3xl pointer-events-none animate-ambient-glow-2"></div>
 
+    <!-- Top Spacer for Visual Balance -->
+    <div class="w-full h-8"></div>
+
+    <!-- Center Content: Minimalist Wallet Logo & Title -->
+    <div class="relative z-10 flex flex-col items-center text-center space-y-4 my-auto">
+      <!-- Minimalist Wallet Logo (Smaller, Refined, Sleek Glassmorphism) -->
+      <div class="relative group">
+        <!-- Logo Glow Ring -->
+        <div class="absolute -inset-2 bg-gradient-to-r from-blue-600 to-indigo-500 rounded-3xl blur-lg opacity-50 animate-pulse-gentle"></div>
+        
+        <!-- Logo Box (Refined 80px x 80px) -->
+        <div class="relative w-20 h-20 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center shadow-2xl border border-white/25 p-3.5 backdrop-blur-xl animate-pulse-gentle">
+          <!-- Scaled Vector Wallet matching icon.svg -->
+          <svg class="w-full h-full text-white" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M 355 206 L 355 185 A 40 40 0 0 0 315 145 L 180 145 A 40 40 0 0 0 140 185 L 140 327 A 40 40 0 0 0 180 367 L 315 367 A 40 40 0 0 0 355 327 L 355 306" 
+                  stroke="#ffffff" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" />
+            <rect x="260" y="206" width="115" height="100" rx="26" fill="#2563eb" stroke="#ffffff" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" />
+            <circle cx="317.5" cy="256" r="14" fill="#ffffff" />
+          </svg>
+        </div>
+      </div>
+
+      <!-- Branding: Keuanganku -->
+      <div class="space-y-1">
+        <h1 class="text-2xl font-extrabold text-white tracking-[0.22em] uppercase font-headline-md drop-shadow-sm">
+          Keuanganku
+        </h1>
+        <p class="text-[10px] text-blue-200/80 font-semibold tracking-[0.28em] uppercase">
+          Financial Planner Pro
+        </p>
+      </div>
+
+      <!-- Modern Minimalist Progress / Pulsing Bar -->
+      <div class="w-24 h-1 bg-white/10 rounded-full overflow-hidden mt-3">
+        <div class="h-full bg-gradient-to-r from-blue-400 to-cyan-300 rounded-full animate-splash-progress"></div>
+      </div>
+    </div>
+
+    <!-- Bottom Footer: Copyright 2006 Sambarang Production -->
+    <div class="relative z-10 text-center pb-2">
+      <p class="text-xs text-slate-400 font-medium tracking-wide">
+        Copyright 2006 <span class="text-slate-300 font-semibold">Sambarang Production</span>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // AUTO-DISMISS LAUNCH SPLASH (Fast duration so app never lingers or gets stuck)
+    (function initLaunchSplash() {
+      var splashEl = document.getElementById('app-launch-splash');
+      if (!splashEl) return;
+      var dismissed = false;
+      function dismiss() {
+        if (dismissed) return;
+        dismissed = true;
+        splashEl.classList.add('opacity-0', 'pointer-events-none');
+        setTimeout(function() {
+          if (splashEl && splashEl.parentNode) {
+            splashEl.parentNode.removeChild(splashEl);
+          }
+        }, 500);
+      }
+      setTimeout(dismiss, 750);
+      window.addEventListener('load', function() {
+        setTimeout(dismiss, 500);
+      });
+    })();
+  </script>
 
   <!-- BUMPER SPLASH SCREEN (LAYAR KUNCI PIN MASTER) -->
-  <div id="splash-screen" class="fixed inset-0 bg-gradient-to-br from-navy-dark via-primary to-tertiary z-[100] flex flex-col items-center justify-center text-white transition-opacity duration-700 p-4 overflow-y-auto">
-    <div class="text-center space-y-4 p-5 sm:p-6 max-w-xs sm:max-w-sm w-full bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 shadow-2xl my-auto">
-      <div class="w-14 h-14 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto shadow-xl border border-white/20 animate-pulse-logo">
-        <span class="material-symbols-outlined text-white" style="font-size: 32px;">account_balance_wallet</span>
+  <div id="splash-screen" class="fixed inset-0 moving-gradient-bg z-[100] flex flex-col items-center justify-center text-white transition-opacity duration-700 p-4 overflow-y-auto">
+    <!-- Ambient Glowing Orbs -->
+    <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-blue-500/15 blur-3xl pointer-events-none animate-ambient-glow"></div>
+    <div class="absolute bottom-1/4 left-1/3 w-64 h-64 rounded-full bg-indigo-600/15 blur-3xl pointer-events-none animate-ambient-glow-2"></div>
+
+    <div class="relative z-10 text-center space-y-4 p-5 sm:p-6 max-w-xs sm:max-w-sm w-full bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl my-auto">
+      <!-- Minimalist Wallet Logo Box -->
+      <div class="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center mx-auto shadow-xl border border-white/20 p-3 animate-pulse-gentle">
+        <svg class="w-full h-full text-white" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 355 206 L 355 185 A 40 40 0 0 0 315 145 L 180 145 A 40 40 0 0 0 140 185 L 140 327 A 40 40 0 0 0 180 367 L 315 367 A 40 40 0 0 0 355 327 L 355 306" 
+                stroke="#ffffff" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" />
+          <rect x="260" y="206" width="115" height="100" rx="26" fill="#2563eb" stroke="#ffffff" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" />
+          <circle cx="317.5" cy="256" r="14" fill="#ffffff" />
+        </svg>
       </div>
       <div>
-        <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-white font-headline-md">KEUANGANKU</h1>
-        <p class="text-[9px] sm:text-[10px] text-blue-200 mt-0.5 font-semibold tracking-widest uppercase">Financial Planner Pro</p>
+        <h1 class="text-xl sm:text-2xl font-extrabold tracking-[0.2em] text-white font-headline-md">KEUANGANKU</h1>
+        <p class="text-[9px] sm:text-[10px] text-blue-200/80 mt-0.5 font-semibold tracking-[0.25em] uppercase">Financial Planner Pro</p>
       </div>
 
       <!-- 1. VIEW WHATSAPP WEB STYLE (PC/iPad TAMPILKAN QR, HP UTAMA SCAN) -->
@@ -310,7 +440,7 @@
         <button type="button" onclick="toggleBumperCloudModal(false)" class="text-[10px] text-blue-200 hover:text-white underline">← Kembali ke Masuk PIN</button>
       </div>
 
-      <div class="pt-2"><p class="text-[9px] text-gray-300 font-medium tracking-wider uppercase">Copyright © 2026 <b class="text-white">Sambarang Production</b></p></div>
+      <div class="pt-2"><p class="text-[10px] text-slate-400 font-medium tracking-wide">Copyright 2006 <span class="text-slate-300 font-semibold">Sambarang Production</span></p></div>
     </div>
   </div>
 
@@ -1091,6 +1221,19 @@
       </div>
     </div>
   </header>
+
+  <!-- STICKY BAR KHUSUS MODE DEMO IKLAN -->
+  <div id="demo-mode-sticky-bar" class="hidden fixed top-16 left-0 w-full z-40 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-slate-950 px-4 py-2 text-xs font-bold flex items-center justify-between shadow-md">
+    <div class="flex items-center gap-2">
+      <span class="material-symbols-outlined text-base animate-pulse">movie</span>
+      <span class="truncate">🎬 Mode Demo Iklan Aktif: Semua Fitur Baru Terbuka • Cloud Dijeda</span>
+    </div>
+    <button onclick="restoreUserRealData()" class="px-3 py-1 bg-slate-950 text-amber-300 hover:text-white rounded-lg text-[11px] font-extrabold flex items-center gap-1 active:scale-95 transition-all cursor-pointer shrink-0 ml-2">
+      <span class="material-symbols-outlined text-xs text-emerald-400">restart_alt</span>
+      <span>Kembalikan Data Asli</span>
+    </button>
+  </div>
+
 
 
   <!-- TOAST NOTIFIKASI SINKRONISASI OTOMATIS -->
@@ -1974,6 +2117,30 @@
                         </label>
                       </div>
                     </div>
+                  </div>
+                </div>
+
+                <!-- Modul 5: Mode Percontohan & Rekaman Iklan (Showcase Demo) -->
+                <div class="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/15 border border-amber-500/30 space-y-2.5">
+                  <div class="flex items-center justify-between flex-wrap gap-2">
+                    <div class="flex items-center gap-2">
+                      <span class="material-symbols-outlined text-amber-500 text-lg">movie</span>
+                      <span class="font-bold text-xs text-on-surface">Mode Percontohan & Rekaman Iklan (Showcase Demo)</span>
+                    </div>
+                    <span class="text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/30">KONTEN PROMOSI</span>
+                  </div>
+                  <p class="text-[11px] text-gray-600 dark:text-gray-300 leading-relaxed">
+                    Muat otomatis database percontohan lengkap (Ketahanan Kas Runway, Visual Goals Impian, Zakat Maal Hub, Transaksi dengan Bukti Struk, & Kalkulator Bisnis). Aman tanpa mengganggu database pribadi Anda.
+                  </p>
+                  <div class="flex items-center gap-2 pt-1 flex-wrap">
+                    <button type="button" id="btn-activate-demo-data" onclick="activateShowcaseDemoData()" class="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-extrabold text-xs rounded-xl shadow-sm flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer">
+                      <span class="material-symbols-outlined text-base">play_circle</span>
+                      <span>Aktifkan Akun Demo Iklan</span>
+                    </button>
+                    <button type="button" id="btn-restore-real-data" onclick="restoreUserRealData()" class="hidden px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl shadow flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer">
+                      <span class="material-symbols-outlined text-base text-emerald-400">restart_alt</span>
+                      <span>Kembalikan Data Asli Saya</span>
+                    </button>
                   </div>
                 </div>
 
@@ -2918,7 +3085,14 @@
         if (remCheck) remCheck.checked = isRemember;
         if (isRemember && pinInp) {
           let savedPin = localStorage.getItem("KEUANGANKU_SAVED_PIN");
-          if (savedPin) pinInp.value = savedPin;
+          if (savedPin) {
+            pinInp.value = savedPin;
+            setTimeout(() => {
+              if (typeof verifyBumperPin === 'function') {
+                verifyBumperPin();
+              }
+            }, 750);
+          }
         }
       }
 
@@ -5408,15 +5582,27 @@
     }
     
     function isOwnerDevice() {
-      // HANYA akun resmi Pemilik / Developer (Muh Akbar & Sambarang Production)
-      // Pengguna/klien biasa TIDAK AKAN PERNAH mendapatkan akses fitur eksklusif ini!
+      // Akun resmi Pemilik / Developer (Muh Akbar & Sambarang) serta Akun Demo Iklan (Showcase Showcase)
       let lic = (typeof getSavedLicense === 'function') ? getSavedLicense() : null;
       if (lic) {
         let name = (lic.buyerName || '').toLowerCase();
         let tok = (lic.token || '').toUpperCase();
-        if (name.includes('akbar') || name.includes('sambarang') || tok === 'PRO-S8GF-HQT5-CNVE' || tok === 'PRO-W9J2-RAYM-3KKL') {
+        if (
+          name.includes('akbar') || 
+          name.includes('sambarang') || 
+          name.includes('demo') || 
+          name.includes('showcase') ||
+          tok === 'PRO-S8GF-HQT5-CNVE' || 
+          tok === 'PRO-W9J2-RAYM-3KKL' ||
+          tok === 'PRO-DEMO-IKLAN-2026' ||
+          tok.includes('DEMO-IKLAN')
+        ) {
           return true;
         }
+      }
+      // Mode Demo Iklan via flag
+      if (localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true') {
+        return true;
       }
       // Cek apakah terhubung ke Cloud Script pribadi milik Muh Akbar
       if (globalData && globalData.cloudUrl && typeof globalData.cloudUrl === 'string') {
@@ -6231,18 +6417,240 @@ function formatReadableSheets(ss, parsed) {
     // ==============================================================================
     // FITUR MODE PERCONTOHAN / IKLAN (SHOWCASE DEMO DATA)
     // ==============================================================================
+    // ==============================================================================
+    // FITUR MODE PERCONTOHAN / IKLAN (SHOWCASE DEMO DATA)
+    // ==============================================================================
     function updateDemoModeUI() {
+      let isDemo = localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true';
+      let stickyBar = document.getElementById('demo-mode-sticky-bar');
+      let btnActivate = document.getElementById('btn-activate-demo-data');
+      let btnRestore = document.getElementById('btn-restore-real-data');
       let syncIcon = document.getElementById('header-sync-icon');
       let syncBtn = document.getElementById('header-sync-btn');
+
+      if (stickyBar) {
+        if (isDemo) stickyBar.classList.remove('hidden');
+        else stickyBar.classList.add('hidden');
+      }
+
+      if (btnActivate && btnRestore) {
+        if (isDemo) {
+          btnActivate.classList.add('hidden');
+          btnRestore.classList.remove('hidden');
+        } else {
+          btnActivate.classList.remove('hidden');
+          btnRestore.classList.add('hidden');
+        }
+      }
+
       if (syncIcon && syncBtn) {
-        syncIcon.className = "material-symbols-outlined text-base text-green-500";
-        syncIcon.textContent = "cloud_done";
-        syncBtn.title = "Status Sinkronisasi Cloud (Klik untuk sinkron sekarang)";
+        if (isDemo) {
+          syncIcon.className = "material-symbols-outlined text-base text-amber-500 animate-pulse";
+          syncIcon.textContent = "movie";
+          syncBtn.title = "Mode Demo Iklan Aktif: Sinkronisasi Cloud otomatis dijeda demi keamanan data Anda.";
+        } else {
+          syncIcon.className = "material-symbols-outlined text-base text-green-500";
+          syncIcon.textContent = "cloud_done";
+          syncBtn.title = "Status Sinkronisasi Cloud (Klik untuk sinkron sekarang)";
+        }
       }
     }
 
-    function activateShowcaseDemoData() {
-      alert("Fitur percontohan iklan telah dipindahkan secara eksklusif ke Developer Dashboard (dev-dashboard.html) agar akun pribadi Anda selalu 100% aman dan murni.");
+    function activateShowcaseDemoData(isSilent = false) {
+      // 1. Simpan backup data asli pengguna jika belum dalam mode demo
+      let isAlreadyDemo = localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true';
+      if (!isAlreadyDemo) {
+        try {
+          localStorage.setItem('KEUANGANKU_USER_REAL_BACKUP', JSON.stringify(globalData));
+        } catch(e) {}
+      }
+
+      // 2. Tandai mode demo aktif
+      localStorage.setItem('KEUANGANKU_IS_DEMO_MODE', 'true');
+
+      // 3. Bangun data demo yang dinamis, realistis, dan super lengkap dengan SEMUA FITUR TERBARU
+      let now = new Date();
+      let y = now.getFullYear();
+      let m = String(now.getMonth() + 1).padStart(2, '0');
+      let pad = (n) => String(n).padStart(2, '0');
+      let curDay = now.getDate();
+
+      // SVG Data URLs untuk Bukti Struk Nyata di Akun Demo
+      const demoStrukNotaToko = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='600' viewBox='0 0 400 600' style='background:%23fafafa;font-family:monospace;'><rect width='100%' height='100%' fill='%23ffffff' stroke='%23e2e8f0' stroke-width='2' rx='16'/><text x='200' y='45' font-size='18' font-weight='bold' text-anchor='middle' fill='%230f172a'>TOKO BAHAN KAOS JAYA</text><text x='200' y='70' font-size='11' text-anchor='middle' fill='%2364748b'>Jl. Tekstil Makmur No. 88, Makassar</text><text x='200' y='88' font-size='10' text-anchor='middle' fill='%2394a3b8'>Telp: 0812-9988-7766 • NOTA RESMI</text><line x1='20' y1='105' x2='380' y2='105' stroke='%23cbd5e1' stroke-dasharray='4,4'/><text x='30' y='130' font-size='11' fill='%23475569'>No. Nota: %23KOS-92817</text><text x='370' y='130' font-size='11' text-anchor='end' fill='%23475569'>Kasir: Rudi</text><text x='30' y='150' font-size='11' fill='%23475569'>Tgl: " + pad(curDay) + "/" + m + "/" + y + " 14:22</text><text x='370' y='150' font-size='11' text-anchor='end' fill='%2310b981' font-weight='bold'>LUNAS (CASH)</text><line x1='20' y1='165' x2='380' y2='165' stroke='%23cbd5e1' stroke-dasharray='4,4'/><text x='30' y='195' font-size='12' font-weight='bold' fill='%231e293b'>1. Cotton Combed 30s Reaktif (Hitam)</text><text x='50' y='215' font-size='11' fill='%2364748b'>10 kg x Rp 115.000</text><text x='370' y='215' font-size='12' font-weight='bold' text-anchor='end' fill='%230f172a'>Rp 1.150.000</text><text x='30' y='250' font-size='12' font-weight='bold' fill='%231e293b'>2. Cotton Combed 24s (Putih Solid)</text><text x='50' y='270' font-size='11' fill='%2364748b'>5 kg x Rp 110.000</text><text x='370' y='270' font-size='12' font-weight='bold' text-anchor='end' fill='%230f172a'>Rp 550.000</text><text x='30' y='305' font-size='12' font-weight='bold' fill='%231e293b'>3. Rib Leher Spandex Matching</text><text x='50' y='325' font-size='11' fill='%2364748b'>1 kg x Rp 150.000</text><text x='370' y='325' font-size='12' font-weight='bold' text-anchor='end' fill='%230f172a'>Rp 150.000</text><line x1='20' y1='350' x2='380' y2='350' stroke='%23cbd5e1'/><text x='30' y='380' font-size='14' font-weight='bold' fill='%230f172a'>TOTAL BELANJA</text><text x='370' y='380' font-size='16' font-weight='bold' text-anchor='end' fill='%232563eb'>Rp 1.850.000</text><text x='30' y='410' font-size='11' fill='%2364748b'>Bayar Tunai</text><text x='370' y='410' font-size='12' text-anchor='end' fill='%230f172a'>Rp 2.000.000</text><text x='30' y='430' font-size='11' fill='%2364748b'>Kembali</text><text x='370' y='430' font-size='12' text-anchor='end' fill='%230f172a'>Rp 150.000</text><line x1='20' y1='450' x2='380' y2='450' stroke='%23cbd5e1' stroke-dasharray='4,4'/><text x='200' y='490' font-size='12' font-weight='bold' text-anchor='middle' fill='%230f172a'>TERIMA KASIH ATAS KUNJUNGAN ANDA</text><text x='200' y='510' font-size='10' text-anchor='middle' fill='%2364748b'>Barang yang sudah dibeli tidak dapat ditukar</text><rect x='125' y='530' width='150' height='35' rx='6' fill='%23f1f5f9' stroke='%23cbd5e1'/><text x='200' y='552' font-size='10' font-weight='bold' text-anchor='middle' fill='%23475569'>BUKTI RESMI VERIFIED</text></svg>";
+
+      const demoStrukBsiMobile = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='560' viewBox='0 0 400 560' style='background:%23004d40;font-family:sans-serif;'><rect width='100%' height='100%' fill='%23ffffff' rx='16'/><rect width='100%' height='90' fill='%23005a54' rx='16'/><text x='200' y='45' font-size='18' font-weight='bold' text-anchor='middle' fill='%23ffffff'>BSI MOBILE</text><text x='200' y='70' font-size='11' text-anchor='middle' fill='%23a7f3d0'>BUKTI TRANSFER BERHASIL</text><circle cx='200' cy='125' r='28' fill='%2310b981'/><path d='M190 125 l7 7 l14 -14' stroke='%23ffffff' stroke-width='4' fill='none' stroke-linecap='round'/><text x='200' y='180' font-size='22' font-weight='bold' text-anchor='middle' fill='%230f172a'>Rp 2.500.000</text><text x='200' y='200' font-size='11' text-anchor='middle' fill='%2310b981' font-weight='bold'>Transaksi Berhasil</text><rect x='25' y='225' width='350' height='240' rx='12' fill='%23f8fafc' stroke='%23e2e8f0'/><text x='45' y='255' font-size='11' fill='%2364748b'>Tanggal &amp; Waktu</text><text x='355' y='255' font-size='11' font-weight='bold' text-anchor='end' fill='%230f172a'>" + pad(Math.max(1, curDay-2)) + " " + m + " " + y + " • 10:15 WIB</text><text x='45' y='285' font-size='11' fill='%2364748b'>Nomor Referensi</text><text x='355' y='285' font-size='11' font-family='monospace' font-weight='bold' text-anchor='end' fill='%230f172a'>BSI-TRX-2026-99128</text><text x='45' y='315' font-size='11' fill='%2364748b'>Rekening Sumber</text><text x='355' y='315' font-size='11' font-weight='bold' text-anchor='end' fill='%230f172a'>BCA Prioritas (••• 371)</text><text x='45' y='345' font-size='11' fill='%2364748b'>Bank Tujuan</text><text x='355' y='345' font-size='11' font-weight='bold' text-anchor='end' fill='%230f172a'>Bank Mandiri</text><text x='45' y='375' font-size='11' fill='%2364748b'>Penerima</text><text x='355' y='375' font-size='11' font-weight='bold' text-anchor='end' fill='%230f172a'>CV SABLON MAJU JAYA</text><text x='45' y='405' font-size='11' fill='%2364748b'>Catatan</text><text x='355' y='405' font-size='11' font-weight='bold' text-anchor='end' fill='%230f172a'>DP Cetak Sablon DTF 50 Pcs</text><text x='45' y='435' font-size='11' fill='%2364748b'>Biaya Admin</text><text x='355' y='435' font-size='11' font-weight='bold' text-anchor='end' fill='%2310b981'>Rp 0 (Gratis BI-FAST)</text><text x='200' y='500' font-size='10' text-anchor='middle' fill='%2394a3b8'>Simpan bukti transfer ini sebagai tanda terima sah.</text><text x='200' y='520' font-size='10' font-weight='bold' text-anchor='middle' fill='%23005a54'>PT BANK SYARIAH INDONESIA Tbk.</text></svg>";
+
+      let demoData = {
+        appPin: globalData.appPin || "123456",
+        ownerPassword: globalData.ownerPassword || "123456",
+        cloudUrl: "",
+        startingBalance: 15000000,
+        enableCalculator: true,
+        enableRunwayMeter: true,
+        enableCountdownGoals: true,
+        enableZakatHub: true,
+        zakatGoldPrice: 1450000,
+        zakatHaulStartDate: y + "-01-01",
+        zakatDeductDebt: true,
+        runwayExcludedAccounts: ["Kas Kecil Operasional (Non-Pribadi)"],
+        accounts: [
+          "BCA Prioritas (Utama)",
+          "Bank Jago (Tabungan Impian & Goals)",
+          "GoPay / E-Wallet",
+          "Uang Tunai (Cash Fisik)",
+          "Kas Kecil Operasional (Non-Pribadi)"
+        ],
+        accountDetails: {
+          "BCA Prioritas (Utama)": { bankName: "Bank Central Asia (BCA)", accNo: "8271928371", owner: "Muh Akbar", balance: 28750000 },
+          "Bank Jago (Tabungan Impian & Goals)": { bankName: "Bank Jago Syariah", accNo: "504172135812", owner: "Muh Akbar", balance: 16500000 },
+          "GoPay / E-Wallet": { bankName: "GoPay", accNo: "087788197916", owner: "Muh Akbar", balance: 1250000 },
+          "Uang Tunai (Cash Fisik)": { bankName: "Dompet Fisik", accNo: "-", owner: "Muh Akbar", balance: 650000 },
+          "Kas Kecil Operasional (Non-Pribadi)": { bankName: "Kas Toko / Usaha", accNo: "001-KAS", owner: "Operasional Toko", balance: 2500000 }
+        },
+        currentBalances: {
+          "BCA Prioritas (Utama)": 28750000,
+          "Bank Jago (Tabungan Impian & Goals)": 16500000,
+          "GoPay / E-Wallet": 1250000,
+          "Uang Tunai (Cash Fisik)": 650000,
+          "Kas Kecil Operasional (Non-Pribadi)": 2500000
+        },
+        incomes: ["Gaji Pokok", "Hasil Usaha Sablon/Konveksi", "Bonus Proyek", "Dividen Saham", "Lainnya"],
+        spendings: ["Makan & Minum", "Belanja Bulanan", "Bahan Sablon & Kaos", "Transportasi & Bensin", "Tagihan & WiFi", "Hiburan & Hobi", "Sedekah & Zakat", "Kesehatan", "Lainnya"],
+        bills: ["Listrik PLN", "Internet WiFi", "Air PDAM", "Cicilan Mesin"],
+        routinePayments: {
+          "Listrik Kantor & Usaha": { amount: 650000, dueDay: 20 },
+          "WiFi IndiHome 100Mbps": { amount: 475000, dueDay: 18 }
+        },
+        monthlyBudgets: {
+          "Makan & Minum": 3000000,
+          "Belanja Bulanan": 2500000,
+          "Bahan Sablon & Kaos": 4000000,
+          "Transportasi & Bensin": 1000000,
+          "Hiburan & Hobi": 1500000,
+          "Tagihan & WiFi": 1200000
+        },
+        investData: {
+          "Tabungan Emas Antam (Fisik & Digital)": { initial: 85000000, used: 0 },
+          "Reksadana Saham Bibit": { initial: 25000000, used: 0 }
+        },
+        sinkingData: {
+          "Pajak & Servis Kendaraan": { target: 5000000, initial: 3800000, durationMonths: 12, deadline: y + "-12-31", used: 0 },
+          "Kurban Idul Adha": { target: 4500000, initial: 3500000, durationMonths: 10, deadline: (y+1) + "-05-20", used: 0 }
+        },
+        goalsData: {
+          "Beli MacBook Pro M3": { target: 28000000, initial: 21000000, durationMonths: 6, deadline: y + "-12-15", timeframeVal: "45 Hari Lagi", used: 0 },
+          "Dana Darurat 12 Bulan": { target: 50000000, initial: 37500000, durationMonths: 12, deadline: (y+1) + "-04-30", timeframeVal: "6 Bulan Lagi", used: 0 },
+          "Tabungan Umroh Bareng Orang Tua": { target: 70000000, initial: 49000000, durationMonths: 12, deadline: (y+1) + "-08-31", timeframeVal: "10 Bulan Lagi", used: 0 }
+        },
+        receivablesData: {},
+        nonMoneyAssets: {
+          "Mesin Sablon DTF & Heat Press": { value: 35000000, note: "Aset Usaha Produktif" },
+          "Laptop Kerja Asus ROG": { value: 18500000, note: "Aset Produktif Desain" }
+        },
+        debtData: {
+          "Cicilan Mesin Sablon": { total: 12000000, remaining: 4000000, dueDay: 15, dueDate: y + "-" + m + "-15", monthlyPayment: 1000000 }
+        },
+        recentHistory: [
+          {
+            dateTime: pad(curDay) + "/" + m + "/" + y + ", 14:22:00",
+            rawDate: y + "-" + m + "-" + pad(curDay),
+            name: "Belanja Bahan Kaos Cotton Combed 30s",
+            amount: 1850000,
+            cashflow: "Spending",
+            category: "Bahan Sablon & Kaos",
+            dariAcc: "Uang Tunai (Cash Fisik)",
+            keAcc: "- not applicable -",
+            attachments: [
+              {
+                id: "att_demo_struk_1",
+                name: "Nota_Resmi_Toko_Bahan_Kaos.jpg",
+                type: "image/svg+xml",
+                data: demoStrukNotaToko,
+                size: "45 KB"
+              }
+            ]
+          },
+          {
+            dateTime: pad(Math.max(1, curDay-2)) + "/" + m + "/" + y + ", 10:15:00",
+            rawDate: y + "-" + m + "-" + pad(Math.max(1, curDay-2)),
+            name: "Transfer DP Cetak Sablon DTF 50 Pcs",
+            amount: 2500000,
+            cashflow: "Spending",
+            category: "Bahan Sablon & Kaos",
+            dariAcc: "BCA Prioritas (Utama)",
+            keAcc: "- not applicable -",
+            attachments: [
+              {
+                id: "att_demo_struk_2",
+                name: "Bukti_Transfer_BSI_Mobile.jpg",
+                type: "image/svg+xml",
+                data: demoStrukBsiMobile,
+                size: "38 KB"
+              }
+            ]
+          },
+          {
+            dateTime: pad(Math.max(1, curDay-3)) + "/" + m + "/" + y + ", 16:30:00",
+            rawDate: y + "-" + m + "-" + pad(Math.max(1, curDay-3)),
+            name: "Pelunasan Pesanan Kaos Komunitas (100 Pcs)",
+            amount: 8500000,
+            cashflow: "Income",
+            category: "Hasil Usaha Sablon/Konveksi",
+            dariAcc: "- not applicable -",
+            keAcc: "BCA Prioritas (Utama)"
+          },
+          {
+            dateTime: pad(Math.max(1, curDay-4)) + "/" + m + "/" + y + ", 12:45:00",
+            rawDate: y + "-" + m + "-" + pad(Math.max(1, curDay-4)),
+            name: "Kopi & Makan Siang Tim Usaha",
+            amount: 125000,
+            cashflow: "Spending",
+            category: "Makan & Minum",
+            dariAcc: "GoPay / E-Wallet",
+            keAcc: "- not applicable -"
+          },
+          {
+            dateTime: pad(Math.max(1, curDay-5)) + "/" + m + "/" + y + ", 09:10:00",
+            rawDate: y + "-" + m + "-" + pad(Math.max(1, curDay-5)),
+            name: "Isi Bensin Pertamax Kendaraan Operasional",
+            amount: 150000,
+            cashflow: "Spending",
+            category: "Transportasi & Bensin",
+            dariAcc: "GoPay / E-Wallet",
+            keAcc: "- not applicable -"
+          },
+          {
+            dateTime: pad(Math.max(1, curDay-6)) + "/" + m + "/" + y + ", 13:20:00",
+            rawDate: y + "-" + m + "-" + pad(Math.max(1, curDay-6)),
+            name: "Sedekah Jumat Berkah & Zakat Produktif",
+            amount: 300000,
+            cashflow: "Spending",
+            category: "Sedekah & Zakat",
+            dariAcc: "BCA Prioritas (Utama)",
+            keAcc: "- not applicable -"
+          },
+          {
+            dateTime: pad(Math.max(1, curDay-7)) + "/" + m + "/" + y + ", 18:00:00",
+            rawDate: y + "-" + m + "-" + pad(Math.max(1, curDay-7)),
+            name: "Gaji Pokok & Dividen Bulanan",
+            amount: 12500000,
+            cashflow: "Income",
+            category: "Gaji Pokok",
+            dariAcc: "- not applicable -",
+            keAcc: "BCA Prioritas (Utama)"
+          }
+        ]
+      };
+
+      globalData = demoData;
+      saveStorageData();
+      initApp();
+      updateDemoModeUI();
+
+      if (!isSilent) {
+        showSyncToast("🎬 Akun Demo Iklan Aktif!");
+        alert("🎬 AKUN DEMO IKLAN BERHASIL DIAKTIFKAN!\n\nSemua fitur terbaru aktif lengkap:\n✓ Kalkulator Bisnis & Finansial (HPP Sablon/Konveksi & Murabahah)\n✓ Indikator Ketahanan Kas (Emergency Runway 6.9 Bulan)\n✓ Visual Moodboard Impian (Goals) Lengkap Countdown Hari\n✓ Zakat Maal & Nisab Hub Syariah\n✓ Transaksi dengan Lampiran Foto Bukti Struk & Transfer\n✓ Layout Setup 2 Kolom Simetris\n\nCatatan: Data asli pribadi Anda aman di cadangan lokal. Klik tombol 'Kembalikan Data Asli' kapan saja untuk memulihkan data pribadi Anda.");
+      }
     }
 
     function restoreUserRealData() {
@@ -6275,20 +6683,9 @@ function formatReadableSheets(ss, parsed) {
         alert("Gagal memulihkan data: " + e.message);
       }
     }
-    
+
     function initApp() { 
-      // Pembersihan otomatis: Pastikan akun pribadi selalu 100% menggunakan data asli
-      if (localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true') {
-        let backupStr = localStorage.getItem('KEUANGANKU_USER_REAL_BACKUP');
-        if (backupStr) {
-          try {
-            globalData = JSON.parse(backupStr);
-            saveStorageData();
-          } catch(e) {}
-        }
-        localStorage.removeItem('KEUANGANKU_IS_DEMO_MODE');
-        localStorage.removeItem('KEUANGANKU_USER_REAL_BACKUP');
-      }
+      // Mode demo iklan dipertahankan hingga pengguna klik Kembalikan Data Asli
 
       let isOwner = isOwnerDevice();
       let navCalc = document.getElementById('nav-calc');

@@ -5223,7 +5223,7 @@ Copyright © 2026 Sambarang Production`;
       // Cek apakah token demo sudah ada
       let existing = (cachedTokens || []).find(t => t.token === demoToken);
       if (existing) {
-        showTokenDetailsModal(existing);
+        openDeviceDetailModal(existing.token);
         showToast('info', '🎬 Akun Demo Iklan sudah terdaftar aktif!');
         return;
       }
@@ -5250,7 +5250,7 @@ Copyright © 2026 Sambarang Production`;
           showToast('success', '🎬 Akun Demo Iklan (PRO-DEMO-IKLAN-2026) berhasil dibuat!');
           await loadDashboardData();
           let created = (cachedTokens || []).find(t => t.token === demoToken);
-          if (created) showTokenDetailsModal(created);
+          if (created) openDeviceDetailModal(created.token);
         } else {
           showToast('error', (res && res.message) ? res.message : 'Gagal membuat akun demo.');
         }
