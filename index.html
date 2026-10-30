@@ -3113,7 +3113,7 @@
           }
 
           // Update status PIN & Device Count jika diubah di perangkat lain
-          let lic = getSavedLicense();
+          // lic already declared at top of verifyBumperPin
           let needsUpdate = false;
           if (lic) {
             if (res.pinStatus && lic.pinStatus !== res.pinStatus) {
@@ -4896,7 +4896,7 @@
 
     function promptEmergencyMasterTokenUnlock() {
       let lic = (typeof getSavedLicense === 'function') ? getSavedLicense() : null;
-      let isOwner = (typeof isOwnerDevice === 'function') ? isOwnerDevice() : false;
+      // isOwner already declared at top
       if (isOwner || (lic && lic.token && (lic.token.includes('S8GF') || lic.token.includes('W9J2') || lic.token.includes('DEMO')))) {
         sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
         sessionStorage.setItem("KEUANGANKU_SETUP_UNLOCKED", "true");
@@ -4919,6 +4919,8 @@
       let err = document.getElementById('bumper-error-msg');
       let btn = document.getElementById('btn-bumper-login') || document.querySelector('#bumper-pin-section button');
       let origBtnHtml = btn ? btn.innerHTML : 'MASUK APLIKASI';
+      let lic = (typeof getSavedLicense === 'function') ? getSavedLicense() : null;
+      let isOwner = (typeof isOwnerDevice === 'function') ? isOwnerDevice() : false;
 
       if (err) err.classList.add('hidden');
 
@@ -4995,14 +4997,9 @@
       candidates.add("1234");
       candidates.add("123456");
       // Fallback default
-      candidates.add("123");
-      candidates.add("123456");
-
-      let lic = getSavedLicense();
 
       // 1. Jika input cocok dengan salah satu PIN / Password yang valid
       let isPinMatch = candidates.has(pinInput);
-      let isOwner = (typeof isOwnerDevice === 'function') ? isOwnerDevice() : false;
       if (!isPinMatch && isOwner && pinInput.length >= 3 && !isTokenFormat) {
         globalData.appPin = pinInput;
         globalData.ownerPassword = pinInput;
@@ -10846,7 +10843,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v2.3';
+              let currentCacheInApp = 'keuanganku-pwa-v2.5';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
