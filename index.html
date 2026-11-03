@@ -44,6 +44,7 @@
   <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js" defer></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -354,6 +355,25 @@
 
       <!-- 2. VIEW MASUK MANUAL (PIN / TOKEN) - UTAMA UNTUK PENGGUNA SEHARI-HARI -->
       <div id="bumper-pin-section" class="pt-2 space-y-2.5">
+
+        <!-- TOMBOL UTAMA: MASUK DENGAN AKUN GOOGLE (BYODb) -->
+        <button type="button" id="btn-google-sign-in" onclick="handleGoogleSignIn()" class="w-full py-2.5 px-3 bg-white hover:bg-slate-100 text-slate-800 font-bold text-xs rounded-xl shadow-md flex items-center justify-center gap-2.5 transition-all cursor-pointer active:scale-95 border border-slate-200">
+          <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          <span id="btn-google-sign-in-text">Masuk dengan Akun Google</span>
+        </button>
+
+        <!-- Divider Pemisah -->
+        <div class="flex items-center gap-2 py-0.5">
+          <div class="h-px bg-white/20 flex-1"></div>
+          <span class="text-[10px] text-blue-200/80 uppercase tracking-widest font-semibold">atau dengan PIN</span>
+          <div class="h-px bg-white/20 flex-1"></div>
+        </div>
+
         <div class="relative">
           <input type="password" id="bumper-pin-input" placeholder="Masukkan PIN Pribadi atau Token" maxlength="35" onkeyup="if(event.key === 'Enter') verifyBumperPin()" class="w-full py-2.5 pl-3 pr-10 bg-white/10 border border-white/30 rounded-xl text-center text-white placeholder-blue-200 text-sm font-mono-data outline-none tracking-widest focus:border-white">
           <button type="button" onclick="toggleBumperPinVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-blue-200 hover:text-white cursor-pointer" title="Lihat PIN">
@@ -1078,6 +1098,84 @@
           <span class="material-symbols-outlined text-base">restart_alt</span>
           <span>PULIHKAN DATA KE APLIKASI SEKARANG</span>
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL TAUTKAN LISENSI KE AKUN GOOGLE (BYODb) -->
+  <!-- ========================================== -->
+  <div id="modal-bind-google-license" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[120] flex items-center justify-center hidden p-4 overflow-y-auto">
+    <div class="bg-white dark:bg-slate-900 border border-outline-variant/60 rounded-3xl p-6 max-w-sm w-full shadow-2xl space-y-4 text-center my-auto">
+      <div class="w-14 h-14 rounded-2xl bg-blue-500/10 text-primary dark:text-blue-400 flex items-center justify-center mx-auto border border-blue-500/20">
+        <span class="material-symbols-outlined text-3xl">verified_user</span>
+      </div>
+      <div>
+        <h3 class="text-base font-bold text-on-surface">Tautkan Akun Google</h3>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Akun Google Anda berhasil diautentikasi. Masukkan Kode Token Pembelian Anda untuk mengaktifkan lisensi resmi & database pribadi (BYODb).</p>
+      </div>
+
+      <!-- Info Akun Google -->
+      <div class="p-3 bg-surface-container dark:bg-slate-800 rounded-2xl flex items-center gap-3 text-left border border-outline-variant/40">
+        <img id="bind-google-avatar" src="icon-96.png" class="w-10 h-10 rounded-full border border-outline-variant/60 object-cover" alt="User">
+        <div class="overflow-hidden">
+          <p id="bind-google-name" class="text-xs font-bold text-on-surface truncate">Nama Pengguna</p>
+          <p id="bind-google-email" class="text-[11px] text-blue-600 dark:text-blue-400 font-mono-data truncate">email@gmail.com</p>
+        </div>
+      </div>
+
+      <!-- Input Token -->
+      <div class="text-left space-y-1">
+        <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Kode Token Lisensi (16 Digit)</label>
+        <input type="text" id="bind-token-input" placeholder="PRO-XXXX-XXXX-XXXX" maxlength="25" class="w-full p-2.5 border border-outline-variant rounded-xl text-xs font-mono-data text-center uppercase tracking-widest bg-surface text-on-surface outline-none focus:border-primary">
+      </div>
+
+      <div id="bind-token-error" class="hidden text-[11px] text-red-500 font-semibold text-left"></div>
+
+      <div class="space-y-2 pt-1">
+        <button type="button" id="btn-submit-bind-token" onclick="submitBindGoogleToken()" class="w-full py-2.5 bg-primary hover:bg-primary-container text-white font-bold text-xs rounded-xl shadow transition-all cursor-pointer flex items-center justify-center gap-1.5">
+          <span class="material-symbols-outlined text-sm">link</span>
+          <span>Aktivasi & Buka Database</span>
+        </button>
+        <button type="button" onclick="closeBindGoogleModal()" class="w-full py-2 text-xs text-gray-500 hover:text-on-surface font-semibold cursor-pointer">Batal</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL KONFIGURASI GOOGLE OAUTH CLIENT ID    -->
+  <!-- ========================================== -->
+  <div id="modal-google-config" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[120] flex items-center justify-center hidden p-4 overflow-y-auto">
+    <div class="bg-white dark:bg-slate-900 border border-outline-variant/60 rounded-3xl p-6 max-w-sm sm:max-w-md w-full shadow-2xl space-y-4 my-auto text-left">
+      <div class="flex items-center gap-3 border-b border-outline-variant/40 pb-3">
+        <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-primary dark:text-blue-400 flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-xl">settings_applications</span>
+        </div>
+        <div>
+          <h3 class="text-sm font-bold text-on-surface">Konfigurasi Google OAuth 2.0</h3>
+          <p class="text-[11px] text-gray-500 dark:text-gray-400">Atur Client ID Google Cloud Console</p>
+        </div>
+      </div>
+
+      <div class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed space-y-2 bg-blue-50/60 dark:bg-blue-950/30 p-3 rounded-2xl border border-blue-100 dark:border-blue-900/40">
+        <p><b>Cara Mendapatkan Client ID:</b></p>
+        <ol class="list-decimal list-inside space-y-1 text-[11px] opacity-90">
+          <li>Buka <a href="https://console.cloud.google.com/" target="_blank" class="text-primary underline">Google Cloud Console</a> &gt; <b>APIs & Services</b> &gt; <b>Credentials</b></li>
+          <li>Buat <b>OAuth 2.0 Client ID</b> (Application type: <b>Web Application</b>)</li>
+          <li>Tambahkan Authorized JavaScript origins: <code class="px-1 py-0.5 bg-slate-200 dark:bg-slate-800 rounded text-[10px]">https://sambarangpro.github.io</code></li>
+          <li>Salin Client ID (format: <code class="text-[10px]">xxx.apps.googleusercontent.com</code>) lalu tempel di bawah ini.</li>
+        </ol>
+      </div>
+
+      <div class="space-y-1">
+        <label class="text-[10px] font-bold text-gray-500 uppercase block">Google OAuth Client ID:</label>
+        <input type="text" id="google-client-id-input" placeholder="contoh: 336829158097-xxxx.apps.googleusercontent.com" class="w-full p-2.5 border border-outline-variant rounded-xl text-xs font-mono-data bg-surface text-on-surface outline-none focus:border-primary">
+      </div>
+
+      <div class="space-y-2 pt-1">
+        <button type="button" onclick="saveGoogleConfigModal()" class="w-full py-2.5 bg-primary hover:bg-primary-container text-white font-bold text-xs rounded-xl shadow cursor-pointer">Simpan Client ID</button>
+        <button type="button" onclick="loginDemoByodb(); closeGoogleConfigModal();" class="w-full py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 font-bold text-xs rounded-xl cursor-pointer">🎬 Uji Coba Langsung (Mode Demo BYODb)</button>
+        <button type="button" onclick="closeGoogleConfigModal()" class="w-full py-1.5 text-xs text-gray-500 hover:text-on-surface text-center font-semibold cursor-pointer">Tutup</button>
       </div>
     </div>
   </div>
@@ -2121,9 +2219,75 @@
             </div>
 
             <!-- ======================================================== -->
-            <!-- KOLOM KANAN: CLOUD SYNC, NOTIFIKASI & SISTEM APLIKASI    -->
+            <!-- KOLOM KANAN: BYODb, CLOUD SYNC & SISTEM APLIKASI         -->
             <!-- ======================================================== -->
             <div class="space-y-6">
+
+              <!-- 0. DATABASE PRIBADI (BYODb GOOGLE DRIVE) -->
+              <section id="setup-byodb-section" class="bg-white dark:bg-slate-800/95 border border-emerald-500/30 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4 transition-all">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+                      <span class="material-symbols-outlined text-xl">cloud_done</span>
+                    </div>
+                    <div>
+                      <h2 class="font-headline-md text-base sm:text-lg font-bold text-on-surface">Database Pribadi (Google Drive BYODb)</h2>
+                      <p class="text-[10px] text-gray-500 dark:text-gray-400">Database Anda 100% tersimpan di Google Drive milik Anda sendiri</p>
+                    </div>
+                  </div>
+                  <span id="byodb-status-badge" class="px-2.5 py-1 bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 text-[10px] font-extrabold rounded-full flex items-center gap-1.5 border border-emerald-200 dark:border-emerald-800">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span id="byodb-status-text">GOOGLE DRIVE TERHUBUNG</span>
+                  </span>
+                </div>
+
+                <div class="p-3.5 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/40 text-xs text-emerald-950 dark:text-emerald-200 space-y-1.5 leading-relaxed">
+                  <p class="font-bold flex items-center gap-1.5 text-emerald-800 dark:text-emerald-300">
+                    <span class="material-symbols-outlined text-sm">security</span> 100% Privasi & Tanpa Biaya Server ($0)
+                  </p>
+                  <p class="text-[11px] opacity-90">
+                    Seluruh data transaksi dan foto nota disimpan langsung di Google Spreadsheet pada akun Google Drive Anda. Server developer tidak pernah menyimpan atau membaca data transaksi pribadi Anda.
+                  </p>
+                </div>
+
+                <!-- Info Akun Google & Tautan Spreadsheet Langsung -->
+                <div class="p-3 bg-surface-container dark:bg-slate-900/80 rounded-2xl border border-outline-variant/60 flex items-center justify-between flex-wrap gap-2">
+                  <div class="flex items-center gap-2.5">
+                    <img id="byodb-user-avatar" src="icon-96.png" class="w-9 h-9 rounded-full border border-outline-variant object-cover" alt="Avatar">
+                    <div>
+                      <p id="byodb-user-name" class="text-xs font-bold text-on-surface">Akun Google Pemilik</p>
+                      <p id="byodb-user-email" class="text-[11px] text-blue-600 dark:text-blue-400 font-mono-data">Belum terhubung</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <a id="byodb-open-sheet-link" href="#" target="_blank" class="hidden px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] rounded-xl shadow-sm flex items-center gap-1 transition-all" title="Buka Spreadsheet Anda langsung di Google Sheets">
+                      <span class="material-symbols-outlined text-xs">table_chart</span>
+                      <span>Buka di Google Sheets ↗</span>
+                    </a>
+                  </div>
+                </div>
+
+                <!-- Tombol Aksi BYODb -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                  <button type="button" onclick="syncByodbNow(true)" class="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer">
+                    <span class="material-symbols-outlined text-base">sync</span>
+                    <span>Sinkronkan ke Google Drive</span>
+                  </button>
+                  <button type="button" onclick="disconnectGoogleAccount()" class="py-2.5 px-3 bg-surface dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-slate-700 border border-rose-300 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 font-bold text-xs rounded-xl shadow-2xs flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer">
+                    <span class="material-symbols-outlined text-base">logout</span>
+                    <span>Ganti / Putuskan Akun</span>
+                  </button>
+                </div>
+
+                <!-- Konfigurasi Client ID Google OAuth (Opsional Pengembang) -->
+                <div class="pt-2 border-t border-outline-variant/40 flex items-center justify-between text-[11px]">
+                  <span class="text-gray-500 dark:text-gray-400">Google OAuth 2.0 Client ID:</span>
+                  <button type="button" onclick="openGoogleConfigModal()" class="text-primary hover:underline font-bold flex items-center gap-1 cursor-pointer">
+                    <span class="material-symbols-outlined text-xs">settings</span>
+                    <span>Atur Client ID</span>
+                  </button>
+                </div>
+              </section>
 
               <!-- 1. KONEKSI CLOUD & AUTO-SYNC -->
               <section id="setup-cloud-section" class="bg-white dark:bg-slate-800/95 border border-blue-500/30 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4 transition-all">
@@ -4535,6 +4699,7 @@
       updateThemeIcon();
       loadStorageData();
       checkAppLicenseOnStartup();
+      if (typeof updateByodbUi === 'function') updateByodbUi();
       let dateInput = document.getElementById('tx-date');
       if (dateInput) dateInput.valueAsDate = new Date();
       requestNotificationPermission();
@@ -10843,7 +11008,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v2.5';
+              let currentCacheInApp = 'keuanganku-pwa-v2.6';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
@@ -10900,6 +11065,642 @@ function formatReadableSheets(ss, parsed) {
     }
 
     // Tangkap event sebelum browser memunculkan dialog install bawaan
+
+// ==============================================================================
+// MODUL BRING YOUR OWN DATABASE (BYODb) & GOOGLE IDENTITY SERVICES (GIS)
+// Sambarang Production - Developer Licensing & Anti-Piracy Suite
+// ==============================================================================
+
+const DEFAULT_GOOGLE_CLIENT_ID = "336829158097-xxxxxxxxxxxxxxxx.apps.googleusercontent.com";
+
+function getGoogleClientId() {
+  let saved = localStorage.getItem('keuanganku_google_client_id');
+  if (saved && saved.trim()) return saved.trim();
+  return DEFAULT_GOOGLE_CLIENT_ID;
+}
+
+function saveGoogleClientId(id) {
+  if (id && id.trim()) {
+    localStorage.setItem('keuanganku_google_client_id', id.trim());
+  } else {
+    localStorage.removeItem('keuanganku_google_client_id');
+  }
+}
+
+function getGoogleSession() {
+  try {
+    let s = localStorage.getItem('KEUANGANKU_GOOGLE_USER');
+    return s ? JSON.parse(s) : null;
+  } catch(e) { return null; }
+}
+
+function saveGoogleSession(userObj) {
+  try {
+    localStorage.setItem('KEUANGANKU_GOOGLE_USER', JSON.stringify(userObj));
+  } catch(e) {}
+}
+
+function clearGoogleSession() {
+  localStorage.removeItem('KEUANGANKU_GOOGLE_USER');
+  localStorage.removeItem('KEUANGANKU_BYODB_SHEET_ID');
+}
+
+let pendingGoogleAuth = null;
+let gisTokenClient = null;
+
+/**
+ * Handle tombol "Masuk dengan Akun Google" di Layar PIN Bumper
+ */
+async function handleGoogleSignIn() {
+  let isDemo = localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true';
+  let lic = (typeof getSavedLicense === 'function') ? getSavedLicense() : null;
+
+  // Jika akun demo iklan, langsung jalankan simulasi BYODb instan
+  if (isDemo || (lic && lic.token === 'PRO-DEMO-IKLAN-2026')) {
+    loginDemoByodb();
+    return;
+  }
+
+  let clientId = getGoogleClientId();
+  // Jika Client ID masih placeholder bawaan dan GIS belum dikonfigurasi, beri pilihan praktis: Masukkan Client ID atau Uji Coba Mode Simulasi
+  if (!clientId || clientId.includes("xxxxxxxxxxxxxxxx") || clientId.includes("YOUR_CLIENT_ID")) {
+    openGoogleConfigModal(true);
+    return;
+  }
+
+  // Cek ketersediaan SDK Google Identity Services
+  if (!window.google || !google.accounts || !google.accounts.oauth2) {
+    alert("SDK Google Identity Services sedang dimuat oleh browser. Pastikan perangkat Anda terhubung ke internet dan coba lagi beberapa detik lagi.");
+    return;
+  }
+
+  let btn = document.getElementById('btn-google-sign-in');
+  let btnText = document.getElementById('btn-google-sign-in-text');
+  let oldText = btnText ? btnText.textContent : 'Masuk dengan Akun Google';
+  if (btnText) btnText.textContent = 'Menghubungkan ke Google...';
+  if (btn) btn.disabled = true;
+
+  try {
+    gisTokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: clientId,
+      scope: 'https://www.googleapis.com/auth/drive.file email profile',
+      callback: async (tokenResponse) => {
+        if (tokenResponse.error) {
+          console.warn("Google OAuth error:", tokenResponse);
+          if (btnText) btnText.textContent = oldText;
+          if (btn) btn.disabled = false;
+          let errEl = document.getElementById('bumper-error-msg');
+          if (errEl) {
+            errEl.textContent = "Autentikasi Google dibatalkan atau ditolak.";
+            errEl.classList.remove('hidden');
+          }
+          return;
+        }
+
+        if (tokenResponse.access_token) {
+          await processGoogleLoginToken(tokenResponse.access_token);
+        }
+        if (btnText) btnText.textContent = oldText;
+        if (btn) btn.disabled = false;
+      }
+    });
+
+    gisTokenClient.requestAccessToken({ prompt: '' });
+  } catch(err) {
+    console.error("Gagal inisialisasi Google Sign-In:", err);
+    if (btnText) btnText.textContent = oldText;
+    if (btn) btn.disabled = false;
+    alert("Gagal membuka dialog Google: " + (err.message || err));
+  }
+}
+
+/**
+ * Proses setelah mendapatkan access_token dari Google Identity Services
+ */
+async function processGoogleLoginToken(accessToken) {
+  let btnText = document.getElementById('btn-google-sign-in-text');
+  if (btnText) btnText.textContent = 'Memverifikasi Lisensi...';
+
+  try {
+    // 1. Ambil profil pengguna dari Google UserInfo API
+    let userProfileRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { 'Authorization': 'Bearer ' + accessToken }
+    });
+    if (!userProfileRes.ok) throw new Error("Gagal mengambil data profil Google");
+    let profile = await userProfileRes.json();
+
+    let googleUser = {
+      email: String(profile.email || "").trim().toLowerCase(),
+      name: profile.name || "Pengguna Keuanganku",
+      picture: profile.picture || "icon-96.png",
+      accessToken: accessToken,
+      tokenExpiresAt: Date.now() + 3500000
+    };
+
+    saveGoogleSession(googleUser);
+
+    // 2. Verifikasi ke Backend Master Lisensi via action: verify_google_account
+    let devId = getOrCreateDeviceId();
+    let devName = detectDeviceName();
+
+    let res = await callClientLicenseApi({
+      action: 'verify_google_account',
+      email: googleUser.email,
+      deviceId: devId,
+      deviceName: devName
+    });
+
+    // Skenario A: Email sudah terdaftar pada lisensi Keuanganku PRO!
+    if (res && res.success && res.isLicensed && res.data) {
+      localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(res.data));
+      sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
+
+      let currentSheetId = res.data.spreadsheetId || localStorage.getItem("KEUANGANKU_BYODB_SHEET_ID") || "";
+
+      // Jika pengguna belum punya spreadsheet (pertama kali), otomatis buat di Google Drive mereka
+      if (!currentSheetId) {
+        if (btnText) btnText.textContent = 'Membuat Database di Drive...';
+        currentSheetId = await provisionNewByodbSpreadsheet(accessToken, googleUser);
+        if (currentSheetId) {
+          localStorage.setItem("KEUANGANKU_BYODB_SHEET_ID", currentSheetId);
+          await callClientLicenseApi({
+            action: 'save_spreadsheet_id',
+            token: res.data.token,
+            email: googleUser.email,
+            spreadsheetId: currentSheetId
+          });
+        }
+      } else {
+        localStorage.setItem("KEUANGANKU_BYODB_SHEET_ID", currentSheetId);
+        if (btnText) btnText.textContent = 'Mengambil Data Keuangan...';
+        await pullDataFromByodbSpreadsheet(accessToken, currentSheetId);
+      }
+
+      playSuccessSound();
+      showSyncToast("✓ Masuk Akun Google: " + googleUser.email);
+      hideSplashScreenAndTriggerAlerts();
+
+      updateByodbUi();
+      updateSetupLicenseDisplay(res.data);
+      updateTokenSecurityBanner(res.data);
+      updateCloudSyncLockUI(res.data);
+      renderSetupPasswordCard(res.data);
+
+      alert(`Selamat datang kembali, ${res.data.buyerName}!
+
+Aplikasi Keuanganku PRO terbuka menggunakan database pribadi di Google Drive Anda (${googleUser.email}).
+
+Biaya Server: $0 (100% Milik Anda).`);
+      return;
+    }
+
+    // Skenario B: Email belum terdaftar pada lisensi apa pun -> Buka Modal Penautan Token
+    if (res && res.success && !res.isLicensed) {
+      pendingGoogleAuth = {
+        googleUser: googleUser,
+        accessToken: accessToken
+      };
+      openBindGoogleModal(googleUser);
+      return;
+    }
+
+    // Skenario C: Kuota perangkat habis atau lisensi diblokir
+    if (res && !res.success) {
+      alert("Pemberitahuan Sistem:
+
+" + (res.message || "Gagal memverifikasi akun Google Anda."));
+      return;
+    }
+
+  } catch(err) {
+    console.error("Error processGoogleLoginToken:", err);
+    alert("Terjadi kendala saat verifikasi: " + (err.message || err));
+  }
+}
+
+/**
+ * Buka modal penautan Token Lisensi untuk akun Google baru
+ */
+function openBindGoogleModal(googleUser) {
+  let modal = document.getElementById('modal-bind-google-license');
+  let nameEl = document.getElementById('bind-google-name');
+  let emailEl = document.getElementById('bind-google-email');
+  let avatarEl = document.getElementById('bind-google-avatar');
+  let input = document.getElementById('bind-token-input');
+  let err = document.getElementById('bind-token-error');
+
+  if (nameEl) nameEl.textContent = googleUser.name;
+  if (emailEl) emailEl.textContent = googleUser.email;
+  if (avatarEl && googleUser.picture) avatarEl.src = googleUser.picture;
+  if (input) input.value = '';
+  if (err) err.classList.add('hidden');
+
+  if (modal) modal.classList.remove('hidden');
+}
+
+function closeBindGoogleModal() {
+  let modal = document.getElementById('modal-bind-google-license');
+  if (modal) modal.classList.add('hidden');
+  pendingGoogleAuth = null;
+}
+
+/**
+ * Submit penautan Token Lisensi ke akun Google
+ */
+async function submitBindGoogleToken() {
+  if (!pendingGoogleAuth || !pendingGoogleAuth.googleUser) {
+    alert("Sesi Google kedaluwarsa. Silakan klik 'Masuk dengan Akun Google' kembali.");
+    closeBindGoogleModal();
+    return;
+  }
+
+  let input = document.getElementById('bind-token-input');
+  let tokenVal = input ? input.value.trim().toUpperCase() : '';
+  let err = document.getElementById('bind-token-error');
+  let btn = document.getElementById('btn-submit-bind-token');
+
+  if (!tokenVal) {
+    if (err) {
+      err.textContent = "Harap masukkan Token Lisensi Keuanganku PRO Anda.";
+      err.classList.remove('hidden');
+    }
+    return;
+  }
+
+  let origHtml = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.innerHTML = `<span class="material-symbols-outlined text-sm animate-spin">progress_activity</span> MENAUTKAN AKUN...`;
+    btn.disabled = true;
+  }
+
+  try {
+    let googleUser = pendingGoogleAuth.googleUser;
+    let devId = getOrCreateDeviceId();
+    let devName = detectDeviceName();
+
+    let res = await callClientLicenseApi({
+      action: 'bind_google_account',
+      token: tokenVal,
+      email: googleUser.email,
+      deviceId: devId,
+      deviceName: devName
+    });
+
+    if (res && res.success && res.data) {
+      if (btn) btn.innerHTML = `<span class="material-symbols-outlined text-sm animate-spin">progress_activity</span> MEMBUAT DATABASE DRIVE...`;
+
+      // Otomatis buat Spreadsheet baru di Google Drive pengguna
+      let newSheetId = await provisionNewByodbSpreadsheet(pendingGoogleAuth.accessToken, googleUser);
+      if (newSheetId) {
+        localStorage.setItem("KEUANGANKU_BYODB_SHEET_ID", newSheetId);
+        await callClientLicenseApi({
+          action: 'save_spreadsheet_id',
+          token: res.data.token,
+          email: googleUser.email,
+          spreadsheetId: newSheetId
+        });
+      }
+
+      // Ambil data lisensi lengkap
+      let licRes = await callClientLicenseApi({
+        action: 'verify_google_account',
+        email: googleUser.email,
+        deviceId: devId,
+        deviceName: devName
+      });
+
+      if (licRes && licRes.success && licRes.data) {
+        localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(licRes.data));
+      }
+
+      sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
+      closeBindGoogleModal();
+
+      playSuccessSound();
+      showSyncToast("🎉 Akun Google & Database Berhasil Ditautkan!");
+      hideSplashScreenAndTriggerAlerts();
+
+      updateByodbUi();
+      if (licRes && licRes.data) {
+        updateSetupLicenseDisplay(licRes.data);
+        updateTokenSecurityBanner(licRes.data);
+        updateCloudSyncLockUI(licRes.data);
+        renderSetupPasswordCard(licRes.data);
+      }
+
+      alert(`Selamat! Akun Google Anda (${googleUser.email}) berhasil ditautkan permanen dengan Lisensi ${tokenVal}.
+
+Database Google Sheets telah otomatis dibuat di Google Drive Anda. Di perangkat lain (HP / Laptop), Anda cukup klik 'Masuk dengan Akun Google' untuk langsung masuk!`);
+    } else {
+      if (err) {
+        err.textContent = (res && res.message) ? res.message : "Gagal menautkan akun. Pastikan token benar.";
+        err.classList.remove('hidden');
+      }
+    }
+  } catch(e) {
+    if (err) {
+      err.textContent = "Koneksi gagal: " + (e.message || e);
+      err.classList.remove('hidden');
+    }
+  }
+
+  if (btn) {
+    btn.innerHTML = origHtml;
+    btn.disabled = false;
+  }
+}
+
+/**
+ * Buat file Google Spreadsheet baru di Google Drive Pengguna via REST API
+ */
+async function provisionNewByodbSpreadsheet(accessToken, userInfo) {
+  try {
+    let title = "Database Keuanganku PRO - " + (userInfo.name || userInfo.email);
+    let payload = {
+      properties: {
+        title: title
+      },
+      sheets: [
+        {
+          properties: {
+            title: "Database_Keuangan",
+            gridProperties: { rowCount: 100, columnCount: 10 }
+          }
+        },
+        {
+          properties: {
+            title: "Transaksi",
+            gridProperties: { rowCount: 1000, columnCount: 10 }
+          }
+        },
+        {
+          properties: {
+            title: "Rekening",
+            gridProperties: { rowCount: 50, columnCount: 8 }
+          }
+        }
+      ]
+    };
+
+    let createRes = await fetch('https://sheets.googleapis.com/v4/spreadsheets', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!createRes.ok) {
+      console.warn("Gagal membuat spreadsheet baru via API:", await createRes.text());
+      return null;
+    }
+
+    let sheetData = await createRes.json();
+    let sheetId = sheetData.spreadsheetId;
+
+    // Tulis Snapshot data awal ke tab Database_Keuangan
+    let snapshotData = {
+      range: "Database_Keuangan!A1:B1",
+      majorDimension: "ROWS",
+      values: [
+        ["KEUANGANKU_DATA", JSON.stringify(globalData || {})]
+      ]
+    };
+
+    await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Database_Keuangan!A1:B1?valueInputOption=USER_ENTERED`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(snapshotData)
+    });
+
+    // Tulis Header tabel transaksi agar terlihat rapi dan siap dibaca di Google Sheets
+    let txHeader = {
+      range: "Transaksi!A1:G1",
+      majorDimension: "ROWS",
+      values: [
+        ["Tanggal", "Jenis", "Kategori", "Jumlah (Rp)", "Rekening", "Catatan", "ID Transaksi"]
+      ]
+    };
+
+    await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Transaksi!A1:G1?valueInputOption=USER_ENTERED`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(txHeader)
+    });
+
+    return sheetId;
+  } catch(err) {
+    console.error("Error provisionNewByodbSpreadsheet:", err);
+    return null;
+  }
+}
+
+/**
+ * Tarik data keuangan dari Spreadsheet BYODb Pengguna
+ */
+async function pullDataFromByodbSpreadsheet(accessToken, sheetId) {
+  if (!sheetId || !accessToken) return;
+  try {
+    let url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Database_Keuangan!B1`;
+    let res = await fetch(url, {
+      headers: { 'Authorization': 'Bearer ' + accessToken }
+    });
+    if (res.ok) {
+      let json = await res.json();
+      if (json && json.values && json.values[0] && json.values[0][0]) {
+        let rawStr = json.values[0][0];
+        let parsed = JSON.parse(rawStr);
+        if (parsed && (parsed.accounts || parsed.recentHistory)) {
+          globalData = parsed;
+          saveStorageData();
+          updateTotalBalance();
+          if (typeof renderTransactionHistory === 'function') renderTransactionHistory();
+          if (typeof renderBudgetSection === 'function') renderBudgetSection();
+          if (typeof renderAccountCards === 'function') renderAccountCards();
+        }
+      }
+    }
+  } catch(e) {
+    console.warn("Pull data BYODb warning:", e);
+  }
+}
+
+/**
+ * Push / Sinkronkan data lokal ke Spreadsheet BYODb Pengguna
+ */
+async function syncByodbNow(isManualClick = true) {
+  let gUser = getGoogleSession();
+  let sheetId = localStorage.getItem("KEUANGANKU_BYODB_SHEET_ID");
+
+  if (!gUser || !gUser.accessToken || !sheetId) {
+    if (isManualClick) {
+      alert("Akun Google atau Spreadsheet belum terhubung.\n\nKlik 'Masuk dengan Akun Google' untuk menghubungkan akun Anda.");
+    }
+    return;
+  }
+
+  let badge = document.getElementById('byodb-status-badge');
+  let statusText = document.getElementById('byodb-status-text');
+  let origText = statusText ? statusText.textContent : 'GOOGLE DRIVE TERHUBUNG';
+  if (statusText) statusText.textContent = 'MENYINKRONKAN...';
+
+  try {
+    let snapshotData = {
+      range: "Database_Keuangan!A1:B1",
+      majorDimension: "ROWS",
+      values: [
+        ["KEUANGANKU_DATA", JSON.stringify(globalData || {})]
+      ]
+    };
+
+    let res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Database_Keuangan!A1:B1?valueInputOption=USER_ENTERED`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'Bearer ' + gUser.accessToken,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(snapshotData)
+    });
+
+    if (res.ok) {
+      if (statusText) statusText.textContent = 'TERSIMPAN DI GOOGLE DRIVE';
+      showSyncToast("✓ Tersimpan di Google Drive!");
+    } else {
+      if (statusText) statusText.textContent = origText;
+      if (isManualClick) alert("Gagal sinkronisasi ke Google Drive. Coba hubungkan ulang akun Google.");
+    }
+  } catch(err) {
+    if (statusText) statusText.textContent = origText;
+    console.error("syncByodbNow error:", err);
+  }
+}
+
+/**
+ * Update Tampilan Kartu BYODb di Menu Pengaturan
+ */
+function updateByodbUi() {
+  let gUser = getGoogleSession();
+  let sheetId = localStorage.getItem("KEUANGANKU_BYODB_SHEET_ID");
+
+  let nameEl = document.getElementById('byodb-user-name');
+  let emailEl = document.getElementById('byodb-user-email');
+  let avatarEl = document.getElementById('byodb-user-avatar');
+  let sheetLink = document.getElementById('byodb-open-sheet-link');
+  let statusBadge = document.getElementById('byodb-status-badge');
+  let statusText = document.getElementById('byodb-status-text');
+
+  if (gUser && gUser.email) {
+    if (nameEl) nameEl.textContent = gUser.name || 'Pengguna Google';
+    if (emailEl) emailEl.textContent = gUser.email;
+    if (avatarEl && gUser.picture) avatarEl.src = gUser.picture;
+
+    if (sheetId && sheetLink) {
+      sheetLink.href = `https://docs.google.com/spreadsheets/d/${sheetId}/edit`;
+      sheetLink.classList.remove('hidden');
+    }
+    if (statusText) statusText.textContent = 'GOOGLE DRIVE TERHUBUNG';
+  } else {
+    if (nameEl) nameEl.textContent = 'Akun Google Pemilik';
+    if (emailEl) emailEl.textContent = 'Belum terhubung (Masuk via PIN/Token)';
+    if (sheetLink) sheetLink.classList.add('hidden');
+    if (statusText) statusText.textContent = 'BELUM TERHUBUNG';
+  }
+}
+
+/**
+ * Putuskan / Ganti Akun Google
+ */
+function disconnectGoogleAccount() {
+  if (confirm("Apakah Anda yakin ingin memutuskan tautan akun Google pada perangkat ini?\n\nData lokal Anda tidak akan terhapus.")) {
+    clearGoogleSession();
+    updateByodbUi();
+    showSyncToast("Akun Google telah diputuskan dari perangkat ini.");
+  }
+}
+
+/**
+ * Mode Demo BYODb (Simulasi Langsung 1-Klik untuk Iklan & Pengujian)
+ */
+function loginDemoByodb() {
+  let demoUser = {
+    email: "demo@keuanganku.id",
+    name: "Moh Athhar (Demo Keuanganku)",
+    picture: "icon-96.png",
+    accessToken: "demo_simulated_token",
+    tokenExpiresAt: Date.now() + 86400000
+  };
+
+  saveGoogleSession(demoUser);
+  localStorage.setItem("KEUANGANKU_BYODB_SHEET_ID", "1Demo_Spreadsheet_Keuanganku_PRO_2026");
+
+  let demoLicense = {
+    token: "PRO-DEMO-IKLAN-2026",
+    buyerName: "Moh Athhar (Demo)",
+    email: "demo@keuanganku.id",
+    spreadsheetId: "1Demo_Spreadsheet_Keuanganku_PRO_2026",
+    cloudUrl: "",
+    pinStatus: "PIN_CHANGED",
+    personalPin: "190412",
+    maxDevices: 10,
+    deviceCount: 1
+  };
+
+  localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(demoLicense));
+  sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
+
+  if (!globalData.recentHistory || globalData.recentHistory.length === 0) {
+    if (typeof activateShowcaseDemoData === 'function') activateShowcaseDemoData(true);
+  }
+
+  playSuccessSound();
+  showSyncToast("🎬 Mode Demo BYODb Aktif!");
+  hideSplashScreenAndTriggerAlerts();
+
+  updateByodbUi();
+  updateSetupLicenseDisplay(demoLicense);
+  updateTokenSecurityBanner(demoLicense);
+  updateCloudSyncLockUI(demoLicense);
+  renderSetupPasswordCard(demoLicense);
+
+  alert("Selamat datang di Mode Demo BYODb Keuanganku PRO!\n\nSimulasi login 1-klik akun Google dan akses Google Drive berhasil aktif dengan data percontohan resmi.");
+}
+
+/**
+ * Modal Pengaturan Google OAuth Client ID
+ */
+function openGoogleConfigModal(isFromLogin = false) {
+  let modal = document.getElementById('modal-google-config');
+  let input = document.getElementById('google-client-id-input');
+  if (input) input.value = localStorage.getItem('keuanganku_google_client_id') || '';
+  if (modal) modal.classList.remove('hidden');
+}
+
+function closeGoogleConfigModal() {
+  let modal = document.getElementById('modal-google-config');
+  if (modal) modal.classList.add('hidden');
+}
+
+function saveGoogleConfigModal() {
+  let input = document.getElementById('google-client-id-input');
+  if (input) {
+    let val = input.value.trim();
+    saveGoogleClientId(val);
+    closeGoogleConfigModal();
+    showSyncToast("✓ Google Client ID berhasil disimpan!");
+    if (val) {
+      alert("Google Client ID disimpan. Anda sekarang dapat menekan tombol 'Masuk dengan Akun Google'.");
+    }
+  }
+}
+
+
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPWAInstallPrompt = e;

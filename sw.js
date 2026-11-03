@@ -1,4 +1,4 @@
-const CACHE_NAME = 'keuanganku-pwa-v2.5';
+const CACHE_NAME = 'keuanganku-pwa-v2.6';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -69,7 +69,10 @@ self.addEventListener('activate', (event) => {
 // Fetch Event (Network-First untuk HTML/Navigasi agar pembaruan layout selalu langsung terlihat)
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
-  if (event.request.url.includes('script.google.com')) return;
+  if (event.request.url.includes('script.google.com') || 
+      event.request.url.includes('accounts.google.com') || 
+      event.request.url.includes('sheets.googleapis.com') || 
+      event.request.url.includes('googleapis.com')) return;
 
   const url = new URL(event.request.url);
   const isHtmlRequest = event.request.mode === 'navigate' || 
