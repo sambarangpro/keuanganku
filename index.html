@@ -1105,8 +1105,8 @@
   <!-- ========================================== -->
   <!-- MODAL TAUTKAN LISENSI KE AKUN GOOGLE (BYODb) -->
   <!-- ========================================== -->
-  <div id="modal-bind-google-license" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[120] flex items-center justify-center hidden p-4 overflow-y-auto">
-    <div class="bg-white dark:bg-slate-900 border border-outline-variant/60 rounded-3xl p-6 max-w-sm w-full shadow-2xl space-y-4 text-center my-auto">
+  <div id="modal-bind-google-license" style="z-index: 100005 !important;" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-[100005] flex items-center justify-center hidden p-4 overflow-y-auto">
+    <div class="bg-slate-900 border border-slate-700/80 text-white rounded-3xl p-6 max-w-sm w-full shadow-2xl space-y-4 text-center my-auto">
       <div class="w-14 h-14 rounded-2xl bg-blue-500/10 text-primary dark:text-blue-400 flex items-center justify-center mx-auto border border-blue-500/20">
         <span class="material-symbols-outlined text-3xl">verified_user</span>
       </div>
@@ -1145,8 +1145,8 @@
   <!-- ========================================== -->
   <!-- MODAL KONFIGURASI GOOGLE OAUTH CLIENT ID    -->
   <!-- ========================================== -->
-  <div id="modal-google-config" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[120] flex items-center justify-center hidden p-4 overflow-y-auto">
-    <div class="bg-white dark:bg-slate-900 border border-outline-variant/60 rounded-3xl p-6 max-w-sm sm:max-w-md w-full shadow-2xl space-y-4 my-auto text-left">
+  <div id="modal-google-config" style="z-index: 100005 !important;" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-[100005] flex items-center justify-center hidden p-4 overflow-y-auto">
+    <div class="bg-slate-900 border border-slate-700/80 text-white rounded-3xl p-6 max-w-sm sm:max-w-md w-full shadow-2xl space-y-4 my-auto text-left">
       <div class="flex items-center gap-3 border-b border-outline-variant/40 pb-3">
         <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-primary dark:text-blue-400 flex items-center justify-center shrink-0">
           <span class="material-symbols-outlined text-xl">settings_applications</span>
@@ -1169,7 +1169,7 @@
 
       <div class="space-y-1">
         <label class="text-[10px] font-bold text-gray-500 uppercase block">Google OAuth Client ID:</label>
-        <input type="text" id="google-client-id-input" placeholder="contoh: 336829158097-xxxx.apps.googleusercontent.com" class="w-full p-2.5 border border-outline-variant rounded-xl text-xs font-mono-data bg-surface text-on-surface outline-none focus:border-primary">
+        <input type="text" id="google-client-id-input" placeholder="contoh: 336829158097-xxxx.apps.googleusercontent.com" class="w-full p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-xs font-mono-data text-white outline-none focus:border-blue-500">
       </div>
 
       <div class="space-y-2 pt-1">
@@ -11008,7 +11008,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v2.6';
+              let currentCacheInApp = 'keuanganku-pwa-v2.7';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
@@ -11295,7 +11295,10 @@ function openBindGoogleModal(googleUser) {
   if (input) input.value = '';
   if (err) err.classList.add('hidden');
 
-  if (modal) modal.classList.remove('hidden');
+  if (modal) {
+    modal.style.zIndex = "100005";
+    modal.classList.remove('hidden');
+  }
 }
 
 function closeBindGoogleModal() {
@@ -11679,7 +11682,10 @@ function openGoogleConfigModal(isFromLogin = false) {
   let modal = document.getElementById('modal-google-config');
   let input = document.getElementById('google-client-id-input');
   if (input) input.value = localStorage.getItem('keuanganku_google_client_id') || '';
-  if (modal) modal.classList.remove('hidden');
+  if (modal) {
+    modal.style.zIndex = "100005";
+    modal.classList.remove('hidden');
+  }
 }
 
 function closeGoogleConfigModal() {
