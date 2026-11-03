@@ -86,7 +86,10 @@ function getTokenColumnIndexes(headers) {
     pinStatus: 7,
     personalPin: 8,
     createdAt: 9,
-    notes: 10
+    notes: 10,
+    cloudUrl: 11,
+    buyerEmail: 12,
+    spreadsheetId: 13
   };
 
   if (!headers || !headers.length) return map;
@@ -94,6 +97,8 @@ function getTokenColumnIndexes(headers) {
   for (var c = 0; c < headers.length; c++) {
     var h = String(headers[c] || "").toLowerCase().replace(/[^a-z0-9]/g, "");
     if (h === "token" || h.includes("lisensi")) map.token = c;
+    else if (h.includes("emailgoogle") || h.includes("googleemail") || (h.includes("email") && (h.includes("byodb") || h.includes("bound") || h.includes("akun")))) map.buyerEmail = c;
+    else if (h.includes("spreadsheetid") || h.includes("sheetid") || (h.includes("spreadsheet") && h.includes("byodb"))) map.spreadsheetId = c;
     else if (h.includes("buyername") || h.includes("namapembeli") || h === "nama") map.buyerName = c;
     else if (h.includes("contact") || h.includes("kontak") || h.includes("email") || h.includes("wa")) map.buyerContact = c;
     else if (h.includes("max") || h.includes("kuota")) map.maxDevices = c;
@@ -168,9 +173,9 @@ function initSheets() {
     tokensSheet = ss.insertSheet(SHEET_TOKENS);
     tokensSheet.appendRow([
       "Token", "Buyer Name", "Buyer Contact", "Max Devices", 
-      "Device Count", "Used Devices (JSON)", "Status", "PIN Status", "Personal PIN", "Created At", "Notes", "Cloud URL"
+      "Device Count", "Used Devices (JSON)", "Status", "PIN Status", "Personal PIN", "Created At", "Notes", "Cloud URL", "Email Google (BYODb)", "Spreadsheet ID (BYODb)"
     ]);
-    tokensSheet.getRange("A1:L1").setFontWeight("bold").setBackground("#1e293b").setFontColor("#ffffff");
+    tokensSheet.getRange("A1:N1").setFontWeight("bold").setBackground("#1e293b").setFontColor("#ffffff");
     tokensSheet.setFrozenRows(1);
   } else {
     // Normalisasi cerdas header & kolom
@@ -205,6 +210,29 @@ function initSheets() {
     if (!hasCloudUrl && lastCol > 0) {
       tokensSheet.getRange(1, lastCol + 1).setValue("Cloud URL");
       tokensSheet.getRange(1, lastCol + 1).setFontWeight("bold").setBackground("#1e293b").setFontColor("#ffffff");
+      lastCol++;
+    }
+
+    // Auto-detect dan tambahkan kolom Email Google (BYODb)
+    var hasBuyerEmail = headers.some(function(h) {
+      var s = String(h).toLowerCase().replace(/[^a-z]/g, '');
+      return s.includes("emailgoogle") || s.includes("googleemail") || (s.includes("email") && s.includes("byodb"));
+    });
+    if (!hasBuyerEmail && lastCol > 0) {
+      tokensSheet.getRange(1, lastCol + 1).setValue("Email Google (BYODb)");
+      tokensSheet.getRange(1, lastCol + 1).setFontWeight("bold").setBackground("#1e293b").setFontColor("#38bdf8");
+      lastCol++;
+    }
+
+    // Auto-detect dan tambahkan kolom Spreadsheet ID (BYODb)
+    var hasSpreadsheetId = headers.some(function(h) {
+      var s = String(h).toLowerCase().replace(/[^a-z]/g, '');
+      return s.includes("spreadsheetid") || s.includes("sheetid") || (s.includes("spreadsheet") && s.includes("byodb"));
+    });
+    if (!hasSpreadsheetId && lastCol > 0) {
+      tokensSheet.getRange(1, lastCol + 1).setValue("Spreadsheet ID (BYODb)");
+      tokensSheet.getRange(1, lastCol + 1).setFontWeight("bold").setBackground("#1e293b").setFontColor("#38bdf8");
+      lastCol++;
     }
   }
   
@@ -465,6 +493,19 @@ function handleRequest(params) {
       // -------------------------------------------------------------
       case "validate_token":
         result = validateClientToken(params);
+        break;
+
+      // BYODb (Bring Your Own Database) Google Identity Services API
+      case "verify_google_account":
+        result = verifyGoogleAccount(params);
+        break;
+
+      case "bind_google_account":
+        result = bindGoogleAccount(params);
+        break;
+
+      case "save_spreadsheet_id":
+        result = saveSpreadsheetId(params);
         break;
 
       case "verify_status":
@@ -772,6 +813,41 @@ function validateClientToken(params) {
         }
       }
 
+      // -------------------------------------------------------------
+      // BYODb: PENGUNCIAN & TAUTAN AKUN GOOGLE (EMAIL BINDING)
+      // -------------------------------------------------------------
+      var inputEmail = String(params.email || "").trim().toLowerCase();
+      var boundEmail = (colMap.buyerEmail !== undefined && data[i][colMap.buyerEmail]) ? String(data[i][colMap.buyerEmail]).trim().toLowerCase() : "";
+      var isOwnerToken = (tokenInput === 'PRO-G82P-4QTS-C6RT' || tokenInput === 'PRO-S8GF-HQT5-CNVE' || tokenInput === 'PRO-W9J2-RAYM-3KKL' || tokenInput === 'PRO-DEMO-IKLAN-2026' || String(buyerName).toLowerCase().includes('akbar') || String(buyerName).toLowerCase().includes('athhar') || String(buyerName).toLowerCase().includes('demo'));
+
+      if (inputEmail) {
+        if (!boundEmail) {
+          // Token belum terikat ke akun Google -> Tautkan permanen!
+          if (colMap.buyerEmail !== undefined) {
+            sheet.getRange(i + 1, colMap.buyerEmail + 1).setValue(inputEmail);
+            boundEmail = inputEmail;
+            logEvent("EMAIL_BOUND", tokenInput, buyerName, deviceId, deviceName, "Token lisensi berhasil ditautkan ke akun Google: " + inputEmail);
+          }
+        } else if (boundEmail !== inputEmail && !isOwnerToken) {
+          // Token sudah terikat ke akun Google lain -> Tolak pembajakan!
+          logEvent("EMAIL_MISMATCH_BLOCKED", tokenInput, buyerName, deviceId, deviceName, "Ditolak: Mencoba klaim token milik email lain (" + inputEmail + " vs " + boundEmail + ")");
+          return {
+            success: false,
+            message: "Token ini telah terikat secara permanen dengan akun Google: " + maskEmail(boundEmail) + ". Silakan login menggunakan akun Google tersebut atau hubungi developer."
+          };
+        }
+      }
+
+      // Simpan Spreadsheet ID jika dikirimkan oleh klien
+      var currentSpreadsheetId = (colMap.spreadsheetId !== undefined && data[i][colMap.spreadsheetId]) ? String(data[i][colMap.spreadsheetId]).trim() : "";
+      if (params.spreadsheetId && colMap.spreadsheetId !== undefined) {
+        var newSheetId = String(params.spreadsheetId).trim();
+        if (newSheetId && newSheetId !== currentSpreadsheetId) {
+          currentSpreadsheetId = newSheetId;
+          sheet.getRange(i + 1, colMap.spreadsheetId + 1).setValue(currentSpreadsheetId);
+        }
+      }
+
       // 3. Cek apakah perangkat sudah ada (Re-login)
       if (existingDevice) {
         existingDevice.lastActive = new Date().toISOString();
@@ -785,6 +861,8 @@ function validateClientToken(params) {
           data: {
             token: tokenInput,
             buyerName: buyerName,
+            email: boundEmail || inputEmail,
+            spreadsheetId: currentSpreadsheetId,
             pinStatus: pinStatus,
             personalPin: storedPersonalPin,
             isPasswordChanged: (pinStatus === "PIN_CHANGED"),
@@ -829,6 +907,8 @@ function validateClientToken(params) {
         data: {
           token: tokenInput,
           buyerName: buyerName,
+          email: boundEmail || inputEmail,
+          spreadsheetId: currentSpreadsheetId,
           pinStatus: newPinStatus,
           personalPin: storedPersonalPin || inputPin,
           isPasswordChanged: (newPinStatus === "PIN_CHANGED"),
@@ -1437,6 +1517,9 @@ function adminGetData(params) {
       token: String(data[i][colMap.token] || ''),
       buyerName: String(data[i][colMap.buyerName] || ''),
       buyerContact: String(data[i][colMap.buyerContact] || ''),
+      buyerEmail: (colMap.buyerEmail !== undefined && data[i][colMap.buyerEmail]) ? String(data[i][colMap.buyerEmail]).trim() : '',
+      spreadsheetId: (colMap.spreadsheetId !== undefined && data[i][colMap.spreadsheetId]) ? String(data[i][colMap.spreadsheetId]).trim() : '',
+      cloudUrl: (colMap.cloudUrl !== undefined && data[i][colMap.cloudUrl]) ? String(data[i][colMap.cloudUrl]).trim() : '',
       maxDevices: parseInt(data[i][colMap.maxDevices]) || 2,
       deviceCount: parsedDev.length,
       usedDevices: parsedDev,
@@ -1551,7 +1634,10 @@ function adminGenerateToken(params) {
     "UNCLAIMED", // pin status awal
     "", // personal pin belum ada
     nowStr,
-    notes
+    notes,
+    params.cloudUrl || "",
+    params.buyerEmail || "",
+    params.spreadsheetId || ""
   ]);
 
   logEvent("TOKEN_ORDER_CREATED", newToken, buyerName, "-", "-", "Token order baru diterbitkan. Kuota: " + maxDevices + " devices.");
@@ -1996,7 +2082,10 @@ function adminProcessOrderLicense(params) {
       "UNCLAIMED",
       "",
       nowStr,
-      "Diterbitkan dari Pemesanan " + orderId + " (" + pkg + ")"
+      "Diterbitkan dari Pemesanan " + orderId + " (" + pkg + ")",
+      "", // Cloud URL
+      email || "", // Email Google (BYODb)
+      "" // Spreadsheet ID (BYODb)
     ]);
   }
 
@@ -2563,4 +2652,285 @@ function testSystemDeployment() {
   Logger.log("=====================================================");
 
   return "BERHASIL: Sistem siap 100%! Silakan Terapkan > Kelola Penerapan > Versi Baru.";
+}
+
+/**
+ * ==============================================================================
+ * BRING YOUR OWN DATABASE (BYODb) & GOOGLE ACCOUNT AUTHENTICATION SUITE
+ * ==============================================================================
+ */
+
+/**
+ * Sensor sensor email untuk tampilan keamanan (misal: mo***@gmail.com)
+ */
+function maskEmail(email) {
+  if (!email || typeof email !== 'string') return "";
+  var parts = email.split('@');
+  if (parts.length < 2) return email;
+  var name = parts[0];
+  var domain = parts[1];
+  if (name.length <= 2) return name.charAt(0) + "*@" + domain;
+  var visible = name.substring(0, 2);
+  return visible + "***@" + domain;
+}
+
+/**
+ * Verifikasi Akun Google Pengguna (BYODb Architecture)
+ * Dipanggil saat pengguna mengklik tombol "Masuk dengan Akun Google"
+ */
+function verifyGoogleAccount(params) {
+  var emailInput = String(params.email || "").trim().toLowerCase();
+  var deviceId = String(params.deviceId || "").trim();
+  var deviceName = String(params.deviceName || "Perangkat Google").trim();
+
+  if (!emailInput) {
+    return { success: false, message: "Email Google tidak terdeteksi oleh sistem." };
+  }
+  if (!deviceId) {
+    return { success: false, message: "Device ID tidak terdeteksi oleh sistem." };
+  }
+
+  var ss = getSpreadsheet();
+  var sheet = ss.getSheetByName(SHEET_TOKENS);
+  var data = sheet.getDataRange().getValues();
+  if (!data || data.length < 2) {
+    return { 
+      success: true, 
+      isLicensed: false, 
+      email: emailInput, 
+      message: "Database lisensi masih kosong." 
+    };
+  }
+
+  var colMap = getTokenColumnIndexes(data[0]);
+
+  for (var i = 1; i < data.length; i++) {
+    var rowToken = String(data[i][colMap.token] || "").trim().toUpperCase();
+    var boundEmail = (colMap.buyerEmail !== undefined && data[i][colMap.buyerEmail]) ? String(data[i][colMap.buyerEmail]).trim().toLowerCase() : "";
+    var contactVal = String(data[i][colMap.buyerContact] || "").trim().toLowerCase();
+    var buyerName = String(data[i][colMap.buyerName] || "").trim();
+
+    // Logika Pencocokan Akun:
+    // 1. Kolom "Email Google (BYODb)" cocok dengan emailInput
+    // 2. ATAU Kolom "Buyer Contact" berisi emailInput (jika pembeli memasukkan email saat beli)
+    // 3. ATAU Akun Khusus Pemilik Developer (Moh Athhar / Sambarang)
+    // 4. ATAU Akun Demo Iklan (demo@keuanganku.id atau PRO-DEMO-IKLAN-2026)
+    var isMatch = false;
+    if (boundEmail && boundEmail === emailInput) {
+      isMatch = true;
+    } else if (!boundEmail && contactVal && contactVal.includes(emailInput)) {
+      isMatch = true;
+      if (colMap.buyerEmail !== undefined) {
+        sheet.getRange(i + 1, colMap.buyerEmail + 1).setValue(emailInput);
+        boundEmail = emailInput;
+      }
+    } else if (rowToken === 'PRO-G82P-4QTS-C6RT' || rowToken === 'PRO-S8GF-HQT5-CNVE' || rowToken === 'PRO-W9J2-RAYM-3KKL') {
+      if (emailInput.includes('sambaran') || emailInput.includes('athhar') || emailInput === 'sambaranofficial@gmail.com') {
+        isMatch = true;
+        if (!boundEmail && colMap.buyerEmail !== undefined) {
+          sheet.getRange(i + 1, colMap.buyerEmail + 1).setValue(emailInput);
+          boundEmail = emailInput;
+        }
+      }
+    } else if (rowToken === 'PRO-DEMO-IKLAN-2026' && (emailInput === 'demo@keuanganku.id' || emailInput === 'demo.iklan@keuanganku.id')) {
+      isMatch = true;
+    }
+
+    if (isMatch) {
+      var status = String(data[i][colMap.status] || "ACTIVE").trim().toUpperCase();
+      if (status === "BLOCKED") {
+        logEvent("BLOCKED_GOOGLE_ATTEMPT", rowToken, buyerName, deviceId, deviceName, "Login Google ditolak: Lisensi diblokir (" + emailInput + ")");
+        return {
+          success: false,
+          isLicensed: false,
+          isBlocked: true,
+          message: "Akun lisensi untuk email ini telah dinonaktifkan oleh Developer."
+        };
+      }
+
+      var maxDevices = parseInt(data[i][colMap.maxDevices]) || 3;
+      if (maxDevices < 3) maxDevices = 3;
+      if (rowToken === 'PRO-G82P-4QTS-C6RT' || rowToken === 'PRO-S8GF-HQT5-CNVE' || rowToken === 'PRO-DEMO-IKLAN-2026' || buyerName.toLowerCase().includes('akbar') || buyerName.toLowerCase().includes('athhar') || buyerName.toLowerCase().includes('demo')) {
+        maxDevices = Math.max(maxDevices, 10);
+      }
+
+      var rawDevices = data[i][colMap.usedDevices];
+      var devices = [];
+      try { devices = rawDevices ? JSON.parse(rawDevices) : []; } catch(e) { devices = []; }
+
+      var pinStatus = String(data[i][colMap.pinStatus] || "UNCLAIMED").trim().toUpperCase();
+      var storedPersonalPin = String(data[i][colMap.personalPin] || "").trim();
+
+      var existingDevice = null;
+      for (var d = 0; d < devices.length; d++) {
+        if (devices[d].deviceId === deviceId) {
+          existingDevice = devices[d];
+          break;
+        }
+      }
+
+      if (existingDevice) {
+        existingDevice.lastActive = new Date().toISOString();
+        existingDevice.deviceName = deviceName;
+        sheet.getRange(i + 1, colMap.usedDevices + 1).setValue(JSON.stringify(devices));
+      } else {
+        if (devices.length >= maxDevices) {
+          logEvent("GOOGLE_MAX_DEVICES", rowToken, buyerName, deviceId, deviceName, "Kuota perangkat penuh (" + maxDevices + ")");
+          return {
+            success: false,
+            isLicensed: true,
+            quotaExceeded: true,
+            maxDevices: maxDevices,
+            deviceCount: devices.length,
+            message: "Batas kuota perangkat telah penuh (Maksimal " + maxDevices + " perangkat). Silakan kelola perangkat Anda atau hubungi Developer."
+          };
+        }
+
+        var newDev = {
+          deviceId: deviceId,
+          deviceName: deviceName,
+          activatedAt: new Date().toISOString(),
+          lastActive: new Date().toISOString()
+        };
+        devices.push(newDev);
+
+        sheet.getRange(i + 1, colMap.deviceCount + 1).setValue(devices.length);
+        sheet.getRange(i + 1, colMap.usedDevices + 1).setValue(JSON.stringify(devices));
+      }
+
+      var currentSpreadsheetId = (colMap.spreadsheetId !== undefined && data[i][colMap.spreadsheetId]) ? String(data[i][colMap.spreadsheetId]).trim() : "";
+      var currentCloudUrl = (colMap.cloudUrl !== undefined && data[i][colMap.cloudUrl]) ? String(data[i][colMap.cloudUrl]).trim() : "";
+
+      logEvent("GOOGLE_AUTH_SUCCESS", rowToken, buyerName, deviceId, deviceName, "Berhasil masuk dengan akun Google: " + emailInput);
+
+      return {
+        success: true,
+        isLicensed: true,
+        data: {
+          token: rowToken,
+          buyerName: buyerName,
+          email: emailInput,
+          spreadsheetId: currentSpreadsheetId,
+          cloudUrl: currentCloudUrl,
+          pinStatus: pinStatus,
+          personalPin: storedPersonalPin,
+          maxDevices: maxDevices,
+          deviceCount: devices.length
+        }
+      };
+    }
+  }
+
+  // Jika akun Google belum terikat dengan token apa pun
+  return {
+    success: true,
+    isLicensed: false,
+    email: emailInput,
+    message: "Akun Google (" + emailInput + ") belum terhubung dengan Token Lisensi Keuanganku PRO. Masukkan Token Lisensi Anda untuk menghubungkan akun."
+  };
+}
+
+/**
+ * Menautkan Akun Google ke Token Lisensi Tertentu
+ */
+function bindGoogleAccount(params) {
+  var tokenInput = String(params.token || "").trim().toUpperCase();
+  var emailInput = String(params.email || "").trim().toLowerCase();
+  var deviceId = String(params.deviceId || "").trim();
+  var deviceName = String(params.deviceName || "Perangkat Google").trim();
+
+  if (!tokenInput || !emailInput) {
+    return { success: false, message: "Token dan Email Google wajib diisi." };
+  }
+
+  var ss = getSpreadsheet();
+  var sheet = ss.getSheetByName(SHEET_TOKENS);
+  var data = sheet.getDataRange().getValues();
+  if (!data || data.length < 2) return { success: false, message: "Database lisensi masih kosong." };
+  var colMap = getTokenColumnIndexes(data[0]);
+
+  var cleanInputToken = tokenInput.replace(/[^A-Z0-9]/g, '');
+
+  for (var i = 1; i < data.length; i++) {
+    var rowToken = String(data[i][colMap.token] || "").trim().toUpperCase();
+    var cleanRowToken = rowToken.replace(/[^A-Z0-9]/g, '');
+
+    if (rowToken === tokenInput || (cleanInputToken && cleanRowToken === cleanInputToken)) {
+      tokenInput = rowToken;
+      var buyerName = String(data[i][colMap.buyerName] || "");
+      var boundEmail = (colMap.buyerEmail !== undefined && data[i][colMap.buyerEmail]) ? String(data[i][colMap.buyerEmail]).trim().toLowerCase() : "";
+
+      var isOwnerToken = (rowToken === 'PRO-G82P-4QTS-C6RT' || rowToken === 'PRO-S8GF-HQT5-CNVE' || rowToken === 'PRO-DEMO-IKLAN-2026' || buyerName.toLowerCase().includes('akbar') || buyerName.toLowerCase().includes('athhar'));
+      if (boundEmail && boundEmail !== emailInput && !isOwnerToken) {
+        return {
+          success: false,
+          message: "Token ini sudah terhubung secara permanen dengan akun Google lain (" + maskEmail(boundEmail) + "). Gunakan akun tersebut atau hubungi developer."
+        };
+      }
+
+      if (colMap.buyerEmail !== undefined) {
+        sheet.getRange(i + 1, colMap.buyerEmail + 1).setValue(emailInput);
+      }
+
+      if (params.spreadsheetId && colMap.spreadsheetId !== undefined) {
+        sheet.getRange(i + 1, colMap.spreadsheetId + 1).setValue(String(params.spreadsheetId).trim());
+      }
+
+      logEvent("GOOGLE_ACCOUNT_BOUND", tokenInput, buyerName, deviceId, deviceName, "Token berhasil ditautkan ke akun Google: " + emailInput);
+
+      return {
+        success: true,
+        message: "Akun Google " + emailInput + " berhasil ditautkan permanen ke lisensi Anda!",
+        data: {
+          token: tokenInput,
+          buyerName: buyerName,
+          email: emailInput
+        }
+      };
+    }
+  }
+
+  return { success: false, message: "Kode Token tidak ditemukan di sistem." };
+}
+
+/**
+ * Menyimpan Spreadsheet ID milik Pengguna (BYODb) ke baris lisensinya
+ */
+function saveSpreadsheetId(params) {
+  var tokenInput = String(params.token || "").trim().toUpperCase();
+  var emailInput = String(params.email || "").trim().toLowerCase();
+  var spreadsheetId = String(params.spreadsheetId || "").trim();
+
+  if (!spreadsheetId) {
+    return { success: false, message: "Spreadsheet ID tidak boleh kosong." };
+  }
+
+  var ss = getSpreadsheet();
+  var sheet = ss.getSheetByName(SHEET_TOKENS);
+  var data = sheet.getDataRange().getValues();
+  if (!data || data.length < 2) return { success: false, message: "Database lisensi masih kosong." };
+  var colMap = getTokenColumnIndexes(data[0]);
+
+  for (var i = 1; i < data.length; i++) {
+    var rowToken = String(data[i][colMap.token] || "").trim().toUpperCase();
+    var boundEmail = (colMap.buyerEmail !== undefined && data[i][colMap.buyerEmail]) ? String(data[i][colMap.buyerEmail]).trim().toLowerCase() : "";
+
+    var isMatch = false;
+    if (tokenInput && rowToken === tokenInput) isMatch = true;
+    else if (emailInput && boundEmail === emailInput) isMatch = true;
+
+    if (isMatch) {
+      if (colMap.spreadsheetId !== undefined) {
+        sheet.getRange(i + 1, colMap.spreadsheetId + 1).setValue(spreadsheetId);
+        logEvent("SPREADSHEET_ID_SAVED", rowToken, String(data[i][colMap.buyerName] || ""), "-", "-", "Spreadsheet ID BYODb disimpan: " + spreadsheetId);
+        return { 
+          success: true, 
+          message: "Spreadsheet ID berhasil disimpan ke server master.", 
+          spreadsheetId: spreadsheetId 
+        };
+      }
+    }
+  }
+
+  return { success: false, message: "Lisensi tidak ditemukan untuk menyimpan Spreadsheet ID." };
 }

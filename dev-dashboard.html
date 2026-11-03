@@ -3429,10 +3429,11 @@
           : 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30';
         let contactStr = String(t.buyerContact || '').trim();
         let emailMatch = contactStr.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
-        let detectedEmail = emailMatch ? emailMatch[0] : '';
+        let detectedEmail = String(t.buyerEmail || (emailMatch ? emailMatch[0] : '')).trim();
         let cleanContact = contactStr.replace(detectedEmail, '').replace(/[^0-9]/g, '');
         if (cleanContact.startsWith('0')) cleanContact = '62' + cleanContact.substring(1);
         let waUrl = cleanContact ? `https://wa.me/${cleanContact}` : '#';
+        let byodbSheetId = String(t.spreadsheetId || '').trim();
 
         tbody.innerHTML += `
           <tr class="hover:bg-slate-800/40 transition-colors border-b ${isMaster ? 'border-amber-500/40 bg-amber-500/[0.04]' : 'border-slate-800/60'}">
@@ -3448,6 +3449,7 @@
               <div class="text-[10px] text-slate-400 flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
                 ${cleanContact ? `<a href="${waUrl}" target="_blank" class="text-emerald-400 hover:underline inline-flex items-center gap-0.5 font-mono-data"><span class="material-symbols-outlined text-[10px]">chat</span> ${escapeHtml(cleanContact)}</a>` : ''}
                 ${detectedEmail ? `<a href="mailto:${escapeHtml(detectedEmail)}" class="text-blue-400 hover:underline inline-flex items-center gap-0.5 font-mono-data"><span class="material-symbols-outlined text-[10px]">mail</span> ${escapeHtml(detectedEmail)}</a>` : (!cleanContact ? '<span class="text-slate-600">Kontak: -</span>' : '')}
+                ${byodbSheetId ? `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-[9px] font-mono-data" title="Spreadsheet ID BYODb: ${escapeHtml(byodbSheetId)}"><span class="material-symbols-outlined text-[10px]">table_chart</span> BYODb Database</span>` : ''}
                 ${t.notes ? `<span class="text-slate-500">•</span><span class="text-slate-400 italic max-w-[160px] lg:max-w-[200px] xl:max-w-[260px] truncate inline-block align-bottom" title="${escapeHtml(t.notes)}">${escapeHtml(t.notes)}</span>` : ''}
               </div>
             </td>
@@ -4573,6 +4575,7 @@
           adminPassword: currentAdminPassword,
           buyerName: buyerName,
           buyerContact: fullContact,
+          buyerEmail: buyerEmail,
           maxDevices: parseInt(maxDevices) || 2,
           customToken: customToken,
           notes: notes
