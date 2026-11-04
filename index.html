@@ -2282,15 +2282,30 @@
                 </div>
 
                 <!-- 2. Tombol Saat Sudah Terhubung -->
-                <div id="byodb-connected-actions-container" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-                  <button type="button" onclick="syncByodbNow(true)" class="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer">
-                    <span class="material-symbols-outlined text-base">sync</span>
-                    <span>Sinkronkan ke Google Drive</span>
+                <div id="byodb-connected-actions-container" class="hidden space-y-2.5 pt-1">
+                  <div class="grid grid-cols-2 gap-2.5">
+                    <button type="button" onclick="syncByodbNow(true)" class="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer" title="Simpan perubahan data di perangkat ini ke Google Drive">
+                      <span class="material-symbols-outlined text-base">cloud_upload</span>
+                      <span>Upload ke Drive</span>
+                    </button>
+                    <button type="button" onclick="pullByodbNow(true)" class="py-2.5 px-3 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer" title="Ambil data terbaru dari Google Drive ke perangkat ini">
+                      <span class="material-symbols-outlined text-base">cloud_download</span>
+                      <span>Tarik dari Drive</span>
+                    </button>
+                  </div>
+
+                  <!-- Tombol Migrasi dari Cloud Lama ke Google Drive Baru -->
+                  <button type="button" onclick="migrateOldCloudToByodb()" class="w-full py-2.5 px-3 bg-gradient-to-r from-blue-500/10 via-emerald-500/10 to-teal-500/10 hover:from-blue-500/20 hover:to-teal-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/60 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer">
+                    <span class="material-symbols-outlined text-base text-emerald-600 dark:text-emerald-400">drive_file_move</span>
+                    <span>Salin Data dari Cloud Lama ke Google Drive Baru (1-Klik)</span>
                   </button>
-                  <button type="button" onclick="disconnectGoogleAccount()" class="py-2.5 px-3 bg-surface dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-slate-700 border border-rose-300 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 font-bold text-xs rounded-xl shadow-2xs flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer">
-                    <span class="material-symbols-outlined text-base">logout</span>
-                    <span>Ganti / Putuskan Akun</span>
-                  </button>
+
+                  <div class="pt-0.5 flex justify-end">
+                    <button type="button" onclick="disconnectGoogleAccount()" class="text-[11px] text-rose-500 hover:text-rose-700 hover:underline flex items-center gap-1 cursor-pointer">
+                      <span class="material-symbols-outlined text-xs">logout</span>
+                      <span>Putuskan Akun Google di Perangkat Ini</span>
+                    </button>
+                  </div>
                 </div>
 
                 <!-- Konfigurasi Client ID Google OAuth (Opsional Pengembang) -->
@@ -11030,7 +11045,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v3.3';
+              let currentCacheInApp = 'keuanganku-pwa-v3.4';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
@@ -11806,6 +11821,108 @@ async function syncByodbNow(isManualClick = true) {
   } catch(err) {
     if (statusText) statusText.textContent = origText;
     console.error("syncByodbNow error:", err);
+  }
+}
+
+/**
+ * Tarik data keuangan dari Google Drive BYODb ke perangkat ini
+ */
+async function pullByodbNow(isManualClick = true) {
+  let gUser = getGoogleSession();
+  let sheetId = localStorage.getItem("KEUANGANKU_BYODB_SHEET_ID");
+
+  if (!gUser || !gUser.accessToken || !sheetId) {
+    if (isManualClick) alert("Google Drive belum terhubung.");
+    return;
+  }
+
+  let statusText = document.getElementById('byodb-status-text');
+  let origText = statusText ? statusText.textContent : 'GOOGLE DRIVE TERHUBUNG';
+  if (statusText) statusText.textContent = 'MENGUNDUH DARI DRIVE...';
+
+  try {
+    await pullDataFromByodbSpreadsheet(gUser.accessToken, sheetId);
+    if (statusText) statusText.textContent = 'TERSIMPAN DI GOOGLE DRIVE';
+    showSyncToast("✓ Data berhasil diperbarui dari Google Drive!");
+    if (isManualClick) alert("✓ Data keuangan berhasil dimuat dari Google Drive!");
+  } catch(e) {
+    if (statusText) statusText.textContent = origText;
+    if (isManualClick) alert("Gagal mengambil data dari Google Drive: " + (e.message || e));
+  }
+}
+
+/**
+ * Migrasikan seluruh data keuangan dari Google Cloud lama ke Google Drive BYODb baru
+ */
+async function migrateOldCloudToByodb() {
+  let cloudUrl = (globalData && globalData.cloudUrl) ? globalData.cloudUrl : "";
+  let urlInput = document.getElementById('setup-cloud-url');
+  if (!cloudUrl && urlInput && urlInput.value) cloudUrl = urlInput.value.trim();
+
+  if (!cloudUrl || !cloudUrl.startsWith("http")) {
+    alert("Kunci Cloud lama tidak ditemukan.\n\nPastikan kolom 'Link Web App Google Sheets' di kartu bawah terisi link script cloud lama Anda.");
+    return;
+  }
+
+  let gUser = getGoogleSession();
+  let sheetId = localStorage.getItem("KEUANGANKU_BYODB_SHEET_ID");
+  if (!gUser || !gUser.accessToken || !sheetId) {
+    alert("Database Google Drive (BYODb) belum terhubung.\n\nSilakan klik 'Hubungkan Akun Google' terlebih dahulu.");
+    return;
+  }
+
+  if (!confirm("Salin & migrasikan seluruh data keuangan dari Cloud lama ke Google Drive baru Anda sekarang?\n\n(Seluruh rekening, saldo, dan riwayat transaksi lama akan dipindahkan ke Google Drive baru).")) return;
+
+  showSyncToast("Mengambil data dari Cloud lama...");
+
+  try {
+    let fetchUrl = cloudUrl + (cloudUrl.includes('?') ? '&' : '?') + `_t=${Date.now()}`;
+    let resp = await fetch(fetchUrl);
+    let oldData = await resp.json();
+
+    if (!oldData || (!oldData.accounts && !oldData.recentHistory)) {
+      alert("Data dari Cloud lama kosong atau belum pernah di-upload.");
+      return;
+    }
+
+    let accCount = (oldData.accounts || []).length;
+    let txCount = (oldData.recentHistory || []).length;
+
+    // Simpan ke memori lokal
+    globalData = oldData;
+    saveStorageData();
+    initApp();
+
+    showSyncToast("Menyimpan ke Google Drive baru...");
+
+    // Tulis ke spreadsheet Google Drive BYODb
+    let snapshotData = {
+      range: "Database_Keuangan!A1:B1",
+      majorDimension: "ROWS",
+      values: [
+        ["KEUANGANKU_DATA", JSON.stringify(globalData || {})]
+      ]
+    };
+
+    let putRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Database_Keuangan!A1:B1?valueInputOption=USER_ENTERED`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'Bearer ' + gUser.accessToken,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(snapshotData)
+    });
+
+    if (putRes.ok) {
+      playSuccessSound();
+      showSyncToast("✓ Migrasi Sukses!");
+      alert(`🎉 MIGRASI BERHASIL!\n\nSebanyak ${accCount} Rekening dan ${txCount} Transaksi dari Cloud lama telah berhasil dipindahkan ke Google Drive Anda ('Database Keuanganku PRO').\n\nKini PC dan iPad Anda otomatis menggunakan database yang sama di Google Drive.`);
+      updateByodbUi();
+    } else {
+      alert("Data berhasil ditarik ke aplikasi, namun gagal disimpan ke Google Drive. Silakan klik 'Upload ke Google Drive'.");
+    }
+  } catch(e) {
+    alert("Gagal memigrasikan data: " + (e.message || e));
   }
 }
 
