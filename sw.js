@@ -1,6 +1,5 @@
-const CACHE_NAME = 'keuanganku-pwa-v4.5';
+const CACHE_NAME = 'keuanganku-pwa-v4.6';
 const ASSETS_TO_CACHE = [
-  'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
   './login-bg.jpg',
   './',
   './index.html',
