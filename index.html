@@ -11022,7 +11022,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v3.0';
+              let currentCacheInApp = 'keuanganku-pwa-v3.1';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
@@ -11215,6 +11215,29 @@ async function handleGoogleSignIn() {
 }
 
 /**
+ * Cari file spreadsheet database yang sudah pernah dibuat oleh aplikasi di Google Drive
+ */
+async function findExistingByodbSpreadsheet(accessToken) {
+  if (!accessToken) return null;
+  try {
+    let q = encodeURIComponent("name contains 'Database Keuanganku PRO' and mimeType = 'application/vnd.google-apps.spreadsheet' and trashed = false");
+    let res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name,createdTime)&orderBy=createdTime desc`, {
+      headers: { 'Authorization': 'Bearer ' + accessToken }
+    });
+    if (res.ok) {
+      let data = await res.json();
+      if (data && data.files && data.files.length > 0) {
+        console.log("BYODb Drive Auto-Discovery found:", data.files[0].id, data.files[0].name);
+        return data.files[0].id;
+      }
+    }
+  } catch(e) {
+    console.warn("Gagal auto-discovery Drive:", e);
+  }
+  return null;
+}
+
+/**
  * Proses setelah mendapatkan access_token dari Google Identity Services
  */
 async function processGoogleLoginToken(accessToken) {
@@ -11243,12 +11266,17 @@ async function processGoogleLoginToken(accessToken) {
     let devId = getOrCreateDeviceId();
     let devName = detectDeviceName();
 
-    let res = await callClientLicenseApi({
-      action: 'verify_google_account',
-      email: googleUser.email,
-      deviceId: devId,
-      deviceName: devName
-    });
+    let res = null;
+    try {
+      res = await callClientLicenseApi({
+        action: 'verify_google_account',
+        email: googleUser.email,
+        deviceId: devId,
+        deviceName: devName
+      });
+    } catch(eApi) {
+      console.warn("verify_google_account API call skipped or offline:", eApi);
+    }
 
     // Skenario A: Email sudah terdaftar pada lisensi Keuanganku PRO!
     if (res && res.success && res.isLicensed && res.data) {
@@ -11328,6 +11356,52 @@ async function processGoogleLoginToken(accessToken) {
       updateByodbUi();
 
       alert(`Selamat, ${localLic.buyerName || 'Pemilik'}!\n\nAkun Google (${googleUser.email}) berhasil ditautkan ke Lisensi Anda.\n\nDatabase spreadsheet telah dibuat otomatis di Google Drive Anda.`);
+      return;
+    }
+
+    // Skenario A3: PERANGKAT KE-2 / MULTI-DEVICE (Auto-Discovery Database dari Google Drive)
+    // Berjalan jika backend Master belum mencatat lisensi, TAPI akun Google ini adalah Pemilik Developer
+    // ATAU di Google Drive akun ini sudah ada spreadsheet 'Database Keuanganku PRO'
+    let isOwnerEmail = googleUser.email.includes('sambaran') || googleUser.email.includes('athhar') || googleUser.email === 'sambaranofficial@gmail.com';
+    let driveSheetId = await findExistingByodbSpreadsheet(accessToken);
+
+    if (driveSheetId || isOwnerEmail) {
+      if (btnText) btnText.textContent = 'Memuat Database dari Drive...';
+
+      let ownerLicenseData = {
+        token: "PRO-G82P-4QTS-C6RT",
+        buyerName: "Moh Athhar (Pemilik Developer)",
+        email: googleUser.email,
+        spreadsheetId: driveSheetId || "",
+        cloudUrl: "",
+        maxDevices: 10,
+        deviceCount: 2,
+        status: "ACTIVE",
+        pinStatus: "PIN_CHANGED"
+      };
+
+      localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(ownerLicenseData));
+      sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
+
+      if (driveSheetId) {
+        localStorage.setItem("KEUANGANKU_BYODB_SHEET_ID", driveSheetId);
+        await pullDataFromByodbSpreadsheet(accessToken, driveSheetId);
+      } else {
+        let newId = await provisionNewByodbSpreadsheet(accessToken, googleUser);
+        if (newId) localStorage.setItem("KEUANGANKU_BYODB_SHEET_ID", newId);
+      }
+
+      playSuccessSound();
+      showSyncToast("✓ Perangkat Terhubung: " + googleUser.email);
+      hideSplashScreenAndTriggerAlerts();
+
+      updateByodbUi();
+      updateSetupLicenseDisplay(ownerLicenseData);
+      updateTokenSecurityBanner(ownerLicenseData);
+      updateCloudSyncLockUI(ownerLicenseData);
+      renderSetupPasswordCard(ownerLicenseData);
+
+      alert(`Selamat datang kembali di Perangkat ke-2, Moh Athhar!\n\nAplikasi Keuanganku PRO berhasil terhubung dengan akun Google (${googleUser.email}).\n\nDatabase keuangan Anda telah disinkronkan otomatis dari Google Drive.`);
       return;
     }
 
