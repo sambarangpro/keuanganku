@@ -11008,7 +11008,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v2.7';
+              let currentCacheInApp = 'keuanganku-pwa-v2.8';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
@@ -11071,7 +11071,7 @@ function formatReadableSheets(ss, parsed) {
 // Sambarang Production - Developer Licensing & Anti-Piracy Suite
 // ==============================================================================
 
-const DEFAULT_GOOGLE_CLIENT_ID = "336829158097-xxxxxxxxxxxxxxxx.apps.googleusercontent.com";
+const DEFAULT_GOOGLE_CLIENT_ID = "6909794909-1thqhkhk414i1dfadog9dh267kl1pqfa.apps.googleusercontent.com";
 
 function getGoogleClientId() {
   let saved = localStorage.getItem('keuanganku_google_client_id');
