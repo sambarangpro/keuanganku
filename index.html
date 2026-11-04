@@ -5747,7 +5747,7 @@
         if (lic) {
           let name = (lic.buyerName || '').toLowerCase();
           let tok = (lic.token || '').toUpperCase();
-          if (name.includes('akbar') || tok === 'PRO-S8GF-HQT5-CNVE' || tok === 'PRO-W9J2-RAYM-3KKL') {
+          if (name.includes('akbar') || name.includes('athhar') || tok === 'PRO-S8GF-HQT5-CNVE' || tok === 'PRO-G82P-4QTS-C6RT' || tok === 'PRO-W9J2-RAYM-3KKL') {
             globalData.cloudUrl = "https://script.google.com/macros/s/AKfycbx51Rbmg0U7en7wdOywpe_YAO4cBs2kjy_7cNW_kQN-xcdQUFeatePPzoiAMrS9BPaTAw/exec";
           }
         }
@@ -11045,7 +11045,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v3.4';
+              let currentCacheInApp = 'keuanganku-pwa-v3.5';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
@@ -11196,7 +11196,7 @@ async function handleGoogleSignIn() {
   try {
     gisTokenClient = google.accounts.oauth2.initTokenClient({
       client_id: clientId,
-      scope: 'https://www.googleapis.com/auth/drive.file email profile',
+      scope: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file email profile',
       callback: async (tokenResponse) => {
         console.log("GIS Token Response:", tokenResponse);
         if (btnText) btnText.textContent = oldText;
@@ -11363,25 +11363,59 @@ async function processGoogleLoginToken(accessToken) {
       localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(res.data));
       sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
 
-      let currentSheetId = res.data.spreadsheetId || localStorage.getItem("KEUANGANKU_BYODB_SHEET_ID") || "";
+      // Auto-set & preserve Cloud URL (kebal akun multi-device iPad / PC)
+      let ownerCloud = "https://script.google.com/macros/s/AKfycbx51Rbmg0U7en7wdOywpe_YAO4cBs2kjy_7cNW_kQN-xcdQUFeatePPzoiAMrS9BPaTAw/exec";
+      let activeCloud = res.data.cloudUrl;
+      let buyerName = (res.data.buyerName || '').toLowerCase();
+      let tok = (res.data.token || '').toUpperCase();
+      if (!activeCloud || !activeCloud.startsWith("http")) {
+        if (buyerName.includes('akbar') || buyerName.includes('athhar') || tok === 'PRO-S8GF-HQT5-CNVE' || tok === 'PRO-G82P-4QTS-C6RT') {
+          activeCloud = ownerCloud;
+        }
+      }
+      if (activeCloud) {
+        globalData.cloudUrl = activeCloud;
+        localStorage.setItem("KEUANGANKU_CLOUD_URL", activeCloud);
+      }
 
-      // Jika pengguna belum punya spreadsheet (pertama kali), otomatis buat di Google Drive mereka
+      let currentSheetId = res.data.spreadsheetId || localStorage.getItem("KEUANGANKU_BYODB_SHEET_ID") || "";
+      let byodbDataLoaded = false;
+
+      // Jika pengguna belum punya spreadsheet (pertama kali), cari atau otomatis buat di Google Drive mereka
+      if (!currentSheetId) {
+        currentSheetId = await findExistingByodbSpreadsheet(accessToken);
+      }
       if (!currentSheetId) {
         if (btnText) btnText.textContent = 'Membuat Database di Drive...';
         currentSheetId = await provisionNewByodbSpreadsheet(accessToken, googleUser);
         if (currentSheetId) {
           localStorage.setItem("KEUANGANKU_BYODB_SHEET_ID", currentSheetId);
-          await callClientLicenseApi({
-            action: 'save_spreadsheet_id',
-            token: res.data.token,
-            email: googleUser.email,
-            spreadsheetId: currentSheetId
-          });
+          try {
+            await callClientLicenseApi({
+              action: 'save_spreadsheet_id',
+              token: res.data.token,
+              email: googleUser.email,
+              spreadsheetId: currentSheetId
+            });
+          } catch(e) {}
         }
       } else {
         localStorage.setItem("KEUANGANKU_BYODB_SHEET_ID", currentSheetId);
         if (btnText) btnText.textContent = 'Mengambil Data Keuangan...';
-        await pullDataFromByodbSpreadsheet(accessToken, currentSheetId);
+        byodbDataLoaded = await pullDataFromByodbSpreadsheet(accessToken, currentSheetId);
+      }
+
+      // AUTO-FALLBACK CERDAS: Jika Google Drive belum berisi transaksi lama (masih baru / kosong),
+      // otomatis tarik database lama dari Google Cloud Web App!
+      let hasData = Boolean(globalData && globalData.recentHistory && globalData.recentHistory.length > 0);
+      if (!byodbDataLoaded && !hasData && globalData.cloudUrl && globalData.cloudUrl.startsWith("http")) {
+        if (btnText) btnText.textContent = 'Menarik Data dari Cloud...';
+        await autoPullDatabaseFromCloud(globalData.cloudUrl);
+        if (currentSheetId && globalData && globalData.recentHistory && globalData.recentHistory.length > 0) {
+          try {
+            await writeGlobalDataToByodbSheet(accessToken, currentSheetId);
+          } catch(e) {}
+        }
       }
 
       playSuccessSound();
@@ -11426,6 +11460,9 @@ async function processGoogleLoginToken(accessToken) {
       if (currentSheetId) {
         localStorage.setItem("KEUANGANKU_BYODB_SHEET_ID", currentSheetId);
         try {
+          await writeGlobalDataToByodbSheet(accessToken, currentSheetId);
+        } catch(e) {}
+        try {
           await callClientLicenseApi({
             action: 'save_spreadsheet_id',
             token: localLic.token,
@@ -11444,9 +11481,7 @@ async function processGoogleLoginToken(accessToken) {
       return;
     }
 
-    // Skenario A3: PERANGKAT KE-2 / MULTI-DEVICE (Auto-Discovery Database dari Google Drive)
-    // Berjalan jika backend Master belum mencatat lisensi, TAPI akun Google ini adalah Pemilik Developer
-    // ATAU di Google Drive akun ini sudah ada spreadsheet 'Database Keuanganku PRO'
+    // Skenario A3: PERANGKAT KE-2 / MULTI-DEVICE (Auto-Discovery Database dari Google Drive / Developer Owner)
     let isOwnerEmail = Boolean(googleUser.email && (googleUser.email.includes('sambaran') || googleUser.email.includes('athhar') || googleUser.email === 'sambaranofficial@gmail.com'));
     let driveSheetId = await findExistingByodbSpreadsheet(accessToken);
 
@@ -11456,14 +11491,18 @@ async function processGoogleLoginToken(accessToken) {
         googleUser.name = "Moh Athhar";
         saveGoogleSession(googleUser);
       }
-      if (btnText) btnText.textContent = 'Memuat Database dari Drive...';
+      if (btnText) btnText.textContent = 'Memuat Database...';
+
+      let defaultCloud = "https://script.google.com/macros/s/AKfycbx51Rbmg0U7en7wdOywpe_YAO4cBs2kjy_7cNW_kQN-xcdQUFeatePPzoiAMrS9BPaTAw/exec";
+      globalData.cloudUrl = defaultCloud;
+      localStorage.setItem("KEUANGANKU_CLOUD_URL", defaultCloud);
 
       let ownerLicenseData = {
-        token: "PRO-G82P-4QTS-C6RT",
-        buyerName: "Moh Athhar (Pemilik Developer)",
+        token: "PRO-S8GF-HQT5-CNVE",
+        buyerName: "Muh Akbar / Moh Athhar (Pemilik Developer)",
         email: googleUser.email,
         spreadsheetId: driveSheetId || "",
-        cloudUrl: "",
+        cloudUrl: defaultCloud,
         maxDevices: 10,
         deviceCount: 2,
         status: "ACTIVE",
@@ -11473,12 +11512,28 @@ async function processGoogleLoginToken(accessToken) {
       localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(ownerLicenseData));
       sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
 
+      let driveLoaded = false;
       if (driveSheetId) {
         localStorage.setItem("KEUANGANKU_BYODB_SHEET_ID", driveSheetId);
-        await pullDataFromByodbSpreadsheet(accessToken, driveSheetId);
+        driveLoaded = await pullDataFromByodbSpreadsheet(accessToken, driveSheetId);
       } else {
         let newId = await provisionNewByodbSpreadsheet(accessToken, googleUser);
-        if (newId) localStorage.setItem("KEUANGANKU_BYODB_SHEET_ID", newId);
+        if (newId) {
+          localStorage.setItem("KEUANGANKU_BYODB_SHEET_ID", newId);
+          driveSheetId = newId;
+        }
+      }
+
+      // Jika data dari Drive belum ada atau masih kosong, otomatis tarik dari Cloud lama
+      let hasData = Boolean(globalData && globalData.recentHistory && globalData.recentHistory.length > 0);
+      if (!driveLoaded && !hasData && defaultCloud) {
+        if (btnText) btnText.textContent = 'Menarik Data dari Cloud...';
+        await autoPullDatabaseFromCloud(defaultCloud);
+        if (driveSheetId && globalData && globalData.recentHistory && globalData.recentHistory.length > 0) {
+          try {
+            await writeGlobalDataToByodbSheet(accessToken, driveSheetId);
+          } catch(e) {}
+        }
       }
 
       playSuccessSound();
@@ -11491,7 +11546,7 @@ async function processGoogleLoginToken(accessToken) {
       updateCloudSyncLockUI(ownerLicenseData);
       renderSetupPasswordCard(ownerLicenseData);
 
-      alert(`Selamat datang kembali di Perangkat ke-2, Moh Athhar!\n\nAplikasi Keuanganku PRO berhasil terhubung dengan akun Google (${googleUser.email}).\n\nDatabase keuangan Anda telah disinkronkan otomatis dari Google Drive.`);
+      alert(`Selamat datang kembali di Perangkat ke-2, Moh Athhar!\n\nAplikasi Keuanganku PRO berhasil terhubung dengan akun Google (${googleUser.email}).\n\nDatabase keuangan Anda telah disinkronkan otomatis.`);
       return;
     }
 
@@ -11657,7 +11712,7 @@ Database Google Sheets telah otomatis dibuat di Google Drive Anda. Di perangkat 
  */
 async function provisionNewByodbSpreadsheet(accessToken, userInfo) {
   try {
-    let title = "Database Keuanganku PRO - " + (userInfo.name || userInfo.email);
+    let title = "Database Keuanganku PRO - " + ((userInfo && userInfo.name) || (userInfo && userInfo.email) || "Pribadi");
     let payload = {
       properties: {
         title: title
@@ -11666,7 +11721,7 @@ async function provisionNewByodbSpreadsheet(accessToken, userInfo) {
         {
           properties: {
             title: "Database_Keuangan",
-            gridProperties: { rowCount: 100, columnCount: 10 }
+            gridProperties: { rowCount: 100, columnCount: 20 }
           }
         },
         {
@@ -11701,41 +11756,32 @@ async function provisionNewByodbSpreadsheet(accessToken, userInfo) {
     let sheetData = await createRes.json();
     let sheetId = sheetData.spreadsheetId;
 
-    // Tulis Snapshot data awal ke tab Database_Keuangan
-    let snapshotData = {
-      range: "Database_Keuangan!A1:B1",
-      majorDimension: "ROWS",
-      values: [
-        ["KEUANGANKU_DATA", JSON.stringify(globalData || {})]
-      ]
-    };
-
-    await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Database_Keuangan!A1:B1?valueInputOption=USER_ENTERED`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': 'Bearer ' + accessToken,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(snapshotData)
-    });
-
-    // Tulis Header tabel transaksi agar terlihat rapi dan siap dibaca di Google Sheets
-    let txHeader = {
-      range: "Transaksi!A1:G1",
-      majorDimension: "ROWS",
-      values: [
-        ["Tanggal", "Jenis", "Kategori", "Jumlah (Rp)", "Rekening", "Catatan", "ID Transaksi"]
-      ]
-    };
-
-    await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Transaksi!A1:G1?valueInputOption=USER_ENTERED`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': 'Bearer ' + accessToken,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(txHeader)
-    });
+    // Jika globalData sudah memiliki data transaksi/rekening, langsung simpan snapshot ke file baru
+    let hasData = Boolean(globalData && globalData.recentHistory && globalData.recentHistory.length > 0);
+    if (hasData) {
+      try {
+        await writeGlobalDataToByodbSheet(accessToken, sheetId);
+      } catch(e) {}
+    } else {
+      // Inisialisasi header awal tabel transaksi
+      let txHeader = {
+        range: "Transaksi!A1:G1",
+        majorDimension: "ROWS",
+        values: [
+          ["Tanggal", "Jenis", "Kategori", "Jumlah (Rp)", "Rekening", "Catatan", "ID Transaksi"]
+        ]
+      };
+      try {
+        await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Transaksi!A1:G1?valueInputOption=USER_ENTERED`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': 'Bearer ' + accessToken,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(txHeader)
+        });
+      } catch(e) {}
+    }
 
     return sheetId;
   } catch(err) {
@@ -11745,33 +11791,135 @@ async function provisionNewByodbSpreadsheet(accessToken, userInfo) {
 }
 
 /**
+ * Tulis / Sinkronkan data globalData ke Spreadsheet BYODb Google Drive secara kebal & terchunking
+ */
+async function writeGlobalDataToByodbSheet(accessToken, sheetId) {
+  if (!accessToken) throw new Error("Akses token Google tidak ditemukan. Silakan hubungkan ulang akun Google.");
+  
+  // Jika sheetId belum ada, buat otomatis di Google Drive user
+  if (!sheetId || sheetId === "null" || sheetId === "undefined") {
+    let gUser = getGoogleSession() || { name: "Pengguna Keuanganku", email: "" };
+    sheetId = await provisionNewByodbSpreadsheet(accessToken, gUser);
+    if (sheetId) {
+      localStorage.setItem("KEUANGANKU_BYODB_SHEET_ID", sheetId);
+    } else {
+      throw new Error("AUTH_REQUIRED: Gagal membuat Spreadsheet baru di Google Drive. Pastikan izin Google Sheets telah diizinkan.");
+    }
+  }
+
+  // Pecah string JSON dalam ukuran 45.000 karakter per sel (kebal batas 50.000 karakter Google Sheets)
+  let fullJson = JSON.stringify(globalData || {});
+  let chunkSize = 45000;
+  let rowValues = ["KEUANGANKU_DATA"];
+  for (let i = 0; i < fullJson.length; i += chunkSize) {
+    rowValues.push(fullJson.substring(i, i + chunkSize));
+  }
+
+  let snapshotData = {
+    majorDimension: "ROWS",
+    values: [rowValues]
+  };
+
+  // Percobaan 1: Tulis ke tab Database_Keuangan
+  let res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Database_Keuangan!A1?valueInputOption=USER_ENTERED`, {
+    method: 'PUT',
+    headers: {
+      'Authorization': 'Bearer ' + accessToken,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(snapshotData)
+  });
+
+  if (!res.ok) {
+    if (res.status === 401 || res.status === 403) {
+      let errBody = "";
+      try { errBody = await res.text(); } catch(e) {}
+      throw new Error("AUTH_REQUIRED: " + (errBody || "Izin Google Sheets belum aktif atau sesi berakhir."));
+    }
+
+    // Fallback: Tulis ke tab pertama spreadsheet langsung jika Database_Keuangan belum ada (Error 400)
+    let fallbackRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/A1?valueInputOption=USER_ENTERED`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(snapshotData)
+    });
+
+    if (!fallbackRes.ok) {
+      let errText = await fallbackRes.text();
+      throw new Error(`Google Sheets API Error (${fallbackRes.status}): ${errText}`);
+    }
+  }
+
+  // Tulis juga tabel transaksi rapi di tab Transaksi jika ada riwayat transaksi
+  try {
+    let txList = (globalData && globalData.recentHistory) ? globalData.recentHistory : [];
+    if (txList.length > 0) {
+      let rows = [["Tanggal", "Jenis", "Kategori", "Jumlah (Rp)", "Rekening", "Catatan", "ID Transaksi"]];
+      txList.slice(0, 500).forEach(t => {
+        rows.push([t.date || "", t.type || "", t.category || "", t.amount || 0, t.account || "", t.notes || "", t.id || ""]);
+      });
+      await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Transaksi!A1:G${rows.length}?valueInputOption=USER_ENTERED`, {
+        method: 'PUT',
+        headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ values: rows })
+      });
+    }
+  } catch(eTx) {}
+
+  return { success: true, sheetId: sheetId };
+}
+
+/**
  * Tarik data keuangan dari Spreadsheet BYODb Pengguna
  */
 async function pullDataFromByodbSpreadsheet(accessToken, sheetId) {
-  if (!sheetId || !accessToken) return;
+  if (!sheetId || !accessToken) return false;
   try {
-    let url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Database_Keuangan!B1`;
+    let url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Database_Keuangan!A1:Z1`;
     let res = await fetch(url, {
       headers: { 'Authorization': 'Bearer ' + accessToken }
     });
+    if (!res.ok) {
+      // Fallback: coba tab pertama langsung
+      res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/A1:Z1`, {
+        headers: { 'Authorization': 'Bearer ' + accessToken }
+      });
+    }
     if (res.ok) {
       let json = await res.json();
-      if (json && json.values && json.values[0] && json.values[0][0]) {
-        let rawStr = json.values[0][0];
-        let parsed = JSON.parse(rawStr);
-        if (parsed && (parsed.accounts || parsed.recentHistory)) {
-          globalData = parsed;
-          saveStorageData();
-          updateTotalBalance();
-          if (typeof renderTransactionHistory === 'function') renderTransactionHistory();
-          if (typeof renderBudgetSection === 'function') renderBudgetSection();
-          if (typeof renderAccountCards === 'function') renderAccountCards();
+      if (json && json.values && json.values[0]) {
+        let row = json.values[0];
+        let fullStr = "";
+        if (row.length >= 2) {
+          fullStr = row.slice(1).join('');
+        } else if (row.length === 1 && String(row[0]).trim().startsWith('{')) {
+          fullStr = row[0];
+        }
+        if (fullStr) {
+          let parsed = JSON.parse(fullStr);
+          if (parsed && (parsed.accounts || parsed.recentHistory)) {
+            let txCount = (parsed.recentHistory || []).length;
+            let accCount = (parsed.accounts || []).length;
+            if (txCount > 0 || accCount > 1 || (parsed.accounts && parsed.accounts.some(a => a.balance > 0))) {
+              globalData = parsed;
+              saveStorageData();
+              updateTotalBalance();
+              if (typeof renderTransactionHistory === 'function') renderTransactionHistory();
+              if (typeof renderBudgetSection === 'function') renderBudgetSection();
+              if (typeof renderAccountCards === 'function') renderAccountCards();
+              return true;
+            }
+          }
         }
       }
     }
   } catch(e) {
     console.warn("Pull data BYODb warning:", e);
   }
+  return false;
 }
 
 /**
@@ -11781,46 +11929,41 @@ async function syncByodbNow(isManualClick = true) {
   let gUser = getGoogleSession();
   let sheetId = localStorage.getItem("KEUANGANKU_BYODB_SHEET_ID");
 
-  if (!gUser || !gUser.accessToken || !sheetId) {
+  if (!gUser || !gUser.accessToken) {
     if (isManualClick) {
-      alert("Akun Google atau Spreadsheet belum terhubung.\n\nKlik 'Masuk dengan Akun Google' untuk menghubungkan akun Anda.");
+      alert("Akun Google belum terhubung.\n\nKlik 'Masuk dengan Akun Google' untuk menghubungkan akun Anda.");
+      handleGoogleSignIn();
     }
     return;
   }
 
-  let badge = document.getElementById('byodb-status-badge');
   let statusText = document.getElementById('byodb-status-text');
   let origText = statusText ? statusText.textContent : 'GOOGLE DRIVE TERHUBUNG';
   if (statusText) statusText.textContent = 'MENYINKRONKAN...';
 
   try {
-    let snapshotData = {
-      range: "Database_Keuangan!A1:B1",
-      majorDimension: "ROWS",
-      values: [
-        ["KEUANGANKU_DATA", JSON.stringify(globalData || {})]
-      ]
-    };
-
-    let res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Database_Keuangan!A1:B1?valueInputOption=USER_ENTERED`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': 'Bearer ' + gUser.accessToken,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(snapshotData)
-    });
-
-    if (res.ok) {
-      if (statusText) statusText.textContent = 'TERSIMPAN DI GOOGLE DRIVE';
-      showSyncToast("✓ Tersimpan di Google Drive!");
-    } else {
-      if (statusText) statusText.textContent = origText;
-      if (isManualClick) alert("Gagal sinkronisasi ke Google Drive. Coba hubungkan ulang akun Google.");
+    let result = await writeGlobalDataToByodbSheet(gUser.accessToken, sheetId);
+    if (result && result.sheetId) {
+      localStorage.setItem("KEUANGANKU_BYODB_SHEET_ID", result.sheetId);
+    }
+    if (statusText) statusText.textContent = 'TERSIMPAN DI GOOGLE DRIVE';
+    showSyncToast("✓ Tersimpan di Google Drive!");
+    if (isManualClick) {
+      playSuccessSound();
+      alert("✓ Seluruh data keuangan Anda berhasil disimpan ke Google Drive ('Database Keuanganku PRO')!");
+      updateByodbUi();
     }
   } catch(err) {
     if (statusText) statusText.textContent = origText;
     console.error("syncByodbNow error:", err);
+    if (isManualClick) {
+      if (String(err.message || err).includes("AUTH_REQUIRED")) {
+        alert("⚠️ Izin Google Spreadsheet Diperlukan:\n\nSesi Google Anda memerlukan izin Spreadsheet atau telah berakhir.\n\nKlik OK untuk masuk kembali dan pastikan memilih 'Lanjutkan' / centang izin Google Sheets.");
+        handleGoogleSignIn();
+      } else {
+        alert("Gagal sinkronisasi ke Google Drive:\n\n" + (err.message || err));
+      }
+    }
   }
 }
 
@@ -11841,10 +11984,15 @@ async function pullByodbNow(isManualClick = true) {
   if (statusText) statusText.textContent = 'MENGUNDUH DARI DRIVE...';
 
   try {
-    await pullDataFromByodbSpreadsheet(gUser.accessToken, sheetId);
-    if (statusText) statusText.textContent = 'TERSIMPAN DI GOOGLE DRIVE';
-    showSyncToast("✓ Data berhasil diperbarui dari Google Drive!");
-    if (isManualClick) alert("✓ Data keuangan berhasil dimuat dari Google Drive!");
+    let success = await pullDataFromByodbSpreadsheet(gUser.accessToken, sheetId);
+    if (success) {
+      if (statusText) statusText.textContent = 'TERSIMPAN DI GOOGLE DRIVE';
+      showSyncToast("✓ Data berhasil diperbarui dari Google Drive!");
+      if (isManualClick) alert("✓ Data keuangan berhasil dimuat dari Google Drive!");
+    } else {
+      if (statusText) statusText.textContent = origText;
+      if (isManualClick) alert("Database Google Drive masih kosong atau belum pernah di-upload.");
+    }
   } catch(e) {
     if (statusText) statusText.textContent = origText;
     if (isManualClick) alert("Gagal mengambil data dari Google Drive: " + (e.message || e));
@@ -11860,14 +12008,16 @@ async function migrateOldCloudToByodb() {
   if (!cloudUrl && urlInput && urlInput.value) cloudUrl = urlInput.value.trim();
 
   if (!cloudUrl || !cloudUrl.startsWith("http")) {
-    alert("Kunci Cloud lama tidak ditemukan.\n\nPastikan kolom 'Link Web App Google Sheets' di kartu bawah terisi link script cloud lama Anda.");
-    return;
+    cloudUrl = "https://script.google.com/macros/s/AKfycbx51Rbmg0U7en7wdOywpe_YAO4cBs2kjy_7cNW_kQN-xcdQUFeatePPzoiAMrS9BPaTAw/exec";
+    if (urlInput) urlInput.value = cloudUrl;
+    globalData.cloudUrl = cloudUrl;
+    localStorage.setItem("KEUANGANKU_CLOUD_URL", cloudUrl);
   }
 
   let gUser = getGoogleSession();
-  let sheetId = localStorage.getItem("KEUANGANKU_BYODB_SHEET_ID");
-  if (!gUser || !gUser.accessToken || !sheetId) {
-    alert("Database Google Drive (BYODb) belum terhubung.\n\nSilakan klik 'Hubungkan Akun Google' terlebih dahulu.");
+  if (!gUser || !gUser.accessToken) {
+    alert("Akun Google belum terhubung.\n\nSilakan klik 'Hubungkan Akun Google' terlebih dahulu.");
+    handleGoogleSignIn();
     return;
   }
 
@@ -11895,34 +12045,24 @@ async function migrateOldCloudToByodb() {
 
     showSyncToast("Menyimpan ke Google Drive baru...");
 
-    // Tulis ke spreadsheet Google Drive BYODb
-    let snapshotData = {
-      range: "Database_Keuangan!A1:B1",
-      majorDimension: "ROWS",
-      values: [
-        ["KEUANGANKU_DATA", JSON.stringify(globalData || {})]
-      ]
-    };
-
-    let putRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Database_Keuangan!A1:B1?valueInputOption=USER_ENTERED`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': 'Bearer ' + gUser.accessToken,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(snapshotData)
-    });
-
-    if (putRes.ok) {
-      playSuccessSound();
-      showSyncToast("✓ Migrasi Sukses!");
-      alert(`🎉 MIGRASI BERHASIL!\n\nSebanyak ${accCount} Rekening dan ${txCount} Transaksi dari Cloud lama telah berhasil dipindahkan ke Google Drive Anda ('Database Keuanganku PRO').\n\nKini PC dan iPad Anda otomatis menggunakan database yang sama di Google Drive.`);
-      updateByodbUi();
-    } else {
-      alert("Data berhasil ditarik ke aplikasi, namun gagal disimpan ke Google Drive. Silakan klik 'Upload ke Google Drive'.");
+    let sheetId = localStorage.getItem("KEUANGANKU_BYODB_SHEET_ID");
+    let writeRes = await writeGlobalDataToByodbSheet(gUser.accessToken, sheetId);
+    if (writeRes && writeRes.sheetId) {
+      localStorage.setItem("KEUANGANKU_BYODB_SHEET_ID", writeRes.sheetId);
     }
+
+    playSuccessSound();
+    showSyncToast("✓ Migrasi Sukses!");
+    alert(`🎉 MIGRASI BERHASIL!\n\nSebanyak ${accCount} Rekening dan ${txCount} Transaksi dari Cloud lama telah berhasil dipindahkan ke Google Drive Anda ('Database Keuanganku PRO').\n\nKini PC dan iPad Anda otomatis menggunakan database yang sama di Google Drive.`);
+    updateByodbUi();
   } catch(e) {
-    alert("Gagal memigrasikan data: " + (e.message || e));
+    console.error("Migrate error:", e);
+    if (String(e.message || e).includes("AUTH_REQUIRED")) {
+      alert("⚠️ Izin Google Spreadsheet Diperlukan:\n\nGoogle membutuhkan izin untuk menyimpan database ke Google Drive Anda.\n\nKlik OK untuk masuk kembali dan pastikan menyetujui izin Google Sheets.");
+      handleGoogleSignIn();
+    } else {
+      alert("Kendala saat menyimpan ke Google Drive:\n\n" + (e.message || e));
+    }
   }
 }
 
