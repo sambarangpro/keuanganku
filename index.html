@@ -419,25 +419,8 @@
             <span>Tautkan via Barcode (QR)</span>
           </button>
 
-          <div class="flex items-center justify-center text-[10px] text-blue-200 pt-1">
-            <button type="button" onclick="toggleBumperCloudModal(true)" class="hover:text-white underline cursor-pointer">Hubungkan Cloud Manual</button>
-          </div>
         </div>
 
-      </div>
-
-      <!-- FORM HUBUNGKAN CLOUD PERANGKAT BARU -->
-      <div id="bumper-cloud-section" class="pt-2 space-y-2.5 hidden">
-        <div class="text-left">
-          <p class="text-xs font-bold text-white flex items-center gap-1"><span class="material-symbols-outlined text-sm">cloud_download</span> Hubungkan Perangkat Baru</p>
-          <p class="text-[10px] text-blue-200 mt-0.5 leading-relaxed">Tempel Link Web App Google Sheets Anda untuk langsung menarik database & PIN Anda ke perangkat ini:</p>
-        </div>
-        <input type="text" id="bumper-cloud-url-input" placeholder="https://script.google.com/macros/s/..." class="w-full p-2 bg-white/10 border border-white/30 rounded-xl text-[11px] text-white placeholder-blue-300 font-mono-data outline-none focus:border-white">
-        <button id="btn-bumper-connect-cloud" onclick="connectCloudFromBumper()" class="w-full py-2.5 bg-blue-500 hover:bg-blue-400 text-white font-bold rounded-xl text-xs shadow flex items-center justify-center gap-1 transition-all">
-          <span class="material-symbols-outlined text-sm">download</span> TARIK DATA & MASUK
-        </button>
-        <p id="bumper-cloud-error" class="text-[10px] text-red-200 font-semibold leading-relaxed hidden"></p>
-        <button type="button" onclick="toggleBumperCloudModal(false)" class="text-[10px] text-blue-200 hover:text-white underline">← Kembali ke Masuk PIN</button>
       </div>
 
       <div class="pt-2"><p class="text-[10px] text-slate-400 font-medium tracking-wide">Copyright 2006 <span class="text-slate-300 font-semibold">Sambarang Production</span></p></div>
@@ -5336,7 +5319,8 @@
             err.innerHTML = "Server lisensi belum diatur. Klik '<b>Hubungkan ke Cloud</b>' di bawah untuk mengisi link Web App Google Script Anda.";
             err.classList.remove('hidden');
           }
-          toggleBumperCloudModal(true);
+          // Cloud manual modal removed from bumper
+          return;
           return;
         }
 
@@ -11125,7 +11109,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v3.7';
+              let currentCacheInApp = 'keuanganku-pwa-v3.8';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
