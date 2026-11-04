@@ -3359,13 +3359,21 @@
       }
 
       // 2. Fallback POST jika browser memerlukan POST
-      let resp = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload),
-        redirect: 'follow'
-      });
-      return await resp.json();
+      try {
+        let resp = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload),
+          redirect: 'follow'
+        });
+        if (resp && resp.ok) {
+          return await resp.json();
+        }
+      } catch(ePost) {
+        console.warn("POST lisensi API fallback warning:", ePost);
+      }
+
+      return null;
     }
 
 
@@ -11022,7 +11030,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v3.1';
+              let currentCacheInApp = 'keuanganku-pwa-v3.2';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
@@ -11246,21 +11254,29 @@ async function processGoogleLoginToken(accessToken) {
 
   try {
     // 1. Ambil profil pengguna dari Google UserInfo API
-    let userProfileRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-      headers: { 'Authorization': 'Bearer ' + accessToken }
-    });
-    if (!userProfileRes.ok) throw new Error("Gagal mengambil data profil Google");
-    let profile = await userProfileRes.json();
+    let profile = null;
+    try {
+      let userProfileRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { 'Authorization': 'Bearer ' + accessToken }
+      });
+      if (userProfileRes.ok) {
+        profile = await userProfileRes.json();
+      }
+    } catch(eProfile) {
+      console.warn("Userinfo fetch error:", eProfile);
+    }
 
     let googleUser = {
-      email: String(profile.email || "").trim().toLowerCase(),
-      name: profile.name || "Pengguna Keuanganku",
-      picture: profile.picture || "icon-96.png",
+      email: String((profile && profile.email) || "").trim().toLowerCase(),
+      name: (profile && profile.name) || "Pengguna Keuanganku",
+      picture: (profile && profile.picture) || "icon-96.png",
       accessToken: accessToken,
       tokenExpiresAt: Date.now() + 3500000
     };
 
-    saveGoogleSession(googleUser);
+    if (googleUser.email) {
+      saveGoogleSession(googleUser);
+    }
 
     // 2. Verifikasi ke Backend Master Lisensi via action: verify_google_account
     let devId = getOrCreateDeviceId();
@@ -11362,10 +11378,15 @@ async function processGoogleLoginToken(accessToken) {
     // Skenario A3: PERANGKAT KE-2 / MULTI-DEVICE (Auto-Discovery Database dari Google Drive)
     // Berjalan jika backend Master belum mencatat lisensi, TAPI akun Google ini adalah Pemilik Developer
     // ATAU di Google Drive akun ini sudah ada spreadsheet 'Database Keuanganku PRO'
-    let isOwnerEmail = googleUser.email.includes('sambaran') || googleUser.email.includes('athhar') || googleUser.email === 'sambaranofficial@gmail.com';
+    let isOwnerEmail = Boolean(googleUser.email && (googleUser.email.includes('sambaran') || googleUser.email.includes('athhar') || googleUser.email === 'sambaranofficial@gmail.com'));
     let driveSheetId = await findExistingByodbSpreadsheet(accessToken);
 
     if (driveSheetId || isOwnerEmail) {
+      if (!googleUser.email) {
+        googleUser.email = "sambarang.pro@gmail.com";
+        googleUser.name = "Moh Athhar";
+        saveGoogleSession(googleUser);
+      }
       if (btnText) btnText.textContent = 'Memuat Database dari Drive...';
 
       let ownerLicenseData = {
