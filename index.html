@@ -2086,11 +2086,7 @@
                     </button>
                   </div>
 
-                  <!-- Tombol Migrasi dari Cloud Lama ke Google Drive Baru -->
-                  <button type="button" onclick="migrateOldCloudToByodb()" class="w-full py-2.5 px-3 bg-gradient-to-r from-blue-500/10 via-emerald-500/10 to-teal-500/10 hover:from-blue-500/20 hover:to-teal-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/60 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer">
-                    <span class="material-symbols-outlined text-base text-emerald-600 dark:text-emerald-400">drive_file_move</span>
-                    <span>Salin Data dari Cloud Lama ke Google Drive Baru (1-Klik)</span>
-                  </button>
+
 
                   <div class="pt-0.5 flex justify-end">
                     <button type="button" onclick="disconnectGoogleAccount()" class="text-[11px] text-rose-500 hover:text-rose-700 hover:underline flex items-center gap-1 cursor-pointer">
@@ -2270,11 +2266,11 @@
                   </div>
                   <div>
                     <h2 class="text-sm sm:text-base font-extrabold text-on-surface">Database & Cadangan Data</h2>
-                    <p class="text-[11px] text-on-surface-variant">Sinkronisasi data multi-perangkat dan pencadangan offline</p>
+                    <p class="text-[11px] text-on-surface-variant">Penyimpanan cloud Google Drive dan pencadangan offline</p>
                   </div>
                 </div>
 
-                <!-- Kartu Sinkronisasi Google Drive Cepat -->
+                <!-- 1. KARTU SINKRONISASI GOOGLE DRIVE -->
                 <section class="bg-white dark:bg-slate-800/95 border border-emerald-500/30 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4 transition-all">
                   <div class="flex items-center justify-between flex-wrap gap-2">
                     <div class="flex items-center gap-2.5">
@@ -2283,7 +2279,7 @@
                       </div>
                       <div>
                         <h3 class="font-headline-md text-base sm:text-lg font-bold text-on-surface">Sinkronisasi Google Drive</h3>
-                        <p class="text-[10px] text-gray-500 dark:text-gray-400">Penyimpanan cloud pribadi milik Anda sendiri ($0 Biaya Server)</p>
+                        <p class="text-[10px] text-gray-500 dark:text-gray-400">Database pribadi 100% tersimpan di Google Drive milik Anda ($0 Biaya Server)</p>
                       </div>
                     </div>
                     <span class="px-2.5 py-1 bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 text-[10px] font-extrabold rounded-full flex items-center gap-1.5 border border-emerald-200 dark:border-emerald-800">
@@ -2293,109 +2289,60 @@
                   </div>
 
                   <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-                    Setiap transaksi otomatis tersimpan di Google Drive Anda. Jika Anda baru saja menginput di perangkat lain atau ingin memaksakan pencadangan sekarang, gunakan tombol di bawah:
+                    Setiap transaksi otomatis tersimpan di Google Drive pribadi Anda. Gunakan tombol di bawah jika ingin memaksakan sinkronisasi data secara manual:
                   </p>
 
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    <button type="button" onclick="syncByodbNow()" class="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <button type="button" onclick="syncByodbNow()" class="py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-2xl shadow-md flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
                       <span class="material-symbols-outlined text-base">cloud_upload</span>
                       <span>Upload ke Google Drive</span>
                     </button>
-                    <button type="button" onclick="pullByodbNow()" class="py-2.5 px-3 bg-surface-container dark:bg-slate-700 hover:bg-emerald-50 dark:hover:bg-slate-600 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
+                    <button type="button" onclick="pullByodbNow()" class="py-3 px-4 bg-surface-container dark:bg-slate-700 hover:bg-emerald-50 dark:hover:bg-slate-600 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 font-bold text-xs rounded-2xl shadow-sm flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
                       <span class="material-symbols-outlined text-base">cloud_download</span>
                       <span>Tarik dari Google Drive</span>
                     </button>
                   </div>
+                </section>
 
-                  <!-- Tombol Migrasi 1-Klik dari Cloud Lama -->
-                  <div class="pt-2 border-t border-outline-variant/50">
-                    <button type="button" onclick="migrateOldCloudToByodb()" class="w-full py-2.5 px-3 bg-gradient-to-r from-teal-600 to-emerald-600 hover:brightness-110 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer" title="Pindahkan seluruh data transaksi dari script Cloud lama ke Google Drive baru">
-                      <span class="material-symbols-outlined text-base">published_with_changes</span>
-                      <span>Salin Data dari Cloud Lama ke Google Drive Baru (1-Klik)</span>
+                <!-- 2. KARTU CADANGAN MANUAL OFFLINE (EXPORT & IMPORT JSON) -->
+                <section class="bg-white dark:bg-slate-800/95 border border-blue-500/30 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4 transition-all">
+                  <div class="flex items-center justify-between flex-wrap gap-2">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-500/20">
+                        <span class="material-symbols-outlined text-xl">save_as</span>
+                      </div>
+                      <div>
+                        <h3 class="font-headline-md text-base sm:text-lg font-bold text-on-surface">Cadangan Manual (Offline)</h3>
+                        <p class="text-[10px] text-gray-500 dark:text-gray-400">Simpan atau pulihkan file database .json tanpa kuota internet</p>
+                      </div>
+                    </div>
+                    <span class="text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                      FILE & TEKS • OFFLINE
+                    </span>
+                  </div>
+
+                  <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                    Download salinan file database ke komputer / flashdisk, atau pulihkan data dari file cadangan sebelumnya:
+                  </p>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <button type="button" onclick="openManualBackupModal('export')" class="py-3 px-4 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 font-bold text-xs rounded-2xl shadow-2xs flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer" title="Download File Cadangan .json">
+                      <span class="material-symbols-outlined text-base">download</span>
+                      <span>1. CADANGKAN (EXPORT)</span>
+                    </button>
+                    <button type="button" onclick="openManualBackupModal('import')" class="py-3 px-4 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 font-bold text-xs rounded-2xl shadow-2xs flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer" title="Pulihkan File Cadangan .json">
+                      <span class="material-symbols-outlined text-base">upload_file</span>
+                      <span>2. PULIHKAN (IMPORT)</span>
                     </button>
                   </div>
                 </section>
 
-                <!-- Cloud & Cadangan Manual Component -->
-                <!-- 1. KONEKSI CLOUD & AUTO-SYNC -->
-              <section id="setup-cloud-section" class="bg-white dark:bg-slate-800/95 border border-blue-500/30 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4 transition-all">
-                <div class="flex items-center justify-between flex-wrap gap-2">
-                  <div class="flex items-center gap-2.5">
-                    <div class="w-9 h-9 rounded-xl bg-blue-600/10 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-500/20">
-                      <span class="material-symbols-outlined text-xl">cloud_sync</span>
-                    </div>
-                    <div>
-                      <h2 class="font-headline-md text-base sm:text-lg font-bold text-blue-950 dark:text-blue-100">Koneksi Cloud & Auto-Sync</h2>
-                      <p class="text-[10px] text-gray-500 dark:text-gray-400">Sinkronisasi otomatis multi-perangkat via Google Sheets</p>
-                    </div>
-                  </div>
-                  <span id="setup-cloud-status-badge" class="px-2.5 py-1 bg-green-100 dark:bg-green-950/80 text-green-700 dark:text-green-300 text-[10px] font-extrabold rounded-full flex items-center gap-1.5 border border-green-200 dark:border-green-800">
-                    <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> AUTO-SYNC AKTIF
-                  </span>
-                </div>
-
-                <!-- NOTIFIKASI KUNCI JIKA MASIH MENGGUNAKAN TOKEN BAWAAN -->
-                <div id="cloud-sync-lock-notice" class="hidden p-3.5 rounded-2xl bg-amber-500/15 border border-amber-500/40 text-amber-900 dark:text-amber-200 text-xs flex items-start gap-2.5">
-                  <span class="material-symbols-outlined text-amber-500 text-lg shrink-0 mt-0.5">lock</span>
-                  <div class="space-y-1">
-                    <p class="font-bold text-amber-800 dark:text-amber-300">Fitur Sinkronisasi Cloud Terkunci</p>
-                    <p class="text-[11px] leading-relaxed opacity-95">
-                      Anda saat ini masih masuk menggunakan <b>Token Bawaan</b> (mode akses 1 perangkat). Untuk menghindari aplikasi dibagikan secara ilegal, fitur sinkronisasi otomatis multi-perangkat hanya aktif setelah Anda mengganti Token menjadi <b>PIN Pribadi</b> Anda sendiri.
-                    </p>
-                  </div>
-                </div>
-
-                <p class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed bg-blue-50/60 dark:bg-blue-950/30 p-3 rounded-2xl border border-blue-100 dark:border-blue-900/40">
-                  Masukkan Link Web App Google Sheets Anda. <b>Data otomatis tersinkron</b> saat membuka aplikasi, berpindah menu, atau input transaksi di HP/PC lain.
-                </p>
-
-                <div>
-                  <label class="text-[10px] font-bold text-gray-500 uppercase block mb-1">Link Web App Google Sheets (Cloud Key)</label>
-                  <input type="text" id="setup-cloud-url" placeholder="https://script.google.com/macros/s/..." onchange="updateCloudUrl(this.value)" class="w-full p-2.5 border border-blue-300 dark:border-blue-700 rounded-xl text-xs font-mono-data bg-surface text-on-surface outline-none focus:border-blue-500">
-                </div>
-
-                <!-- Grid Tombol Sinkronisasi Utama -->
-                <div class="space-y-2 pt-1 border-b border-outline-variant/40 pb-4">
-                  <div class="grid grid-cols-2 gap-2.5">
-                    <button id="btn-upload-cloud" onclick="forceUploadToCloud()" class="py-2.5 px-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95">
-                      <span class="material-symbols-outlined text-base">cloud_upload</span>
-                      <span>PAKSA UPLOAD CLOUD</span>
-                    </button>
-                    <button id="btn-download-cloud" onclick="forceDownloadFromCloud()" class="py-2.5 px-3 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95">
-                      <span class="material-symbols-outlined text-base">cloud_download</span>
-                      <span>PAKSA TARIK CLOUD</span>
-                    </button>
-                  </div>
-                  <button type="button" onclick="openCloudScriptModal()" class="w-full py-2.5 px-3 bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-700 hover:brightness-110 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95">
-                    <span class="material-symbols-outlined text-base">code</span>
-                    <span>Salin Script Cloud Google Sheets (Dukungan Foto/Bukti Bayar & Data Besar)</span>
-                  </button>
-                </div>
-
-                <!-- Cadangan Manual (Export & Import) -->
-                <div class="pt-1 space-y-2">
-                  <div class="flex items-center justify-between">
-                    <p class="text-xs text-on-surface font-bold flex items-center gap-1.5">
-                      <span class="material-symbols-outlined text-sm text-blue-600">save_as</span>
-                      <span>Cadangan Manual (Backup & Restore Offline)</span>
-                    </p>
-                    <span class="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">File & Teks • Tanpa Internet</span>
-                  </div>
-                  <p class="text-[10px] text-gray-500 dark:text-gray-400 leading-relaxed">
-                    Simpan seluruh data ke file <b>.json</b> atau pulihkan data di HP/laptop lain tanpa kuota internet.
-                  </p>
-                  <div class="grid grid-cols-2 gap-2 pt-1">
-                    <button onclick="openManualBackupModal('export')" class="py-2.5 px-3 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 font-bold text-[11px] rounded-xl shadow-2xs flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer" title="Download File Cadangan .json atau Salin Teks Database">
-                      <span class="material-symbols-outlined text-sm">download</span>
-                      <span>1. CADANGKAN (EXPORT)</span>
-                    </button>
-                    <button onclick="openManualBackupModal('import')" class="py-2.5 px-3 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 font-bold text-[11px] rounded-xl shadow-2xs flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer" title="Pilih File Cadangan .json atau Tempel Teks Database">
-                      <span class="material-symbols-outlined text-sm">upload_file</span>
-                      <span>2. PULIHKAN (IMPORT)</span>
-                    </button>
-                  </div>
-                </div>
-              </section>
+                <!-- Hidden inputs for backward-compatibility -->
+                <input type="hidden" id="setup-cloud-url" value="">
+                <span id="setup-cloud-status-badge" class="hidden"></span>
+                <span id="cloud-sync-lock-notice" class="hidden"></span>
+                <button id="btn-upload-cloud" class="hidden"></button>
+                <button id="btn-download-cloud" class="hidden"></button>
               </div>
 
               <!-- ======================================================== -->
@@ -11336,7 +11283,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v4.0';
+              let currentCacheInApp = 'keuanganku-pwa-v4.1';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
