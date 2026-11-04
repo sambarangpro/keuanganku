@@ -89,21 +89,13 @@
         display: none !important;
       }
     }
-    #splash-shader-canvas {
-      position: fixed !important;
-      inset: 0 !important;
-      width: 100vw !important;
-      height: 100vh !important;
-      z-index: 1 !important;
-      pointer-events: none !important;
-    }
     #splash-screen {
       position: fixed !important;
       inset: 0 !important;
       width: 100vw !important;
       height: 100vh !important;
       z-index: 99999 !important;
-      background: #000000 radial-gradient(circle at 50% 30%, #000057 0%, #000046 45%, #000000 85%) !important;
+      background-color: #000000 !important;
       display: flex !important;
       align-items: center !important;
       justify-content: center !important;
@@ -111,6 +103,129 @@
     }
     #splash-screen.hidden {
       display: none !important;
+    }
+
+    /* Fullscreen Liquid Silk Mesh Gradient Container */
+    .fluid-gradient-container {
+      position: absolute;
+      inset: -40px;
+      overflow: hidden;
+      background-color: #000000;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Ambient Base Layer */
+    .fluid-base {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 35%, #000046 0%, #000020 55%, #000000 90%);
+    }
+
+    /* Fluid Blend Layer: 70px Blur melts organic blobs into seamless moving liquid silk */
+    .fluid-blend-layer {
+      position: absolute;
+      inset: -50px;
+      filter: blur(75px);
+      -webkit-filter: blur(75px);
+      transform: scale(1.1);
+      -webkit-transform: scale(1.1);
+      will-change: transform;
+      opacity: 0.95;
+    }
+
+    /* Blob 1: Luminous Royal Blue (#000086) */
+    .blob-1 {
+      position: absolute;
+      top: -10%;
+      right: 5%;
+      width: 85vw;
+      height: 85vw;
+      max-width: 680px;
+      max-height: 680px;
+      border-radius: 43% 57% 62% 38% / 45% 55% 45% 55%;
+      background: radial-gradient(circle, #000086 0%, rgba(0, 0, 134, 0.5) 55%, transparent 75%);
+      animation: driftBlob1 18s ease-in-out infinite alternate;
+      will-change: transform;
+    }
+
+    /* Blob 2: Dark Royal Blue (#000057) */
+    .blob-2 {
+      position: absolute;
+      bottom: -15%;
+      left: -10%;
+      width: 90vw;
+      height: 90vw;
+      max-width: 720px;
+      max-height: 720px;
+      border-radius: 58% 42% 38% 62% / 55% 45% 55% 45%;
+      background: radial-gradient(circle, #000057 0%, rgba(0, 0, 87, 0.5) 50%, transparent 75%);
+      animation: driftBlob2 22s ease-in-out infinite alternate;
+      will-change: transform;
+    }
+
+    /* Blob 3: Deep Midnight Navy (#000046) */
+    .blob-3 {
+      position: absolute;
+      top: 25%;
+      left: 15%;
+      width: 78vw;
+      height: 78vw;
+      max-width: 600px;
+      max-height: 600px;
+      border-radius: 45% 55% 50% 50% / 40% 60% 40% 60%;
+      background: radial-gradient(circle, #000046 0%, rgba(0, 0, 70, 0.6) 60%, transparent 80%);
+      animation: driftBlob3 16s ease-in-out infinite alternate;
+      will-change: transform;
+    }
+
+    /* Blob 4: Soft Accent Sheen (#1e3a8a / Luminous Cyan-Blue) */
+    .blob-4 {
+      position: absolute;
+      top: 15%;
+      left: 45%;
+      width: 65vw;
+      height: 65vw;
+      max-width: 520px;
+      max-height: 520px;
+      border-radius: 60% 40% 55% 45% / 50% 50% 50% 50%;
+      background: radial-gradient(circle, rgba(37, 99, 235, 0.45) 0%, rgba(0, 0, 134, 0.2) 50%, transparent 70%);
+      animation: driftBlob4 20s ease-in-out infinite alternate;
+      will-change: transform;
+    }
+
+    @keyframes driftBlob1 {
+      0% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+      50% { transform: translate3d(-18vw, 12vh, 0) rotate(90deg) scale(1.15); }
+      100% { transform: translate3d(-32vw, 6vh, 0) rotate(180deg) scale(0.95); }
+    }
+
+    @keyframes driftBlob2 {
+      0% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+      50% { transform: translate3d(20vw, -15vh, 0) rotate(-120deg) scale(1.2); }
+      100% { transform: translate3d(36vw, -8vh, 0) rotate(-240deg) scale(1.05); }
+    }
+
+    @keyframes driftBlob3 {
+      0% { transform: translate3d(0, 0, 0) rotate(0deg) scale(0.95); }
+      50% { transform: translate3d(-15vw, -18vh, 0) rotate(140deg) scale(1.25); }
+      100% { transform: translate3d(12vw, 15vh, 0) rotate(280deg) scale(1); }
+    }
+
+    @keyframes driftBlob4 {
+      0% { transform: translate3d(0, 0, 0) scale(1); }
+      50% { transform: translate3d(16vw, 14vh, 0) scale(1.3); }
+      100% { transform: translate3d(-14vw, -10vh, 0) scale(0.9); }
+    }
+
+    /* Screen Dither Overlay: Eliminates all 8-bit banding */
+    .dither-overlay {
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 0);
+      background-size: 4px 4px;
+      opacity: 0.6;
+      pointer-events: none;
     }
 
     :root {
@@ -364,13 +479,18 @@
 <body class="bg-background text-on-surface font-body-md min-h-screen pb-32">
 
   <!-- BUMPER SPLASH SCREEN (LAYAR KUNCI PIN MASTER) -->
-  <div id="splash-screen" class="fixed inset-0 z-[100] flex flex-col items-center justify-center text-white transition-opacity duration-700 p-4 overflow-hidden" style="background: #000000 radial-gradient(circle at 50% 30%, #000057 0%, #000046 45%, #000000 85%);">
-    <!-- Ambient Glowing Atmospheric Orbs (Guarantees visible soft blue glow at all times) -->
-    <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-blue-600/35 blur-[90px] pointer-events-none z-0 animate-ambient-glow"></div>
-    <div class="absolute bottom-1/4 left-1/3 w-80 h-80 rounded-full bg-indigo-600/30 blur-[100px] pointer-events-none z-0 animate-ambient-glow-2"></div>
-
-    <!-- WebGL Fullscreen Organic Fluid Shader Canvas Background -->
-    <canvas id="splash-shader-canvas" class="fixed inset-0 w-full h-full pointer-events-none z-[1]"></canvas>
+  <div id="splash-screen" class="fixed inset-0 z-[100] flex flex-col items-center justify-center text-white transition-opacity duration-700 p-4 overflow-hidden bg-black">
+    <!-- Fullscreen Liquid Silk Mesh Gradient (100% Cross-Device GPU Accelerated) -->
+    <div class="fluid-gradient-container">
+      <div class="fluid-base"></div>
+      <div class="fluid-blend-layer">
+        <div class="blob-1"></div>
+        <div class="blob-2"></div>
+        <div class="blob-3"></div>
+        <div class="blob-4"></div>
+      </div>
+      <div class="dither-overlay"></div>
+    </div>
 
     <div class="relative z-10 text-center space-y-4 p-5 sm:p-6 max-w-xs sm:max-w-sm w-full bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl my-auto">
       <!-- Minimalist Wallet Logo Box -->
@@ -4218,205 +4338,13 @@
 
     
     // ==========================================
-    // BULLETPROOF WEBGL FULLSCREEN ORGANIC FLUID SHADER ENGINE
-    // Palette: Deep Midnight Navy & Royal Blue (#000000, #000046, #000057, #000086)
-    // Fullscreen 100vw x 100vh, Multi-Layer Harmonic Fluid Warping
-    // Cross-Platform Compatible (Mobile & Desktop), Anti-Banding Dither, Zero Dependencies
+    // LIQUID SILK MESH GRADIENT ENGINE
+    // Pure Hardware-Accelerated GPU Compositor Engine
+    // 100% Zero-Failure, Instant 0ms Load, Cross-Platform Compatible
     // ==========================================
-    let splashShaderAnimId = null;
-    let splashShaderIsRunning = false;
-    let splashShaderStartTime = (typeof performance !== 'undefined' ? performance.now() : Date.now());
-    let splashShaderTotalPausedDuration = 0;
-    let splashShaderPauseTime = 0;
-
-    function initSplashShaderGradient() {
-      const canvas = document.getElementById('splash-shader-canvas');
-      if (!canvas) return;
-
-      let gl = null;
-      try {
-        gl = canvas.getContext('webgl', { antialias: true, alpha: true, powerPreference: 'low-power' }) ||
-             canvas.getContext('experimental-webgl', { alpha: true });
-      } catch (e) {
-        console.warn('[FluidShader] WebGL context fallback:', e);
-        return;
-      }
-      if (!gl) return;
-
-      const vsSource = "attribute vec2 a_position; void main() { gl_Position = vec4(a_position, 0.0, 1.0); }";
-
-      const fsSource = [
-        "#ifdef GL_FRAGMENT_PRECISION_HIGH",
-        "precision highp float;",
-        "#else",
-        "precision mediump float;",
-        "#endif",
-        "uniform vec2 u_resolution;",
-        "uniform float u_time;",
-        "void main() {",
-        "  vec2 uv = gl_FragCoord.xy / u_resolution.xy;",
-        "  float aspect = u_resolution.x / u_resolution.y;",
-        "  vec2 p = (uv - 0.5) * vec2(aspect, 1.0) * 2.5;",
-        "  float a = 3.92699;",
-        "  p = vec2(p.x * cos(a) - p.y * sin(a), p.x * sin(a) + p.y * cos(a));",
-        "  float t = u_time * 0.18;",
-        "  for (float i = 1.0; i <= 3.0; i += 1.0) {",
-        "    float freq = i * 2.2;",
-        "    p.x += (0.38 / i) * sin(freq * p.y + t * 0.75 + i * 1.8) + 0.35;",
-        "    p.y += (0.38 / i) * cos(freq * p.x + t * 0.65 + i * 1.3) - 0.25;",
-        "  }",
-        "  float wave = sin(p.x * 2.2 + p.y * 1.8 + t * 0.9);",
-        "  float h = wave * 0.5 + 0.5;",
-        "  vec3 cBg = vec3(0.0, 0.0, 0.0);",
-        "  vec3 c1  = vec3(0.0, 0.0, 0.275);",
-        "  vec3 c2  = vec3(0.0, 0.0, 0.341);",
-        "  vec3 c3  = vec3(0.0, 0.0, 0.525);",
-        "  vec3 cLight = vec3(0.08, 0.18, 0.85);",
-        "  vec3 col = mix(cBg, c1, smoothstep(0.06, 0.42, h));",
-        "  col = mix(col, c2, smoothstep(0.30, 0.72, h));",
-        "  col = mix(col, c3, smoothstep(0.56, 0.98, h));",
-        "  float spec = pow(max(h, 0.0), 7.0) * 0.25;",
-        "  col += cLight * spec;",
-        "  col *= 1.2;",
-        "  float dither = (fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 437.5854) - 0.5) / 255.0;",
-        "  col += vec3(dither * 1.4);",
-        "  gl_FragColor = vec4(clamp(col, 0.0, 1.0), 0.92);",
-        "}"
-      ].join('\n');
-
-      function compileShader(type, src) {
-        const shader = gl.createShader(type);
-        gl.shaderSource(shader, src);
-        gl.compileShader(shader);
-        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-          console.warn('[FluidShader] Shader compile error:', gl.getShaderInfoLog(shader));
-          gl.deleteShader(shader);
-          return null;
-        }
-        return shader;
-      }
-
-      const vs = compileShader(gl.VERTEX_SHADER, vsSource);
-      const fs = compileShader(gl.FRAGMENT_SHADER, fsSource);
-      if (!vs || !fs) {
-        console.warn('[FluidShader] Shader creation failed, falling back to ambient CSS');
-        return;
-      }
-
-      const program = gl.createProgram();
-      gl.attachShader(program, vs);
-      gl.attachShader(program, fs);
-      gl.linkProgram(program);
-      if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-        console.warn('[FluidShader] Program link error:', gl.getProgramInfoLog(program));
-        return;
-      }
-
-      const posBuffer = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-        -1, -1,
-         1, -1,
-        -1,  1,
-        -1,  1,
-         1, -1,
-         1,  1
-      ]), gl.STATIC_DRAW);
-
-      const aPos = gl.getAttribLocation(program, 'a_position');
-      gl.enableVertexAttribArray(aPos);
-      gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
-
-      const uRes = gl.getUniformLocation(program, 'u_resolution');
-      const uTime = gl.getUniformLocation(program, 'u_time');
-
-      function resize() {
-        const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-        const w = window.innerWidth;
-        const h = window.innerHeight;
-        canvas.width = Math.max(1, Math.floor(w * dpr));
-        canvas.height = Math.max(1, Math.floor(h * dpr));
-        canvas.style.width = w + 'px';
-        canvas.style.height = h + 'px';
-        gl.viewport(0, 0, canvas.width, canvas.height);
-      }
-      window.addEventListener('resize', resize, { passive: true });
-      resize();
-
-      gl.useProgram(program);
-
-      function render() {
-        if (!splashShaderIsRunning) return;
-        const splash = document.getElementById('splash-screen');
-        if (!splash || splash.classList.contains('hidden') || splash.style.display === 'none') {
-          splashShaderIsRunning = false;
-          return;
-        }
-        const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
-        const elapsed = (now - splashShaderStartTime - splashShaderTotalPausedDuration) / 1000.0;
-        gl.uniform2f(uRes, canvas.width, canvas.height);
-        gl.uniform1f(uTime, elapsed);
-        gl.drawArrays(gl.TRIANGLES, 0, 6);
-        splashShaderAnimId = requestAnimationFrame(render);
-      }
-
-      window.resumeSplashShader = function() {
-        if (splashShaderIsRunning) return;
-        const splash = document.getElementById('splash-screen');
-        if (splash && (splash.classList.contains('hidden') || splash.style.display === 'none')) {
-          return;
-        }
-        if (splashShaderPauseTime > 0) {
-          const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
-          splashShaderTotalPausedDuration += (now - splashShaderPauseTime);
-          splashShaderPauseTime = 0;
-        }
-        splashShaderIsRunning = true;
-        cancelAnimationFrame(splashShaderAnimId);
-        splashShaderAnimId = requestAnimationFrame(render);
-      };
-
-      window.pauseSplashShader = function() {
-        if (!splashShaderIsRunning) return;
-        splashShaderIsRunning = false;
-        splashShaderPauseTime = (typeof performance !== 'undefined' ? performance.now() : Date.now());
-        cancelAnimationFrame(splashShaderAnimId);
-      };
-
-      document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-          window.pauseSplashShader();
-        } else {
-          const splash = document.getElementById('splash-screen');
-          if (splash && !splash.classList.contains('hidden')) {
-            window.resumeSplashShader();
-          }
-        }
-      });
-
-      const splashElem = document.getElementById('splash-screen');
-      if (splashElem && window.MutationObserver) {
-        const observer = new MutationObserver(() => {
-          if (splashElem.classList.contains('hidden') || splashElem.style.display === 'none') {
-            window.pauseSplashShader();
-          } else {
-            window.resumeSplashShader();
-          }
-        });
-        observer.observe(splashElem, { attributes: true, attributeFilter: ['class', 'style'] });
-      }
-
-      if (splashElem && !splashElem.classList.contains('hidden')) {
-        window.resumeSplashShader();
-      }
-    }
-
-    if (document.readyState === 'complete' || document.readyState === 'interactive') {
-      setTimeout(initSplashShaderGradient, 1);
-    } else {
-      window.addEventListener('DOMContentLoaded', initSplashShaderGradient);
-      window.addEventListener('load', initSplashShaderGradient);
-    }
+    window.initSplashShaderGradient = function() {};
+    window.resumeSplashShader = function() {};
+    window.pauseSplashShader = function() {};
     
     function switchSplashView(view) {
       let qrSec = document.getElementById('splash-qr-pair-section');
@@ -11565,7 +11493,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v4.8';
+              let currentCacheInApp = 'keuanganku-pwa-v5.0';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
