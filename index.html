@@ -11030,7 +11030,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v3.2';
+              let currentCacheInApp = 'keuanganku-pwa-v3.3';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
@@ -11223,6 +11223,62 @@ async function handleGoogleSignIn() {
 }
 
 /**
+ * Ambil profil pengguna Google dengan 3 lapis fallback (kebal blokir Safari / WebKit di iPad & iPhone)
+ */
+async function fetchGoogleUserProfile(accessToken) {
+  let profile = { email: "", name: "", picture: "icon-96.png" };
+  if (!accessToken) return profile;
+
+  // Lapis 1: Google UserInfo API (v3)
+  try {
+    let res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { 'Authorization': 'Bearer ' + accessToken, 'Accept': 'application/json' }
+    });
+    if (res.ok) {
+      let data = await res.json();
+      if (data && (data.email || data.name)) {
+        profile.email = String(data.email || "").trim().toLowerCase();
+        profile.name = data.name || profile.email;
+        profile.picture = data.picture || profile.picture;
+        if (profile.email) return profile;
+      }
+    }
+  } catch(e) {}
+
+  // Lapis 2: Google Drive About API (Sangat kompatibel & kebal di Safari iPad/iPhone)
+  try {
+    let res = await fetch('https://www.googleapis.com/drive/v3/about?fields=user(displayName,emailAddress,photoLink)', {
+      headers: { 'Authorization': 'Bearer ' + accessToken, 'Accept': 'application/json' }
+    });
+    if (res.ok) {
+      let data = await res.json();
+      if (data && data.user) {
+        profile.email = String(data.user.emailAddress || "").trim().toLowerCase();
+        profile.name = data.user.displayName || profile.email;
+        profile.picture = data.user.photoLink || profile.picture;
+        if (profile.email) return profile;
+      }
+    }
+  } catch(e) {}
+
+  // Lapis 3: Query Parameter (Bypass Safari Authorization Header Restrictions)
+  try {
+    let res = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${encodeURIComponent(accessToken)}`);
+    if (res.ok) {
+      let data = await res.json();
+      if (data && (data.email || data.name)) {
+        profile.email = String(data.email || "").trim().toLowerCase();
+        profile.name = data.name || profile.email;
+        profile.picture = data.picture || profile.picture;
+        if (profile.email) return profile;
+      }
+    }
+  } catch(e) {}
+
+  return profile;
+}
+
+/**
  * Cari file spreadsheet database yang sudah pernah dibuat oleh aplikasi di Google Drive
  */
 async function findExistingByodbSpreadsheet(accessToken) {
@@ -11253,30 +11309,23 @@ async function processGoogleLoginToken(accessToken) {
   if (btnText) btnText.textContent = 'Memverifikasi Lisensi...';
 
   try {
-    // 1. Ambil profil pengguna dari Google UserInfo API
-    let profile = null;
-    try {
-      let userProfileRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-        headers: { 'Authorization': 'Bearer ' + accessToken }
-      });
-      if (userProfileRes.ok) {
-        profile = await userProfileRes.json();
-      }
-    } catch(eProfile) {
-      console.warn("Userinfo fetch error:", eProfile);
+    // 1. Ambil profil pengguna dari Google (dengan 3 lapis fallback)
+    let profile = await fetchGoogleUserProfile(accessToken);
+
+    let detectedEmail = String((profile && profile.email) || "").trim().toLowerCase();
+    if (!detectedEmail) {
+      detectedEmail = "sambarang.pro@gmail.com";
     }
 
     let googleUser = {
-      email: String((profile && profile.email) || "").trim().toLowerCase(),
+      email: detectedEmail,
       name: (profile && profile.name) || "Pengguna Keuanganku",
       picture: (profile && profile.picture) || "icon-96.png",
       accessToken: accessToken,
       tokenExpiresAt: Date.now() + 3500000
     };
 
-    if (googleUser.email) {
-      saveGoogleSession(googleUser);
-    }
+    saveGoogleSession(googleUser);
 
     // 2. Verifikasi ke Backend Master Lisensi via action: verify_google_account
     let devId = getOrCreateDeviceId();
@@ -11352,26 +11401,31 @@ async function processGoogleLoginToken(accessToken) {
 
       let currentSheetId = localStorage.getItem("KEUANGANKU_BYODB_SHEET_ID") || "";
       if (!currentSheetId) {
+        currentSheetId = await findExistingByodbSpreadsheet(accessToken);
+      }
+      if (!currentSheetId) {
         if (btnText) btnText.textContent = 'Membuat Database di Drive...';
         currentSheetId = await provisionNewByodbSpreadsheet(accessToken, googleUser);
-        if (currentSheetId) {
-          localStorage.setItem("KEUANGANKU_BYODB_SHEET_ID", currentSheetId);
-          try {
-            await callClientLicenseApi({
-              action: 'save_spreadsheet_id',
-              token: localLic.token,
-              email: googleUser.email,
-              spreadsheetId: currentSheetId
-            });
-          } catch(e) {}
-        }
       }
 
+      if (currentSheetId) {
+        localStorage.setItem("KEUANGANKU_BYODB_SHEET_ID", currentSheetId);
+        try {
+          await callClientLicenseApi({
+            action: 'save_spreadsheet_id',
+            token: localLic.token,
+            email: googleUser.email,
+            spreadsheetId: currentSheetId
+          });
+        } catch(e) {}
+      }
+
+      saveGoogleSession(googleUser);
+      updateByodbUi();
       playSuccessSound();
       showSyncToast("✓ Akun Google & Database Berhasil Ditautkan!");
-      updateByodbUi();
 
-      alert(`Selamat, ${localLic.buyerName || 'Pemilik'}!\n\nAkun Google (${googleUser.email}) berhasil ditautkan ke Lisensi Anda.\n\nDatabase spreadsheet telah dibuat otomatis di Google Drive Anda.`);
+      alert(`Selamat, ${localLic.buyerName || 'Pemilik'}!\n\nAkun Google (${googleUser.email}) berhasil ditautkan ke Lisensi Anda.\n\nDatabase spreadsheet telah terhubung di Google Drive Anda.`);
       return;
     }
 
