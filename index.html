@@ -2235,9 +2235,9 @@
                       <p class="text-[10px] text-gray-500 dark:text-gray-400">Database Anda 100% tersimpan di Google Drive milik Anda sendiri</p>
                     </div>
                   </div>
-                  <span id="byodb-status-badge" class="px-2.5 py-1 bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 text-[10px] font-extrabold rounded-full flex items-center gap-1.5 border border-emerald-200 dark:border-emerald-800">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span id="byodb-status-text">GOOGLE DRIVE TERHUBUNG</span>
+                  <span id="byodb-status-badge" class="px-2.5 py-1 bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 text-[10px] font-extrabold rounded-full flex items-center gap-1.5 border border-amber-200 dark:border-amber-800">
+                    <span id="byodb-status-dot" class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                    <span id="byodb-status-text">BELUM TERHUBUNG</span>
                   </span>
                 </div>
 
@@ -2268,7 +2268,21 @@
                 </div>
 
                 <!-- Tombol Aksi BYODb -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                <!-- 1. Tombol Saat Belum Terhubung -->
+                <div id="byodb-connect-action-container" class="pt-1">
+                  <button type="button" onclick="handleGoogleSignIn()" class="w-full py-2.5 px-3 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-white font-bold text-xs rounded-xl shadow-md border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2.5 transition-all active:scale-95 cursor-pointer">
+                    <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                    </svg>
+                    <span>Hubungkan Akun Google & Buat Database Drive</span>
+                  </button>
+                </div>
+
+                <!-- 2. Tombol Saat Sudah Terhubung -->
+                <div id="byodb-connected-actions-container" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
                   <button type="button" onclick="syncByodbNow(true)" class="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer">
                     <span class="material-symbols-outlined text-base">sync</span>
                     <span>Sinkronkan ke Google Drive</span>
@@ -11008,7 +11022,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v2.9';
+              let currentCacheInApp = 'keuanganku-pwa-v3.0';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
@@ -11272,11 +11286,48 @@ async function processGoogleLoginToken(accessToken) {
       updateCloudSyncLockUI(res.data);
       renderSetupPasswordCard(res.data);
 
-      alert(`Selamat datang kembali, ${res.data.buyerName}!
+      alert(`Selamat datang kembali, ${res.data.buyerName}!\n\nAplikasi Keuanganku PRO terbuka menggunakan database pribadi di Google Drive Anda (${googleUser.email}).\n\nBiaya Server: $0 (100% Milik Anda).`);
+      return;
+    }
 
-Aplikasi Keuanganku PRO terbuka menggunakan database pribadi di Google Drive Anda (${googleUser.email}).
+    // Skenario A2: Pengguna SUDAH MEMILIKI lisensi lokal aktif di perangkat ini (misal menghubungkan akun dari Pengaturan)
+    let localLic = (typeof getSavedLicense === 'function') ? getSavedLicense() : null;
+    let hasLocalLicense = localLic && localLic.token && localLic.token !== 'PRO-DEMO-IKLAN-2026';
 
-Biaya Server: $0 (100% Milik Anda).`);
+    if (hasLocalLicense) {
+      if (btnText) btnText.textContent = 'Menautkan Akun & Database...';
+      try {
+        await callClientLicenseApi({
+          action: 'bind_google_account',
+          token: localLic.token,
+          email: googleUser.email,
+          deviceId: devId,
+          deviceName: devName
+        });
+      } catch(e) {}
+
+      let currentSheetId = localStorage.getItem("KEUANGANKU_BYODB_SHEET_ID") || "";
+      if (!currentSheetId) {
+        if (btnText) btnText.textContent = 'Membuat Database di Drive...';
+        currentSheetId = await provisionNewByodbSpreadsheet(accessToken, googleUser);
+        if (currentSheetId) {
+          localStorage.setItem("KEUANGANKU_BYODB_SHEET_ID", currentSheetId);
+          try {
+            await callClientLicenseApi({
+              action: 'save_spreadsheet_id',
+              token: localLic.token,
+              email: googleUser.email,
+              spreadsheetId: currentSheetId
+            });
+          } catch(e) {}
+        }
+      }
+
+      playSuccessSound();
+      showSyncToast("✓ Akun Google & Database Berhasil Ditautkan!");
+      updateByodbUi();
+
+      alert(`Selamat, ${localLic.buyerName || 'Pemilik'}!\n\nAkun Google (${googleUser.email}) berhasil ditautkan ke Lisensi Anda.\n\nDatabase spreadsheet telah dibuat otomatis di Google Drive Anda.`);
       return;
     }
 
@@ -11621,7 +11672,10 @@ function updateByodbUi() {
   let avatarEl = document.getElementById('byodb-user-avatar');
   let sheetLink = document.getElementById('byodb-open-sheet-link');
   let statusBadge = document.getElementById('byodb-status-badge');
+  let statusDot = document.getElementById('byodb-status-dot');
   let statusText = document.getElementById('byodb-status-text');
+  let connectContainer = document.getElementById('byodb-connect-action-container');
+  let connectedContainer = document.getElementById('byodb-connected-actions-container');
 
   if (gUser && gUser.email) {
     if (nameEl) nameEl.textContent = gUser.name || 'Pengguna Google';
@@ -11633,11 +11687,27 @@ function updateByodbUi() {
       sheetLink.classList.remove('hidden');
     }
     if (statusText) statusText.textContent = 'GOOGLE DRIVE TERHUBUNG';
+    if (statusBadge) {
+      statusBadge.className = "px-2.5 py-1 bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 text-[10px] font-extrabold rounded-full flex items-center gap-1.5 border border-emerald-200 dark:border-emerald-800";
+    }
+    if (statusDot) {
+      statusDot.className = "w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse";
+    }
+    if (connectContainer) connectContainer.classList.add('hidden');
+    if (connectedContainer) connectedContainer.classList.remove('hidden');
   } else {
     if (nameEl) nameEl.textContent = 'Akun Google Pemilik';
     if (emailEl) emailEl.textContent = 'Belum terhubung (Masuk via PIN/Token)';
     if (sheetLink) sheetLink.classList.add('hidden');
     if (statusText) statusText.textContent = 'BELUM TERHUBUNG';
+    if (statusBadge) {
+      statusBadge.className = "px-2.5 py-1 bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 text-[10px] font-extrabold rounded-full flex items-center gap-1.5 border border-amber-200 dark:border-amber-800";
+    }
+    if (statusDot) {
+      statusDot.className = "w-1.5 h-1.5 rounded-full bg-amber-500";
+    }
+    if (connectContainer) connectContainer.classList.remove('hidden');
+    if (connectedContainer) connectedContainer.classList.add('hidden');
   }
 }
 
