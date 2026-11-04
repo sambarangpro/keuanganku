@@ -423,7 +423,7 @@
 
       </div>
 
-      <div class="pt-2"><p class="text-[10px] text-slate-400 font-medium tracking-wide">Copyright 2006 <span class="text-slate-300 font-semibold">Sambarang Production</span></p></div>
+      <div class="pt-2"><p class="text-[10px] text-slate-400 font-medium tracking-wide">Copyright © 2026 <span class="text-slate-300 font-semibold">Sambarang Production</span></p></div>
     </div>
   </div>
 
@@ -11109,7 +11109,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v3.8';
+              let currentCacheInApp = 'keuanganku-pwa-v3.9';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
