@@ -357,7 +357,7 @@
       <div id="bumper-pin-section" class="pt-2 space-y-2.5">
 
         <!-- TOMBOL UTAMA: MASUK DENGAN AKUN GOOGLE (BYODb) -->
-        <button type="button" id="btn-google-sign-in" onclick="handleGoogleSignIn()" class="w-full py-2.5 px-3 bg-white hover:bg-slate-100 text-slate-800 font-bold text-xs rounded-xl shadow-md flex items-center justify-center gap-2.5 transition-all cursor-pointer active:scale-95 border border-slate-200">
+        <button type="button" id="btn-google-sign-in" onclick="try { handleGoogleSignIn(); } catch(e) { alert('Error: ' + (e.message || e)); }" class="w-full py-2.5 px-3 bg-white hover:bg-slate-100 text-slate-800 font-bold text-xs rounded-xl shadow-md flex items-center justify-center gap-2.5 transition-all cursor-pointer active:scale-95 border border-slate-200">
           <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -11008,7 +11008,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v2.8';
+              let currentCacheInApp = 'keuanganku-pwa-v2.9';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
@@ -11075,7 +11075,9 @@ const DEFAULT_GOOGLE_CLIENT_ID = "6909794909-1thqhkhk414i1dfadog9dh267kl1pqfa.ap
 
 function getGoogleClientId() {
   let saved = localStorage.getItem('keuanganku_google_client_id');
-  if (saved && saved.trim()) return saved.trim();
+  if (saved && saved.trim() && !saved.includes("xxxxxxxxxxxxxxxx") && !saved.includes("YOUR_CLIENT_ID")) {
+    return saved.trim();
+  }
   return DEFAULT_GOOGLE_CLIENT_ID;
 }
 
@@ -11121,6 +11123,12 @@ async function handleGoogleSignIn() {
     return;
   }
 
+  // Cek jika dibuka via file:/// (Google OAuth mutlak melarang origin file://)
+  if (window.location.protocol === 'file:') {
+    alert("⚠️ Perhatian Keamanan Google:\n\nGoogle Sign-In tidak dapat berjalan jika aplikasi dibuka langsung dari folder lokal komputer (file:///).\n\nSilakan buka aplikasi melalui link resmi:\n👉 https://sambarangpro.github.io/keuanganku/\n\natau melalui local server (http://localhost:8000).");
+    return;
+  }
+
   let clientId = getGoogleClientId();
   // Jika Client ID masih placeholder bawaan dan GIS belum dikonfigurasi, beri pilihan praktis: Masukkan Client ID atau Uji Coba Mode Simulasi
   if (!clientId || clientId.includes("xxxxxxxxxxxxxxxx") || clientId.includes("YOUR_CLIENT_ID")) {
@@ -11130,7 +11138,15 @@ async function handleGoogleSignIn() {
 
   // Cek ketersediaan SDK Google Identity Services
   if (!window.google || !google.accounts || !google.accounts.oauth2) {
-    alert("SDK Google Identity Services sedang dimuat oleh browser. Pastikan perangkat Anda terhubung ke internet dan coba lagi beberapa detik lagi.");
+    let existing = document.querySelector('script[src*="accounts.google.com/gsi/client"]');
+    if (!existing) {
+      let s = document.createElement('script');
+      s.src = "https://accounts.google.com/gsi/client";
+      s.async = true;
+      s.defer = true;
+      document.head.appendChild(s);
+    }
+    alert("⚠️ SDK Google Identity Services sedang dimuat atau diblokir oleh Adblocker/Browser.\n\n1. Pastikan perangkat Anda terhubung ke internet.\n2. Jika Anda mengaktifkan Brave Shields / Adblocker, mohon nonaktifkan untuk situs ini.\n3. Tunggu 3 detik dan klik tombol 'Masuk dengan Akun Google' kembali.");
     return;
   }
 
@@ -11145,32 +11161,42 @@ async function handleGoogleSignIn() {
       client_id: clientId,
       scope: 'https://www.googleapis.com/auth/drive.file email profile',
       callback: async (tokenResponse) => {
+        console.log("GIS Token Response:", tokenResponse);
+        if (btnText) btnText.textContent = oldText;
+        if (btn) btn.disabled = false;
+
         if (tokenResponse.error) {
           console.warn("Google OAuth error:", tokenResponse);
-          if (btnText) btnText.textContent = oldText;
-          if (btn) btn.disabled = false;
-          let errEl = document.getElementById('bumper-error-msg');
-          if (errEl) {
-            errEl.textContent = "Autentikasi Google dibatalkan atau ditolak.";
-            errEl.classList.remove('hidden');
-          }
+          let errDetail = tokenResponse.error_description || tokenResponse.details || tokenResponse.error;
+          alert("Gagal masuk dengan Google (" + tokenResponse.error + "):\n\n" + errDetail + "\n\nDomain asal (Origin): " + window.location.origin);
           return;
         }
 
         if (tokenResponse.access_token) {
           await processGoogleLoginToken(tokenResponse.access_token);
         }
+      },
+      error_callback: (err) => {
+        console.error("GIS Error Callback:", err);
         if (btnText) btnText.textContent = oldText;
         if (btn) btn.disabled = false;
+        let errMsg = (err && (err.message || err.type)) ? (err.message || err.type) : JSON.stringify(err);
+        if (err && err.type === 'popup_blocked') {
+          alert("⚠️ Jendela pop-up Google diblokir oleh browser!\n\nSilakan klik ikon pop-up di bilah alamat browser Anda dan pilih 'Selalu izinkan pop-up' untuk situs ini.");
+        } else {
+          alert("Kendala Google Identity:\n\n" + errMsg);
+        }
       }
     });
 
-    gisTokenClient.requestAccessToken({ prompt: '' });
+    // PENTING: Gunakan 'select_account' agar popup pemilihan akun Google WAJIB muncul!
+    // JANGAN gunakan prompt: '' karena itu silent-mode yang menolak membuka popup jika belum diotorisasi.
+    gisTokenClient.requestAccessToken({ prompt: 'select_account' });
   } catch(err) {
     console.error("Gagal inisialisasi Google Sign-In:", err);
     if (btnText) btnText.textContent = oldText;
     if (btn) btn.disabled = false;
-    alert("Gagal membuka dialog Google: " + (err.message || err));
+    alert("Gagal membuka dialog Google:\n\n" + (err.message || err));
   }
 }
 
@@ -11266,9 +11292,7 @@ Biaya Server: $0 (100% Milik Anda).`);
 
     // Skenario C: Kuota perangkat habis atau lisensi diblokir
     if (res && !res.success) {
-      alert("Pemberitahuan Sistem:
-
-" + (res.message || "Gagal memverifikasi akun Google Anda."));
+      alert("Pemberitahuan Sistem:\n\n" + (res.message || "Gagal memverifikasi akun Google Anda."));
       return;
     }
 
