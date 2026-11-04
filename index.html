@@ -1928,53 +1928,190 @@
         <!-- SUBTAB 1: PENGATURAN APLIKASI              -->
         <!-- ========================================== -->
         <div id="setup-view-pengaturan" class="space-y-6">
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+          <div class="flex flex-col md:flex-row gap-6 items-start">
             
-            <!-- ======================================================== -->
-            <!-- KOLOM KIRI: KEAMANAN, LISENSI RESMI & FITUR EKSKLUSIF    -->
-            <!-- ======================================================== -->
-            <div class="space-y-6">
-              
-              <!-- 1. KARTU PENGATURAN PASSWORD / PIN PRIBADI -->
-              <section id="setup-pass-section" class="bg-white dark:bg-slate-800/95 border border-outline-variant/60 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4 transition-all">
+            <!-- SIDEBAR KATEGORI PENGATURAN (MIRIP IPAD / ANDROID SETTINGS) -->
+            <div class="w-full md:w-64 lg:w-72 shrink-0">
+              <!-- Desktop / Tablet Vertical Sidebar -->
+              <div class="bg-surface dark:bg-slate-900 border border-outline-variant/70 rounded-3xl p-3 shadow-sm space-y-1.5 hidden md:block sticky top-24">
+                <div class="px-3.5 py-2 text-[10px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+                  Kategori Pengaturan
+                </div>
+                
+                <!-- Nav 1: Akun & Lisensi -->
+                <button type="button" id="setup-nav-account" onclick="switchSetupCategory('account')" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl font-bold text-xs transition-all cursor-pointer bg-primary text-white shadow-sm">
+                  <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-lg">manage_accounts</span>
+                    <span>Akun & Lisensi</span>
+                  </div>
+                  <span class="material-symbols-outlined text-sm opacity-70">chevron_right</span>
+                </button>
+
+                <!-- Nav 2: Database & Cadangan -->
+                <button type="button" id="setup-nav-database" onclick="switchSetupCategory('database')" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl font-semibold text-xs transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container">
+                  <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-lg">cloud_sync</span>
+                    <span>Database & Cadangan</span>
+                  </div>
+                  <span class="material-symbols-outlined text-sm opacity-70">chevron_right</span>
+                </button>
+
+                <!-- Nav 3: Fitur & Notifikasi -->
+                <button type="button" id="setup-nav-features" onclick="switchSetupCategory('features')" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl font-semibold text-xs transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container">
+                  <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-lg">tune</span>
+                    <span>Fitur & Notifikasi</span>
+                  </div>
+                  <span class="material-symbols-outlined text-sm opacity-70">chevron_right</span>
+                </button>
+
+                <!-- Nav 4: Sistem & Tentang -->
+                <button type="button" id="setup-nav-system" onclick="switchSetupCategory('system')" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl font-semibold text-xs transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container">
+                  <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-lg">info</span>
+                    <span>Sistem & Tentang</span>
+                  </div>
+                  <span class="material-symbols-outlined text-sm opacity-70">chevron_right</span>
+                </button>
+              </div>
+
+              <!-- Mobile Horizontal Pill Navigation (Tampil di Layar HP) -->
+              <div class="md:hidden flex items-center gap-1.5 p-1.5 bg-surface dark:bg-slate-900 border border-outline-variant/70 rounded-2xl overflow-x-auto no-scrollbar shadow-sm">
+                <button type="button" id="setup-mnav-account" onclick="switchSetupCategory('account')" class="px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap flex items-center gap-1.5 bg-primary text-white shadow-sm transition-all">
+                  <span class="material-symbols-outlined text-base">manage_accounts</span>
+                  <span>Akun</span>
+                </button>
+                <button type="button" id="setup-mnav-database" onclick="switchSetupCategory('database')" class="px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap flex items-center gap-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all">
+                  <span class="material-symbols-outlined text-base">cloud_sync</span>
+                  <span>Database</span>
+                </button>
+                <button type="button" id="setup-mnav-features" onclick="switchSetupCategory('features')" class="px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap flex items-center gap-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all">
+                  <span class="material-symbols-outlined text-base">tune</span>
+                  <span>Fitur</span>
+                </button>
+                <button type="button" id="setup-mnav-system" onclick="switchSetupCategory('system')" class="px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap flex items-center gap-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all">
+                  <span class="material-symbols-outlined text-base">info</span>
+                  <span>Sistem</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- RIGHT CONTENT AREA (ISI SETTING MENURUT KATEGORI) -->
+            <div class="flex-1 min-w-0 w-full space-y-6">
+
+              <!-- ======================================================== -->
+              <!-- KATEGORI 1: AKUN & LISENSI                               -->
+              <!-- ======================================================== -->
+              <div id="setup-pane-account" class="space-y-6">
+                <!-- Header Banner Kategori -->
+                <div class="flex items-center gap-3 pb-1 border-b border-outline-variant/40">
+                  <div class="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                    <span class="material-symbols-outlined text-xl">manage_accounts</span>
+                  </div>
+                  <div>
+                    <h2 class="text-sm sm:text-base font-extrabold text-on-surface">Akun & Lisensi Aplikasi</h2>
+                    <p class="text-[11px] text-on-surface-variant">Kelola akun Google pemilik, token lisensi resmi, dan perangkat terhubung</p>
+                  </div>
+                </div>
+
+                <!-- 1. Google Drive BYODb Card -->
+                <!-- 0. DATABASE PRIBADI (BYODb GOOGLE DRIVE) -->
+              <section id="setup-byodb-section" class="bg-white dark:bg-slate-800/95 border border-emerald-500/30 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4 transition-all">
                 <div class="flex items-center justify-between flex-wrap gap-2">
                   <div class="flex items-center gap-2.5">
-                    <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center border border-amber-500/20">
-                      <span id="setup-pass-icon" class="material-symbols-outlined text-xl">key</span>
+                    <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+                      <span class="material-symbols-outlined text-xl">cloud_done</span>
                     </div>
                     <div>
-                      <h2 id="setup-pass-title" class="font-headline-md text-base sm:text-lg font-bold text-on-surface">Ubah Password & PIN Akses</h2>
-                      <p class="text-[10px] text-gray-500 dark:text-gray-400">Proteksi login dan kunci keamanan multi-perangkat</p>
+                      <h2 class="font-headline-md text-base sm:text-lg font-bold text-on-surface">Database Pribadi (Google Drive BYODb)</h2>
+                      <p class="text-[10px] text-gray-500 dark:text-gray-400">Database Anda 100% tersimpan di Google Drive milik Anda sendiri</p>
                     </div>
                   </div>
-                  <span id="setup-pass-badge" class="px-2.5 py-1 text-[10px] font-extrabold rounded-full border bg-amber-500/15 text-amber-500 border-amber-500/30">
-                    MASIH TOKEN BAWAAN
+                  <span id="byodb-status-badge" class="px-2.5 py-1 bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 text-[10px] font-extrabold rounded-full flex items-center gap-1.5 border border-amber-200 dark:border-amber-800">
+                    <span id="byodb-status-dot" class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                    <span id="byodb-status-text">BELUM TERHUBUNG</span>
                   </span>
                 </div>
 
-                <div id="setup-pass-info-box" class="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs leading-relaxed space-y-1">
-                  <p class="font-bold flex items-center gap-1.5 text-amber-800 dark:text-amber-300">
-                    <span class="material-symbols-outlined text-sm">security</span> Kunci Keamanan Anti-Sharing
+                <div class="p-3.5 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/40 text-xs text-emerald-950 dark:text-emerald-200 space-y-1.5 leading-relaxed">
+                  <p class="font-bold flex items-center gap-1.5 text-emerald-800 dark:text-emerald-300">
+                    <span class="material-symbols-outlined text-sm">security</span> 100% Privasi & Tanpa Biaya Server ($0)
                   </p>
-                  <p id="setup-pass-info-text">
-                    Saat ini Anda masih masuk menggunakan Token Bawaan (akses terkunci hanya 1 perangkat). Tentukan <b>PIN Pribadi</b> Anda di bawah ini. Setelah PIN disimpan, Token bawaan akan otomatis <b>HANGUS</b> sehingga tidak bisa digunakan orang lain, dan fitur Sinkronisasi Multi-Perangkat akan aktif!
+                  <p class="text-[11px] opacity-90">
+                    Seluruh data transaksi dan foto nota disimpan langsung di Google Spreadsheet pada akun Google Drive Anda. Server developer tidak pernah menyimpan atau membaca data transaksi pribadi Anda.
                   </p>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-                  <div class="sm:col-span-2 relative flex items-center">
-                    <input type="password" id="new-pass-input" placeholder="Masukkan PIN Pribadi Baru (4-12 Karakter)" class="w-full p-2.5 pr-10 border rounded-xl text-xs font-mono-data bg-surface text-on-surface tracking-wider outline-none focus:border-primary">
-                    <button type="button" onclick="toggleNewPassVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface flex items-center justify-center p-1 cursor-pointer focus:outline-none" title="Lihat / Sembunyikan PIN">
-                      <span class="material-symbols-outlined text-lg" id="new-pass-eye-icon">visibility</span>
+                <!-- Info Akun Google & Tautan Spreadsheet Langsung -->
+                <div class="p-3 bg-surface-container dark:bg-slate-900/80 rounded-2xl border border-outline-variant/60 flex items-center justify-between flex-wrap gap-2">
+                  <div class="flex items-center gap-2.5">
+                    <img id="byodb-user-avatar" src="icon-96.png" class="w-9 h-9 rounded-full border border-outline-variant object-cover" alt="Avatar">
+                    <div>
+                      <p id="byodb-user-name" class="text-xs font-bold text-on-surface">Akun Google Pemilik</p>
+                      <p id="byodb-user-email" class="text-[11px] text-blue-600 dark:text-blue-400 font-mono-data">Belum terhubung</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <a id="byodb-open-sheet-link" href="#" target="_blank" class="hidden px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] rounded-xl shadow-sm flex items-center gap-1 transition-all" title="Buka Spreadsheet Anda langsung di Google Sheets">
+                      <span class="material-symbols-outlined text-xs">table_chart</span>
+                      <span>Buka di Google Sheets ↗</span>
+                    </a>
+                  </div>
+                </div>
+
+                <!-- Tombol Aksi BYODb -->
+                <!-- 1. Tombol Saat Belum Terhubung -->
+                <div id="byodb-connect-action-container" class="pt-1">
+                  <button type="button" onclick="handleGoogleSignIn()" class="w-full py-2.5 px-3 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-white font-bold text-xs rounded-xl shadow-md border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2.5 transition-all active:scale-95 cursor-pointer">
+                    <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                    </svg>
+                    <span>Hubungkan Akun Google & Buat Database Drive</span>
+                  </button>
+                </div>
+
+                <!-- 2. Tombol Saat Sudah Terhubung -->
+                <div id="byodb-connected-actions-container" class="hidden space-y-2.5 pt-1">
+                  <div class="grid grid-cols-2 gap-2.5">
+                    <button type="button" onclick="syncByodbNow(true)" class="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer" title="Simpan perubahan data di perangkat ini ke Google Drive">
+                      <span class="material-symbols-outlined text-base">cloud_upload</span>
+                      <span>Upload ke Drive</span>
+                    </button>
+                    <button type="button" onclick="pullByodbNow(true)" class="py-2.5 px-3 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer" title="Ambil data terbaru dari Google Drive ke perangkat ini">
+                      <span class="material-symbols-outlined text-base">cloud_download</span>
+                      <span>Tarik dari Drive</span>
                     </button>
                   </div>
-                  <button id="btn-save-personal-pin" onclick="handleBurnTokenAndSetPin()" class="w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs rounded-xl shadow flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95">
-                    <span class="material-symbols-outlined text-sm">local_fire_department</span> BUAT PIN & HANGUSKAN
+
+                  <!-- Tombol Migrasi dari Cloud Lama ke Google Drive Baru -->
+                  <button type="button" onclick="migrateOldCloudToByodb()" class="w-full py-2.5 px-3 bg-gradient-to-r from-blue-500/10 via-emerald-500/10 to-teal-500/10 hover:from-blue-500/20 hover:to-teal-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/60 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer">
+                    <span class="material-symbols-outlined text-base text-emerald-600 dark:text-emerald-400">drive_file_move</span>
+                    <span>Salin Data dari Cloud Lama ke Google Drive Baru (1-Klik)</span>
+                  </button>
+
+                  <div class="pt-0.5 flex justify-end">
+                    <button type="button" onclick="disconnectGoogleAccount()" class="text-[11px] text-rose-500 hover:text-rose-700 hover:underline flex items-center gap-1 cursor-pointer">
+                      <span class="material-symbols-outlined text-xs">logout</span>
+                      <span>Putuskan Akun Google di Perangkat Ini</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Konfigurasi Client ID Google OAuth (Opsional Pengembang) -->
+                <div class="pt-2 border-t border-outline-variant/40 flex items-center justify-between text-[11px]">
+                  <span class="text-gray-500 dark:text-gray-400">Google OAuth 2.0 Client ID:</span>
+                  <button type="button" onclick="openGoogleConfigModal()" class="text-primary hover:underline font-bold flex items-center gap-1 cursor-pointer">
+                    <span class="material-symbols-outlined text-xs">settings</span>
+                    <span>Atur Client ID</span>
                   </button>
                 </div>
               </section>
 
-              <!-- 2. LISENSI RESMI & DEVICE STATUS (DARK ROYAL SLATE THEME) -->
+                <!-- 2. Lisensi Resmi & Device Status Card -->
+                <!-- 2. LISENSI RESMI & DEVICE STATUS (DARK ROYAL SLATE THEME) -->
               <section class="bg-slate-900 border border-slate-800 hover:border-slate-700/80 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4 text-white transition-all">
                 <div class="flex items-center justify-between flex-wrap gap-2">
                   <div class="flex items-center gap-2.5 cursor-pointer select-none" onclick="handleSecretDevTap()" title="Lisensi Resmi Keuanganku PRO">
@@ -2081,7 +2218,203 @@
                 </div>
               </section>
 
-              <!-- 3. FITUR EKSKLUSIF PEMILIK (DIPINDAHKAN KE SINI AGAR SEIMBANG & ELEGAN) -->
+                <!-- 3. Ubah PIN Keamanan Pribadi Card -->
+                <!-- 1. KARTU PENGATURAN PASSWORD / PIN PRIBADI -->
+              <section id="setup-pass-section" class="bg-white dark:bg-slate-800/95 border border-outline-variant/60 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4 transition-all">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center border border-amber-500/20">
+                      <span id="setup-pass-icon" class="material-symbols-outlined text-xl">key</span>
+                    </div>
+                    <div>
+                      <h2 id="setup-pass-title" class="font-headline-md text-base sm:text-lg font-bold text-on-surface">Ubah Password & PIN Akses</h2>
+                      <p class="text-[10px] text-gray-500 dark:text-gray-400">Proteksi login dan kunci keamanan multi-perangkat</p>
+                    </div>
+                  </div>
+                  <span id="setup-pass-badge" class="px-2.5 py-1 text-[10px] font-extrabold rounded-full border bg-amber-500/15 text-amber-500 border-amber-500/30">
+                    MASIH TOKEN BAWAAN
+                  </span>
+                </div>
+
+                <div id="setup-pass-info-box" class="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs leading-relaxed space-y-1">
+                  <p class="font-bold flex items-center gap-1.5 text-amber-800 dark:text-amber-300">
+                    <span class="material-symbols-outlined text-sm">security</span> Kunci Keamanan Anti-Sharing
+                  </p>
+                  <p id="setup-pass-info-text">
+                    Saat ini Anda masih masuk menggunakan Token Bawaan (akses terkunci hanya 1 perangkat). Tentukan <b>PIN Pribadi</b> Anda di bawah ini. Setelah PIN disimpan, Token bawaan akan otomatis <b>HANGUS</b> sehingga tidak bisa digunakan orang lain, dan fitur Sinkronisasi Multi-Perangkat akan aktif!
+                  </p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                  <div class="sm:col-span-2 relative flex items-center">
+                    <input type="password" id="new-pass-input" placeholder="Masukkan PIN Pribadi Baru (4-12 Karakter)" class="w-full p-2.5 pr-10 border rounded-xl text-xs font-mono-data bg-surface text-on-surface tracking-wider outline-none focus:border-primary">
+                    <button type="button" onclick="toggleNewPassVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface flex items-center justify-center p-1 cursor-pointer focus:outline-none" title="Lihat / Sembunyikan PIN">
+                      <span class="material-symbols-outlined text-lg" id="new-pass-eye-icon">visibility</span>
+                    </button>
+                  </div>
+                  <button id="btn-save-personal-pin" onclick="handleBurnTokenAndSetPin()" class="w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs rounded-xl shadow flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95">
+                    <span class="material-symbols-outlined text-sm">local_fire_department</span> BUAT PIN & HANGUSKAN
+                  </button>
+                </div>
+              </section>
+              </div>
+
+              <!-- ======================================================== -->
+              <!-- KATEGORI 2: DATABASE & CADANGAN                          -->
+              <!-- ======================================================== -->
+              <div id="setup-pane-database" class="space-y-6 hidden">
+                <!-- Header Banner Kategori -->
+                <div class="flex items-center gap-3 pb-1 border-b border-outline-variant/40">
+                  <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-xl">cloud_sync</span>
+                  </div>
+                  <div>
+                    <h2 class="text-sm sm:text-base font-extrabold text-on-surface">Database & Cadangan Data</h2>
+                    <p class="text-[11px] text-on-surface-variant">Sinkronisasi data multi-perangkat dan pencadangan offline</p>
+                  </div>
+                </div>
+
+                <!-- Kartu Sinkronisasi Google Drive Cepat -->
+                <section class="bg-white dark:bg-slate-800/95 border border-emerald-500/30 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4 transition-all">
+                  <div class="flex items-center justify-between flex-wrap gap-2">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+                        <span class="material-symbols-outlined text-xl">sync</span>
+                      </div>
+                      <div>
+                        <h3 class="font-headline-md text-base sm:text-lg font-bold text-on-surface">Sinkronisasi Google Drive</h3>
+                        <p class="text-[10px] text-gray-500 dark:text-gray-400">Penyimpanan cloud pribadi milik Anda sendiri ($0 Biaya Server)</p>
+                      </div>
+                    </div>
+                    <span class="px-2.5 py-1 bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 text-[10px] font-extrabold rounded-full flex items-center gap-1.5 border border-emerald-200 dark:border-emerald-800">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                      GOOGLE DRIVE BYODb
+                    </span>
+                  </div>
+
+                  <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                    Setiap transaksi otomatis tersimpan di Google Drive Anda. Jika Anda baru saja menginput di perangkat lain atau ingin memaksakan pencadangan sekarang, gunakan tombol di bawah:
+                  </p>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <button type="button" onclick="syncByodbNow()" class="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
+                      <span class="material-symbols-outlined text-base">cloud_upload</span>
+                      <span>Upload ke Google Drive</span>
+                    </button>
+                    <button type="button" onclick="pullByodbNow()" class="py-2.5 px-3 bg-surface-container dark:bg-slate-700 hover:bg-emerald-50 dark:hover:bg-slate-600 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
+                      <span class="material-symbols-outlined text-base">cloud_download</span>
+                      <span>Tarik dari Google Drive</span>
+                    </button>
+                  </div>
+
+                  <!-- Tombol Migrasi 1-Klik dari Cloud Lama -->
+                  <div class="pt-2 border-t border-outline-variant/50">
+                    <button type="button" onclick="migrateOldCloudToByodb()" class="w-full py-2.5 px-3 bg-gradient-to-r from-teal-600 to-emerald-600 hover:brightness-110 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer" title="Pindahkan seluruh data transaksi dari script Cloud lama ke Google Drive baru">
+                      <span class="material-symbols-outlined text-base">published_with_changes</span>
+                      <span>Salin Data dari Cloud Lama ke Google Drive Baru (1-Klik)</span>
+                    </button>
+                  </div>
+                </section>
+
+                <!-- Cloud & Cadangan Manual Component -->
+                <!-- 1. KONEKSI CLOUD & AUTO-SYNC -->
+              <section id="setup-cloud-section" class="bg-white dark:bg-slate-800/95 border border-blue-500/30 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4 transition-all">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-blue-600/10 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-500/20">
+                      <span class="material-symbols-outlined text-xl">cloud_sync</span>
+                    </div>
+                    <div>
+                      <h2 class="font-headline-md text-base sm:text-lg font-bold text-blue-950 dark:text-blue-100">Koneksi Cloud & Auto-Sync</h2>
+                      <p class="text-[10px] text-gray-500 dark:text-gray-400">Sinkronisasi otomatis multi-perangkat via Google Sheets</p>
+                    </div>
+                  </div>
+                  <span id="setup-cloud-status-badge" class="px-2.5 py-1 bg-green-100 dark:bg-green-950/80 text-green-700 dark:text-green-300 text-[10px] font-extrabold rounded-full flex items-center gap-1.5 border border-green-200 dark:border-green-800">
+                    <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> AUTO-SYNC AKTIF
+                  </span>
+                </div>
+
+                <!-- NOTIFIKASI KUNCI JIKA MASIH MENGGUNAKAN TOKEN BAWAAN -->
+                <div id="cloud-sync-lock-notice" class="hidden p-3.5 rounded-2xl bg-amber-500/15 border border-amber-500/40 text-amber-900 dark:text-amber-200 text-xs flex items-start gap-2.5">
+                  <span class="material-symbols-outlined text-amber-500 text-lg shrink-0 mt-0.5">lock</span>
+                  <div class="space-y-1">
+                    <p class="font-bold text-amber-800 dark:text-amber-300">Fitur Sinkronisasi Cloud Terkunci</p>
+                    <p class="text-[11px] leading-relaxed opacity-95">
+                      Anda saat ini masih masuk menggunakan <b>Token Bawaan</b> (mode akses 1 perangkat). Untuk menghindari aplikasi dibagikan secara ilegal, fitur sinkronisasi otomatis multi-perangkat hanya aktif setelah Anda mengganti Token menjadi <b>PIN Pribadi</b> Anda sendiri.
+                    </p>
+                  </div>
+                </div>
+
+                <p class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed bg-blue-50/60 dark:bg-blue-950/30 p-3 rounded-2xl border border-blue-100 dark:border-blue-900/40">
+                  Masukkan Link Web App Google Sheets Anda. <b>Data otomatis tersinkron</b> saat membuka aplikasi, berpindah menu, atau input transaksi di HP/PC lain.
+                </p>
+
+                <div>
+                  <label class="text-[10px] font-bold text-gray-500 uppercase block mb-1">Link Web App Google Sheets (Cloud Key)</label>
+                  <input type="text" id="setup-cloud-url" placeholder="https://script.google.com/macros/s/..." onchange="updateCloudUrl(this.value)" class="w-full p-2.5 border border-blue-300 dark:border-blue-700 rounded-xl text-xs font-mono-data bg-surface text-on-surface outline-none focus:border-blue-500">
+                </div>
+
+                <!-- Grid Tombol Sinkronisasi Utama -->
+                <div class="space-y-2 pt-1 border-b border-outline-variant/40 pb-4">
+                  <div class="grid grid-cols-2 gap-2.5">
+                    <button id="btn-upload-cloud" onclick="forceUploadToCloud()" class="py-2.5 px-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95">
+                      <span class="material-symbols-outlined text-base">cloud_upload</span>
+                      <span>PAKSA UPLOAD CLOUD</span>
+                    </button>
+                    <button id="btn-download-cloud" onclick="forceDownloadFromCloud()" class="py-2.5 px-3 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95">
+                      <span class="material-symbols-outlined text-base">cloud_download</span>
+                      <span>PAKSA TARIK CLOUD</span>
+                    </button>
+                  </div>
+                  <button type="button" onclick="openCloudScriptModal()" class="w-full py-2.5 px-3 bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-700 hover:brightness-110 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95">
+                    <span class="material-symbols-outlined text-base">code</span>
+                    <span>Salin Script Cloud Google Sheets (Dukungan Foto/Bukti Bayar & Data Besar)</span>
+                  </button>
+                </div>
+
+                <!-- Cadangan Manual (Export & Import) -->
+                <div class="pt-1 space-y-2">
+                  <div class="flex items-center justify-between">
+                    <p class="text-xs text-on-surface font-bold flex items-center gap-1.5">
+                      <span class="material-symbols-outlined text-sm text-blue-600">save_as</span>
+                      <span>Cadangan Manual (Backup & Restore Offline)</span>
+                    </p>
+                    <span class="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">File & Teks • Tanpa Internet</span>
+                  </div>
+                  <p class="text-[10px] text-gray-500 dark:text-gray-400 leading-relaxed">
+                    Simpan seluruh data ke file <b>.json</b> atau pulihkan data di HP/laptop lain tanpa kuota internet.
+                  </p>
+                  <div class="grid grid-cols-2 gap-2 pt-1">
+                    <button onclick="openManualBackupModal('export')" class="py-2.5 px-3 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 font-bold text-[11px] rounded-xl shadow-2xs flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer" title="Download File Cadangan .json atau Salin Teks Database">
+                      <span class="material-symbols-outlined text-sm">download</span>
+                      <span>1. CADANGKAN (EXPORT)</span>
+                    </button>
+                    <button onclick="openManualBackupModal('import')" class="py-2.5 px-3 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 font-bold text-[11px] rounded-xl shadow-2xs flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer" title="Pilih File Cadangan .json atau Tempel Teks Database">
+                      <span class="material-symbols-outlined text-sm">upload_file</span>
+                      <span>2. PULIHKAN (IMPORT)</span>
+                    </button>
+                  </div>
+                </div>
+              </section>
+              </div>
+
+              <!-- ======================================================== -->
+              <!-- KATEGORI 3: FITUR & NOTIFIKASI                           -->
+              <!-- ======================================================== -->
+              <div id="setup-pane-features" class="space-y-6 hidden">
+                <!-- Header Banner Kategori -->
+                <div class="flex items-center gap-3 pb-1 border-b border-outline-variant/40">
+                  <div class="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-xl">tune</span>
+                  </div>
+                  <div>
+                    <h2 class="text-sm sm:text-base font-extrabold text-on-surface">Fitur Tambahan & Notifikasi</h2>
+                    <p class="text-[11px] text-on-surface-variant">Atur modul kalkulator, zakat, indikator runway, dan pengingat jatuh tempo</p>
+                  </div>
+                </div>
+
+                <!-- 1. Fitur Eksklusif Pemilik -->
+                <!-- 3. FITUR EKSKLUSIF PEMILIK (DIPINDAHKAN KE SINI AGAR SEIMBANG & ELEGAN) -->
               <section id="setup-owner-feature-section" class="bg-white dark:bg-slate-800/95 border border-indigo-500/30 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4 transition-all hidden">
                 <div class="flex items-center justify-between flex-wrap gap-2">
                   <div class="flex items-center gap-2.5">
@@ -2221,189 +2554,8 @@
                 </div>
               </section>
 
-            </div>
-
-            <!-- ======================================================== -->
-            <!-- KOLOM KANAN: BYODb, CLOUD SYNC & SISTEM APLIKASI         -->
-            <!-- ======================================================== -->
-            <div class="space-y-6">
-
-              <!-- 0. DATABASE PRIBADI (BYODb GOOGLE DRIVE) -->
-              <section id="setup-byodb-section" class="bg-white dark:bg-slate-800/95 border border-emerald-500/30 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4 transition-all">
-                <div class="flex items-center justify-between flex-wrap gap-2">
-                  <div class="flex items-center gap-2.5">
-                    <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/20">
-                      <span class="material-symbols-outlined text-xl">cloud_done</span>
-                    </div>
-                    <div>
-                      <h2 class="font-headline-md text-base sm:text-lg font-bold text-on-surface">Database Pribadi (Google Drive BYODb)</h2>
-                      <p class="text-[10px] text-gray-500 dark:text-gray-400">Database Anda 100% tersimpan di Google Drive milik Anda sendiri</p>
-                    </div>
-                  </div>
-                  <span id="byodb-status-badge" class="px-2.5 py-1 bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 text-[10px] font-extrabold rounded-full flex items-center gap-1.5 border border-amber-200 dark:border-amber-800">
-                    <span id="byodb-status-dot" class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                    <span id="byodb-status-text">BELUM TERHUBUNG</span>
-                  </span>
-                </div>
-
-                <div class="p-3.5 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/40 text-xs text-emerald-950 dark:text-emerald-200 space-y-1.5 leading-relaxed">
-                  <p class="font-bold flex items-center gap-1.5 text-emerald-800 dark:text-emerald-300">
-                    <span class="material-symbols-outlined text-sm">security</span> 100% Privasi & Tanpa Biaya Server ($0)
-                  </p>
-                  <p class="text-[11px] opacity-90">
-                    Seluruh data transaksi dan foto nota disimpan langsung di Google Spreadsheet pada akun Google Drive Anda. Server developer tidak pernah menyimpan atau membaca data transaksi pribadi Anda.
-                  </p>
-                </div>
-
-                <!-- Info Akun Google & Tautan Spreadsheet Langsung -->
-                <div class="p-3 bg-surface-container dark:bg-slate-900/80 rounded-2xl border border-outline-variant/60 flex items-center justify-between flex-wrap gap-2">
-                  <div class="flex items-center gap-2.5">
-                    <img id="byodb-user-avatar" src="icon-96.png" class="w-9 h-9 rounded-full border border-outline-variant object-cover" alt="Avatar">
-                    <div>
-                      <p id="byodb-user-name" class="text-xs font-bold text-on-surface">Akun Google Pemilik</p>
-                      <p id="byodb-user-email" class="text-[11px] text-blue-600 dark:text-blue-400 font-mono-data">Belum terhubung</p>
-                    </div>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <a id="byodb-open-sheet-link" href="#" target="_blank" class="hidden px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] rounded-xl shadow-sm flex items-center gap-1 transition-all" title="Buka Spreadsheet Anda langsung di Google Sheets">
-                      <span class="material-symbols-outlined text-xs">table_chart</span>
-                      <span>Buka di Google Sheets ↗</span>
-                    </a>
-                  </div>
-                </div>
-
-                <!-- Tombol Aksi BYODb -->
-                <!-- 1. Tombol Saat Belum Terhubung -->
-                <div id="byodb-connect-action-container" class="pt-1">
-                  <button type="button" onclick="handleGoogleSignIn()" class="w-full py-2.5 px-3 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-white font-bold text-xs rounded-xl shadow-md border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2.5 transition-all active:scale-95 cursor-pointer">
-                    <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                    </svg>
-                    <span>Hubungkan Akun Google & Buat Database Drive</span>
-                  </button>
-                </div>
-
-                <!-- 2. Tombol Saat Sudah Terhubung -->
-                <div id="byodb-connected-actions-container" class="hidden space-y-2.5 pt-1">
-                  <div class="grid grid-cols-2 gap-2.5">
-                    <button type="button" onclick="syncByodbNow(true)" class="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer" title="Simpan perubahan data di perangkat ini ke Google Drive">
-                      <span class="material-symbols-outlined text-base">cloud_upload</span>
-                      <span>Upload ke Drive</span>
-                    </button>
-                    <button type="button" onclick="pullByodbNow(true)" class="py-2.5 px-3 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer" title="Ambil data terbaru dari Google Drive ke perangkat ini">
-                      <span class="material-symbols-outlined text-base">cloud_download</span>
-                      <span>Tarik dari Drive</span>
-                    </button>
-                  </div>
-
-                  <!-- Tombol Migrasi dari Cloud Lama ke Google Drive Baru -->
-                  <button type="button" onclick="migrateOldCloudToByodb()" class="w-full py-2.5 px-3 bg-gradient-to-r from-blue-500/10 via-emerald-500/10 to-teal-500/10 hover:from-blue-500/20 hover:to-teal-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/60 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer">
-                    <span class="material-symbols-outlined text-base text-emerald-600 dark:text-emerald-400">drive_file_move</span>
-                    <span>Salin Data dari Cloud Lama ke Google Drive Baru (1-Klik)</span>
-                  </button>
-
-                  <div class="pt-0.5 flex justify-end">
-                    <button type="button" onclick="disconnectGoogleAccount()" class="text-[11px] text-rose-500 hover:text-rose-700 hover:underline flex items-center gap-1 cursor-pointer">
-                      <span class="material-symbols-outlined text-xs">logout</span>
-                      <span>Putuskan Akun Google di Perangkat Ini</span>
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Konfigurasi Client ID Google OAuth (Opsional Pengembang) -->
-                <div class="pt-2 border-t border-outline-variant/40 flex items-center justify-between text-[11px]">
-                  <span class="text-gray-500 dark:text-gray-400">Google OAuth 2.0 Client ID:</span>
-                  <button type="button" onclick="openGoogleConfigModal()" class="text-primary hover:underline font-bold flex items-center gap-1 cursor-pointer">
-                    <span class="material-symbols-outlined text-xs">settings</span>
-                    <span>Atur Client ID</span>
-                  </button>
-                </div>
-              </section>
-
-              <!-- 1. KONEKSI CLOUD & AUTO-SYNC -->
-              <section id="setup-cloud-section" class="bg-white dark:bg-slate-800/95 border border-blue-500/30 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4 transition-all">
-                <div class="flex items-center justify-between flex-wrap gap-2">
-                  <div class="flex items-center gap-2.5">
-                    <div class="w-9 h-9 rounded-xl bg-blue-600/10 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-500/20">
-                      <span class="material-symbols-outlined text-xl">cloud_sync</span>
-                    </div>
-                    <div>
-                      <h2 class="font-headline-md text-base sm:text-lg font-bold text-blue-950 dark:text-blue-100">Koneksi Cloud & Auto-Sync</h2>
-                      <p class="text-[10px] text-gray-500 dark:text-gray-400">Sinkronisasi otomatis multi-perangkat via Google Sheets</p>
-                    </div>
-                  </div>
-                  <span id="setup-cloud-status-badge" class="px-2.5 py-1 bg-green-100 dark:bg-green-950/80 text-green-700 dark:text-green-300 text-[10px] font-extrabold rounded-full flex items-center gap-1.5 border border-green-200 dark:border-green-800">
-                    <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> AUTO-SYNC AKTIF
-                  </span>
-                </div>
-
-                <!-- NOTIFIKASI KUNCI JIKA MASIH MENGGUNAKAN TOKEN BAWAAN -->
-                <div id="cloud-sync-lock-notice" class="hidden p-3.5 rounded-2xl bg-amber-500/15 border border-amber-500/40 text-amber-900 dark:text-amber-200 text-xs flex items-start gap-2.5">
-                  <span class="material-symbols-outlined text-amber-500 text-lg shrink-0 mt-0.5">lock</span>
-                  <div class="space-y-1">
-                    <p class="font-bold text-amber-800 dark:text-amber-300">Fitur Sinkronisasi Cloud Terkunci</p>
-                    <p class="text-[11px] leading-relaxed opacity-95">
-                      Anda saat ini masih masuk menggunakan <b>Token Bawaan</b> (mode akses 1 perangkat). Untuk menghindari aplikasi dibagikan secara ilegal, fitur sinkronisasi otomatis multi-perangkat hanya aktif setelah Anda mengganti Token menjadi <b>PIN Pribadi</b> Anda sendiri.
-                    </p>
-                  </div>
-                </div>
-
-                <p class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed bg-blue-50/60 dark:bg-blue-950/30 p-3 rounded-2xl border border-blue-100 dark:border-blue-900/40">
-                  Masukkan Link Web App Google Sheets Anda. <b>Data otomatis tersinkron</b> saat membuka aplikasi, berpindah menu, atau input transaksi di HP/PC lain.
-                </p>
-
-                <div>
-                  <label class="text-[10px] font-bold text-gray-500 uppercase block mb-1">Link Web App Google Sheets (Cloud Key)</label>
-                  <input type="text" id="setup-cloud-url" placeholder="https://script.google.com/macros/s/..." onchange="updateCloudUrl(this.value)" class="w-full p-2.5 border border-blue-300 dark:border-blue-700 rounded-xl text-xs font-mono-data bg-surface text-on-surface outline-none focus:border-blue-500">
-                </div>
-
-                <!-- Grid Tombol Sinkronisasi Utama -->
-                <div class="space-y-2 pt-1 border-b border-outline-variant/40 pb-4">
-                  <div class="grid grid-cols-2 gap-2.5">
-                    <button id="btn-upload-cloud" onclick="forceUploadToCloud()" class="py-2.5 px-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95">
-                      <span class="material-symbols-outlined text-base">cloud_upload</span>
-                      <span>PAKSA UPLOAD CLOUD</span>
-                    </button>
-                    <button id="btn-download-cloud" onclick="forceDownloadFromCloud()" class="py-2.5 px-3 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95">
-                      <span class="material-symbols-outlined text-base">cloud_download</span>
-                      <span>PAKSA TARIK CLOUD</span>
-                    </button>
-                  </div>
-                  <button type="button" onclick="openCloudScriptModal()" class="w-full py-2.5 px-3 bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-700 hover:brightness-110 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95">
-                    <span class="material-symbols-outlined text-base">code</span>
-                    <span>Salin Script Cloud Google Sheets (Dukungan Foto/Bukti Bayar & Data Besar)</span>
-                  </button>
-                </div>
-
-                <!-- Cadangan Manual (Export & Import) -->
-                <div class="pt-1 space-y-2">
-                  <div class="flex items-center justify-between">
-                    <p class="text-xs text-on-surface font-bold flex items-center gap-1.5">
-                      <span class="material-symbols-outlined text-sm text-blue-600">save_as</span>
-                      <span>Cadangan Manual (Backup & Restore Offline)</span>
-                    </p>
-                    <span class="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">File & Teks • Tanpa Internet</span>
-                  </div>
-                  <p class="text-[10px] text-gray-500 dark:text-gray-400 leading-relaxed">
-                    Simpan seluruh data ke file <b>.json</b> atau pulihkan data di HP/laptop lain tanpa kuota internet.
-                  </p>
-                  <div class="grid grid-cols-2 gap-2 pt-1">
-                    <button onclick="openManualBackupModal('export')" class="py-2.5 px-3 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 font-bold text-[11px] rounded-xl shadow-2xs flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer" title="Download File Cadangan .json atau Salin Teks Database">
-                      <span class="material-symbols-outlined text-sm">download</span>
-                      <span>1. CADANGKAN (EXPORT)</span>
-                    </button>
-                    <button onclick="openManualBackupModal('import')" class="py-2.5 px-3 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 font-bold text-[11px] rounded-xl shadow-2xs flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer" title="Pilih File Cadangan .json atau Tempel Teks Database">
-                      <span class="material-symbols-outlined text-sm">upload_file</span>
-                      <span>2. PULIHKAN (IMPORT)</span>
-                    </button>
-                  </div>
-                </div>
-              </section>
-
-              <!-- 2. NOTIFIKASI PENGINGAT PERANGKAT -->
+                <!-- 2. Notifikasi Pengingat Perangkat -->
+                <!-- 2. NOTIFIKASI PENGINGAT PERANGKAT -->
               <section class="bg-white dark:bg-slate-800/95 border border-amber-500/30 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4 transition-all">
                 <div class="flex items-center justify-between flex-wrap gap-2">
                   <div class="flex items-center gap-2.5">
@@ -2462,8 +2614,25 @@
                   *Pastikan izin notifikasi diizinkan pada pengaturan browser/sistem perangkat Anda.
                 </div>
               </section>
+              </div>
 
-              <!-- 3. PASANG APLIKASI DI PERANGKAT INI (PWA) -->
+              <!-- ======================================================== -->
+              <!-- KATEGORI 4: SISTEM & TENTANG                             -->
+              <!-- ======================================================== -->
+              <div id="setup-pane-system" class="space-y-6 hidden">
+                <!-- Header Banner Kategori -->
+                <div class="flex items-center gap-3 pb-1 border-b border-outline-variant/40">
+                  <div class="w-8 h-8 rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-xl">info</span>
+                  </div>
+                  <div>
+                    <h2 class="text-sm sm:text-base font-extrabold text-on-surface">Sistem & Informasi Aplikasi</h2>
+                    <p class="text-[11px] text-on-surface-variant">Instalasi aplikasi, update patch, dan buku panduan penggunaan</p>
+                  </div>
+                </div>
+
+                <!-- 1. Pasang Aplikasi di Perangkat Ini (PWA) -->
+                <!-- 3. PASANG APLIKASI DI PERANGKAT INI (PWA) -->
               <section class="bg-white dark:bg-slate-800/95 border border-outline-variant/60 rounded-3xl p-5 sm:p-6 shadow-sm space-y-3 transition-all">
                 <div class="flex items-center justify-between flex-wrap gap-2">
                   <div class="flex items-center gap-2.5">
@@ -2487,7 +2656,8 @@
                 </button>
               </section>
 
-              <!-- 4. PEMBARUAN VERSI APLIKASI (UPDATE MANAGER) -->
+                <!-- 2. Pembaruan Versi Aplikasi -->
+                <!-- 4. PEMBARUAN VERSI APLIKASI (UPDATE MANAGER) -->
               <section class="bg-white dark:bg-slate-800/95 border border-cyan-500/30 rounded-3xl p-5 sm:p-6 shadow-sm space-y-3 transition-all">
                 <div class="flex items-center justify-between flex-wrap gap-2">
                   <div class="flex items-center gap-2.5">
@@ -2519,16 +2689,31 @@
                 <div id="update-check-status-text" class="hidden text-[11px] text-center font-medium pt-1"></div>
               </section>
 
+                <!-- 3. Kartu Bantuan & Buku Panduan Bergambar -->
+                <section class="bg-surface dark:bg-slate-900 border border-outline-variant/70 rounded-3xl p-5 sm:p-6 shadow-sm space-y-3 transition-all">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-sky-500/10 text-sky-600 dark:text-cyan-400 flex items-center justify-center border border-sky-500/20">
+                      <span class="material-symbols-outlined text-2xl">menu_book</span>
+                    </div>
+                    <div>
+                      <h3 class="font-bold text-sm sm:text-base text-on-surface">Buku Panduan Penggunaan Lengkap</h3>
+                      <p class="text-xs text-on-surface-variant">Poster bergambar petunjuk lengkap seluruh fitur & cara pakai</p>
+                    </div>
+                  </div>
+                  <div class="pt-2">
+                    <a href="poster-panduan-penggunaan.html" target="_blank" class="w-full py-3 px-4 bg-sky-500/10 hover:bg-sky-500/20 text-sky-600 dark:text-cyan-400 border border-sky-500/30 font-bold rounded-2xl text-xs flex items-center justify-center gap-2 transition-all">
+                      <span class="material-symbols-outlined text-base">open_in_new</span>
+                      <span>BUKA BUKU PANDUAN BERGAMBAR ↗</span>
+                    </a>
+                  </div>
+                  <p class="text-[11px] text-gray-400 dark:text-gray-500 text-center pt-2">
+                    Hak Cipta © 2026 Sambarang Production. Seluruh hak cipta dilindungi undang-undang.
+                  </p>
+                </section>
+              </div>
+
             </div>
 
-          </div>
-
-          <!-- TOMBOL SIMPAN UTAMA DI BAGIAN BAWAH -->
-          <div class="pt-2">
-            <button onclick="manualSaveSetup()" class="w-full py-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:brightness-110 text-white font-extrabold text-sm rounded-2xl shadow-lg hover:shadow-xl flex items-center justify-center gap-2.5 transition-all active:scale-[0.99] cursor-pointer">
-              <span class="material-symbols-outlined text-xl">save</span>
-              <span>SIMPAN SELURUH PENGATURAN</span>
-            </button>
           </div>
         </div>
 
@@ -7058,6 +7243,8 @@ function formatReadableSheets(ss, parsed) {
           let unlockContent = document.getElementById('setup-unlocked-content');
           if (lockCard) lockCard.classList.add('hidden');
           if (unlockContent) unlockContent.classList.remove('hidden');
+          let savedCat = sessionStorage.getItem('KEUANGANKU_ACTIVE_SETUP_CAT') || 'account';
+          if (typeof switchSetupCategory === 'function') switchSetupCategory(savedCat);
           sessionStorage.setItem("KEUANGANKU_SETUP_UNLOCKED", "true");
         }
         renderSetupView(); 
@@ -10555,6 +10742,46 @@ function formatReadableSheets(ss, parsed) {
 
     let currentSetupSubtab = 'pengaturan';
 
+    
+    /**
+     * Beralih Kategori Pengaturan Bergaya iPad / Device Settings
+     */
+    function switchSetupCategory(catName) {
+      const categories = ['account', 'database', 'features', 'system'];
+      
+      categories.forEach(c => {
+        let dBtn = document.getElementById('setup-nav-' + c);
+        let mBtn = document.getElementById('setup-mnav-' + c);
+        let pane = document.getElementById('setup-pane-' + c);
+        let isActive = (c === catName);
+
+        if (pane) {
+          if (isActive) pane.classList.remove('hidden');
+          else pane.classList.add('hidden');
+        }
+
+        if (dBtn) {
+          if (isActive) {
+            dBtn.className = "w-full flex items-center justify-between px-3.5 py-3 rounded-2xl font-bold text-xs transition-all cursor-pointer bg-primary text-white shadow-sm";
+          } else {
+            dBtn.className = "w-full flex items-center justify-between px-3.5 py-3 rounded-2xl font-semibold text-xs transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container";
+          }
+        }
+
+        if (mBtn) {
+          if (isActive) {
+            mBtn.className = "px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap flex items-center gap-1.5 bg-primary text-white shadow-sm transition-all";
+          } else {
+            mBtn.className = "px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap flex items-center gap-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all";
+          }
+        }
+      });
+
+      try {
+        sessionStorage.setItem('KEUANGANKU_ACTIVE_SETUP_CAT', catName);
+      } catch(e) {}
+    }
+
     function switchSetupSubtab(tab) {
       currentSetupSubtab = tab;
       let viewPengaturan = document.getElementById('setup-view-pengaturan');
@@ -11109,7 +11336,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v3.9';
+              let currentCacheInApp = 'keuanganku-pwa-v4.0';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
