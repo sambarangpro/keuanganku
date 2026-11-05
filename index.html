@@ -3183,6 +3183,22 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- KALKULATOR PEMBAGI ANGGARAN GAJI (FEATURED UTAMA) -->
+          <button onclick="openCalcSub('calc-sub-budget-allocator')" class="p-5 bg-gradient-to-br from-indigo-50/70 via-white to-blue-50/70 dark:from-indigo-950/40 dark:via-slate-800 dark:to-slate-800 border-2 border-indigo-500/40 hover:border-indigo-500 rounded-2xl shadow-sm hover:shadow-md transition-all text-left flex items-start gap-4 group col-span-1 md:col-span-2 lg:col-span-4 cursor-pointer">
+            <div class="p-3.5 bg-gradient-to-tr from-indigo-600 to-blue-500 text-white rounded-2xl group-hover:scale-110 shadow-lg shadow-indigo-500/25 transition-transform">
+              <span class="material-symbols-outlined text-3xl">pie_chart</span>
+            </div>
+            <div class="flex-1">
+              <div class="flex items-center gap-2 flex-wrap">
+                <h3 class="font-bold text-base text-on-surface group-hover:text-primary">Kalkulator Pembagi Anggaran Gaji</h3>
+                <span class="px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 text-[10px] font-black uppercase">Favorit Harian</span>
+              </div>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+                Bagi gaji bulanan Anda (misal: Rp 4.000.000) ke cicilan utang, tagihan rutin, belanja dapur/kebutuhan hidup, dan tabungan dengan formula terukur agar tidak boncos.
+              </p>
+            </div>
+            <span class="material-symbols-outlined text-gray-400 group-hover:text-primary transition-colors my-auto hidden sm:block">arrow_forward_ios</span>
+          </button>
           <button onclick="openCalcSub('calc-sub-currency')" class="p-5 bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl shadow-sm hover:border-primary transition-all text-left flex items-start gap-4 group">
             <div class="p-3 bg-blue-100 dark:bg-blue-950 text-primary rounded-xl group-hover:scale-110 transition-transform"><span class="material-symbols-outlined text-2xl">currency_exchange</span></div>
             <div>
@@ -3219,7 +3235,146 @@
       </div>
 
       <div id="calc-sub-container" class="hidden space-y-4">
-        <button onclick="backToCalcMenu()" class="text-xs font-bold text-primary flex items-center gap-1 hover:underline"><span class="material-symbols-outlined text-sm">arrow_back</span> Kembali</button>
+        <button onclick="backToCalcMenu()" class="text-xs font-bold text-primary flex items-center gap-1 hover:underline cursor-pointer"><span class="material-symbols-outlined text-sm">arrow_back</span> Kembali ke Menu Kalkulator</button>
+
+        <!-- SUB: KALKULATOR PEMBAGI ANGGARAN GAJI BULANAN -->
+        <div id="calc-sub-budget-allocator" class="calc-sub-item hidden bg-white dark:bg-slate-800 border border-outline-variant rounded-3xl p-5 sm:p-7 space-y-6 shadow-sm">
+          <!-- Header Sub -->
+          <div class="flex items-center justify-between flex-wrap gap-2 pb-4 border-b border-outline-variant/50">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 flex items-center justify-center">
+                <span class="material-symbols-outlined text-2xl">pie_chart</span>
+              </div>
+              <div>
+                <h3 class="font-bold text-base sm:text-lg text-on-surface">Kalkulator Pembagi Anggaran Gaji</h3>
+                <p class="text-xs text-on-surface-variant">Rencanakan alokasi gaji bulanan ke cicilan, tagihan rutin, belanja, dan tabungan</p>
+              </div>
+            </div>
+            <button type="button" onclick="autoPullActiveDebtsToAlloc()" class="px-3.5 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-600 dark:text-rose-400 font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95" title="Tarik cicilan utang bulanan yang tercatat di aplikasi">
+              <span class="material-symbols-outlined text-sm">credit_card</span>
+              <span>Tarik Cicilan Aktif Saya</span>
+            </button>
+          </div>
+
+          <!-- Section 1: Input Pendapatan / Gaji Bersih -->
+          <div class="p-4 sm:p-5 bg-gradient-to-br from-indigo-50/60 via-surface to-blue-50/60 dark:from-slate-900 dark:via-slate-900/90 dark:to-slate-900 border border-indigo-500/30 rounded-2xl space-y-3 shadow-sm">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+              <label class="font-bold text-xs text-on-surface flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-indigo-500 text-base">payments</span>
+                <span>Total Gaji / Pendapatan Bulanan Bersih (Rp)</span>
+              </label>
+              <span class="text-[10px] text-gray-500 font-medium">Contoh: Gaji bulanan Rp 4.000.000</span>
+            </div>
+
+            <div class="relative">
+              <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-indigo-500 font-mono-data">Rp</span>
+              <input type="text" id="alloc-income-input" value="4.000.000" oninput="formatInputNominal(this); onAllocIncomeChange();" class="w-full py-3 pl-11 pr-4 bg-white dark:bg-slate-800 border-2 border-indigo-500/40 focus:border-indigo-600 rounded-xl font-mono-data text-lg sm:text-xl font-bold text-on-surface outline-none tracking-wide shadow-inner">
+            </div>
+
+            <!-- Tombol Cepat Nominal Gaji -->
+            <div class="flex items-center gap-1.5 flex-wrap pt-1">
+              <span class="text-[10px] text-gray-400 font-bold mr-1">Pilihan Cepat:</span>
+              <button type="button" onclick="setAllocIncomeQuick(3000000)" class="px-2.5 py-1 bg-surface dark:bg-slate-800 hover:bg-indigo-50 border border-outline-variant rounded-lg text-[11px] font-bold text-on-surface transition-all cursor-pointer">3 Juta</button>
+              <button type="button" onclick="setAllocIncomeQuick(4000000)" class="px-2.5 py-1 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 border border-indigo-500/40 rounded-lg text-[11px] font-bold text-indigo-600 dark:text-indigo-400 transition-all cursor-pointer">4 Juta</button>
+              <button type="button" onclick="setAllocIncomeQuick(5000000)" class="px-2.5 py-1 bg-surface dark:bg-slate-800 hover:bg-indigo-50 border border-outline-variant rounded-lg text-[11px] font-bold text-on-surface transition-all cursor-pointer">5 Juta</button>
+              <button type="button" onclick="setAllocIncomeQuick(7500000)" class="px-2.5 py-1 bg-surface dark:bg-slate-800 hover:bg-indigo-50 border border-outline-variant rounded-lg text-[11px] font-bold text-on-surface transition-all cursor-pointer">7.5 Juta</button>
+              <button type="button" onclick="setAllocIncomeQuick(10000000)" class="px-2.5 py-1 bg-surface dark:bg-slate-800 hover:bg-indigo-50 border border-outline-variant rounded-lg text-[11px] font-bold text-on-surface transition-all cursor-pointer">10 Juta</button>
+            </div>
+          </div>
+
+          <!-- Section 2: Pilihan Preset Formula Anggaran -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="font-bold text-xs text-on-surface flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm text-primary">auto_fix_high</span>
+                <span>Preset Formula Anggaran Terpopuler:</span>
+              </label>
+              <span class="text-[10px] text-gray-400 font-medium">1-Klik Terapkan</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <button type="button" onclick="applyAllocPreset('40_30_20_10')" class="p-2.5 bg-surface dark:bg-slate-900 border border-outline-variant/60 hover:border-indigo-500 rounded-xl text-left transition-all cursor-pointer group">
+                <p class="font-bold text-xs text-on-surface group-hover:text-indigo-600 dark:group-hover:text-indigo-400">40 / 30 / 20 / 10</p>
+                <p class="text-[10px] text-gray-500 mt-0.5 leading-snug">Ideal RI (Cicilan Maks 30%)</p>
+              </button>
+              <button type="button" onclick="applyAllocPreset('50_30_20')" class="p-2.5 bg-surface dark:bg-slate-900 border border-outline-variant/60 hover:border-indigo-500 rounded-xl text-left transition-all cursor-pointer group">
+                <p class="font-bold text-xs text-on-surface group-hover:text-indigo-600 dark:group-hover:text-indigo-400">50 / 30 / 20</p>
+                <p class="text-[10px] text-gray-500 mt-0.5 leading-snug">Klasik Warren (Kebutuhan 50%)</p>
+              </button>
+              <button type="button" onclick="applyAllocPreset('70_20_10')" class="p-2.5 bg-surface dark:bg-slate-900 border border-outline-variant/60 hover:border-indigo-500 rounded-xl text-left transition-all cursor-pointer group">
+                <p class="font-bold text-xs text-on-surface group-hover:text-indigo-600 dark:group-hover:text-indigo-400">70 / 20 / 10</p>
+                <p class="text-[10px] text-gray-500 mt-0.5 leading-snug">Prioritas Bebas Utang</p>
+              </button>
+              <button type="button" onclick="applyAllocPreset('default')" class="p-2.5 bg-surface dark:bg-slate-900 border border-outline-variant/60 hover:border-indigo-500 rounded-xl text-left transition-all cursor-pointer group">
+                <p class="font-bold text-xs text-on-surface group-hover:text-indigo-600 dark:group-hover:text-indigo-400">6 Pos Standar</p>
+                <p class="text-[10px] text-gray-500 mt-0.5 leading-snug">Cicilan, Tagihan, Dapur, Tabungan</p>
+              </button>
+            </div>
+          </div>
+
+          <!-- Section 3: Visual Progress Bar Multi-Warna -->
+          <div class="space-y-2 pt-1">
+            <div class="flex items-center justify-between text-xs font-bold text-on-surface">
+              <span>Distribusi Alokasi Pengeluaran:</span>
+              <span id="alloc-sum-pct" class="font-mono-data text-indigo-600 dark:text-indigo-400 font-extrabold">100%</span>
+            </div>
+            <div id="alloc-multi-bar" class="w-full bg-slate-200 dark:bg-slate-900 rounded-full h-3.5 overflow-hidden flex shadow-inner">
+              <!-- Dynamically rendered bar segments -->
+            </div>
+          </div>
+
+          <!-- Section 4: Daftar Pos Anggaran Dinamis -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between border-b border-outline-variant/40 pb-2">
+              <span class="font-bold text-xs text-on-surface">Rincian Pos Anggaran Bulanan:</span>
+              <button type="button" onclick="addBudgetAllocRow()" class="px-3 py-1 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-lg text-xs font-bold flex items-center gap-1 transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-sm">add</span> Tambah Pos Baru
+              </button>
+            </div>
+
+            <div id="alloc-items-container" class="space-y-2.5">
+              <!-- Dynamically populated rows -->
+            </div>
+          </div>
+
+          <!-- Section 5: Ringkasan & Status Kesehatan Anggaran -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <div class="p-3.5 bg-surface-container rounded-2xl border border-outline-variant/60 space-y-1">
+              <p class="text-gray-500 text-[11px] font-medium">Total Gaji Bulanan</p>
+              <p id="alloc-sum-income" class="font-mono-data font-bold text-base text-on-surface">Rp 4.000.000</p>
+            </div>
+            <div class="p-3.5 bg-surface-container rounded-2xl border border-outline-variant/60 space-y-1">
+              <p class="text-gray-500 text-[11px] font-medium">Total Teralokasikan</p>
+              <p id="alloc-sum-allocated" class="font-mono-data font-bold text-base text-indigo-600 dark:text-indigo-400">Rp 4.000.000</p>
+            </div>
+            <div class="p-3.5 bg-surface-container rounded-2xl border border-outline-variant/60 space-y-1">
+              <p class="text-gray-500 text-[11px] font-medium">Selisih / Sisa Bebas</p>
+              <p id="alloc-sum-diff" class="font-mono-data font-bold text-base text-emerald-600 dark:text-emerald-400">Rp 0</p>
+            </div>
+          </div>
+
+          <!-- Health Status Card -->
+          <div id="alloc-status-card" class="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-900 dark:text-emerald-200 space-y-1 transition-all">
+            <p class="font-bold text-xs flex items-center gap-1.5">
+              <span id="alloc-status-icon" class="material-symbols-outlined text-sm">task_alt</span>
+              <span id="alloc-status-title">Alhamdulillah! Anggaran Sempurna (100% Pas)</span>
+            </p>
+            <p id="alloc-status-desc" class="text-[11px] leading-relaxed">
+              Seluruh gaji Rp 4.000.000 telah terbagi habis ke pos kebutuhan, cicilan, dan tabungan tanpa ada kebocoran!
+            </p>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 border-t border-outline-variant/40">
+            <button type="button" onclick="copyBudgetAllocText()" class="w-full sm:w-auto px-4 py-2.5 bg-surface hover:bg-surface-container border border-outline-variant rounded-xl text-xs font-bold text-on-surface flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer">
+              <span class="material-symbols-outlined text-sm">content_copy</span>
+              <span>Salin Rencana Pembagian 📋</span>
+            </button>
+            <button type="button" onclick="saveBudgetAllocToStorage()" class="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow transition-all cursor-pointer active:scale-95">
+              <span class="material-symbols-outlined text-sm">save</span>
+              <span>Simpan Rencana Anggaran</span>
+            </button>
+          </div>
+        </div>
 
         <!-- SUB: KONVERSI MATA UANG -->
         <div id="calc-sub-currency" class="calc-sub-item hidden bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-6 space-y-4 shadow-sm">
@@ -6232,7 +6387,7 @@ function hideSplashScreenAndTriggerAlerts() {
     // DATABASE DEFAULT
     const DEFAULT_DATA = { 
       appPin: "123", ownerPassword: "123", cloudUrl: "", startingBalance: 0, 
-      enableCalculator: false,
+      enableCalculator: true,
       enableRunwayMeter: true,
       enableCountdownGoals: true,
       enableZakatHub: true,
@@ -7629,7 +7784,7 @@ function formatReadableSheets(ss, parsed) {
       let navCalc = document.getElementById('nav-calc');
       let dnavCalc = document.getElementById('dnav-calc');
       // Kalkulator HANYA BISA aktif jika ini adalah perangkat pemilik terverifikasi (terhubung ke Cloud pribadi)
-      if (isOwner && globalData.enableCalculator !== false) {
+      if (globalData.enableCalculator !== false) {
         if (navCalc) navCalc.style.display = 'flex';
         if (dnavCalc) dnavCalc.style.display = 'inline-flex';
       } else {
@@ -7857,8 +8012,332 @@ function formatReadableSheets(ss, parsed) {
     function openCalcSub(subId) {
       document.getElementById('calc-menu-grid').classList.add('hidden'); document.getElementById('calc-sub-container').classList.remove('hidden');
       document.querySelectorAll('.calc-sub-item').forEach(el => el.classList.add('hidden')); document.getElementById(subId).classList.remove('hidden');
+      if (subId === 'calc-sub-budget-allocator' && typeof initBudgetAllocator === 'function') {
+        initBudgetAllocator();
+      }
     }
     function backToCalcMenu() { document.getElementById('calc-sub-container').classList.add('hidden'); document.getElementById('calc-menu-grid').classList.remove('hidden'); }
+
+    // === KALKULATOR PEMBAGI ANGGARAN GAJI BULANAN (BUDGET ALLOCATOR) ===
+    let budgetAllocItems = [
+      { id: 'pos_cicilan', name: 'Cicilan & Utang Rutin', icon: 'credit_card', color: '#f43f5e', pct: 25, amount: 1000000 },
+      { id: 'pos_tagihan', name: 'Tagihan Wajib (Listrik, Air, Wifi)', icon: 'receipt_long', color: '#3b82f6', pct: 15, amount: 600000 },
+      { id: 'pos_kebutuhan', name: 'Kebutuhan Pokok & Belanja Dapur', icon: 'shopping_basket', color: '#f59e0b', pct: 35, amount: 1400000 },
+      { id: 'pos_tabungan', name: 'Tabungan & Dana Darurat', icon: 'savings', color: '#10b981', pct: 15, amount: 600000 },
+      { id: 'pos_zakat', name: 'Zakat, Sedekah & Orang Tua', icon: 'volunteer_activism', color: '#14b8a6', pct: 5, amount: 200000 },
+      { id: 'pos_hiburan', name: 'Hiburan & Keinginan Pribadi', icon: 'sports_esports', color: '#a855f7', pct: 5, amount: 200000 }
+    ];
+
+    function getAllocIncome() {
+      let inp = document.getElementById('alloc-income-input');
+      if (!inp) return 4000000;
+      let raw = Number(inp.value.replace(/[^0-9]/g, '')) || 0;
+      return raw > 0 ? raw : 4000000;
+    }
+
+    function initBudgetAllocator() {
+      try {
+        let saved = localStorage.getItem('KEUANGANKU_BUDGET_ALLOCATION');
+        if (saved) {
+          let parsed = JSON.parse(saved);
+          if (parsed && Array.isArray(parsed.items) && parsed.items.length > 0) {
+            budgetAllocItems = parsed.items;
+            let inp = document.getElementById('alloc-income-input');
+            if (inp && parsed.income) {
+              inp.value = Number(parsed.income).toLocaleString('id-ID');
+            }
+          }
+        }
+      } catch(e) {}
+
+      let inp = document.getElementById('alloc-income-input');
+      if (inp && !inp.value) {
+        inp.value = (4000000).toLocaleString('id-ID');
+      }
+      renderBudgetAllocList();
+    }
+
+    function setAllocIncomeQuick(val) {
+      let inp = document.getElementById('alloc-income-input');
+      if (inp) {
+        inp.value = Number(val).toLocaleString('id-ID');
+        onAllocIncomeChange();
+      }
+    }
+
+    function onAllocIncomeChange() {
+      let income = getAllocIncome();
+      budgetAllocItems.forEach(item => {
+        item.amount = Math.round((item.pct / 100) * income);
+      });
+      renderBudgetAllocList();
+    }
+
+    function applyAllocPreset(type) {
+      let income = getAllocIncome();
+      if (type === '50_30_20') {
+        budgetAllocItems = [
+          { id: 'pos_kebutuhan', name: 'Kebutuhan Pokok & Tagihan (50%)', icon: 'shopping_basket', color: '#3b82f6', pct: 50, amount: Math.round(income * 0.5) },
+          { id: 'pos_keinginan', name: 'Keinginan & Gaya Hidup (30%)', icon: 'sports_esports', color: '#a855f7', pct: 30, amount: Math.round(income * 0.3) },
+          { id: 'pos_tabungan', name: 'Tabungan & Investasi (20%)', icon: 'savings', color: '#10b981', pct: 20, amount: Math.round(income * 0.2) }
+        ];
+      } else if (type === '40_30_20_10') {
+        budgetAllocItems = [
+          { id: 'pos_kebutuhan', name: 'Kebutuhan Pokok & Belanja (40%)', icon: 'shopping_basket', color: '#3b82f6', pct: 40, amount: Math.round(income * 0.4) },
+          { id: 'pos_cicilan', name: 'Cicilan & Utang Maksimal (30%)', icon: 'credit_card', color: '#f43f5e', pct: 30, amount: Math.round(income * 0.3) },
+          { id: 'pos_tabungan', name: 'Tabungan & Dana Darurat (20%)', icon: 'savings', color: '#10b981', pct: 20, amount: Math.round(income * 0.2) },
+          { id: 'pos_zakat', name: 'Zakat, Sedekah & Kebaikan (10%)', icon: 'volunteer_activism', color: '#14b8a6', pct: 10, amount: Math.round(income * 0.1) }
+        ];
+      } else if (type === '70_20_10') {
+        budgetAllocItems = [
+          { id: 'pos_hidup_cicilan', name: 'Biaya Hidup, Tagihan & Cicilan (70%)', icon: 'receipt_long', color: '#f59e0b', pct: 70, amount: Math.round(income * 0.7) },
+          { id: 'pos_tabungan', name: 'Tabungan & Dana Darurat (20%)', icon: 'savings', color: '#10b981', pct: 20, amount: Math.round(income * 0.2) },
+          { id: 'pos_cadangan', name: 'Dana Cadangan Tak Terduga (10%)', icon: 'shield', color: '#6366f1', pct: 10, amount: Math.round(income * 0.1) }
+        ];
+      } else if (type === 'default') {
+        budgetAllocItems = [
+          { id: 'pos_cicilan', name: 'Cicilan & Utang Rutin', icon: 'credit_card', color: '#f43f5e', pct: 25, amount: Math.round(income * 0.25) },
+          { id: 'pos_tagihan', name: 'Tagihan Wajib (Listrik, Air, Wifi)', icon: 'receipt_long', color: '#3b82f6', pct: 15, amount: Math.round(income * 0.15) },
+          { id: 'pos_kebutuhan', name: 'Kebutuhan Pokok & Belanja Dapur', icon: 'shopping_basket', color: '#f59e0b', pct: 35, amount: Math.round(income * 0.35) },
+          { id: 'pos_tabungan', name: 'Tabungan & Dana Darurat', icon: 'savings', color: '#10b981', pct: 15, amount: Math.round(income * 0.15) },
+          { id: 'pos_zakat', name: 'Zakat, Sedekah & Orang Tua', icon: 'volunteer_activism', color: '#14b8a6', pct: 5, amount: Math.round(income * 0.05) },
+          { id: 'pos_hiburan', name: 'Hiburan & Keinginan Pribadi', icon: 'sports_esports', color: '#a855f7', pct: 5, amount: Math.round(income * 0.05) }
+        ];
+      }
+      renderBudgetAllocList();
+      if (typeof showSyncToast === 'function') showSyncToast("Formula anggaran berhasil diterapkan!");
+    }
+
+    function autoPullActiveDebtsToAlloc() {
+      if (!globalData || !globalData.debtData) {
+        alert("Belum ada data utang/cicilan yang tercatat di aplikasi Anda.");
+        return;
+      }
+      let totalDebtMonthly = 0;
+      let debtNames = [];
+      Object.keys(globalData.debtData).forEach(k => {
+        let item = globalData.debtData[k];
+        if (item && item.type === 'Hutang' && item.amount > 0) {
+          totalDebtMonthly += Number(item.amount) || 0;
+          debtNames.push(k);
+        }
+      });
+
+      if (totalDebtMonthly === 0) {
+        alert("Tidak ada cicilan utang aktif dengan status 'Hutang' yang ditemukan.");
+        return;
+      }
+
+      let income = getAllocIncome();
+      let cicilanItem = budgetAllocItems.find(i => i.id === 'pos_cicilan' || i.name.toLowerCase().includes('cicilan') || i.name.toLowerCase().includes('utang'));
+      if (cicilanItem) {
+        cicilanItem.amount = totalDebtMonthly;
+        cicilanItem.pct = Math.round((totalDebtMonthly / income) * 1000) / 10;
+      } else {
+        budgetAllocItems.unshift({
+          id: 'pos_cicilan_' + Date.now(),
+          name: 'Cicilan & Utang Aktif (' + debtNames.slice(0, 2).join(', ') + ')',
+          icon: 'credit_card',
+          color: '#f43f5e',
+          amount: totalDebtMonthly,
+          pct: Math.round((totalDebtMonthly / income) * 1000) / 10
+        });
+      }
+      renderBudgetAllocList();
+      if (typeof showSyncToast === 'function') {
+        showSyncToast("✓ Berhasil menarik " + debtNames.length + " cicilan aktif (Total: Rp " + totalDebtMonthly.toLocaleString('id-ID') + ")");
+      }
+    }
+
+    function addBudgetAllocRow() {
+      let income = getAllocIncome();
+      let colors = ['#06b6d4', '#8b5cf6', '#ec4899', '#f97316', '#84cc16', '#64748b'];
+      let randomColor = colors[Math.floor(Math.random() * colors.length)];
+      budgetAllocItems.push({
+        id: 'pos_' + Date.now(),
+        name: 'Pos Anggaran Baru',
+        icon: 'label',
+        color: randomColor,
+        pct: 5,
+        amount: Math.round(income * 0.05)
+      });
+      renderBudgetAllocList();
+    }
+
+    function removeBudgetAllocRow(idx) {
+      if (budgetAllocItems.length <= 1) {
+        alert("Minimal harus ada 1 pos anggaran.");
+        return;
+      }
+      budgetAllocItems.splice(idx, 1);
+      renderBudgetAllocList();
+    }
+
+    function onAllocRowAmountChange(idx, val) {
+      let income = getAllocIncome();
+      let raw = Number(val.replace(/[^0-9]/g, '')) || 0;
+      budgetAllocItems[idx].amount = raw;
+      budgetAllocItems[idx].pct = income > 0 ? Math.round((raw / income) * 1000) / 10 : 0;
+      renderBudgetAllocSummaryOnly();
+    }
+
+    function onAllocRowPctChange(idx, val) {
+      let income = getAllocIncome();
+      let pct = parseFloat(val) || 0;
+      budgetAllocItems[idx].pct = pct;
+      budgetAllocItems[idx].amount = Math.round((pct / 100) * income);
+      renderBudgetAllocSummaryOnly();
+    }
+
+    function onAllocRowNameChange(idx, val) {
+      budgetAllocItems[idx].name = val.trim() || 'Pos Anggaran';
+    }
+
+    function renderBudgetAllocList() {
+      let container = document.getElementById('alloc-items-container');
+      if (!container) return;
+
+      container.innerHTML = '';
+      budgetAllocItems.forEach((item, idx) => {
+        let div = document.createElement('div');
+        div.className = 'p-3.5 bg-surface-container rounded-2xl border border-outline-variant/60 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 text-xs shadow-sm transition-all hover:border-primary/40';
+        div.innerHTML = `
+          <div class="flex items-center gap-2.5 flex-1 min-w-0">
+            <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-white font-bold shadow-sm" style="background-color: ${item.color || '#3b82f6'};">
+              <span class="material-symbols-outlined text-base">${item.icon || 'label'}</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <input type="text" value="${item.name}" onchange="onAllocRowNameChange(${idx}, this.value)" class="w-full bg-transparent font-bold text-on-surface text-xs outline-none border-b border-transparent focus:border-primary">
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 shrink-0 justify-between sm:justify-end">
+            <div class="relative flex-1 sm:flex-initial">
+              <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 font-bold">Rp</span>
+              <input type="text" value="${(item.amount || 0).toLocaleString('id-ID')}" oninput="formatInputNominal(this); onAllocRowAmountChange(${idx}, this.value)" class="w-full sm:w-36 py-1.5 pl-8 pr-2 bg-white dark:bg-slate-800 border border-outline-variant rounded-xl font-mono-data text-right font-bold text-xs outline-none focus:border-primary">
+            </div>
+
+            <div class="relative w-16 sm:w-20 shrink-0">
+              <input type="number" step="0.5" min="0" max="100" value="${item.pct}" oninput="onAllocRowPctChange(${idx}, this.value)" class="w-full py-1.5 pl-2 pr-6 bg-white dark:bg-slate-800 border border-outline-variant rounded-xl font-mono-data text-right font-bold text-xs outline-none focus:border-primary">
+              <span class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 font-bold">%</span>
+            </div>
+
+            <button type="button" onclick="removeBudgetAllocRow(${idx})" class="p-1.5 text-gray-400 hover:text-rose-500 rounded-lg hover:bg-rose-500/10 transition-colors cursor-pointer" title="Hapus Pos">
+              <span class="material-symbols-outlined text-base">delete</span>
+            </button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+
+      renderBudgetAllocSummaryOnly();
+    }
+
+    function renderBudgetAllocSummaryOnly() {
+      let income = getAllocIncome();
+      let totalAlloc = budgetAllocItems.reduce((acc, c) => acc + (Number(c.amount) || 0), 0);
+      let totalPct = budgetAllocItems.reduce((acc, c) => acc + (parseFloat(c.pct) || 0), 0);
+      let diff = income - totalAlloc;
+
+      let elTotalIncome = document.getElementById('alloc-sum-income');
+      let elTotalAlloc = document.getElementById('alloc-sum-allocated');
+      let elTotalDiff = document.getElementById('alloc-sum-diff');
+      let elPctAlloc = document.getElementById('alloc-sum-pct');
+
+      if (elTotalIncome) elTotalIncome.textContent = 'Rp ' + income.toLocaleString('id-ID');
+      if (elTotalAlloc) elTotalAlloc.textContent = 'Rp ' + totalAlloc.toLocaleString('id-ID');
+      if (elTotalDiff) elTotalDiff.textContent = 'Rp ' + Math.abs(diff).toLocaleString('id-ID');
+      if (elPctAlloc) elPctAlloc.textContent = totalPct.toFixed(1) + '%';
+
+      let statusCard = document.getElementById('alloc-status-card');
+      let statusTitle = document.getElementById('alloc-status-title');
+      let statusDesc = document.getElementById('alloc-status-desc');
+      let statusIcon = document.getElementById('alloc-status-icon');
+
+      if (statusCard && statusTitle && statusDesc) {
+        if (Math.abs(diff) < 1000) {
+          statusCard.className = "p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-900 dark:text-emerald-200 space-y-1 transition-all";
+          if (statusIcon) statusIcon.textContent = "task_alt";
+          statusTitle.textContent = "Alhamdulillah! Anggaran Sempurna (100% Pas)";
+          statusDesc.textContent = "Seluruh gaji Rp " + income.toLocaleString('id-ID') + " telah terbagi habis ke pos kebutuhan, cicilan, dan tabungan tanpa ada kebocoran!";
+        } else if (diff > 0) {
+          statusCard.className = "p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 space-y-1 transition-all";
+          if (statusIcon) statusIcon.textContent = "savings";
+          statusTitle.textContent = "Surplus: Masih Ada Sisa Rp " + diff.toLocaleString('id-ID') + " (" + ((diff/income)*100).toFixed(1) + "%)";
+          statusDesc.textContent = "Masih ada sisa uang gaji yang belum dialokasikan. Sangat disarankan untuk memasukkannya ke pos Tabungan atau Dana Darurat!";
+        } else {
+          statusCard.className = "p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-900 dark:text-rose-200 space-y-1 transition-all";
+          if (statusIcon) statusIcon.textContent = "warning";
+          statusTitle.textContent = "Defisit: Alokasi Melebihi Gaji Sebesar Rp " + Math.abs(diff).toLocaleString('id-ID') + " (" + ((Math.abs(diff)/income)*100).toFixed(1) + "%)";
+          statusDesc.textContent = "Alokasi pengeluaran Anda lebih besar dari pendapatan bulanan. Kurangi pos cicilan atau hiburan agar keuangan tidak minus!";
+        }
+      }
+
+      let barContainer = document.getElementById('alloc-multi-bar');
+      if (barContainer) {
+        barContainer.innerHTML = '';
+        budgetAllocItems.forEach(item => {
+          let p = Math.max(0, Math.min(100, item.pct || 0));
+          if (p > 0) {
+            let seg = document.createElement('div');
+            seg.className = "h-3.5 transition-all";
+            seg.style.width = p + '%';
+            seg.style.backgroundColor = item.color || '#3b82f6';
+            seg.title = item.name + ": " + p + "% (Rp " + (item.amount||0).toLocaleString('id-ID') + ")";
+            barContainer.appendChild(seg);
+          }
+        });
+      }
+    }
+
+    function saveBudgetAllocToStorage() {
+      let income = getAllocIncome();
+      let payload = {
+        income: income,
+        items: budgetAllocItems,
+        savedAt: new Date().toISOString()
+      };
+      localStorage.setItem('KEUANGANKU_BUDGET_ALLOCATION', JSON.stringify(payload));
+      if (typeof playSuccessSound === 'function') playSuccessSound();
+      if (typeof showSyncToast === 'function') showSyncToast("✓ Rencana pembagian anggaran berhasil disimpan!");
+    }
+
+    function copyBudgetAllocText() {
+      let income = getAllocIncome();
+      let totalAlloc = budgetAllocItems.reduce((acc, c) => acc + (Number(c.amount) || 0), 0);
+      let diff = income - totalAlloc;
+
+      let text = "📊 RENCANA PEMBAGIAN GAJI BULANAN\n";
+      text += "💰 Total Gaji Bersih: Rp " + income.toLocaleString('id-ID') + "\n";
+      text += "📅 Tanggal: " + new Date().toLocaleDateString('id-ID', { dateStyle: 'long' }) + "\n";
+      text += "--------------------------------------\n";
+
+      budgetAllocItems.forEach((c, idx) => {
+        text += (idx + 1) + ". " + c.name + ": Rp " + (c.amount || 0).toLocaleString('id-ID') + " (" + c.pct + "%)\n";
+      });
+
+      text += "--------------------------------------\n";
+      text += "Total Teralokasi: Rp " + totalAlloc.toLocaleString('id-ID') + "\n";
+      if (diff === 0) {
+        text += "Status: 100% Pas Terbagi Habis (Ideal)\n";
+      } else if (diff > 0) {
+        text += "Sisa Bebas (Surplus): Rp " + diff.toLocaleString('id-ID') + "\n";
+      } else {
+        text += "Defisit (Kurang): Rp " + Math.abs(diff).toLocaleString('id-ID') + " ⚠️\n";
+      }
+      text += "\nDihitung via KEUANGANKU PRO - Financial Planner";
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          if (typeof showSyncToast === 'function') showSyncToast("✓ Rencana anggaran berhasil disalin ke Clipboard!");
+        }).catch(() => {
+          prompt("Salin manual ringkasan anggaran Anda:", text);
+        });
+      } else {
+        prompt("Salin manual ringkasan anggaran Anda:", text);
+      }
+    }
+
 
     // FUNGSI TAMBAH BARIS DINAMIS KALKULATOR MODAL
     function addCapExRow() {
@@ -11795,7 +12274,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v5.2';
+              let currentCacheInApp = 'keuanganku-pwa-v5.3';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
