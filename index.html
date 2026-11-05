@@ -587,6 +587,14 @@
 
           <button id="btn-bumper-login" onclick="verifyBumperPin()" class="w-full py-2.5 bg-white text-primary font-bold rounded-xl text-xs hover:bg-blue-50 shadow transition-all cursor-pointer">MASUK APLIKASI</button>
           <p id="bumper-error-msg" class="text-[11px] text-red-200 font-semibold leading-relaxed hidden">PIN Salah! Coba lagi.</p>
+
+          <!-- OPSI BIOMETRIK (SIDIK JARI / FACE ID) -->
+          <div id="bumper-biometric-section" class="hidden pt-3 border-t border-white/10 space-y-2">
+            <button type="button" id="btn-bumper-biometric" onclick="loginWithBiometrics()" class="w-full py-2.5 bg-white/15 hover:bg-white/25 active:scale-95 border border-white/25 text-white font-semibold rounded-xl text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm backdrop-blur-sm">
+              <span class="material-symbols-outlined text-base text-blue-200">fingerprint</span>
+              <span id="bumper-biometric-label">Masuk dengan Sidik Jari / Face ID</span>
+            </button>
+          </div>
         </div>
 
         <!-- TAB 2: PERANGKAT BARU (GOOGLE & BARCODE) -->
@@ -2451,6 +2459,43 @@
                   </button>
                 </div>
               </section>
+
+              <!-- KARTU PENGATURAN BIOMETRIK (FACE ID / FINGERPRINT) -->
+              <section id="setup-biometric-section" class="bg-white dark:bg-slate-800/95 border border-outline-variant/60 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4 transition-all">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center border border-indigo-500/20">
+                      <span class="material-symbols-outlined text-xl">fingerprint</span>
+                    </div>
+                    <div>
+                      <h2 class="font-headline-md text-base sm:text-lg font-bold text-on-surface">Kunci Biometrik (Face ID & Sidik Jari)</h2>
+                      <p class="text-[10px] text-gray-500 dark:text-gray-400">Masuk cepat ke aplikasi tanpa perlu mengetik PIN setiap saat</p>
+                    </div>
+                  </div>
+                  <span id="setup-biometric-badge" class="px-2.5 py-1 text-[10px] font-extrabold rounded-full border bg-gray-500/15 text-gray-400 border-gray-500/30">
+                    MEMERIKSA SENSOR...
+                  </span>
+                </div>
+
+                <div id="setup-biometric-info-box" class="p-3.5 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-900 dark:text-indigo-200 text-xs leading-relaxed space-y-1">
+                  <p class="font-bold flex items-center gap-1.5 text-indigo-800 dark:text-indigo-300">
+                    <span class="material-symbols-outlined text-sm">verified_user</span> Keamanan Tingkat Perangkat
+                  </p>
+                  <p id="setup-biometric-info-text">
+                    Kunci biometrik menggunakan sensor bawaan perangkat Anda (Face ID, Touch ID, Fingerprint, atau Windows Hello). Data biometrik Anda tersimpan secara aman di dalam chip keamanan perangkat lokal dan tidak pernah dikirim ke internet.
+                  </p>
+                </div>
+
+                <div id="setup-biometric-action-container" class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
+                  <div class="text-xs text-on-surface-variant flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm text-indigo-500">security</span>
+                    <span id="setup-biometric-device-status">Sensor perangkat siap digunakan</span>
+                  </div>
+                  <button type="button" id="btn-toggle-biometric" onclick="toggleBiometricRegistration()" class="w-full sm:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer active:scale-95">
+                    <span class="material-symbols-outlined text-sm">fingerprint</span> <span id="btn-toggle-biometric-label">Aktifkan Kunci Biometrik</span>
+                  </button>
+                </div>
+              </section>
               </div>
 
               <!-- ======================================================== -->
@@ -3574,6 +3619,16 @@
           }
         } else {
           switchLoginTab('pin');
+        }
+
+        // Perbarui UI Biometrik & jalankan auto-prompt jika aktif
+        if (typeof updateBiometricUI === 'function') updateBiometricUI();
+        if (localStorage.getItem("KEUANGANKU_BIOMETRIC_ENABLED") === "true") {
+          setTimeout(() => {
+            if (sessionStorage.getItem("KEUANGANKU_PIN_PASSED") !== "true") {
+              loginWithBiometrics(true);
+            }
+          }, 600);
         }
 
         // Cek apakah opsi "Ingatkan Saya" aktif
@@ -5112,7 +5167,232 @@
       return isPassed && !isSplashActive;
     }
 
-    function hideSplashScreenAndTriggerAlerts() {
+        // === SISTEM AUTENTIKASI BIOMETRIK (WEBAUTHN - FACE ID & SIDIK JARI) ===
+    function bufferToBase64Url(buffer) {
+      let bytes = new Uint8Array(buffer);
+      let binary = '';
+      for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+
+    function base64UrlToBuffer(base64url) {
+      if (!base64url) return new ArrayBuffer(0);
+      let base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
+      while (base64.length % 4) {
+        base64 += '=';
+      }
+      let binary = atob(base64);
+      let bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+      return bytes.buffer;
+    }
+
+    async function isBiometricAvailable() {
+      if (typeof window === 'undefined') return false;
+      if (!window.PublicKeyCredential) return false;
+      try {
+        if (typeof PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable === 'function') {
+          let available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+          return !!available;
+        }
+      } catch(e) {
+        console.warn('Pemeriksaan biometrik bermasalah:', e);
+      }
+      return false;
+    }
+
+    async function registerBiometrics() {
+      let available = await isBiometricAvailable();
+      if (!available) {
+        alert("Sensor biometrik (Face ID / Sidik Jari / Windows Hello) tidak terdeteksi atau tidak didukung di peramban ini.\n\nPastikan Anda mengakses melalui protokol HTTPS atau Localhost dan perangkat Anda memiliki sensor keamanan aktif.");
+        return false;
+      }
+
+      let challenge = new Uint8Array(32);
+      window.crypto.getRandomValues(challenge);
+      let userId = new Uint8Array(16);
+      window.crypto.getRandomValues(userId);
+
+      let curLic = (typeof getSavedLicense === 'function') ? getSavedLicense() : null;
+      let userName = (curLic && curLic.buyerName) ? curLic.buyerName : "Pengguna Keuanganku";
+      let userEmail = (curLic && curLic.userEmail) ? curLic.userEmail : "user@keuanganku.pro";
+
+      let createOptions = {
+        publicKey: {
+          challenge: challenge,
+          rp: {
+            name: "Keuanganku PRO",
+            ...(window.location.hostname ? { id: window.location.hostname } : {})
+          },
+          user: {
+            id: userId,
+            name: userEmail,
+            displayName: userName
+          },
+          pubKeyCredParams: [
+            { alg: -7, type: "public-key" },  // ES256
+            { alg: -257, type: "public-key" } // RS256
+          ],
+          authenticatorSelection: {
+            authenticatorAttachment: "platform",
+            userVerification: "required",
+            residentKey: "preferred"
+          },
+          timeout: 60000,
+          attestation: "none"
+        }
+      };
+
+      try {
+        let credential = await navigator.credentials.create(createOptions);
+        if (credential && credential.id) {
+          localStorage.setItem("KEUANGANKU_BIOMETRIC_CRED_ID", credential.id);
+          localStorage.setItem("KEUANGANKU_BIOMETRIC_ENABLED", "true");
+          updateBiometricUI();
+          if (typeof playSuccessSound === 'function') playSuccessSound();
+          if (typeof showSyncToast === 'function') showSyncToast("🎉 Kunci Biometrik (Face ID / Sidik Jari) berhasil diaktifkan!");
+          return true;
+        }
+      } catch(err) {
+        console.warn("Registrasi biometrik dibatalkan / gagal:", err);
+        if (err.name === 'NotAllowedError') {
+          if (typeof showSyncToast === 'function') showSyncToast("Aktivasi biometrik dibatalkan.");
+        } else {
+          alert("Gagal mengaktifkan biometrik: " + (err.message || err));
+        }
+      }
+      return false;
+    }
+
+    async function loginWithBiometrics(isAuto = false) {
+      if (typeof window === 'undefined' || !window.PublicKeyCredential) return false;
+      let isEnabled = localStorage.getItem("KEUANGANKU_BIOMETRIC_ENABLED") === "true";
+      let credId = localStorage.getItem("KEUANGANKU_BIOMETRIC_CRED_ID");
+
+      if (!isEnabled) {
+        if (!isAuto && typeof showSyncToast === 'function') {
+          showSyncToast("⚠️ Biometrik belum diaktifkan. Masuk dengan PIN dan aktifkan di menu Setup.");
+        }
+        return false;
+      }
+
+      let pinView = document.getElementById('bumper-view-pin');
+      if (isAuto && (!pinView || pinView.classList.contains('hidden'))) {
+        return false;
+      }
+
+      let challenge = new Uint8Array(32);
+      window.crypto.getRandomValues(challenge);
+
+      let getOptions = {
+        publicKey: {
+          challenge: challenge,
+          timeout: 60000,
+          userVerification: "required",
+          ...(window.location.hostname ? { rpId: window.location.hostname } : {})
+        }
+      };
+
+      if (credId) {
+        try {
+          let bufferId = base64UrlToBuffer(credId);
+          getOptions.publicKey.allowCredentials = [{
+            id: bufferId,
+            type: "public-key",
+            transports: ["internal"]
+          }];
+        } catch(e) {}
+      }
+
+      try {
+        let assertion = await navigator.credentials.get(getOptions);
+        if (assertion) {
+          if (navigator.vibrate) navigator.vibrate(50);
+          sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
+          hideSplashScreenAndTriggerAlerts();
+          if (typeof initApp === 'function') initApp();
+          if (typeof playSuccessSound === 'function') playSuccessSound();
+          if (typeof showSyncToast === 'function') showSyncToast("✓ Berhasil masuk dengan Biometrik!");
+          return true;
+        }
+      } catch(err) {
+        if (!isAuto) {
+          console.warn("Verifikasi biometrik gagal / batal:", err);
+          let errEl = document.getElementById('bumper-error-msg');
+          if (errEl) {
+            errEl.textContent = "Verifikasi biometrik dibatalkan. Silakan masukkan PIN.";
+            errEl.classList.remove('hidden');
+          }
+        }
+      }
+      return false;
+    }
+
+    async function toggleBiometricRegistration() {
+      let isEnabled = localStorage.getItem("KEUANGANKU_BIOMETRIC_ENABLED") === "true";
+      if (isEnabled) {
+        if (confirm("Nonaktifkan Kunci Biometrik (Face ID / Sidik Jari) di perangkat ini?\n\nAnda akan tetap dapat masuk menggunakan PIN.")) {
+          localStorage.removeItem("KEUANGANKU_BIOMETRIC_ENABLED");
+          localStorage.removeItem("KEUANGANKU_BIOMETRIC_CRED_ID");
+          updateBiometricUI();
+          if (typeof showSyncToast === 'function') showSyncToast("Kunci Biometrik telah dinonaktifkan.");
+        }
+      } else {
+        await registerBiometrics();
+      }
+    }
+
+    async function updateBiometricUI() {
+      let isSupported = await isBiometricAvailable();
+      let isEnabled = localStorage.getItem("KEUANGANKU_BIOMETRIC_ENABLED") === "true";
+
+      // 1. Update Bumper Login Screen
+      let bumperSec = document.getElementById('bumper-biometric-section');
+      if (bumperSec) {
+        if (isSupported && isEnabled) {
+          bumperSec.classList.remove('hidden');
+        } else {
+          bumperSec.classList.add('hidden');
+        }
+      }
+
+      // 2. Update Setup Pane Account Card
+      let badge = document.getElementById('setup-biometric-badge');
+      let statusText = document.getElementById('setup-biometric-device-status');
+      let btn = document.getElementById('btn-toggle-biometric');
+      let btnLabel = document.getElementById('btn-toggle-biometric-label');
+
+      if (!badge || !btn) return;
+
+      if (!isSupported) {
+        badge.className = "px-2.5 py-1 text-[10px] font-extrabold rounded-full border bg-amber-500/15 text-amber-500 border-amber-500/30";
+        badge.textContent = "SENSOR TIDAK DIDUKUNG";
+        if (statusText) statusText.textContent = "Sensor perangkat tidak terdeteksi atau tidak aktif";
+        btn.disabled = true;
+        btn.className = "w-full sm:w-auto px-5 py-2.5 bg-gray-400 dark:bg-gray-700 text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 shadow-sm cursor-not-allowed opacity-60";
+        if (btnLabel) btnLabel.textContent = "Sensor Tidak Tersedia";
+      } else if (isEnabled) {
+        badge.className = "px-2.5 py-1 text-[10px] font-extrabold rounded-full border bg-emerald-500/15 text-emerald-500 border-emerald-500/30";
+        badge.textContent = "AKTIF (SIAP DIGUNAKAN)";
+        if (statusText) statusText.textContent = "Perangkat terlindungi dengan Face ID / Sidik Jari";
+        btn.disabled = false;
+        btn.className = "w-full sm:w-auto px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer active:scale-95";
+        if (btnLabel) btnLabel.textContent = "Nonaktifkan Kunci Biometrik";
+      } else {
+        badge.className = "px-2.5 py-1 text-[10px] font-extrabold rounded-full border bg-gray-500/15 text-gray-400 border-gray-500/30";
+        badge.textContent = "BELUM AKTIF";
+        if (statusText) statusText.textContent = "Sensor perangkat terdeteksi & siap diaktifkan";
+        btn.disabled = false;
+        btn.className = "w-full sm:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer active:scale-95";
+        if (btnLabel) btnLabel.textContent = "Aktifkan Kunci Biometrik";
+      }
+    }
+
+function hideSplashScreenAndTriggerAlerts() {
       sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
       if (typeof pauseSplashShader === "function") pauseSplashShader();
       let splash = document.getElementById('splash-screen');
@@ -5637,6 +5917,19 @@
         } else {
           localStorage.removeItem("KEUANGANKU_REMEMBER_PIN");
           localStorage.removeItem("KEUANGANKU_SAVED_PIN");
+        }
+        // Rekomendasikan Biometrik jika sensor tersedia tapi belum diaktifkan
+        if (localStorage.getItem("KEUANGANKU_BIOMETRIC_ENABLED") !== "true" && !sessionStorage.getItem("KEUANGANKU_BIOMETRIC_OFFERED")) {
+          sessionStorage.setItem("KEUANGANKU_BIOMETRIC_OFFERED", "true");
+          setTimeout(() => {
+            if (typeof isBiometricAvailable === 'function') {
+              isBiometricAvailable().then(avail => {
+                if (avail && typeof showSyncToast === 'function') {
+                  showSyncToast("💡 Tips: Anda dapat mengaktifkan Face ID / Sidik Jari di menu Setup!");
+                }
+              });
+            }
+          }, 1500);
         }
         hideSplashScreenAndTriggerAlerts();
         initApp();
@@ -11170,6 +11463,7 @@ function formatReadableSheets(ss, parsed) {
       updateSetupLicenseDisplay(currentLic);
       renderSetupPasswordCard(currentLic);
       updateCloudSyncLockUI(currentLic);
+      if (typeof updateBiometricUI === 'function') updateBiometricUI();
       renderSetupDatabaseCards();
       loadConnectedDevices();
       updateDemoModeUI();
@@ -11493,7 +11787,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v5.0';
+              let currentCacheInApp = 'keuanganku-pwa-v5.1';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
