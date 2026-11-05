@@ -565,299 +565,63 @@
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
+<body class="min-h-screen bg-slate-950 text-slate-100 antialiased selection:bg-blue-600 selection:text-white">
 
-  <!-- Status Bar Anti-Leak Guard -->
+  <!-- iOS PWA Anti-Leak Bar -->
   <div class="anti-leak-bar"></div>
 
-  <!-- Ambient Glow Background -->
-  <div class="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[450px] bg-gradient-to-b from-blue-600/15 via-indigo-600/10 to-transparent rounded-full blur-3xl pointer-events-none z-0"></div>
-
-  <!-- ======================================================== -->
-  <!-- HEADER & BRAND BAR (HANYA TOMBOL BUKA APLIKASI)          -->
-  <!-- ======================================================== -->
-  <header class="guide-header sticky top-0 z-50 border-b border-slate-800/90 shadow-xl shadow-black/50 px-4 pb-3 sm:pb-3.5">
-    <div class="max-w-6xl mx-auto flex items-center justify-between gap-3">
-      <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
-        <!-- Logo -->
-        <img src="icon-96.png" alt="Logo Keuanganku" class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl shadow-lg shadow-blue-500/20 object-contain shrink-0 border border-blue-500/30">
-        <div class="min-w-0">
-          <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-            <h1 class="text-xs sm:text-base font-extrabold text-white tracking-tight truncate leading-none">KEUANGANKU PRO</h1>
-            <span class="px-1.5 py-0.5 rounded-full text-[8px] sm:text-[9px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30 whitespace-nowrap">PANDUAN RESMI</span>
+  <!-- STICKY HEADER NAV -->
+  <header class="sticky top-0 z-50 guide-header border-b border-slate-800/80 transition-colors">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <a href="index.html" class="flex items-center gap-2.5 group">
+          <div class="w-8 h-8 sm:w-9 sm:bg-9 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-400 p-0.5 shadow-md flex items-center justify-center">
+            <img src="icon-96.png" alt="Logo" class="w-full h-full object-cover rounded-[10px]" onerror="this.onerror=null; this.src='icon.svg';">
           </div>
-          <p class="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 truncate">Sambarang Production • Petunjuk Lengkap & Bergambar</p>
-        </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="font-extrabold text-sm sm:text-base tracking-tight text-white group-hover:text-cyan-400 transition-colors">KEUANGANKU <span class="text-cyan-400">PRO</span></span>
+              <span class="px-1.5 py-0.2 text-[9px] font-black rounded-md bg-blue-600 text-white uppercase tracking-wider">v5.1</span>
+            </div>
+            <p class="text-[9px] sm:text-[10px] text-slate-400 font-medium hidden xs:block">Buku Panduan & Petunjuk Resmi Pengguna</p>
+          </div>
+        </a>
       </div>
 
-      <!-- Tombol: Mode Terang/Gelap & Buka Aplikasi -->
-      <div class="flex items-center gap-2 shrink-0">
-        <button onclick="toggleGuideTheme()" id="btn-guide-theme" title="Ubah Mode Gelap / Terang" class="p-2 sm:px-2.5 sm:py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-semibold border border-slate-700/80 flex items-center gap-1.5 transition-all shrink-0 active:scale-95">
-          <span id="guide-theme-icon" class="material-symbols-outlined text-base">light_mode</span>
-          <span id="guide-theme-text" class="hidden sm:inline text-xs font-bold">Mode</span>
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Theme Toggle Button -->
+        <button onclick="toggleGuideTheme()" id="btn-guide-theme" class="px-2.5 py-1.5 rounded-xl border border-slate-700 bg-slate-900/80 hover:bg-slate-800 text-slate-300 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm">
+          <span class="material-symbols-outlined text-base text-amber-400" id="guide-theme-icon">light_mode</span>
+          <span class="hidden sm:inline" id="guide-theme-text">Terang</span>
         </button>
-        <a href="index.html" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white text-xs font-bold shadow-lg shadow-blue-500/25 flex items-center gap-1.5 transition-all active:scale-95">
-          <span class="material-symbols-outlined text-base">open_in_browser</span>
+
+        <a href="index.html" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md transition-all cursor-pointer">
+          <span class="material-symbols-outlined text-sm">login</span>
           <span>Buka Aplikasi</span>
         </a>
       </div>
     </div>
   </header>
 
-  <!-- ======================================================== -->
-  <!-- MAIN CONTENT CONTAINER                                   -->
-  <!-- ======================================================== -->
-  <main class="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8 space-y-10 relative z-10">
+  <!-- MAIN WRAPPER -->
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-8 sm:space-y-12">
 
-    <!-- ======================================================== -->
-    <!-- HERO SECTION & MULTI-DEVICE VISUAL MOCKUP                -->
-    <!-- (LAPTOP, TABLET & SMARTPHONE MENGAKSES KEUANGANKU PRO)   -->
-    <!-- ======================================================== -->
-    <section class="space-y-6 text-center">
-      
-      <!-- Headline & Introduction -->
-      <div class="max-w-3xl mx-auto space-y-3">
-        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/15 text-blue-300 border border-blue-500/30 text-[11px] font-bold shadow-sm">
-          <span class="material-symbols-outlined text-xs text-cyan-400">devices</span>
-          <span>Satu Akun Sinkron Otomatis di Seluruh Gadget Anda</span>
-        </div>
-        <h2 class="text-2xl sm:text-4xl font-black text-white tracking-tight leading-tight">
-          Panduan Lengkap & Bergambar <br class="hidden sm:inline">
-          <span class="bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-300 bg-clip-text text-transparent">Keuanganku PRO</span>
-        </h2>
-        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-2xl mx-auto">
-          Kelola uang pribadi dan usaha Anda lebih rapi, aman di Google Drive Anda sendiri, serta sinkron secara hening di <b>Laptop</b>, <b>Tablet</b>, dan <b>HP Android / iPhone</b>.
-        </p>
+    <!-- HERO SECTION -->
+    <section class="text-center space-y-4 max-w-3xl mx-auto pt-2 sm:pt-4">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-cyan-400 text-xs font-bold shadow-sm">
+        <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+        <span>PANDUAN RESMI & TERBARU • VERSI v5.1</span>
       </div>
-
-      <!-- ======================================================== -->
-      <!-- MULTI-DEVICE REALISTIC SHOWCASE (LAPTOP + TABLET + HP)   -->
-      <!-- ======================================================== -->
-      <div class="mockup-showcase-stage p-4 sm:p-8 rounded-3xl bg-gradient-to-b from-slate-900/90 via-slate-950 to-slate-950 border border-slate-800 shadow-2xl relative overflow-hidden">
-        
-        <!-- Ambient Inner Spotlight -->
-        <div class="absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl pointer-events-none"></div>
-
-        <!-- 3-Device Composite Stage -->
-        <div class="relative max-w-4xl mx-auto pt-2 pb-4">
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-end justify-center">
-
-            <!-- 1. TABLET MOCKUP (KIRI / ANGLE) -->
-            <div class="lg:col-span-3 hidden md:flex flex-col items-center justify-center order-2 lg:order-1 transition-transform hover:scale-[1.02] duration-300">
-              <div class="w-52 sm:w-60 bg-slate-900 rounded-3xl p-2.5 border-2 border-slate-700 shadow-2xl relative">
-                <!-- Tablet Camera -->
-                <div class="w-1.5 h-1.5 rounded-full bg-slate-700 mx-auto mb-1.5"></div>
-                <!-- Tablet Screen Interior -->
-                <div class="bg-slate-950 rounded-2xl p-3 space-y-2.5 border border-slate-800 text-left text-[9px] relative overflow-hidden">
-                  <div class="flex items-center justify-between border-b border-slate-800 pb-1.5">
-                    <span class="font-bold text-white flex items-center gap-1">
-                      <span class="material-symbols-outlined text-xs text-blue-400">tablet</span> Tablet View
-                    </span>
-                    <span class="px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-mono-code text-[8px]">Sync ✓</span>
-                  </div>
-                  <!-- Rekening Cards Grid -->
-                  <div class="space-y-1.5">
-                    <div class="p-1.5 bg-blue-950/40 border border-blue-500/30 rounded-lg">
-                      <span class="text-[8px] text-blue-300 font-bold block">BCA Utama</span>
-                      <span class="font-mono-code font-extrabold text-white text-[10px]">Rp 28.500.000</span>
-                    </div>
-                    <div class="p-1.5 bg-slate-900 border border-slate-800 rounded-lg">
-                      <span class="text-[8px] text-slate-400 font-bold block">Cash / Dompet</span>
-                      <span class="font-mono-code font-bold text-slate-200 text-[10px]">Rp 2.150.000</span>
-                    </div>
-                  </div>
-                  <!-- Budget Meter -->
-                  <div class="p-1.5 bg-slate-900/80 rounded-lg border border-slate-800/80 space-y-1">
-                    <div class="flex justify-between text-[8px]">
-                      <span class="text-slate-400">Budget Makan</span>
-                      <span class="text-emerald-400 font-bold">62% Aman</span>
-                    </div>
-                    <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                      <div class="bg-gradient-to-r from-blue-500 to-emerald-400 h-full w-[62%] rounded-full"></div>
-                    </div>
-                  </div>
-                </div>
-                <!-- Tablet Bottom Home Bar -->
-                <div class="w-12 h-1 bg-slate-700 rounded-full mx-auto mt-2"></div>
-              </div>
-              <span class="text-[10px] font-bold text-slate-400 mt-2 flex items-center gap-1">
-                <span class="material-symbols-outlined text-xs text-cyan-400">tablet_mac</span> iPad / Tablet
-              </span>
-            </div>
-
-            <!-- 2. LAPTOP MOCKUP (TENGAH / CENTERPIECE) -->
-            <div class="lg:col-span-6 flex flex-col items-center justify-center order-1 lg:order-2 z-10 transition-transform hover:scale-[1.01] duration-300">
-              <div class="w-full max-w-md sm:max-w-lg bg-slate-900 rounded-t-2xl p-2 sm:p-2.5 border-2 border-slate-700 shadow-2xl relative">
-                <!-- Laptop Webcam Notch -->
-                <div class="w-2 h-2 rounded-full bg-slate-800 mx-auto mb-1.5 border border-slate-700"></div>
-                <!-- Laptop Screen Interior (Keuanganku Desktop UI) -->
-                <div class="bg-slate-950 rounded-xl p-3 sm:p-4 space-y-3 border border-slate-800 text-left relative overflow-hidden">
-                  <!-- Mini App Header Sesuai Update Terakhir: Versi Tanpa Kotak & Cloud Icon Animasi Bersih -->
-                  <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-                    <div class="flex items-center gap-1.5">
-                      <div class="w-4 h-4 rounded-md bg-blue-600 flex items-center justify-center text-white">
-                        <span class="material-symbols-outlined text-[10px]">account_balance_wallet</span>
-                      </div>
-                      <span class="font-black text-white text-[10px] tracking-tight">KEUANGANKU</span>
-                      <span class="text-[8px] font-bold text-blue-400">PRO</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <!-- Icon Animasi Cloud Saja (Tanpa Keterangan Teks Berlebih) -->
-                      <div class="flex items-center justify-center w-5 h-5 rounded-md bg-slate-900 border border-slate-800" title="Cloud Sync Aktif">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                      </div>
-                      <!-- Versi Tanpa Kotak Sesuai Request -->
-                      <span class="text-[9px] font-mono-code font-bold text-cyan-300">v0.1</span>
-                    </div>
-                  </div>
-
-                  <!-- 3 Mini Stats Metric -->
-                  <div class="grid grid-cols-3 gap-1.5 text-[8px]">
-                    <div class="p-2 rounded-lg bg-slate-900/90 border border-slate-800">
-                      <span class="text-slate-400 block">Total Saldo:</span>
-                      <span class="font-mono-code font-bold text-white text-[10px] block truncate">Rp 48.750.000</span>
-                    </div>
-                    <div class="p-2 rounded-lg bg-emerald-950/30 border border-emerald-500/20">
-                      <span class="text-emerald-400 block">Pemasukan:</span>
-                      <span class="font-mono-code font-bold text-emerald-300 text-[10px] block truncate">+Rp 14.500.000</span>
-                    </div>
-                    <div class="p-2 rounded-lg bg-rose-950/30 border border-rose-500/20">
-                      <span class="text-rose-400 block">Pengeluaran:</span>
-                      <span class="font-mono-code font-bold text-rose-300 text-[10px] block truncate">-Rp 4.250.000</span>
-                    </div>
-                  </div>
-
-                  <!-- Mini Chart & Recent Feeds -->
-                  <div class="p-2 rounded-lg bg-slate-900/60 border border-slate-800/80 space-y-1.5">
-                    <div class="flex items-center justify-between text-[8px]">
-                      <span class="font-bold text-slate-300">Arus Kas Bulanan</span>
-                      <span class="text-cyan-400 font-mono-code">+Rp 10.250.000 Net</span>
-                    </div>
-                    <!-- Visual Mini Bars -->
-                    <div class="flex items-end gap-1 h-6 pt-1">
-                      <div class="flex-1 bg-blue-600/40 rounded-t h-[40%]"></div>
-                      <div class="flex-1 bg-blue-600/60 rounded-t h-[65%]"></div>
-                      <div class="flex-1 bg-blue-600/80 rounded-t h-[50%]"></div>
-                      <div class="flex-1 bg-blue-500 rounded-t h-[80%]"></div>
-                      <div class="flex-1 bg-emerald-500 rounded-t h-[100%] shadow-sm"></div>
-                    </div>
-                  </div>
-
-                  <!-- Mini Transaction Item -->
-                  <div class="flex items-center justify-between p-1.5 bg-slate-900 rounded-lg text-[8px] border border-slate-800">
-                    <div class="flex items-center gap-1.5 min-w-0">
-                      <span class="material-symbols-outlined text-xs text-emerald-400 shrink-0">arrow_downward</span>
-                      <span class="font-semibold text-slate-200 truncate">Gaji & Hasil Usaha</span>
-                    </div>
-                    <span class="font-mono-code font-bold text-emerald-400 shrink-0">+Rp 12.000.000</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Laptop Bottom Base & Hinge -->
-              <div class="w-full max-w-[480px] sm:max-w-[560px] bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 h-3 sm:h-3.5 rounded-b-xl border-t border-slate-600 shadow-2xl relative flex items-center justify-center">
-                <div class="w-16 h-1 bg-slate-600 rounded-full"></div>
-              </div>
-              <span class="text-[10px] font-bold text-slate-400 mt-2 flex items-center gap-1">
-                <span class="material-symbols-outlined text-xs text-blue-400">laptop_mac</span> PC / Laptop / MacBook
-              </span>
-            </div>
-
-            <!-- 3. SMARTPHONE MOCKUP (KANAN / FRONT) -->
-            <div class="lg:col-span-3 flex flex-col items-center justify-center order-3 transition-transform hover:scale-[1.02] duration-300">
-              <div class="w-44 sm:w-48 bg-slate-900 rounded-[2.5rem] p-2 border-2 border-slate-700 shadow-2xl relative">
-                <!-- Dynamic Island / Notch -->
-                <div class="w-14 h-3 bg-slate-950 rounded-full mx-auto mb-1.5 border border-slate-800/80 flex items-center justify-end px-1.5">
-                  <span class="w-1.5 h-1.5 rounded-full bg-slate-800"></span>
-                </div>
-                <!-- Smartphone Screen Interior -->
-                <div class="bg-slate-950 rounded-[2rem] p-3 space-y-2.5 border border-slate-800 text-left text-[9px] relative overflow-hidden">
-                  <!-- Phone Top Header -->
-                  <div class="flex items-center justify-between pb-1 text-[8px] text-slate-400">
-                    <span class="font-mono-code">09:41</span>
-                    <div class="flex items-center gap-1 text-cyan-400">
-                      <span class="material-symbols-outlined text-[10px]">wifi</span>
-                      <span class="material-symbols-outlined text-[10px]">cloud_done</span>
-                    </div>
-                  </div>
-                  <!-- Mobile Wallet Card -->
-                  <div class="p-2.5 bg-gradient-to-br from-blue-900/60 to-slate-900 rounded-xl border border-blue-500/30 text-white space-y-0.5 shadow-sm">
-                    <span class="text-[7px] text-blue-300 font-bold block uppercase tracking-wider">Total Kas Saya</span>
-                    <span class="font-mono-code font-black text-xs text-white block">Rp 48.750.000</span>
-                    <span class="text-[7px] text-emerald-400 font-bold block">● Real-time Cloud Active</span>
-                  </div>
-                  <!-- Quick Entry Buttons -->
-                  <div class="grid grid-cols-2 gap-1 text-center">
-                    <div class="p-1 bg-emerald-950/40 border border-emerald-500/30 rounded-lg text-emerald-300 font-bold text-[8px]">
-                      + Masuk
-                    </div>
-                    <div class="p-1 bg-rose-950/40 border border-rose-500/30 rounded-lg text-rose-300 font-bold text-[8px]">
-                      - Keluar
-                    </div>
-                  </div>
-                  <!-- Recent Feed Mini -->
-                  <div class="p-1.5 bg-slate-900/90 rounded-lg border border-slate-800 text-[8px] space-y-1">
-                    <div class="flex justify-between items-center">
-                      <span class="font-bold text-slate-200">Bensin Mobil</span>
-                      <span class="font-mono-code text-rose-400 font-bold">-250rb</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                      <span class="font-bold text-slate-200">Penjualan Toko</span>
-                      <span class="font-mono-code text-emerald-400 font-bold">+1.8jt</span>
-                    </div>
-                  </div>
-                </div>
-                <!-- Phone Home Indicator Bar -->
-                <div class="w-12 h-1 bg-slate-700 rounded-full mx-auto mt-2"></div>
-              </div>
-              <span class="text-[10px] font-bold text-slate-400 mt-2 flex items-center gap-1">
-                <span class="material-symbols-outlined text-xs text-emerald-400">smartphone</span> Android / iPhone
-              </span>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- 3 Fitur Utama Pill Banner -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-6 border-t border-slate-800/80 text-left text-xs">
-          <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center gap-3">
-            <div class="w-9 h-9 rounded-xl bg-blue-600/20 text-blue-400 flex items-center justify-center shrink-0">
-              <span class="material-symbols-outlined text-xl">sync</span>
-            </div>
-            <div>
-              <span class="font-bold text-white block">Sinkronisasi Real-Time</span>
-              <span class="text-[11px] text-slate-400">Catat di HP, otomatis update di Laptop & Tablet.</span>
-            </div>
-          </div>
-
-          <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center gap-3">
-            <div class="w-9 h-9 rounded-xl bg-emerald-600/20 text-emerald-400 flex items-center justify-center shrink-0">
-              <span class="material-symbols-outlined text-xl">security</span>
-            </div>
-            <div>
-              <span class="font-bold text-white block">Google Drive Privat Anda</span>
-              <span class="text-[11px] text-slate-400">Data keuangan 100% milik Anda sendiri & aman.</span>
-            </div>
-          </div>
-
-          <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center gap-3">
-            <div class="w-9 h-9 rounded-xl bg-amber-600/20 text-amber-400 flex items-center justify-center shrink-0">
-              <span class="material-symbols-outlined text-xl">all_inclusive</span>
-            </div>
-            <div>
-              <span class="font-bold text-white block">Akses Seumur Hidup (Lifetime)</span>
-              <span class="text-[11px] text-slate-400">Sekali pesan, bebas pakai selamanya tanpa langganan.</span>
-            </div>
-          </div>
-        </div>
-
-      </div>
+      <h1 class="text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
+        Panduan Lengkap & Bergambar <br class="hidden sm:block"/>
+        <span class="bg-gradient-to-r from-blue-400 via-cyan-300 to-indigo-400 bg-clip-text text-transparent">KEUANGANKU PRO</span>
+      </h1>
+      <p class="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-2xl mx-auto">
+        Petunjuk resmi alur aktivasi kilat (Google Sign-In & Token Lisensi), instalasi PWA, kunci keamanan (PIN & Biometrik Face ID/Sidik Jari), database pribadi BYODb Google Drive otomatis, dan sinkronisasi multi-perangkat.
+      </p>
     </section>
 
-    <!-- ======================================================== -->
-    <!-- BAGIAN 0: ALUR UTUH PEMESANAN HINGGA PENGGUNAAN          -->
-    <!-- (SESUAI ALUR & SISTEM TERBARU YANG TELAH DIUJI COBA)     -->
-    <!-- ======================================================== -->
+    <!-- RINGKASAN ALUR 5 TAHAP UTAMA -->
     <section id="alur-summary-section" class="p-5 sm:p-7 rounded-3xl bg-slate-900/90 border border-blue-500/30 shadow-xl space-y-4">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-wrap gap-2">
         <div class="flex items-center gap-2.5">
@@ -866,7 +630,7 @@
           </span>
           <h3 class="text-sm sm:text-base font-extrabold text-white tracking-tight">Ringkasan Alur Pemesanan & Aktivasi Resmi</h3>
         </div>
-        <span class="text-[11px] font-mono-code text-cyan-300 font-bold bg-cyan-950/60 px-2.5 py-0.5 rounded-full border border-cyan-800/40">Versi v0.1 (Fase Uji Coba Resmi)</span>
+        <span class="text-[11px] font-mono-code text-cyan-300 font-bold bg-cyan-950/60 px-2.5 py-0.5 rounded-full border border-cyan-800/40">Versi Resmi PRO v5.1</span>
       </div>
 
       <!-- 5-Step Process Timeline -->
@@ -878,7 +642,7 @@
             <span class="material-symbols-outlined text-blue-400 text-sm">shopping_cart</span>
           </div>
           <p class="font-bold text-white text-[11px]">Pemesanan Online</p>
-          <p class="text-[10px] text-slate-400 leading-relaxed">Pilih paket lisensi di <a href="pesan.html" class="text-cyan-400 underline">pesan.html</a>, masukkan voucher & alamat <b>Gmail aktif</b> Anda.</p>
+          <p class="text-[10px] text-slate-400 leading-relaxed">Pilih paket lisensi di <a href="pesan.html" class="text-cyan-400 underline font-semibold">pesan.html</a>, masukkan voucher & alamat <b>Gmail aktif</b> Anda.</p>
         </div>
 
         <!-- Stage 2 -->
@@ -887,8 +651,8 @@
             <span class="text-[10px] font-black text-cyan-400 font-mono-code uppercase">TAHAP 02</span>
             <span class="material-symbols-outlined text-cyan-400 text-sm">pin</span>
           </div>
-          <p class="font-bold text-white text-[11px]">Kode Unik 2 Digit</p>
-          <p class="text-[10px] text-slate-400 leading-relaxed">Transfer pas dengan <b>2 angka unik terakhir</b> antrean orderan (misal: +01, +02) untuk verifikasi kilat.</p>
+          <p class="font-bold text-white text-[11px]">Kode Unik Transfer</p>
+          <p class="text-[10px] text-slate-400 leading-relaxed">Transfer pas dengan <b>2 angka unik terakhir</b> antrean orderan (misal: +01, +02) untuk verifikasi otomatis kilat.</p>
         </div>
 
         <!-- Stage 3 -->
@@ -897,816 +661,645 @@
             <span class="text-[10px] font-black text-rose-400 font-mono-code uppercase">TAHAP 03 (UTAMA)</span>
             <span class="material-symbols-outlined text-rose-400 text-sm">mail</span>
           </div>
-          <p class="font-bold text-white text-[11px]">Lisensi Masuk ke Gmail</p>
-          <p class="text-[10px] text-slate-400 leading-relaxed">Admin mengirim Kode Lisensi resmi & Tautan Akses langsung ke <b>Gmail</b> Anda dari <code class="text-cyan-300 text-[9px]">keuangankupro@gmail.com</code>.</p>
+          <p class="font-bold text-white text-[11px]">Lisensi Resmi ke Gmail</p>
+          <p class="text-[10px] text-slate-400 leading-relaxed">Admin mengirim Kode Lisensi resmi & tautan aktivasi langsung dari <code class="text-cyan-300 text-[9px]">keuangankupro@gmail.com</code>.</p>
         </div>
 
         <!-- Stage 4 -->
         <div id="alur-tahap-4" class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5 relative">
           <div class="flex items-center justify-between">
             <span class="text-[10px] font-black text-amber-400 font-mono-code uppercase">TAHAP 04</span>
-            <span class="material-symbols-outlined text-amber-400 text-sm">touch_app</span>
+            <span class="material-symbols-outlined text-amber-400 text-sm">verified_user</span>
           </div>
           <p class="font-bold text-white text-[11px]">Aktivasi & Pasang PWA</p>
-          <p class="text-[10px] text-slate-400 leading-relaxed">Klik link di Gmail, tekan <b>Aktivasi Sekarang</b> di Perangkat 1, lalu pasang ikon di Layar Utama HP/Laptop.</p>
+          <p class="text-[10px] text-slate-400 leading-relaxed">Buka link, aktivasi via <b>Google Sign-In</b> atau Token di Perangkat 1, lalu pasang ikon di Layar Utama HP/Laptop.</p>
         </div>
 
         <!-- Stage 5 -->
         <div id="alur-tahap-5" class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5 relative">
           <div class="flex items-center justify-between">
             <span class="text-[10px] font-black text-emerald-400 font-mono-code uppercase">TAHAP 05</span>
-            <span class="material-symbols-outlined text-emerald-400 text-sm">lock_open</span>
+            <span class="material-symbols-outlined text-emerald-400 text-sm">fingerprint</span>
           </div>
-          <p class="font-bold text-white text-[11px]">Kunci PIN & Multi-Device</p>
-          <p class="text-[10px] text-slate-400 leading-relaxed">Ganti PIN pribadi (token awal hangus), lalu scan QR Barcode untuk sambungkan Laptop & HP ke-2!</p>
+          <p class="font-bold text-white text-[11px]">PIN, Biometrik & Cloud</p>
+          <p class="text-[10px] text-slate-400 leading-relaxed">Buat PIN, aktifkan <b>Face ID / Sidik Jari</b>, hubungkan <b>BYODb Google Drive 1-klik</b>, dan sinkronkan antar perangkat!</p>
         </div>
       </div>
     </section>
 
-    <!-- ======================================================== -->
-    <!-- QUICK STEP NAVIGATION PILLS                              -->
-    <!-- ======================================================== -->
-    <div class="p-3 bg-slate-900/90 border border-slate-800 rounded-2xl flex items-center gap-2 overflow-x-auto custom-scroll text-xs">
-      <span class="text-slate-400 font-bold shrink-0 px-2 flex items-center gap-1">
-        <span class="material-symbols-outlined text-sm">navigation</span> Lompat Ke:
-      </span>
-      <a href="#langkah-1" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold whitespace-nowrap transition-all">1. Terima Akun via Gmail</a>
-      <a href="#langkah-2" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold whitespace-nowrap transition-all">2. Aktivasi di Perangkat 1</a>
-      <a href="#langkah-3" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold whitespace-nowrap transition-all">3. Pasang PWA & Update</a>
-      <a href="#langkah-4" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold whitespace-nowrap transition-all">4. Buat PIN Pribadi (Wajib)</a>
-      <a href="#langkah-5" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold whitespace-nowrap transition-all">5. Cloud Google Sheets</a>
-      <a href="#langkah-6" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold whitespace-nowrap transition-all">6. Hubungkan Multi-Device</a>
-      <a href="#langkah-7" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold whitespace-nowrap transition-all">7. Panduan Fitur</a>
-      <a href="#langkah-8" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold whitespace-nowrap transition-all">8. Manajemen Akses & FAQ</a>
-    </div>
-
-    <!-- ======================================================== -->
-    <!-- DAFTAR LANGKAH PANDUAN BERGAMBAR (STEP BY STEP)          -->
-    <!-- ======================================================== -->
-    <div class="space-y-8">
-
-      <!-- ======================================================== -->
-      <!-- LANGKAH 1: TERIMA AKUN VIA GMAIL (JALUR UTAMA RESMI)     -->
-      <!-- ======================================================== -->
-      <section id="langkah-1" class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-7 space-y-5 shadow-xl">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-wrap gap-2">
-          <div class="flex items-center gap-3">
-            <span class="w-8 h-8 rounded-xl bg-rose-600 text-white font-extrabold text-sm flex items-center justify-center shrink-0 shadow">1</span>
-            <div>
-              <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-                <span>Terima Kode Lisensi Resmi via Gmail</span>
-                <span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[10px] font-extrabold uppercase">Jalur Utama</span>
-              </h3>
-              <p class="text-xs text-slate-400">Email pengiriman akun lisensi resmi dikirimkan langsung dari <b class="text-slate-300">keuangankupro@gmail.com</b> ke alamat Gmail Anda</p>
-            </div>
+    <!-- LANGKAH 1: TERIMA LISENSI RESMI VIA GMAIL -->
+    <section id="langkah-1" class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-7 space-y-5 shadow-xl">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-wrap gap-2">
+        <div class="flex items-center gap-3">
+          <span class="w-8 h-8 rounded-xl bg-rose-600 text-white font-extrabold text-sm flex items-center justify-center shrink-0 shadow">1</span>
+          <div>
+            <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+              <span>Terima Kode Lisensi Resmi via Gmail</span>
+              <span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[10px] font-extrabold uppercase">Jalur Utama</span>
+            </h3>
+            <p class="text-xs text-slate-400">Email pengiriman akun lisensi resmi dikirimkan langsung dari <b class="text-slate-300">keuangankupro@gmail.com</b> ke alamat Gmail Anda</p>
           </div>
-          <span class="px-2.5 py-0.5 bg-rose-500/20 text-rose-300 text-[10px] font-bold rounded-full border border-rose-500/30 flex items-center gap-1">
-            <span class="material-symbols-outlined text-xs">mark_email_read</span> Email Masuk
-          </span>
+        </div>
+        <span class="px-2.5 py-0.5 bg-rose-500/20 text-rose-300 text-[10px] font-bold rounded-full border border-rose-500/30 flex items-center gap-1">
+          <span class="material-symbols-outlined text-xs">mail</span> Resmi & Otomatis
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+        <div class="lg:col-span-7 space-y-3 text-xs text-slate-300 leading-relaxed">
+          <p>Setelah pembayaran terkonfirmasi, sistem kami secara otomatis mengirimkan rincian akun ke kotak masuk (inbox) Gmail Anda:</p>
+          <ul class="space-y-2 list-none">
+            <li class="flex items-start gap-2">
+              <span class="material-symbols-outlined text-emerald-400 text-base shrink-0">check_circle</span>
+              <span><b>Nama Pembeli & Email Google Terdaftar:</b> Digunakan sebagai tanda hak milik lisensi resmi.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="material-symbols-outlined text-cyan-400 text-base shrink-0">key</span>
+              <span><b>Kode Token Lisensi Resmi:</b> Kombinasi unik 16 karakter (contoh: <code class="text-cyan-300 font-mono-code font-bold">PRO-8A2F-9D41-B73C</code>).</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="material-symbols-outlined text-indigo-400 text-base shrink-0">link</span>
+              <span><b>Tautan Akses Cepat:</b> Tombol langsung untuk membuka aplikasi tanpa perlu mengetik token manual.</span>
+            </li>
+          </ul>
+          <div class="p-3 bg-blue-500/10 border border-blue-500/30 rounded-xl text-cyan-300 text-xs flex items-center gap-2">
+            <span class="material-symbols-outlined text-cyan-400 text-lg shrink-0">info</span>
+            <span><b>Tips:</b> Jika email belum masuk di Kotak Utama, silakan periksa folder <b>Promosi</b> atau <b>Spam</b> Anda.</span>
+          </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-          <div class="lg:col-span-6 space-y-3.5 text-xs text-slate-300 leading-relaxed">
-            <p>
-              Sesuai alur operasional resmi Sambarang Production, <b>Gmail adalah jalur utama pengiriman akun</b> kepada pelanggan untuk menjamin arsip lisensi aman selamanya dan tidak hilang terhapus chat.
+        <!-- Mockup Email -->
+        <div class="lg:col-span-5 bg-slate-950 rounded-2xl p-5 border border-slate-800 shadow-xl space-y-3 font-sans text-left">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-800 text-[11px] text-slate-400">
+            <span class="flex items-center gap-1.5 text-slate-300 font-bold">
+              <span class="material-symbols-outlined text-rose-500 text-sm">mark_email_unread</span> keuangankupro@gmail.com
+            </span>
+            <span class="text-[10px]">Baru saja</span>
+          </div>
+          <div>
+            <p class="text-xs font-bold text-white">🎉 Lisensi Resmi Keuanganku PRO Anda Telah Aktif!</p>
+            <p class="text-[11px] text-slate-400 mt-1">Halo <span class="text-slate-200 font-semibold">Pelanggan Terhormat</span>, terima kasih telah memilih Keuanganku PRO.</p>
+          </div>
+          <div class="p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-center space-y-1">
+            <p class="text-[10px] text-slate-400 uppercase font-mono-code">KODE TOKEN LISENSI ANDA:</p>
+            <p class="font-mono-code text-sm font-bold text-cyan-400 tracking-wider">PRO-8A2F-9D41-B73C</p>
+          </div>
+          <div class="text-center">
+            <span class="inline-block py-2 px-4 bg-blue-600 text-white font-bold text-xs rounded-xl shadow-md">BUKA APLIKASI SEKARANG ➔</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LANGKAH 2: AKTIVASI KILAT (GOOGLE SIGN-IN & TOKEN) -->
+    <section id="langkah-2" class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-7 space-y-5 shadow-xl">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-wrap gap-2">
+        <div class="flex items-center gap-3">
+          <span class="w-8 h-8 rounded-xl bg-indigo-600 text-white font-extrabold text-sm flex items-center justify-center shrink-0 shadow">2</span>
+          <div>
+            <h3 class="text-base sm:text-lg font-bold text-white">Buka Tautan & Aktivasi Fleksibel di Perangkat 1</h3>
+            <p class="text-xs text-slate-400">Mendaftarkan HP utama atau Laptop pertama Anda ke database lisensi resmi</p>
+          </div>
+        </div>
+        <span class="px-2.5 py-0.5 bg-indigo-500/20 text-indigo-300 text-[10px] font-bold rounded-full border border-indigo-500/40">⚡ Fleksibel & Cepat</span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+        <div class="lg:col-span-7 space-y-3 text-xs text-slate-300 leading-relaxed">
+          <p>Buka tautan aplikasi <code class="text-cyan-300 font-mono-code">https://sambarangpro.github.io/keuanganku/</code> melalui peramban resmi (Google Chrome, Safari, atau Microsoft Edge). Anda memiliki 2 cara mudah untuk masuk:</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div class="p-3.5 bg-slate-950 border border-slate-800 rounded-xl space-y-1">
+              <p class="font-bold text-white flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm text-cyan-400">account_circle</span> Cara A: Masuk dengan Google
+              </p>
+              <p class="text-[11px] text-slate-400">Jika email pesanan Anda adalah akun Google, cukup klik <b>"Masuk dengan Akun Google"</b> untuk autentikasi 1-klik yang sangat praktis.</p>
+            </div>
+            <div class="p-3.5 bg-slate-950 border border-slate-800 rounded-xl space-y-1">
+              <p class="font-bold text-white flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm text-indigo-400">key</span> Cara B: Masukkan Token Lisensi
+              </p>
+              <p class="text-[11px] text-slate-400">Masukkan kode token dari email pada tab <b>Perangkat Baru</b> ➔ klik <b>AKTIVASI SEKARANG</b>. Perangkat pertama otomatis terdaftar!</p>
+            </div>
+          </div>
+          <div class="text-[11px] text-amber-300/90 bg-amber-500/10 p-3 rounded-xl border border-amber-500/20 leading-relaxed flex items-center gap-2">
+            <span class="material-symbols-outlined text-base text-amber-400 shrink-0">info</span>
+            <span><b>Catatan Praktis:</b> Layar aktivasi awal ini <b>hanya muncul 1 kali saja</b> di awal pemakaian. Selanjutnya aplikasi akan langsung menampilkan layar masuk cepat.</span>
+          </div>
+        </div>
+
+        <!-- Mockup Tab Aktivasi -->
+        <div class="lg:col-span-5 bg-slate-950 rounded-2xl p-5 border border-indigo-500/30 shadow-xl space-y-3 text-center">
+          <div class="flex items-center justify-center p-1 bg-slate-900 rounded-xl border border-slate-800 gap-1 text-[11px]">
+            <span class="flex-1 py-1 px-2 rounded-lg text-slate-400">PIN & Biometrik</span>
+            <span class="flex-1 py-1 px-2 rounded-lg bg-indigo-600 text-white font-bold shadow-sm">Perangkat Baru</span>
+          </div>
+          <div class="p-2.5 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center gap-2 text-white font-semibold text-xs cursor-pointer">
+            <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+            <span>Masuk dengan Google</span>
+          </div>
+          <div class="text-[10px] text-slate-400">— ATAU MASUKKAN TOKEN —</div>
+          <div class="bg-slate-900 border border-slate-700 rounded-xl p-2 font-mono-code text-xs text-cyan-300">
+            PRO-8A2F-9D41-B73C
+          </div>
+          <button class="w-full py-2 bg-indigo-600 text-white font-bold rounded-xl text-xs shadow">AKTIVASI SEKARANG</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- LANGKAH 3: INSTAL PWA KE LAYAR UTAMA -->
+    <section id="langkah-3" class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-7 space-y-5 shadow-xl">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-wrap gap-2">
+        <div class="flex items-center gap-3">
+          <span class="w-8 h-8 rounded-xl bg-cyan-600 text-white font-extrabold text-sm flex items-center justify-center shrink-0 shadow">3</span>
+          <div>
+            <h3 class="text-base sm:text-lg font-bold text-white">Pasang Aplikasi (PWA) & Pembaruan Otomatis</h3>
+            <p class="text-xs text-slate-400">Aplikasi mandiri di HP & Laptop, super ringan tanpa unduh ratusan MB di PlayStore / AppStore</p>
+          </div>
+        </div>
+        <span class="px-2.5 py-0.5 bg-cyan-500/20 text-cyan-300 text-[10px] font-bold rounded-full border border-cyan-500/30">📲 Cepat & Ringan</span>
+      </div>
+
+      <p class="text-xs text-slate-300 leading-relaxed">
+        Keuanganku PRO menggunakan teknologi mutakhir <b>Progressive Web App (PWA)</b>. Aplikasi dapat dipasang langsung menjadi ikon aplikasi tersendiri di layar beranda tanpa perlu mengunduh installer besar:
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+        <!-- Android Chrome -->
+        <div class="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2.5 flex flex-col justify-between">
+          <div class="space-y-2">
+            <span class="font-bold text-emerald-400 flex items-center gap-1.5 text-xs">
+              <span class="material-symbols-outlined text-base">android</span> Android (Google Chrome)
+            </span>
+            <ol class="list-decimal list-inside space-y-1.5 text-slate-300 text-[11px] leading-relaxed">
+              <li>Buka website di Google Chrome.</li>
+              <li>Ketuk ikon titik tiga (<b>⋮</b>) di pojok kanan atas.</li>
+              <li>Pilih menu <b>"Instal Aplikasi"</b> atau <b>"Tambahkan ke Layar Utama"</b>.</li>
+              <li>Ikon resmi Keuanganku PRO akan langsung muncul di beranda HP Anda!</li>
+            </ol>
+          </div>
+          <span class="text-[10px] text-emerald-300/80 bg-emerald-500/10 px-2.5 py-1 rounded-lg block">✓ Tampilan fullscreen seperti aplikasi PlayStore</span>
+        </div>
+
+        <!-- iOS Safari -->
+        <div class="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2.5 flex flex-col justify-between">
+          <div class="space-y-2">
+            <span class="font-bold text-cyan-400 flex items-center gap-1.5 text-xs">
+              <span class="material-symbols-outlined text-base">phone_iphone</span> iPhone / iPad (Safari)
+            </span>
+            <ol class="list-decimal list-inside space-y-1.5 text-slate-300 text-[11px] leading-relaxed">
+              <li>Buka website wajib menggunakan browser <b>Safari</b>.</li>
+              <li>Ketuk tombol <b>Bagikan (Share)</b> (ikon kotak berpanah ke atas di bawah).</li>
+              <li>Geser ke bawah, pilih <b>"Tambah ke Layar Utama" (Add to Home Screen)</b>.</li>
+              <li>Ketuk <b>Tambah</b> di pojok kanan atas.</li>
+            </ol>
+          </div>
+          <span class="text-[10px] text-cyan-300/80 bg-cyan-500/10 px-2.5 py-1 rounded-lg block">✓ Bebas bilah browser Safari (Clean Fullscreen)</span>
+        </div>
+
+        <!-- PC / Laptop Windows & Mac -->
+        <div class="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2.5 flex flex-col justify-between">
+          <div class="space-y-2">
+            <span class="font-bold text-indigo-400 flex items-center gap-1.5 text-xs">
+              <span class="material-symbols-outlined text-base">laptop_mac</span> Laptop / PC (Edge / Chrome)
+            </span>
+            <ol class="list-decimal list-inside space-y-1.5 text-slate-300 text-[11px] leading-relaxed">
+              <li>Buka website di browser Chrome atau Edge.</li>
+              <li>Lihat di sebelah kanan kolom alamat URL (address bar), ada ikon <b>Instal (komputer/tambah)</b>.</li>
+              <li>Klik ikon tersebut, lalu pilih <b>Instal</b>.</li>
+              <li>Aplikasi terbuka di jendela desktop mandiri dan dapat di-pin ke Taskbar!</li>
+            </ol>
+          </div>
+          <span class="text-[10px] text-indigo-300/80 bg-indigo-500/10 px-2.5 py-1 rounded-lg block">✓ Hemat RAM & hemat baterai laptop</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- LANGKAH 4: PROTEKSI KEAMANAN (PIN PRIBADI & KUNCI BIOMETRIK) -->
+    <section id="langkah-4" class="bg-gradient-to-br from-amber-950/30 via-slate-900 to-slate-950 border border-amber-500/40 rounded-3xl p-5 sm:p-7 space-y-5 shadow-xl">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-wrap gap-2">
+        <div class="flex items-center gap-3">
+          <span class="w-8 h-8 rounded-xl bg-amber-500 text-slate-950 font-black text-sm flex items-center justify-center shrink-0 shadow">4</span>
+          <div>
+            <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+              <span>Kunci Keamanan: Buat PIN Pribadi & Kunci Biometrik</span>
+              <span class="text-amber-400 text-xs font-black uppercase bg-amber-500/20 px-2 py-0.5 rounded border border-amber-500/40">PENTING</span>
+            </h3>
+            <p class="text-xs text-slate-400">Proteksi hak milik anti-pembajakan dan login instan dengan Face ID / Sidik Jari</p>
+          </div>
+        </div>
+        <span class="px-2.5 py-0.5 bg-amber-500/20 text-amber-300 text-[10px] font-bold rounded-full border border-amber-500/40">🔒 Keamanan Maksimal</span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div class="lg:col-span-7 space-y-4 text-xs text-slate-300 leading-relaxed">
+          <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-2">
+            <p class="font-bold text-amber-400 text-sm flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-base">pin</span> 4.1 Buat PIN Pribadi Baru (Hanguskan Token)
             </p>
-            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-2 text-xs font-mono-code text-slate-300">
-              <p class="text-cyan-400 font-bold">• KODE LISENSI RESMI: <span class="bg-cyan-950/60 text-cyan-300 px-2 py-0.5 rounded border border-cyan-800/50">PRO-8A2F-9D41-B73C</span></p>
-              <p class="text-emerald-400 font-bold">• KUOTA PERANGKAT: <span class="text-white">Sesuai paket yang Anda pesan (1 s/d 10 Perangkat)</span></p>
-              <p class="text-amber-400 font-bold">• EMAIL RESMI KAMI: <span class="text-amber-300">keuangankupro@gmail.com</span></p>
-              <p class="text-blue-400 font-bold">• TAUTAN APLIKASI: <span class="text-blue-300 underline">https://sambarangpro.github.io/keuanganku/</span></p>
-            </div>
-            <div class="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-300 text-[11px] leading-relaxed flex items-start gap-2">
-              <span class="material-symbols-outlined text-base text-amber-400 shrink-0 mt-0.5">lightbulb</span>
-              <div>
-                <b>Tips Cek Email:</b> Buka aplikasi <b>Gmail</b> di HP atau Laptop Anda. Periksa folder <b>Kotak Masuk (Inbox)</b>. Jika belum terlihat dalam 5 menit, periksa folder <b>Spam</b> atau tab <b>Promosi</b>. WhatsApp digunakan sebagai sarana sekunder/konfirmasi tambahan.
-              </div>
-            </div>
+            <ol class="list-decimal list-inside space-y-1.5 text-slate-300 text-[11px] leading-relaxed">
+              <li>Buka menu <b>Setup</b> di bilah navigasi bawah aplikasi.</li>
+              <li>Lihat kartu <b>"Ubah Password & PIN Akses"</b>.</li>
+              <li>Ketikkan <b>PIN Pribadi Baru Anda</b> (misal: 6 angka yang mudah Anda ingat).</li>
+              <li>Klik tombol oranye: <b class="text-amber-400 font-mono-code">[ 🔥 BUAT PIN & HANGUSKAN ]</b>.</li>
+            </ol>
+            <p class="text-[10px] text-emerald-400 font-semibold">✓ Token awal otomatis hangus sehingga lisensi Anda tidak bisa dibajak oleh pihak lain.</p>
           </div>
 
-          <!-- Pictorial Mockup Gmail Inbox Resmi -->
-          <div class="lg:col-span-6 bg-slate-950 rounded-2xl border border-slate-800 shadow-2xl overflow-hidden font-sans text-left">
-            <!-- Gmail Top Header Bar -->
-            <div class="bg-slate-900/90 px-4 py-2.5 border-b border-slate-800 flex items-center justify-between text-xs">
-              <div class="flex items-center gap-2">
-                <div class="w-5 h-5 rounded-md bg-rose-600 flex items-center justify-center text-white font-black text-[10px]">M</div>
-                <span class="font-bold text-white text-[11px]">Gmail Official</span>
-                <span class="text-[9px] text-slate-400 hidden sm:inline">• Kotak Masuk</span>
-              </div>
-              <span class="text-[10px] text-slate-400 font-mono-code">Baru Saja</span>
-            </div>
-
-            <!-- Email Subject & Metadata -->
-            <div class="p-4 border-b border-slate-800/80 space-y-1.5 bg-slate-950/60">
-              <h4 class="text-xs sm:text-sm font-bold text-white leading-tight">
-                🎉 Akun & Kode Lisensi Resmi Keuanganku PRO Anda Telah Aktif!
-              </h4>
-              <div class="flex items-center justify-between text-[10px] text-slate-400 flex-wrap gap-1">
-                <div class="flex items-center gap-1.5">
-                  <span class="font-bold text-slate-200">Sambarang Production</span>
-                  <span class="text-slate-500">&lt;keuangankupro@gmail.com&gt;</span>
-                </div>
-                <span class="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-semibold">Resmi Terverifikasi</span>
-              </div>
-            </div>
-
-            <!-- Email Body Content -->
-            <div class="p-4 space-y-3 text-[11px] text-slate-300 leading-relaxed bg-slate-950">
-              <p>Kepada Yth. <b>Pelanggan Resmi Keuanganku PRO</b>,</p>
-              <p class="text-slate-400 text-[10px]">Terima kasih telah melakukan pemesanan resmi. Berikut adalah rincian kode aktivasi akun Anda:</p>
-              
-              <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1 font-mono-code text-[10px]">
-                <div class="flex justify-between items-center text-amber-300 font-bold border-b border-slate-800 pb-1">
-                  <span>KODE LISENSI RESMI:</span>
-                  <span class="text-xs text-cyan-300 bg-cyan-950/60 px-1.5 py-0.5 rounded border border-cyan-800/60">PRO-8A2F-9D41-B73C</span>
-                </div>
-                <div class="flex justify-between text-slate-300 pt-1">
-                  <span>KUOTA GADGET:</span>
-                  <span class="text-emerald-400 font-bold">Multi-Perangkat Aktif</span>
-                </div>
-                <div class="flex justify-between text-slate-300">
-                  <span>STATUS LISENSI:</span>
-                  <span class="text-cyan-400 font-bold">LIFETIME (Permanen)</span>
-                </div>
-              </div>
-
-              <div class="pt-1">
-                <a href="index.html" class="w-full py-2 px-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-center rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md shadow-blue-500/20">
-                  <span class="material-symbols-outlined text-sm">open_in_new</span>
-                  <span>Buka & Aktivasi Aplikasi Sekarang</span>
-                </a>
-              </div>
-            </div>
+          <div class="bg-slate-950 border border-indigo-500/30 rounded-2xl p-4 space-y-2">
+            <p class="font-bold text-indigo-400 text-sm flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-base">fingerprint</span> 4.2 Aktifkan Kunci Biometrik (Face ID & Sidik Jari)
+            </p>
+            <ol class="list-decimal list-inside space-y-1.5 text-slate-300 text-[11px] leading-relaxed">
+              <li>Pada menu <b>Setup</b>, gulir ke kartu <b>"Kunci Biometrik (Face ID & Sidik Jari)"</b>.</li>
+              <li>Klik tombol <b>"Aktifkan Kunci Biometrik"</b>.</li>
+              <li>Saat dialog keamanan bawaan perangkat muncul, tempelkan sidik jari atau tatap layar.</li>
+              <li>👉 <b>Selesai!</b> Setiap kali membuka aplikasi, cukup ketuk tombol <b>"Masuk dengan Sidik Jari / Face ID"</b> di layar pembuka tanpa perlu mengetik PIN manual!</li>
+            </ol>
           </div>
         </div>
-      </section>
 
-      <!-- ======================================================== -->
-      <!-- LANGKAH 2: AKTIVASI PERDANA DI PERANGKAT 1                -->
-      <!-- ======================================================== -->
-      <section id="langkah-2" class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-7 space-y-5 shadow-xl">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-wrap gap-2">
-          <div class="flex items-center gap-3">
-            <span class="w-8 h-8 rounded-xl bg-indigo-600 text-white font-extrabold text-sm flex items-center justify-center shrink-0 shadow">2</span>
-            <div>
-              <h3 class="text-base sm:text-lg font-bold text-white">Buka Tautan & Aktivasi Perdana di Perangkat 1</h3>
-              <p class="text-xs text-slate-400">Mendaftarkan HP utama atau Laptop pertama Anda ke database lisensi resmi</p>
-            </div>
+        <!-- Mockup Biometrik UI -->
+        <div class="lg:col-span-5 bg-slate-950 rounded-2xl p-5 border border-indigo-500/40 shadow-xl space-y-3 font-sans text-left">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-800 text-[10px]">
+            <span class="font-bold text-indigo-300 flex items-center gap-1">
+              <span class="material-symbols-outlined text-xs">fingerprint</span> Menu Setup > Akun
+            </span>
+            <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[9px] font-bold">AKTIF</span>
           </div>
-          <span class="px-2.5 py-0.5 bg-indigo-500/20 text-indigo-300 text-[10px] font-bold rounded-full border border-indigo-500/40">⚡ Hanya 1x di Awal</span>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-          <div class="lg:col-span-7 space-y-3 text-xs text-slate-300 leading-relaxed">
-            <p>Buka tautan aplikasi melalui browser (Google Chrome, Safari, atau Microsoft Edge) di HP utama atau Laptop Anda:</p>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <div class="p-3.5 bg-slate-950 border border-slate-800 rounded-xl space-y-1">
-                <p class="font-bold text-white flex items-center gap-1.5">
-                  <span class="material-symbols-outlined text-sm text-cyan-400">check_circle</span> Kode Lisensi Terisi Otomatis
-                </p>
-                <p class="text-[11px] text-slate-400">Jika dibuka dari tombol email, kolom Kode Lisensi sudah otomatis terisi kode unik Anda.</p>
-              </div>
-              <div class="p-3.5 bg-slate-950 border border-slate-800 rounded-xl space-y-1">
-                <p class="font-bold text-white flex items-center gap-1.5">
-                  <span class="material-symbols-outlined text-sm text-cyan-400">touch_app</span> Klik "Aktivasi Sekarang"
-                </p>
-                <p class="text-[11px] text-slate-400">Tekan tombol gradasi <b>AKTIVASI SEKARANG</b>. Perangkat 1 langsung resmi terdaftar di sistem lisensi!</p>
-              </div>
-            </div>
-            <div class="text-[11px] text-amber-300/90 bg-amber-500/10 p-3 rounded-xl border border-amber-500/20 leading-relaxed flex items-center gap-2">
-              <span class="material-symbols-outlined text-base text-amber-400 shrink-0">info</span>
-              <span><b>Catatan Praktis:</b> Layar aktivasi ini <b>HANYA muncul 1 kali saja</b> di awal pemakaian. Begitu aktif, aplikasi langsung terbuka tanpa perlu aktivasi ulang setiap kali dibuka.</span>
-            </div>
+          <div class="p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-[11px] text-indigo-200">
+            <p class="font-bold">Keamanan Tingkat Perangkat</p>
+            <p class="text-[10px] text-slate-400 mt-0.5">Data biometrik diproses di hardware chip lokal perangkat dan tidak pernah dikirim ke internet.</p>
           </div>
-
-          <!-- Mockup Layar Aktivasi -->
-          <div class="lg:col-span-5 bg-slate-950 rounded-2xl p-5 border border-blue-500/30 shadow-xl text-center space-y-3 relative overflow-hidden">
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-400 mx-auto flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
-              <span class="material-symbols-outlined text-2xl">account_balance_wallet</span>
-            </div>
-            <div>
-              <p class="text-xs font-bold text-white">Aktivasi Keuanganku PRO</p>
-              <p class="text-[10px] text-slate-400">Aplikasi Finansial Multi-Device Aman & Berkah</p>
-            </div>
-            <div class="bg-slate-900 border border-cyan-500/40 rounded-xl p-2.5 font-mono-code text-xs font-bold text-cyan-300 tracking-wider">
-              PRO-8A2F-9D41-B73C
-            </div>
-            <div class="w-full py-2.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 text-white font-black text-[11px] tracking-wider uppercase rounded-xl shadow-lg shadow-blue-500/25 flex items-center justify-center gap-1.5">
-              <span class="material-symbols-outlined text-xs">verified</span> AKTIVASI SEKARANG
-            </div>
+          <div class="py-2.5 bg-rose-600 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 shadow">
+            <span class="material-symbols-outlined text-sm">fingerprint</span> Nonaktifkan Kunci Biometrik
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- ======================================================== -->
-      <!-- LANGKAH 3: INSTAL PWA KE LAYAR UTAMA & CARA PEMBARUAN    -->
-      <!-- ======================================================== -->
-      <section id="langkah-3" class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-7 space-y-5 shadow-xl">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-wrap gap-2">
-          <div class="flex items-center gap-3">
-            <span class="w-8 h-8 rounded-xl bg-cyan-600 text-white font-extrabold text-sm flex items-center justify-center shrink-0 shadow">3</span>
-            <div>
-              <h3 class="text-base sm:text-lg font-bold text-white">Pasang Aplikasi (PWA) & Fitur Pembaruan Otomatis</h3>
-              <p class="text-xs text-slate-400">Aplikasi mandiri di HP & Laptop, super ringan tanpa unduh ratusan MB di PlayStore / AppStore</p>
-            </div>
+    <!-- LANGKAH 5: SETUP DATABASE PRIBADI OTOMATIS (BYODb GOOGLE DRIVE) -->
+    <section id="langkah-5" class="bg-slate-900/90 border-2 border-emerald-500/40 rounded-3xl p-5 sm:p-7 space-y-6 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-wrap gap-2">
+        <div class="flex items-center gap-3">
+          <span class="w-8 h-8 rounded-xl bg-emerald-600 text-white font-extrabold text-sm flex items-center justify-center shrink-0 shadow">5</span>
+          <div>
+            <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+              <span>Setup Database Pribadi Otomatis (BYODb Google Drive)</span>
+              <span class="text-emerald-400 text-xs font-bold bg-emerald-500/20 px-2 py-0.5 rounded border border-emerald-500/30">100% GRATIS & PRIVAT</span>
+            </h3>
+            <p class="text-xs text-slate-400">Data keuangan Anda tersimpan aman di Google Drive pribadi Anda sendiri tanpa server perantara pihak ketiga</p>
           </div>
-          <span class="px-2.5 py-0.5 bg-cyan-500/20 text-cyan-300 text-[10px] font-bold rounded-full border border-cyan-500/30">📲 Cepat & Ringan</span>
         </div>
+        <span class="px-2.5 py-0.5 bg-emerald-500/20 text-emerald-300 text-[10px] font-bold rounded-full border border-emerald-500/40">☁️ Cloud Drive 1-Klik</span>
+      </div>
 
+      <!-- INOVASI TERBARU: 1-KLIK GOOGLE DRIVE INTEGRATION -->
+      <div class="p-4 bg-gradient-to-r from-emerald-950/40 via-teal-950/30 to-slate-950 border border-emerald-500/30 rounded-2xl space-y-3">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-emerald-400 text-xl">auto_awesome</span>
+          <span class="text-sm font-extrabold text-white">Sistem Terbaru: Tanpa Perlu Copy-Paste Kode Skrip Rumit!</span>
+        </div>
         <p class="text-xs text-slate-300 leading-relaxed">
-          Keuanganku PRO menggunakan teknologi mutakhir <b>Progressive Web App (PWA)</b>. Anda tidak perlu menghabiskan ruang memori HP. Pasang langsung dari browser ke Layar Utama perangkat Anda:
+          Kini Keuanganku PRO telah dilengkapi teknologi <b>BYODb (Bring Your Own Database)</b> otomatis. Anda tidak perlu lagi membuat Google Spreadsheet manual ataupun membuka editor kode Apps Script. Cukup satu klik, sistem yang menyiapkannya untuk Anda!
         </p>
 
-        <!-- 3 Platform Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-          <!-- Android -->
-          <div class="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2.5 flex flex-col justify-between">
-            <div class="space-y-2">
-              <div class="flex items-center gap-2 text-emerald-400 font-bold">
-                <span class="material-symbols-outlined text-base">android</span> Android (Google Chrome)
-              </div>
-              <p class="text-[11px] text-slate-300 leading-relaxed">
-                Ketuk tombol titik tiga <b>(⋮)</b> di kanan atas browser Chrome ➔ pilih <b>"Instal aplikasi"</b> atau <b>"Tambahkan ke Layar Utama"</b>.
-              </p>
-            </div>
-            <div class="p-2 bg-emerald-500/10 rounded-xl text-emerald-300 text-[10px] flex items-center gap-1.5 font-semibold">
-              <span class="material-symbols-outlined text-xs">check</span> Ikon Keuanganku muncul di menu HP Anda!
-            </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2 text-xs">
+          <div class="p-3 bg-slate-950/80 border border-slate-800 rounded-xl space-y-1">
+            <span class="text-emerald-400 font-bold flex items-center gap-1">1. Buka Menu Setup</span>
+            <p class="text-[11px] text-slate-400">Masuk ke aplikasi ➔ buka menu <b>Setup</b> ➔ lihat bagian <b>"Database Pribadi (BYODb Google Drive)"</b>.</p>
           </div>
-
-          <!-- iPhone / Safari -->
-          <div class="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2.5 flex flex-col justify-between">
-            <div class="space-y-2">
-              <div class="flex items-center gap-2 text-blue-400 font-bold">
-                <span class="material-symbols-outlined text-base">phone_iphone</span> iPhone / iPad (Safari)
-              </div>
-              <p class="text-[11px] text-slate-300 leading-relaxed">
-                Ketuk tombol Bagikan / Share <b>(⎋ / ↥)</b> di bilah bawah Safari ➔ gulir ke bawah ➔ pilih <b>"Add to Home Screen" (Tambah ke Layar Utama)</b>.
-              </p>
-            </div>
-            <div class="p-2 bg-blue-500/10 rounded-xl text-blue-300 text-[10px] flex items-center gap-1.5 font-semibold">
-              <span class="material-symbols-outlined text-xs">check</span> Layar penuh tanpa address bar Safari!
-            </div>
+          <div class="p-3 bg-slate-950/80 border border-slate-800 rounded-xl space-y-1">
+            <span class="text-cyan-400 font-bold flex items-center gap-1">2. Klik "Hubungkan Akun Google"</span>
+            <p class="text-[11px] text-slate-400">Tekan tombol hijau untuk masuk dengan akun Google Anda dan berikan izin pembuatan file database pribadi.</p>
           </div>
-
-          <!-- PC / Laptop -->
-          <div class="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2.5 flex flex-col justify-between">
-            <div class="space-y-2">
-              <div class="flex items-center gap-2 text-cyan-400 font-bold">
-                <span class="material-symbols-outlined text-base">laptop_windows</span> PC / Laptop (Edge / Chrome)
-              </div>
-              <p class="text-[11px] text-slate-300 leading-relaxed">
-                Lihat di ujung kanan bilah alamat URL ➔ klik ikon instal komputer <b>(💻 / ⊕)</b> ➔ klik <b>Instal</b>.
-              </p>
-            </div>
-            <div class="p-2 bg-cyan-500/10 rounded-xl text-cyan-300 text-[10px] flex items-center gap-1.5 font-semibold">
-              <span class="material-symbols-outlined text-xs">check</span> Muncul di Desktop & Taskbar Windows/Mac!
-            </div>
+          <div class="p-3 bg-slate-950/80 border border-slate-800 rounded-xl space-y-1">
+            <span class="text-indigo-400 font-bold flex items-center gap-1">3. Selesai Otomatis!</span>
+            <p class="text-[11px] text-slate-400">Spreadsheet <i>"Database Keuanganku PRO"</i> terbuat otomatis di Google Drive Anda. Seluruh transaksi langsung tersimpan rapi!</p>
           </div>
         </div>
+      </div>
 
-        <!-- FITUR PEMBARUAN SISTEM (UPDATE) YANG TELAH DITAMBAHKAN -->
-        <div class="p-4 bg-gradient-to-r from-blue-950/40 via-slate-950 to-indigo-950/40 border border-blue-500/40 rounded-2xl space-y-2 text-xs">
-          <div class="flex items-center gap-2 text-cyan-300 font-bold">
-            <span class="material-symbols-outlined text-base text-cyan-400">system_update</span>
-            <span>Bagaimana Jika Ada Pembaruan / Rilis Fitur Baru? (Tombol Perbarui Aplikasi)</span>
-          </div>
-          <p class="text-[11px] text-slate-300 leading-relaxed">
-            Saat tim pengembang merilis update sistem baru (misal pembaruan fitur atau peralihan dari fase uji coba <b>v0.1</b> ke rilis publik <b>v1.0</b>), Anda <b>tidak perlu menghapus aplikasi</b> atau menginstal ulang dari awal!
+      <!-- Detail Privasi & Akses -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-300">
+        <div class="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2">
+          <span class="font-bold text-white flex items-center gap-1.5 text-xs">
+            <span class="material-symbols-outlined text-emerald-400 text-base">lock</span> 100% Hak Milik & Privasi Mutlak
+          </span>
+          <p class="text-[11px] text-slate-400 leading-relaxed">
+            File Google Spreadsheet berada di dalam Google Drive pribadi milik Anda sendiri. Developer atau pihak ketiga <b>tidak memiliki akses</b> untuk melihat saldo, mutasi rekening, maupun rincian pengeluaran Anda.
           </p>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1 text-[11px]">
-            <div class="p-2.5 bg-slate-900 rounded-xl border border-slate-800 space-y-1">
-              <span class="font-bold text-emerald-400 flex items-center gap-1">
-                <span class="material-symbols-outlined text-xs">notification_important</span> Notifikasi Banner Otomatis
-              </span>
-              <p class="text-slate-400 text-[10px]">Aplikasi akan memunculkan banner mengambang: <i>"Pembaruan Sistem Tersedia - [ Perbarui Sekarang ]"</i>. Klik 1 kali untuk langsung menyegarkan aplikasi.</p>
-            </div>
-            <div class="p-2.5 bg-slate-900 rounded-xl border border-slate-800 space-y-1">
-              <span class="font-bold text-blue-400 flex items-center gap-1">
-                <span class="material-symbols-outlined text-xs">settings</span> Tombol Manual di Menu Setup
-              </span>
-              <p class="text-slate-400 text-[10px]">Anda juga dapat membuka menu <b>Setup ➔ Cek Pembaruan</b> kapan saja. Seluruh data transaksi lokal Anda dijamin 100% aman dan tidak akan hilang!</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ======================================================== -->
-      <!-- LANGKAH 4: GANTI PIN PRIBADI (WAJIB)                      -->
-      <!-- ======================================================== -->
-      <section id="langkah-4" class="bg-gradient-to-br from-amber-950/30 via-slate-900 to-slate-950 border border-amber-500/40 rounded-3xl p-5 sm:p-7 space-y-5 shadow-xl">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-wrap gap-2">
-          <div class="flex items-center gap-3">
-            <span class="w-8 h-8 rounded-xl bg-amber-500 text-slate-950 font-black text-sm flex items-center justify-center shrink-0 shadow">4</span>
-            <div>
-              <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-                <span>Ganti PIN Pribadi & Hanguskan Token Bawaan</span>
-                <span class="text-amber-400 text-xs font-black uppercase bg-amber-500/20 px-2 py-0.5 rounded border border-amber-500/40">WAJIB!</span>
-              </h3>
-              <p class="text-xs text-slate-400">Proteksi hak milik anti-pembajakan dan syarat pembukaan fitur Multi-Device</p>
-            </div>
-          </div>
-          <span class="px-2.5 py-0.5 bg-amber-500/20 text-amber-300 text-[10px] font-bold rounded-full border border-amber-500/40">🔒 Kunci Keamanan</span>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-          <div class="lg:col-span-7 space-y-3 text-xs text-slate-300 leading-relaxed">
-            <p>
-              Saat pertama kali masuk, Anda masih memakai Token Bawaan dari email. <b>Segera buat PIN Pribadi Anda</b> agar Token awal hangus dan hak Multi-Device resmi terbuka:
-            </p>
-            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-2 text-xs">
-              <ol class="list-decimal list-inside space-y-1.5 text-slate-300">
-                <li>Buka menu <b>Setup</b> di bilah navigasi bawah aplikasi.</li>
-                <li>Pilih sub-menu <b>[ ⚙️ Pengaturan Aplikasi ]</b>.</li>
-                <li>Lihat bagian: <b>"Ubah Password & PIN Akses"</b>.</li>
-                <li>Ketikkan <b>PIN Pribadi Baru Anda</b> (misal: 6 angka yang mudah Anda ingat).</li>
-                <li>Klik tombol oranye: <b class="text-amber-400 font-mono-code">[ 🔥 BUAT PIN & HANGUSKAN ]</b>.</li>
-              </ol>
-            </div>
-            <div class="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-300 text-xs flex items-center gap-2">
-              <span class="material-symbols-outlined text-emerald-400 text-lg shrink-0">security</span>
-              <span><b>Hasil Proteksi:</b> Token bawaan otomatis <b>HANGUS</b> (anti-pembajakan) dan fitur <b>Multi-Perangkat resmi aktif</b>!</span>
-            </div>
-          </div>
-
-          <!-- Mockup PIN UI -->
-          <div class="lg:col-span-5 bg-slate-950 rounded-2xl p-5 border border-amber-500/40 shadow-xl space-y-3 font-sans text-left">
-            <div class="flex items-center justify-between pb-2 border-b border-slate-800 text-[10px]">
-              <span class="font-bold text-amber-300 flex items-center gap-1">
-                <span class="material-symbols-outlined text-xs">lock</span> Menu Setup > Pengaturan
-              </span>
-              <span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 text-[8px] font-extrabold uppercase">WAJIB</span>
-            </div>
-            <div class="space-y-1">
-              <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Ketik PIN Pribadi Baru (6 Angka):</label>
-              <div class="bg-slate-900 border border-amber-500/60 rounded-xl p-2.5 text-center font-mono-code text-base font-bold text-amber-300 tracking-[0.4em]">
-                ••••••
-              </div>
-            </div>
-            <div class="py-2.5 bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-orange-500/30 flex items-center justify-center gap-1.5">
-              <span class="material-symbols-outlined text-sm">local_fire_department</span> BUAT PIN & HANGUSKAN
-            </div>
-          </div>
+        <div class="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2">
+          <span class="font-bold text-white flex items-center gap-1.5 text-xs">
+            <span class="material-symbols-outlined text-cyan-400 text-base">table_view</span> Buka & Unduh Kapan Saja
+          </span>
+          <p class="text-[11px] text-slate-400 leading-relaxed">
+            Kapan pun Anda ingin menganalisis data keuangan di Microsoft Excel atau Google Sheets di laptop, cukup klik tombol <b>"Buka Spreadsheet di Google Drive"</b> pada menu Setup.
+          </p>
         </div>
-      </section>
+      </div>
 
-      <!-- ======================================================== -->
-      <!-- LANGKAH 5: SETUP GOOGLE SHEETS & APPS SCRIPT CLOUD       -->
-      <!-- ======================================================== -->
-      <section id="langkah-5" class="bg-slate-900/90 border-2 border-blue-500/40 rounded-3xl p-5 sm:p-7 space-y-6 shadow-2xl">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-wrap gap-2">
-          <div class="flex items-center gap-3">
-            <span class="w-8 h-8 rounded-xl bg-blue-600 text-white font-extrabold text-sm flex items-center justify-center shrink-0 shadow">5</span>
-            <div>
-              <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-                <span>Setup Google Sheets & Apps Script Cloud Sync</span>
-                <span class="text-emerald-400 text-xs font-bold bg-emerald-500/20 px-2 py-0.5 rounded border border-emerald-500/30">100% GRATIS & PRIVAT</span>
-              </h3>
-              <p class="text-xs text-slate-400">Data keuangan Anda tersimpan aman di Google Drive pribadi Anda sendiri tanpa server pihak ketiga</p>
-            </div>
-          </div>
-          <span class="px-2.5 py-0.5 bg-blue-500/20 text-cyan-300 text-[10px] font-bold rounded-full border border-blue-500/40">☁️ Cloud Pribadi</span>
-        </div>
-
-        <!-- 4 TAHAPAN BERGAMBAR DETAIL -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-
-          <div class="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2">
-            <span class="font-bold text-cyan-300 text-sm flex items-center gap-1.5">
-              <span class="material-symbols-outlined text-base">table_chart</span> 5.1 Buat Google Spreadsheet Baru
-            </span>
-            <ol class="list-decimal list-inside space-y-1.5 text-slate-300 text-[11px] leading-relaxed">
-              <li>Buka browser di Laptop atau HP, ketik: <b class="text-cyan-400">sheets.new</b> (atau buka Google Drive Anda).</li>
-              <li>Beri nama spreadsheet, misal: <b class="text-white">"Database Keuanganku PRO"</b>.</li>
-              <li>Pada menu atas, klik <b>Ekstensi (Extensions)</b> ➔ klik <b>Apps Script</b>.</li>
-              <li>Tab baru editor skrip Google akan terbuka otomatis.</li>
-            </ol>
-          </div>
-
-          <div class="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2">
-            <span class="font-bold text-purple-300 text-sm flex items-center gap-1.5">
-              <span class="material-symbols-outlined text-base">code</span> 5.2 Tempel Kode Skrip Cloud
-            </span>
-            <ol class="list-decimal list-inside space-y-1.5 text-slate-300 text-[11px] leading-relaxed">
-              <li>Hapus semua baris kode bawaan di editor Apps Script hingga bersih kosong.</li>
-              <li>Klik tombol <b>SALIN KODE SCRIPT</b> di kotak bawah ini.</li>
-              <li>Tempelkan (Paste) ke editor Apps Script tersebut.</li>
-              <li>Tekan ikon <b>Simpan (💾 Simpan Proyek)</b>.</li>
-            </ol>
-          </div>
-
-          <div class="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2">
-            <span class="font-bold text-emerald-300 text-sm flex items-center gap-1.5">
-              <span class="material-symbols-outlined text-base">rocket_launch</span> 5.3 Terapkan Sebagai Web App
-            </span>
-            <ol class="list-decimal list-inside space-y-1.5 text-slate-300 text-[11px] leading-relaxed">
-              <li>Klik tombol biru <b>Terapkan (Deploy)</b> ➔ pilih <b>Deployment Baru</b>.</li>
-              <li>Pilih jenis: <b>Aplikasi Web (Web App)</b>.</li>
-              <li>Jalankan sebagai: <b>Saya (email Google Anda)</b>.</li>
-              <li>Siapa yang memiliki akses: <b class="text-amber-400">Siapa Saja (Anyone)</b>.</li>
-              <li>Klik <b>Terapkan</b>, lalu berikan izin otorisasi Google jika diminta.</li>
-            </ol>
-          </div>
-
-          <div class="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2">
-            <span class="font-bold text-amber-300 text-sm flex items-center gap-1.5">
-              <span class="material-symbols-outlined text-base">link</span> 5.4 Tempel Link di Aplikasi
-            </span>
-            <ol class="list-decimal list-inside space-y-1.5 text-slate-300 text-[11px] leading-relaxed">
-              <li>Salin <b>URL Aplikasi Web</b> yang berakhiran <code class="text-cyan-300">/exec</code>.</li>
-              <li>Buka aplikasi Keuanganku PRO ➔ menu <b>Setup</b> ➔ <b>Pengaturan</b>.</li>
-              <li>Cari kolom: <b>"URL Google Apps Script Cloud"</b>.</li>
-              <li>Tempel link tersebut ➔ klik tombol hijau <b>[ SIMPAN & SINKRONKAN ]</b>.</li>
-            </ol>
-          </div>
-
-        </div>
-
-        <!-- 1-Click Code Box -->
-        <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-3">
-          <div class="flex items-center justify-between flex-wrap gap-2">
-            <div class="flex items-center gap-2">
-              <span class="w-3 h-3 rounded-full bg-rose-500"></span>
-              <span class="w-3 h-3 rounded-full bg-amber-500"></span>
-              <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
-              <span class="text-xs font-mono-code text-slate-400 font-bold ml-1">Backend Cloud Script Pengguna (Code.gs)</span>
-            </div>
-            <button onclick="copyAppsScriptCode()" id="btn-copy-code" class="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-1.5 shadow transition-all cursor-pointer active:scale-95">
-              <span class="material-symbols-outlined text-sm">content_copy</span>
-              <span id="btn-copy-code-text">SALIN KODE SCRIPT (1-KLIK)</span>
+      <!-- Accordion Opsional: Google Apps Script Web App (Bagi Developer / Pengguna Lanjutan) -->
+      <details class="p-4 bg-slate-950 rounded-2xl border border-slate-800/80 space-y-3 group">
+        <summary class="font-bold text-xs text-slate-400 hover:text-cyan-400 cursor-pointer flex items-center justify-between select-none">
+          <span class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-sm">code</span>
+            <span>Opsi Khusus Lanjutan: Setup Google Apps Script Manual (Klik untuk melihat)</span>
+          </span>
+          <span class="material-symbols-outlined text-base transition-transform group-open:rotate-180">expand_more</span>
+        </summary>
+        <div class="pt-3 border-t border-slate-800/60 space-y-3 text-xs text-slate-400">
+          <p class="text-[11px] leading-relaxed">
+            Jika Anda seorang pengembang web atau lebih memilih meng-host endpoint sinkronisasi sendiri menggunakan Google Apps Script Web App (metode kustom), Anda tetap dapat menempelkan URL endpoint <code class="text-cyan-300 font-mono-code">/exec</code> pada menu <b>Setup > Sinkronisasi Cloud Kustom</b>.
+          </p>
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono-code text-slate-400 font-bold">Kode Google Apps Script Standar (Code.gs):</span>
+            <button onclick="copyAppsScriptCode()" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-[10px] rounded-lg border border-slate-700 flex items-center gap-1 cursor-pointer">
+              <span class="material-symbols-outlined text-xs">content_copy</span>
+              <span id="btn-copy-code-text">SALIN KODE (OPSIONAL)</span>
             </button>
           </div>
-
-          <pre class="p-3 bg-slate-900 rounded-xl overflow-x-auto text-[10px] font-mono-code text-slate-300 custom-scroll leading-relaxed"><code>function doGet(e) {
-  try {
-    var data = readLargeData();
-    if (!data) {
-      return ContentService.createTextOutput(JSON.stringify({ status: "empty" }))
-        .setMimeType(ContentService.MimeType.JSON);
-    }
-    return ContentService.createTextOutput(data)
-      .setMimeType(ContentService.MimeType.JSON);
-  } catch(err) {
-    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: err.toString() }))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-}
-
-function doPost(e) {
-  try {
-    var rawData = e.postData.contents;
-    if (!rawData || rawData.trim() === "") {
-      return ContentService.createTextOutput(JSON.stringify({ status: "error", message: "Data kosong" }))
-        .setMimeType(ContentService.MimeType.JSON);
-    }
-
-    saveLargeData(rawData);
-
-    return ContentService.createTextOutput(JSON.stringify({ status: "success", timestamp: new Date() }))
-      .setMimeType(ContentService.MimeType.JSON);
-  } catch (err) {
-    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: err.toString() }))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-}
-
-function saveLargeData(dataString) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName("DATABASE_KEUANGANKU");
-  if (!sheet) {
-    sheet = ss.insertSheet("DATABASE_KEUANGANKU");
-  }
-  sheet.clear();
-
-  // Chunking 40.000 karakter per baris (Aman dari limit 50.000 karakter per sel & bebas batas 9KB)
-  var CHUNK_SIZE = 40000;
-  var chunks = [];
-  for (var i = 0; i < dataString.length; i += CHUNK_SIZE) {
-    chunks.push([dataString.substring(i, i + CHUNK_SIZE)]);
-  }
-  if (chunks.length > 0) {
-    sheet.getRange(1, 1, chunks.length, 1).setValues(chunks);
-  }
-
-  // Simpan juga ke Properties jika ukuran kecil (< 8 KB)
-  try {
-    if (dataString.length < 8000) {
-      PropertiesService.getScriptProperties().setProperty("KEUANGANKU_DATA", dataString);
-    } else {
-      PropertiesService.getScriptProperties().deleteProperty("KEUANGANKU_DATA");
-    }
-  } catch(e) {}
-}
-
-function readLargeData() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName("DATABASE_KEUANGANKU");
-  if (sheet) {
-    var lastRow = sheet.getLastRow();
-    if (lastRow > 0) {
-      var values = sheet.getRange(1, 1, lastRow, 1).getValues();
-      var result = "";
-      for (var i = 0; i < values.length; i++) {
-        result += values[i][0];
-      }
-      if (result && result.trim().startsWith("{")) return result.trim();
-    }
-  }
-
-  // Fallback jika belum pernah disimpan via chunking
-  try {
-    var oldProp = PropertiesService.getScriptProperties().getProperty("KEUANGANKU_DATA");
-    if (oldProp) return oldProp;
-  } catch(e) {}
-
-  try {
-    var a1 = ss.getActiveSheet().getRange("A1").getValue();
-    if (a1 && typeof a1 === 'string' && a1.indexOf("accounts") !== -1) return a1;
-  } catch(e) {}
-
-  return null;
-}</code></pre>
         </div>
-      </section>
+      </details>
+    </section>
 
-      <!-- ======================================================== -->
-      <!-- LANGKAH 6: SINKRONISASI KE MULTI-DEVICE (WA WEB STYLE)   -->
-      <!-- ======================================================== -->
-      <section id="langkah-6" class="bg-gradient-to-br from-indigo-950/40 via-slate-900 to-slate-950 border border-indigo-500/40 rounded-3xl p-5 sm:p-7 space-y-5 shadow-xl">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-wrap gap-2">
-          <div class="flex items-center gap-3">
-            <span class="w-8 h-8 rounded-xl bg-purple-600 text-white font-extrabold text-sm flex items-center justify-center shrink-0 shadow">6</span>
-            <div>
-              <h3 class="text-base sm:text-lg font-bold text-white">Menghubungkan ke Perangkat 2, 3, dst (Otomatis Bawa Database)</h3>
-              <p class="text-xs text-slate-400">Buka di Laptop kantor, Tablet, atau HP kedua secara instan tanpa perlu ketik link Cloud lagi</p>
-            </div>
-          </div>
-          <span class="px-2.5 py-0.5 bg-purple-500/20 text-purple-300 text-[10px] font-bold rounded-full border border-purple-500/40">🔄 Auto-Database Sync</span>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          <div class="lg:col-span-7 space-y-3 text-xs text-slate-300">
-            <!-- Metode 1: WhatsApp Web Style (QR Code) -->
-            <div class="p-4 bg-gradient-to-r from-cyan-950/40 to-blue-950/40 border border-cyan-500/40 rounded-2xl space-y-2">
-              <div class="flex items-center justify-between">
-                <span class="flex items-center gap-1.5 text-cyan-300 font-bold text-xs">
-                  <span class="material-symbols-outlined text-base text-cyan-400">qr_code_scanner</span>
-                  <span>METODE UTAMA: Barcode QR (Paling Cepat & Praktis)</span>
-                </span>
-                <span class="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 text-[9px] font-black uppercase">Rekomendasi</span>
-              </div>
-              <ol class="text-[11px] text-slate-300 space-y-1.5 list-decimal list-inside leading-relaxed">
-                <li>Di <b>Laptop / PC / iPad Baru:</b> Buka link aplikasi <code class="text-cyan-300">https://sambarangpro.github.io/keuanganku/</code>. Di layar pembuka akan langsung muncul <b>Barcode Sesi Hubungkan Perangkat</b>.</li>
-                <li>Di <b>HP Utama Anda (Perangkat 1):</b> Buka menu <b>Setup</b> ➔ cari bagian <i>Daftar Perangkat Terhubung</i> ➔ klik tombol <b class="text-cyan-300">"Hubungkan Perangkat Baru (Barcode / QR Code)"</b>.</li>
-                <li>Arahkan kamera HP utama ke barcode di layar PC/Laptop ➔ konfirmasi <b>"Ya / Izinkan"</b>.</li>
-                <li>👉 <b>Selesai!</b> Seketika layar PC otomatis masuk, dan <b>seluruh database transaksi Google Sheets langsung ditarik otomatis</b>!</li>
-              </ol>
-            </div>
-          </div>
-
-          <div class="lg:col-span-5 bg-slate-950 rounded-2xl p-4 border border-purple-500/40 shadow-xl space-y-2.5 font-sans text-left text-xs">
-            <div class="flex items-center gap-2 text-cyan-300 font-bold">
-              <span class="material-symbols-outlined text-base">cloud_done</span>
-              <span>Keunggulan Sinkronisasi Otomatis:</span>
-            </div>
-            <p class="text-slate-400 text-[11px] leading-relaxed">
-              Begitu perangkat terverifikasi melalui barcode, aplikasi secara cerdas membaca lisensi dan Cloud Google Sheets Anda:
-            </p>
-            <div class="space-y-1 font-mono-code text-[10px] text-slate-300 bg-slate-900 p-2.5 rounded-xl border border-slate-800">
-              <p class="text-emerald-400">✓ Seluruh Rekening & Saldo Real-Time</p>
-              <p class="text-cyan-400">✓ Catatan Transaksi & Mutasi Keuangan</p>
-              <p class="text-amber-400">✓ Target Anggaran, Sinking Fund & Cicilan</p>
-            </div>
-            <p class="text-[10px] text-slate-400">
-              <b>Tanpa Input Ulang:</b> Anda tidak perlu lagi menyalin ulang link Cloud ataupun token di perangkat kedua!
-            </p>
+    <!-- LANGKAH 6: SINKRONISASI KE MULTI-DEVICE -->
+    <section id="langkah-6" class="bg-gradient-to-br from-indigo-950/40 via-slate-900 to-slate-950 border border-indigo-500/40 rounded-3xl p-5 sm:p-7 space-y-5 shadow-xl">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-wrap gap-2">
+        <div class="flex items-center gap-3">
+          <span class="w-8 h-8 rounded-xl bg-purple-600 text-white font-extrabold text-sm flex items-center justify-center shrink-0 shadow">6</span>
+          <div>
+            <h3 class="text-base sm:text-lg font-bold text-white">Menghubungkan ke Perangkat 2, 3, dst (Multi-Device)</h3>
+            <p class="text-xs text-slate-400">Buka di Laptop kantor, Tablet, atau HP kedua secara instan tanpa perlu repot input manual</p>
           </div>
         </div>
-      </section>
+        <span class="px-2.5 py-0.5 bg-purple-500/20 text-purple-300 text-[10px] font-bold rounded-full border border-purple-500/40">🔄 Auto-Database Sync</span>
+      </div>
 
-      <!-- ======================================================== -->
-      <!-- LANGKAH 7: PANDUAN FITUR KEUANGAN SEHARI-HARI             -->
-      <!-- ======================================================== -->
-      <section id="langkah-7" class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-7 space-y-5 shadow-xl">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-wrap gap-2">
-          <div class="flex items-center gap-3">
-            <span class="w-8 h-8 rounded-xl bg-emerald-600 text-white font-extrabold text-sm flex items-center justify-center shrink-0 shadow">7</span>
-            <div>
-              <h3 class="text-base sm:text-lg font-bold text-white">Panduan Fitur Keuangan Sehari-hari</h3>
-              <p class="text-xs text-slate-400">Cara mencatat transaksi, mutasi saldo, anggaran budgeting, sinking fund, dan kelola utang</p>
-            </div>
-          </div>
-          <span class="px-2.5 py-0.5 bg-emerald-500/20 text-emerald-300 text-[10px] font-bold rounded-full border border-emerald-500/30">💼 Manajemen Kas</span>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 text-xs">
-          <!-- 1. Catat Transaksi -->
-          <div class="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2 flex flex-col justify-between">
-            <div>
-              <span class="font-bold text-emerald-400 flex items-center gap-1.5 text-xs">
-                <span class="material-symbols-outlined text-base">add_circle</span> 1. Catat Transaksi Cepat
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div class="lg:col-span-7 space-y-3 text-xs text-slate-300">
+          <!-- Metode 1: Google Sign-In (Paling Praktis) -->
+          <div class="p-4 bg-gradient-to-r from-emerald-950/40 to-teal-950/40 border border-emerald-500/40 rounded-2xl space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="flex items-center gap-1.5 text-emerald-300 font-bold text-xs">
+                <span class="material-symbols-outlined text-base text-emerald-400">account_circle</span>
+                <span>METODE 1: Masuk dengan Akun Google (Paling Praktis & Cepat)</span>
               </span>
-              <p class="text-[11px] text-slate-300 mt-1.5 leading-relaxed">
-                Klik menu <b>Transaksi (+)</b>. Pilih <i>Pengeluaran</i> atau <i>Pemasukan</i>. Masukkan nominal, pilih dompet/rekening asal, dan kategori. Anda juga bisa melampirkan foto nota/struk belanja!
-              </p>
+              <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[9px] font-black uppercase">Instan</span>
             </div>
-            <span class="text-[10px] text-slate-500 font-mono-code mt-2">Saldo rekening otomatis terupdate</span>
-          </div>
-
-          <!-- 2. Transfer Saldo -->
-          <div class="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2 flex flex-col justify-between">
-            <div>
-              <span class="font-bold text-cyan-400 flex items-center gap-1.5 text-xs">
-                <span class="material-symbols-outlined text-base">sync_alt</span> 2. Transfer / Mutasi Antar Akun
-              </span>
-              <p class="text-[11px] text-slate-300 mt-1.5 leading-relaxed">
-                Untuk tarik tunai ATM (Bank ➔ Cash) atau Top-Up E-Wallet (Bank ➔ Dana/Gopay), gunakan tipe <b>Transfer Antar Akun</b>. Saldo berpindah dengan presisi tanpa merusak hitungan grafik pengeluaran!
-              </p>
-            </div>
-            <span class="text-[10px] text-slate-500 font-mono-code mt-2">Bebas salah hitung pengeluaran</span>
-          </div>
-
-          <!-- 3. Budgeting -->
-          <div class="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2 flex flex-col justify-between">
-            <div>
-              <span class="font-bold text-amber-400 flex items-center gap-1.5 text-xs">
-                <span class="material-symbols-outlined text-base">pie_chart</span> 3. Batas Anggaran (Budget)
-              </span>
-              <p class="text-[11px] text-slate-300 mt-1.5 leading-relaxed">
-                Di menu <b>Setup</b>, tetapkan batas budget per kategori (Makan, Bensin, Belanja). Di Dashboard, pantau indikator warna: hijau (aman), kuning (waspada), dan merah (melebihi batas anggaran).
-              </p>
-            </div>
-            <span class="text-[10px] text-slate-500 font-mono-code mt-2">Mencegah bocor halus finansial</span>
-          </div>
-
-          <!-- 4. Sinking Fund -->
-          <div class="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2 flex flex-col justify-between">
-            <div>
-              <span class="font-bold text-indigo-400 flex items-center gap-1.5 text-xs">
-                <span class="material-symbols-outlined text-base">savings</span> 4. Sinking Fund & Impian
-              </span>
-              <p class="text-[11px] text-slate-300 mt-1.5 leading-relaxed">
-                Alokasikan dana untuk pos terencana (Qurban, Pajak Kendaraan, Rencana Nikah, atau DP Rumah) lengkap dengan target batas waktu dan persentase tabungan.
-              </p>
-            </div>
-            <span class="text-[10px] text-slate-500 font-mono-code mt-2">Target terukur dan terarah</span>
-          </div>
-
-          <!-- 5. Utang & Cicilan -->
-          <div class="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2 flex flex-col justify-between">
-            <div>
-              <span class="font-bold text-rose-400 flex items-center gap-1.5 text-xs">
-                <span class="material-symbols-outlined text-base">receipt_long</span> 5. Cicilan & Tagihan
-              </span>
-              <p class="text-[11px] text-slate-300 mt-1.5 leading-relaxed">
-                Catat pinjaman atau tagihan cicilan dengan nominal angsuran bulanan. Saat mencatat pembayaran cicilan, sisa utang otomatis berkurang hingga lunas.
-              </p>
-            </div>
-            <span class="text-[10px] text-slate-500 font-mono-code mt-2">Riwayat pelunasan tercatat rapi</span>
-          </div>
-
-          <!-- 6. Backup Offline -->
-          <div class="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2 flex flex-col justify-between">
-            <div>
-              <span class="font-bold text-purple-400 flex items-center gap-1.5 text-xs">
-                <span class="material-symbols-outlined text-base">save_as</span> 6. Cadangan Manual (.json)
-              </span>
-              <p class="text-[11px] text-slate-300 mt-1.5 leading-relaxed">
-                Di menu <b>Setup</b> ➔ <i>Cadangan Manual</i>: Klik <b>Download File Cadangan (.json)</b> untuk menyimpan backup fisik ke komputer. Dapat dipulihkan kapan saja secara offline!
-              </p>
-            </div>
-            <span class="text-[10px] text-slate-500 font-mono-code mt-2">Aman 100% tanpa internet</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- ======================================================== -->
-      <!-- LANGKAH 8: CABUT AKSES JARAK JAUH & FAQ                   -->
-      <!-- ======================================================== -->
-      <section id="langkah-8" class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-7 space-y-5 shadow-xl">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-wrap gap-2">
-          <div class="flex items-center gap-3">
-            <span class="w-8 h-8 rounded-xl bg-rose-600 text-white font-extrabold text-sm flex items-center justify-center shrink-0 shadow">8</span>
-            <div>
-              <h3 class="text-base sm:text-lg font-bold text-white">Manajemen Perangkat & Pemecahan Masalah (FAQ)</h3>
-              <p class="text-xs text-slate-400">Cabut akses jika HP hilang / ganti baru, dan panduan kendala umum</p>
-            </div>
-          </div>
-          <span class="px-2.5 py-0.5 bg-rose-500/20 text-rose-300 text-[10px] font-bold rounded-full border border-rose-500/40">🛡️ Remote Control</span>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-300">
-          <div class="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2">
-            <span class="font-bold text-rose-400 flex items-center gap-1.5 text-xs">
-              <span class="material-symbols-outlined text-base">phonelink_erase</span> Cabut Akses Perangkat Tertentu
-            </span>
-            <p class="text-[11px] text-slate-300 leading-relaxed">
-              Di menu <b>Setup</b> ➔ <b>Daftar Perangkat Terhubung</b>, Anda bisa melihat seluruh HP & Laptop yang sedang aktif. Jika salah satu HP Anda hilang atau dijual:
-            </p>
-            <ol class="list-decimal list-inside space-y-1 text-[11px] text-slate-400">
-              <li>Klik tombol merah <b>"Keluarkan"</b> di samping perangkat tersebut.</li>
-              <li>Akses perangkat tersebut seketika dicabut dan kuota lisensi Anda langsung bebas kembali!</li>
+            <ol class="text-[11px] text-slate-300 space-y-1 list-decimal list-inside leading-relaxed">
+              <li>Buka website di Laptop / Tablet / HP kedua Anda.</li>
+              <li>Pada layar pembuka, klik <b>"Masuk dengan Akun Google"</b> (gunakan email Google yang sama).</li>
+              <li>👉 <b>Selesai!</b> Lisensi dan database Google Drive langsung tersinkron otomatis secara real-time!</li>
             </ol>
           </div>
 
-          <div class="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2">
-            <span class="font-bold text-amber-400 flex items-center gap-1.5 text-xs">
-              <span class="material-symbols-outlined text-base">help_center</span> Pemecahan Masalah Cepat (Troubleshooting)
-            </span>
-            <div class="space-y-1.5 text-[11px] text-slate-400">
-              <p>• <b>Data di perangkat baru belum muncul?</b> Buka menu <b>Setup</b> ➔ klik tombol <b>"PAKSA TARIK DARI CLOUD"</b>.</p>
-              <p>• <b>Koneksi Cloud bertuliskan "Koneksi Terganggu"?</b> Pastikan saat deploy Apps Script Anda memilih <i>"Who has access: Anyone (Siapa saja)"</i>.</p>
-              <p>• <b>Lupa PIN Pribadi?</b> Hubungi tim pengembang via email resmi kami di <a href="mailto:keuangankupro@gmail.com" class="text-cyan-400 underline font-bold">keuangankupro@gmail.com</a> dengan melampirkan bukti pemesanan Anda.</p>
-              <p>• <b>Versi Aplikasi Saat Ini?</b> Saat ini aplikasi berada dalam fase uji coba resmi <b>v0.1</b> dan akan ditingkatkan ke <b>v1.0</b> saat peluncuran publik tanpa menghapus data Anda.</p>
+          <!-- Metode 2: Barcode QR Scanner (WhatsApp Web Style) -->
+          <div class="p-4 bg-gradient-to-r from-cyan-950/40 to-blue-950/40 border border-cyan-500/40 rounded-2xl space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="flex items-center gap-1.5 text-cyan-300 font-bold text-xs">
+                <span class="material-symbols-outlined text-base text-cyan-400">qr_code_scanner</span>
+                <span>METODE 2: Scan Barcode QR (Gaya WhatsApp Web)</span>
+              </span>
             </div>
+            <ol class="text-[11px] text-slate-300 space-y-1 list-decimal list-inside leading-relaxed">
+              <li>Di <b>Laptop/PC Baru:</b> Buka link aplikasi ➔ tampil barcode sesi di layar pembuka.</li>
+              <li>Di <b>HP Utama (Perangkat 1):</b> Buka menu <b>Setup</b> ➔ klik <b>"Hubungkan Perangkat Baru (Barcode / QR)"</b>.</li>
+              <li>Arahkan kamera HP ke barcode di layar PC ➔ konfirmasi izinkan. Seketika data langsung terhubung!</li>
+            </ol>
           </div>
         </div>
-      </section>
 
-    </div>
+        <div class="lg:col-span-5 bg-slate-950 rounded-2xl p-4 border border-purple-500/40 shadow-xl space-y-2.5 font-sans text-left text-xs">
+          <div class="flex items-center gap-2 text-cyan-300 font-bold">
+            <span class="material-symbols-outlined text-base">cloud_done</span>
+            <span>Otomatis Sinkron Real-Time Antar HP & Laptop:</span>
+          </div>
+          <div class="space-y-1 font-mono-code text-[10px] text-slate-300 bg-slate-900 p-2.5 rounded-xl border border-slate-800">
+            <p class="text-emerald-400">✓ Catatan Transaksi & Mutasi Saldo</p>
+            <p class="text-cyan-400">✓ Rincian Dompet, Rekening Bank & E-Wallet</p>
+            <p class="text-amber-400">✓ Anggaran Pengeluaran (Spending Budget)</p>
+            <p class="text-purple-400">✓ Target Tabungan Impian & Cicilan Utang</p>
+          </div>
+          <p class="text-[10px] text-slate-400">
+            Catat pengeluaran di HP saat bepergian, pantau laporan di Laptop saat di kantor tanpa perlu kirim file manual!
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- LANGKAH 7: PANDUAN FITUR KEUANGAN SEHARI-HARI -->
+    <section id="langkah-7" class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-7 space-y-5 shadow-xl">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-wrap gap-2">
+        <div class="flex items-center gap-3">
+          <span class="w-8 h-8 rounded-xl bg-emerald-600 text-white font-extrabold text-sm flex items-center justify-center shrink-0 shadow">7</span>
+          <div>
+            <h3 class="text-base sm:text-lg font-bold text-white">Panduan Fitur Finansial Sehari-hari</h3>
+            <p class="text-xs text-slate-400">Cara mencatat transaksi, mutasi saldo, anggaran budgeting, cadangan kas, dan utang piutang</p>
+          </div>
+        </div>
+        <span class="px-2.5 py-0.5 bg-emerald-500/20 text-emerald-300 text-[10px] font-bold rounded-full border border-emerald-500/30">💼 Manajemen Kas</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 text-xs">
+        <!-- 1. Catat Transaksi -->
+        <div class="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2 flex flex-col justify-between">
+          <div class="space-y-1.5">
+            <span class="font-bold text-emerald-400 flex items-center gap-1.5 text-xs">
+              <span class="material-symbols-outlined text-base">add_circle</span> Catat Pemasukan & Pengeluaran
+            </span>
+            <p class="text-slate-400 text-[11px] leading-relaxed">
+              Klik tombol bulat <b>(+) Tambah Transaksi</b> di pojok kanan bawah. Pilih kategori, rekening asal, nominal, dan lampirkan struk / foto bukti pembayaran jika diperlukan.
+            </p>
+          </div>
+          <span class="text-[10px] text-emerald-400/80 bg-emerald-500/10 px-2.5 py-1 rounded-lg">Mudah & Cepat (5 Detik)</span>
+        </div>
+
+        <!-- 2. Transfer / Mutasi Antar Rekening -->
+        <div class="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2 flex flex-col justify-between">
+          <div class="space-y-1.5">
+            <span class="font-bold text-cyan-400 flex items-center gap-1.5 text-xs">
+              <span class="material-symbols-outlined text-base">swap_horiz</span> Mutasi Antar Rekening & Dompet
+            </span>
+            <p class="text-slate-400 text-[11px] leading-relaxed">
+              Tarik tunai dari ATM ke Dompet Fisik, atau transfer dari Rekening Bank ke E-Wallet (GoPay/OVO/DANA) tanpa mengubah total kekayaan bersih Anda.
+            </p>
+          </div>
+          <span class="text-[10px] text-cyan-400/80 bg-cyan-500/10 px-2.5 py-1 rounded-lg">Saldo Otomatis Terkalkulasi</span>
+        </div>
+
+        <!-- 3. Anggaran Spending Budget -->
+        <div class="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2 flex flex-col justify-between">
+          <div class="space-y-1.5">
+            <span class="font-bold text-amber-400 flex items-center gap-1.5 text-xs">
+              <span class="material-symbols-outlined text-base">pie_chart</span> Batas Anggaran (Budgeting)
+            </span>
+            <p class="text-slate-400 text-[11px] leading-relaxed">
+              Atur pagu belanja bulanan per kategori (makan, bensin, belanja dapur). Indikator warna akan memberi peringatan jika pengeluaran mendekati 100%.
+            </p>
+          </div>
+          <span class="text-[10px] text-amber-400/80 bg-amber-500/10 px-2.5 py-1 rounded-lg">Mencegah Kebocoran Kas</span>
+        </div>
+
+        <!-- 4. Cash Runway -->
+        <div class="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2 flex flex-col justify-between">
+          <div class="space-y-1.5">
+            <span class="font-bold text-purple-400 flex items-center gap-1.5 text-xs">
+              <span class="material-symbols-outlined text-base">hourglass_top</span> Ketahanan Dana Darurat (Runway)
+            </span>
+            <p class="text-slate-400 text-[11px] leading-relaxed">
+              Ketahui secara otomatis berapa bulan saldo likuid Anda mampu menopang hidup jika sewaktu-waktu sumber penghasilan utama Anda berhenti.
+            </p>
+          </div>
+          <span class="text-[10px] text-purple-400/80 bg-purple-500/10 px-2.5 py-1 rounded-lg">Ketenangan Finansial Keluarga</span>
+        </div>
+
+        <!-- 5. Kalkulator Zakat Mal -->
+        <div class="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2 flex flex-col justify-between">
+          <div class="space-y-1.5">
+            <span class="font-bold text-emerald-400 flex items-center gap-1.5 text-xs">
+              <span class="material-symbols-outlined text-base">volunteer_activism</span> Kalkulator Zakat Mal Otomatis
+            </span>
+            <p class="text-slate-400 text-[11px] leading-relaxed">
+              Secara syariah menghitung nisab emas 85 gram dan kewajiban zakat 2,5% dari saldo kas tabungan Anda jika telah mencapai haul dan nisab.
+            </p>
+          </div>
+          <span class="text-[10px] text-emerald-400/80 bg-emerald-500/10 px-2.5 py-1 rounded-lg">Berkah & Sesuai Syariah</span>
+        </div>
+
+        <!-- 6. Utang & Notifikasi Pengingat -->
+        <div class="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2 flex flex-col justify-between">
+          <div class="space-y-1.5">
+            <span class="font-bold text-rose-400 flex items-center gap-1.5 text-xs">
+              <span class="material-symbols-outlined text-base">notifications_active</span> Pengingat Jatuh Tempo Cicilan
+            </span>
+            <p class="text-slate-400 text-[11px] leading-relaxed">
+              Catat piutang orang lain atau utang cicilan Anda. Aplikasi akan mengirimkan notifikasi ke layar perangkat Anda saat tanggal jatuh tempo tiba.
+            </p>
+          </div>
+          <span class="text-[10px] text-rose-400/80 bg-rose-500/10 px-2.5 py-1 rounded-lg">Bebas Denda Keterlambatan</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- LANGKAH 8: REMOTE CONTROL PERANGKAT & FAQ LENGKAP -->
+    <section id="langkah-8" class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-7 space-y-5 shadow-xl">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-wrap gap-2">
+        <div class="flex items-center gap-3">
+          <span class="w-8 h-8 rounded-xl bg-rose-600 text-white font-extrabold text-sm flex items-center justify-center shrink-0 shadow">8</span>
+          <div>
+            <h3 class="text-base sm:text-lg font-bold text-white">Manajemen Perangkat & Tanya Jawab (FAQ)</h3>
+            <p class="text-xs text-slate-400">Cabut akses jarak jauh jika HP hilang / ganti baru, dan solusi kendala umum</p>
+          </div>
+        </div>
+        <span class="px-2.5 py-0.5 bg-rose-500/20 text-rose-300 text-[10px] font-bold rounded-full border border-rose-500/40">🛡️ Remote Control</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-300">
+        <!-- Remote Kick -->
+        <div class="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2.5">
+          <span class="font-bold text-rose-400 flex items-center gap-1.5 text-xs">
+            <span class="material-symbols-outlined text-base">phonelink_erase</span> Cabut Akses Jarak Jauh (Kick Device)
+          </span>
+          <p class="text-[11px] text-slate-300 leading-relaxed">
+            Di menu <b>Setup</b> ➔ <b>Daftar Perangkat Terhubung</b>, Anda dapat memantau seluruh HP & Laptop yang sedang aktif. Jika salah satu HP Anda hilang atau Anda berganti perangkat:
+          </p>
+          <ol class="list-decimal list-inside space-y-1 text-[11px] text-slate-400">
+            <li>Klik tombol merah <b>"Keluarkan"</b> di samping nama perangkat tersebut.</li>
+            <li>Akses di perangkat tersebut langsung terkunci seketika dan kuota lisensi Anda langsung bebas kembali untuk dipakai di HP baru!</li>
+          </ol>
+        </div>
+
+        <!-- FAQ Biometrik -->
+        <div class="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2.5">
+          <span class="font-bold text-indigo-400 flex items-center gap-1.5 text-xs">
+            <span class="material-symbols-outlined text-base">fingerprint</span> Mengapa di HP Android yang Muncul Sidik Jari?
+          </span>
+          <p class="text-[11px] text-slate-300 leading-relaxed">
+            Sistem operasi Android (Google) mewajibkan sensor <b>Class 3 Hardware Security</b> untuk otentikasi login aplikasi web. Kamera Face Unlock 2D standar di Android dinilai rawan dibobol oleh foto/video, sehingga sistem Android sengaja mengarahkan ke <b>Sensor Sidik Jari</b> demi melindungi saldo Anda. Di iPhone/iPad, sistem otomatis menggunakan <b>Face ID 3D TrueDepth</b>.
+          </p>
+        </div>
+
+        <!-- FAQ Kuota Lisensi Google -->
+        <div class="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2.5">
+          <span class="font-bold text-cyan-400 flex items-center gap-1.5 text-xs">
+            <span class="material-symbols-outlined text-base">devices</span> Apakah Batas Perangkat Tetap Berlaku dengan Google?
+          </span>
+          <p class="text-[11px] text-slate-300 leading-relaxed">
+            <b>Ya.</b> Kuota perangkat terhubung tetap dihitung berdasarkan paket pembelian lisensi resmi Anda (misal: Paket Single = 1 perangkat, Paket Multi-Device = 2 perangkat, dsb.). Anda selalu dapat mengelola dan memindahkan perangkat aktif di menu Setup.
+          </p>
+        </div>
+
+        <!-- FAQ Offline & Backup -->
+        <div class="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2.5">
+          <span class="font-bold text-emerald-400 flex items-center gap-1.5 text-xs">
+            <span class="material-symbols-outlined text-base">cloud_sync</span> Apakah Bisa Dipakai Saat Tidak Ada Internet?
+          </span>
+          <p class="text-[11px] text-slate-300 leading-relaxed">
+            <b>Bisa 100%.</b> Keuanganku PRO dirancang dengan prinsip <i>Local-First</i>. Anda tetap bisa mencatat transaksi saat offline. Begitu perangkat Anda terhubung kembali ke internet, data akan otomatis tersinkronisasi ke Google Drive Anda tanpa khawatir hilang.
+          </p>
+        </div>
+      </div>
+    </section>
 
   </main>
 
-  <!-- ======================================================== -->
-  <!-- FOOTER                                                   -->
-  <!-- ======================================================== -->
-  <footer class="border-t border-slate-800/80 bg-slate-950 py-6 px-4 text-center text-xs text-slate-500 relative z-10 mt-10">
-    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+  <!-- FOOTER -->
+  <footer class="border-t border-slate-800/80 mt-12 py-8 bg-slate-950/80 text-center text-xs text-slate-400 space-y-3">
+    <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
       <div class="flex items-center gap-2">
-        <img src="icon-32.png" alt="Logo" class="w-5 h-5 rounded-lg opacity-80">
-        <span class="font-bold text-slate-300">KEUANGANKU PRO</span>
+        <span class="font-bold text-white">KEUANGANKU PRO v5.1</span>
         <span>•</span>
-        <span>Copyright © 2026 Sambarang Production</span>
+        <span>Financial Planner & Multi-Device Wealth Tracker</span>
       </div>
-      <div class="flex items-center gap-3">
-        <a href="index.html" class="text-cyan-400 hover:text-cyan-300 font-semibold transition-colors">Buka Aplikasi</a>
+      <div class="flex items-center gap-4 text-[11px]">
+        <a href="index.html" class="text-cyan-400 hover:underline">Buka Aplikasi</a>
         <span>•</span>
-        <a href="pesan.html" class="text-slate-400 hover:text-white transition-colors">Form Pemesanan</a>
+        <a href="pesan.html" class="text-cyan-400 hover:underline">Pemesanan Lisensi</a>
         <span>•</span>
-        <a href="mailto:keuangankupro@gmail.com" class="text-slate-400 hover:text-white transition-colors">keuangankupro@gmail.com</a>
+        <a href="mailto:keuangankupro@gmail.com" class="text-cyan-400 hover:underline">Bantuan Email</a>
       </div>
     </div>
+    <p class="text-[10px] text-slate-400 max-w-xl mx-auto">
+      Dibuat dengan dedikasi untuk perlindungan privasi finansial keluarga Indonesia. Data Anda adalah hak milik mutlak Anda.
+    </p>
   </footer>
 
-  <!-- SCRIPT 1-KLIK SALIN KODE GOOGLE APPS SCRIPT -->
+  <!-- JAVASCRIPT LOGIC (Theme Toggle & Apps Script Code Copy) -->
   <script>
     const GAS_SCRIPT_CODE = `function doGet(e) {
   try {
     var data = readLargeData();
-    if (!data) {
-      return ContentService.createTextOutput(JSON.stringify({ status: "empty" }))
-        .setMimeType(ContentService.MimeType.JSON);
-    }
-    return ContentService.createTextOutput(data)
-      .setMimeType(ContentService.MimeType.JSON);
+    if (!data) return ContentService.createTextOutput(JSON.stringify({ status: "empty" })).setMimeType(ContentService.MimeType.JSON);
+    return ContentService.createTextOutput(data).setMimeType(ContentService.MimeType.JSON);
   } catch(err) {
-    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: err.toString() }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: err.toString() })).setMimeType(ContentService.MimeType.JSON);
   }
 }
 
 function doPost(e) {
   try {
     var rawData = e.postData.contents;
-    if (!rawData || rawData.trim() === "") {
-      return ContentService.createTextOutput(JSON.stringify({ status: "error", message: "Data kosong" }))
-        .setMimeType(ContentService.MimeType.JSON);
-    }
-
+    if (!rawData || rawData.trim() === "") return ContentService.createTextOutput(JSON.stringify({ status: "error", message: "Data kosong" })).setMimeType(ContentService.MimeType.JSON);
     saveLargeData(rawData);
-
-    return ContentService.createTextOutput(JSON.stringify({ status: "success", timestamp: new Date() }))
-      .setMimeType(ContentService.MimeType.JSON);
-  } catch (err) {
-    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: err.toString() }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return ContentService.createTextOutput(JSON.stringify({ status: "success", timestamp: new Date() })).setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: err.toString() })).setMimeType(ContentService.MimeType.JSON);
   }
 }
 
 function saveLargeData(dataString) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName("DATABASE_KEUANGANKU");
-  if (!sheet) {
-    sheet = ss.insertSheet("DATABASE_KEUANGANKU");
-  }
+  if (!sheet) sheet = ss.insertSheet("DATABASE_KEUANGANKU");
   sheet.clear();
-
   var CHUNK_SIZE = 40000;
   var chunks = [];
   for (var i = 0; i < dataString.length; i += CHUNK_SIZE) {
     chunks.push([dataString.substring(i, i + CHUNK_SIZE)]);
   }
-  if (chunks.length > 0) {
-    sheet.getRange(1, 1, chunks.length, 1).setValues(chunks);
-  }
-
-  try {
-    if (dataString.length < 8000) {
-      PropertiesService.getScriptProperties().setProperty("KEUANGANKU_DATA", dataString);
-    } else {
-      PropertiesService.getScriptProperties().deleteProperty("KEUANGANKU_DATA");
-    }
-  } catch(e) {}
+  if (chunks.length > 0) sheet.getRange(1, 1, chunks.length, 1).setValues(chunks);
 }
 
 function readLargeData() {
@@ -1717,23 +1310,10 @@ function readLargeData() {
     if (lastRow > 0) {
       var values = sheet.getRange(1, 1, lastRow, 1).getValues();
       var result = "";
-      for (var i = 0; i < values.length; i++) {
-        result += values[i][0];
-      }
+      for (var i = 0; i < values.length; i++) result += values[i][0];
       if (result && result.trim().startsWith("{")) return result.trim();
     }
   }
-
-  try {
-    var oldProp = PropertiesService.getScriptProperties().getProperty("KEUANGANKU_DATA");
-    if (oldProp) return oldProp;
-  } catch(e) {}
-
-  try {
-    var a1 = ss.getActiveSheet().getRange("A1").getValue();
-    if (a1 && typeof a1 === 'string' && a1.indexOf("accounts") !== -1) return a1;
-  } catch(e) {}
-
   return null;
 }`;
 
@@ -1743,7 +1323,7 @@ function readLargeData() {
           let btnText = document.getElementById('btn-copy-code-text');
           if (btnText) btnText.innerHTML = "✓ KODE BERHASIL DISALIN!";
           setTimeout(() => {
-            if (btnText) btnText.innerHTML = "SALIN KODE SCRIPT (1-KLIK)";
+            if (btnText) btnText.innerHTML = "SALIN KODE (OPSIONAL)";
           }, 3000);
         }).catch(() => {
           prompt("Salin manual kode Google Apps Script di bawah ini:", GAS_SCRIPT_CODE);
