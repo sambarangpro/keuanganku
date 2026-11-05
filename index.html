@@ -3182,22 +3182,14 @@
           <p class="text-xs text-gray-500">Pilih alat bantu perhitungan untuk merencanakan usaha Anda.</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <!-- KALKULATOR PEMBAGI ANGGARAN GAJI (FEATURED UTAMA) -->
-          <button onclick="openCalcSub('calc-sub-budget-allocator')" class="p-5 bg-gradient-to-br from-indigo-50/70 via-white to-blue-50/70 dark:from-indigo-950/40 dark:via-slate-800 dark:to-slate-800 border-2 border-indigo-500/40 hover:border-indigo-500 rounded-2xl shadow-sm hover:shadow-md transition-all text-left flex items-start gap-4 group col-span-1 md:col-span-2 lg:col-span-4 cursor-pointer">
-            <div class="p-3.5 bg-gradient-to-tr from-indigo-600 to-blue-500 text-white rounded-2xl group-hover:scale-110 shadow-lg shadow-indigo-500/25 transition-transform">
-              <span class="material-symbols-outlined text-3xl">pie_chart</span>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+          <!-- KALKULATOR PEMBAGI ANGGARAN (STANDAR) -->
+          <button onclick="openCalcSub('calc-sub-budget-allocator')" class="p-5 bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl shadow-sm hover:border-primary transition-all text-left flex items-start gap-4 group cursor-pointer">
+            <div class="p-3 bg-indigo-100 dark:bg-indigo-950 text-indigo-600 rounded-xl group-hover:scale-110 transition-transform"><span class="material-symbols-outlined text-2xl">pie_chart</span></div>
+            <div>
+              <h3 class="font-bold text-sm text-on-surface group-hover:text-primary">Pembagi Anggaran</h3>
+              <p class="text-[11px] text-gray-500 mt-1">Alokasikan dana masuk (gaji/usaha/modal) ke pos pengeluaran secara terukur.</p>
             </div>
-            <div class="flex-1">
-              <div class="flex items-center gap-2 flex-wrap">
-                <h3 class="font-bold text-base text-on-surface group-hover:text-primary">Kalkulator Pembagi Anggaran Gaji</h3>
-                <span class="px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 text-[10px] font-black uppercase">Favorit Harian</span>
-              </div>
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-                Bagi gaji bulanan Anda (misal: Rp 4.000.000) ke cicilan utang, tagihan rutin, belanja dapur/kebutuhan hidup, dan tabungan dengan formula terukur agar tidak boncos.
-              </p>
-            </div>
-            <span class="material-symbols-outlined text-gray-400 group-hover:text-primary transition-colors my-auto hidden sm:block">arrow_forward_ios</span>
           </button>
           <button onclick="openCalcSub('calc-sub-currency')" class="p-5 bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl shadow-sm hover:border-primary transition-all text-left flex items-start gap-4 group">
             <div class="p-3 bg-blue-100 dark:bg-blue-950 text-primary rounded-xl group-hover:scale-110 transition-transform"><span class="material-symbols-outlined text-2xl">currency_exchange</span></div>
@@ -3246,8 +3238,8 @@
                 <span class="material-symbols-outlined text-2xl">pie_chart</span>
               </div>
               <div>
-                <h3 class="font-bold text-base sm:text-lg text-on-surface">Kalkulator Pembagi Anggaran Gaji</h3>
-                <p class="text-xs text-on-surface-variant">Rencanakan alokasi gaji bulanan ke cicilan, tagihan rutin, belanja, dan tabungan</p>
+                <h3 class="font-bold text-base sm:text-lg text-on-surface">Kalkulator Pembagi Anggaran</h3>
+                <p class="text-xs text-on-surface-variant">Alokasikan dana masuk (gaji, hasil usaha, fee proyek, atau modal) ke berbagai pos pengeluaran</p>
               </div>
             </div>
             <button type="button" onclick="autoPullActiveDebtsToAlloc()" class="px-3.5 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-600 dark:text-rose-400 font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95" title="Tarik cicilan utang bulanan yang tercatat di aplikasi">
@@ -3261,9 +3253,9 @@
             <div class="flex items-center justify-between flex-wrap gap-2">
               <label class="font-bold text-xs text-on-surface flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-indigo-500 text-base">payments</span>
-                <span>Total Gaji / Pendapatan Bulanan Bersih (Rp)</span>
+                <span>Total Dana / Anggaran Masuk (Rp)</span>
               </label>
-              <span class="text-[10px] text-gray-500 font-medium">Contoh: Gaji bulanan Rp 4.000.000</span>
+              <span class="text-[10px] text-gray-500 font-medium">Contoh: Gaji, hasil usaha, atau dana proyek</span>
             </div>
 
             <div class="relative">
@@ -3339,7 +3331,7 @@
           <!-- Section 5: Ringkasan & Status Kesehatan Anggaran -->
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
             <div class="p-3.5 bg-surface-container rounded-2xl border border-outline-variant/60 space-y-1">
-              <p class="text-gray-500 text-[11px] font-medium">Total Gaji Bulanan</p>
+              <p class="text-gray-500 text-[11px] font-medium">Total Dana Masuk</p>
               <p id="alloc-sum-income" class="font-mono-data font-bold text-base text-on-surface">Rp 4.000.000</p>
             </div>
             <div class="p-3.5 bg-surface-container rounded-2xl border border-outline-variant/60 space-y-1">
@@ -8259,17 +8251,17 @@ function formatReadableSheets(ss, parsed) {
           statusCard.className = "p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-900 dark:text-emerald-200 space-y-1 transition-all";
           if (statusIcon) statusIcon.textContent = "task_alt";
           statusTitle.textContent = "Alhamdulillah! Anggaran Sempurna (100% Pas)";
-          statusDesc.textContent = "Seluruh gaji Rp " + income.toLocaleString('id-ID') + " telah terbagi habis ke pos kebutuhan, cicilan, dan tabungan tanpa ada kebocoran!";
+          statusDesc.textContent = "Seluruh dana Rp " + income.toLocaleString('id-ID') + " telah terbagi habis ke pos-pos alokasi tanpa ada kebocoran!";
         } else if (diff > 0) {
           statusCard.className = "p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 space-y-1 transition-all";
           if (statusIcon) statusIcon.textContent = "savings";
           statusTitle.textContent = "Surplus: Masih Ada Sisa Rp " + diff.toLocaleString('id-ID') + " (" + ((diff/income)*100).toFixed(1) + "%)";
-          statusDesc.textContent = "Masih ada sisa uang gaji yang belum dialokasikan. Sangat disarankan untuk memasukkannya ke pos Tabungan atau Dana Darurat!";
+          statusDesc.textContent = "Masih ada sisa dana Rp " + diff.toLocaleString('id-ID') + " yang belum dialokasikan. Disarankan untuk dimasukkan ke pos Tabungan atau Cadangan!";
         } else {
           statusCard.className = "p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-900 dark:text-rose-200 space-y-1 transition-all";
           if (statusIcon) statusIcon.textContent = "warning";
           statusTitle.textContent = "Defisit: Alokasi Melebihi Gaji Sebesar Rp " + Math.abs(diff).toLocaleString('id-ID') + " (" + ((Math.abs(diff)/income)*100).toFixed(1) + "%)";
-          statusDesc.textContent = "Alokasi pengeluaran Anda lebih besar dari pendapatan bulanan. Kurangi pos cicilan atau hiburan agar keuangan tidak minus!";
+          statusDesc.textContent = "Alokasi pengeluaran Anda melebihi total dana masuk sebesar Rp " + Math.abs(diff).toLocaleString('id-ID') + ". Sesuaikan beberapa pos agar tidak defisit!";
         }
       }
 
@@ -8307,8 +8299,8 @@ function formatReadableSheets(ss, parsed) {
       let totalAlloc = budgetAllocItems.reduce((acc, c) => acc + (Number(c.amount) || 0), 0);
       let diff = income - totalAlloc;
 
-      let text = "📊 RENCANA PEMBAGIAN GAJI BULANAN\n";
-      text += "💰 Total Gaji Bersih: Rp " + income.toLocaleString('id-ID') + "\n";
+      let text = "📊 RENCANA PEMBAGIAN ANGGARAN\n";
+      text += "💰 Total Dana Masuk: Rp " + income.toLocaleString('id-ID') + "\n";
       text += "📅 Tanggal: " + new Date().toLocaleDateString('id-ID', { dateStyle: 'long' }) + "\n";
       text += "--------------------------------------\n";
 
@@ -12274,7 +12266,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v5.3';
+              let currentCacheInApp = 'keuanganku-pwa-v5.4';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
