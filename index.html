@@ -1666,45 +1666,53 @@
 
       <!-- SECTION DIAGRAM PERGERAKAN SALDO SEMUA REKENING / WALLET (1 BULAN) -->
       <section class="w-full bg-white dark:bg-slate-800 border border-outline-variant rounded-3xl p-5 sm:p-7 shadow-sm space-y-4">
-        <!-- HEADER DIAGRAM -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-outline-variant/50">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-500 text-white flex items-center justify-center shadow-md shadow-blue-500/20 flex-shrink-0">
-              <span class="material-symbols-outlined text-xl sm:text-2xl">show_chart</span>
-            </div>
-            <div>
-              <div class="flex items-center gap-2">
-                <h3 class="font-title-sm font-bold text-on-surface text-sm sm:text-base">Diagram Tren Saldo Rekening & Wallet</h3>
-                <span id="wallet-history-badge" class="px-2.5 py-0.5 text-[10px] font-extrabold uppercase rounded-full bg-blue-100 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 shadow-xs">30 Hari (1 Bulan)</span>
+        <!-- HEADER DIAGRAM (RINGKAS & TO THE POINT) -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-outline-variant/50">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-500 text-white flex items-center justify-center shadow-sm flex-shrink-0">
+                <span class="material-symbols-outlined text-lg sm:text-xl">show_chart</span>
               </div>
-              <p class="text-[11px] text-gray-500 mt-0.5">Pantau dinamika fluktuasi saldo harian seluruh akun bank serta e-wallet antar bulan</p>
+              <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                  <h3 class="font-title-sm font-bold text-on-surface text-sm sm:text-base truncate">Tren Saldo Rekening</h3>
+                  <span id="wallet-history-badge" class="hidden sm:inline-block px-2 py-0.5 text-[9px] font-extrabold uppercase rounded-full bg-blue-100 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">30 Hari</span>
+                </div>
+                <p class="hidden sm:block text-[11px] text-gray-500 truncate">Pantau dinamika fluktuasi saldo seluruh akun bank & e-wallet</p>
+              </div>
             </div>
+
+            <!-- Tombol Refresh di Mobile -->
+            <button type="button" onclick="renderWalletHistoryChart()" title="Segarkan Diagram" class="sm:hidden w-7 h-7 rounded-lg border border-outline-variant bg-surface text-gray-500 hover:text-primary flex items-center justify-center transition-all active:scale-90 flex-shrink-0">
+              <span class="material-symbols-outlined text-sm">refresh</span>
+            </button>
           </div>
 
           <!-- KONTROL FILTER & WAKTU -->
-          <div class="flex flex-wrap items-center gap-2">
-            <div class="flex items-center bg-surface-container-highest dark:bg-slate-700/60 rounded-xl p-1 border border-outline-variant">
-              <select id="wallet-history-range" onchange="onWalletHistoryRangeChange()" class="bg-transparent text-xs font-bold text-on-surface px-2 py-1 outline-none cursor-pointer">
+          <div class="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
+            <div class="flex-1 sm:flex-initial flex items-center bg-surface-container-highest dark:bg-slate-700/60 rounded-xl p-0.5 border border-outline-variant min-w-0">
+              <select id="wallet-history-range" onchange="onWalletHistoryRangeChange()" class="w-full sm:w-auto bg-transparent text-[11px] sm:text-xs font-bold text-on-surface px-2 py-1 outline-none cursor-pointer truncate">
                 <option value="30" selected>30 Hari Terakhir (1 Bulan)</option>
                 <option value="month">Bulan Ini Berjalan</option>
                 <option value="prev_month">Bulan Lalu Penuh</option>
-                <option value="2months">Antara 2 Bulan (Bulan Lalu - Bulan Ini)</option>
+                <option value="2months">Antara 2 Bulan</option>
                 <option value="3months">Antara 3 Bulan (Kuartal)</option>
                 <option value="6months">Antara 6 Bulan (Semester)</option>
-                <option value="ytd">Tahun Ini (Januari - Sekarang)</option>
-                <option value="custom_range">📅 Kustom Rentang Antara Bulan...</option>
-                <option value="custom_single">📅 Pilih 1 Bulan Spesifik...</option>
+                <option value="ytd">Tahun Ini (YTD)</option>
+                <option value="custom_range">📅 Kustom Rentang...</option>
+                <option value="custom_single">📅 Pilih 1 Bulan...</option>
                 <option value="14">14 Hari Terakhir</option>
                 <option value="7">7 Hari Terakhir</option>
               </select>
             </div>
             
-            <label class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-outline-variant bg-surface hover:bg-surface-container-high cursor-pointer text-xs font-medium text-on-surface select-none transition-all">
-              <input type="checkbox" id="wallet-history-toggle-total" onchange="renderWalletHistoryChart()" class="rounded text-primary focus:ring-0">
-              <span class="text-[11px] font-bold">Total Gabungan</span>
+            <label class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-outline-variant bg-surface hover:bg-surface-container-high cursor-pointer text-xs font-medium text-on-surface select-none transition-all flex-shrink-0">
+              <input type="checkbox" id="wallet-history-toggle-total" onchange="renderWalletHistoryChart()" class="rounded text-primary focus:ring-0 w-3.5 h-3.5">
+              <span class="text-[10px] sm:text-[11px] font-bold">Total Gabungan</span>
             </label>
 
-            <button type="button" onclick="renderWalletHistoryChart()" title="Segarkan Diagram" class="w-8 h-8 rounded-xl border border-outline-variant bg-surface hover:bg-surface-container-high text-gray-500 hover:text-primary flex items-center justify-center transition-all active:scale-90">
+            <!-- Tombol Refresh di Layar Lebar -->
+            <button type="button" onclick="renderWalletHistoryChart()" title="Segarkan Diagram" class="hidden sm:flex w-8 h-8 rounded-xl border border-outline-variant bg-surface hover:bg-surface-container-high text-gray-500 hover:text-primary items-center justify-center transition-all active:scale-90 flex-shrink-0">
               <span class="material-symbols-outlined text-base">refresh</span>
             </button>
           </div>
@@ -1805,20 +1813,40 @@
         <!-- STAT MINI HIGHLIGHTS (KOTAK RINGKASAN TREN) -->
         <div id="wallet-history-stats" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 text-xs"></div>
 
-        <!-- FILTER CHIPS INTERAKTIF: KLIK UNTUK ISOLASI/SEMBUNYIKAN SALDO DOMPET -->
-        <div class="space-y-1.5">
-          <div class="flex items-center justify-between text-[11px]">
-            <span class="font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1">
-              <span class="material-symbols-outlined text-sm text-primary">tune</span>
-              <span>Filter Garis Rekening (Klik untuk menyembunyikan / menampilkan):</span>
-            </span>
-            <div class="flex items-center gap-2">
-              <button type="button" onclick="toggleAllWalletHistoryLines(true)" class="text-[10px] font-bold text-primary hover:underline">Tampilkan Semua</button>
-              <span class="text-gray-300 dark:text-gray-600">|</span>
-              <button type="button" onclick="toggleAllWalletHistoryLines(false)" class="text-[10px] font-bold text-gray-400 hover:text-error hover:underline">Sembunyikan Semua</button>
+        <!-- FILTER AKUN (DROPDOWN COMPACT DENGAN MODE MANUAL OPSIONAL) -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-1.5">
+                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-0.5 flex-shrink-0">
+                  <span class="material-symbols-outlined text-xs text-primary">filter_alt</span>
+                  <span class="hidden sm:inline">Garis:</span>
+                </span>
+                <select id="wallet-history-account-select" onchange="onWalletHistoryAccountSelectChange(this.value)" class="flex-1 bg-surface-container-low dark:bg-slate-700/60 text-[11px] sm:text-xs font-bold text-on-surface px-2.5 py-1.5 rounded-xl border border-outline-variant outline-none cursor-pointer truncate shadow-xs">
+                  <!-- Diisi otomatis oleh JavaScript -->
+                </select>
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5 flex-shrink-0">
+              <button type="button" onclick="toggleWalletHistoryChipsDrawer()" id="btn-toggle-wallet-chips" class="px-2.5 py-1.5 rounded-xl border border-outline-variant bg-surface-container-low hover:bg-surface-container text-[10px] sm:text-[11px] font-bold text-gray-600 dark:text-gray-300 flex items-center gap-1 transition-all active:scale-95" title="Buka / Tutup Pilihan Garis Lengkap">
+                <span class="material-symbols-outlined text-xs text-primary">tune</span>
+                <span>Pilih Manual</span>
+              </button>
             </div>
           </div>
-          <div id="wallet-history-chips" class="flex flex-wrap items-center gap-1.5 sm:gap-2"></div>
+
+          <!-- DRAWER CHIPS MANUAL (TERSEMBUNYI SECARA DEFAULT AGAR TIDAK MEMAKAN RUANG) -->
+          <div id="wallet-history-chips-drawer" class="hidden p-2.5 sm:p-3 rounded-2xl bg-surface-container-lowest/60 dark:bg-slate-900/40 border border-outline-variant/60 space-y-2 animate-fadeIn">
+            <div class="flex items-center justify-between text-[11px]">
+              <span class="text-[10px] font-bold text-gray-400">Klik akun untuk sembunyikan / tampilkan:</span>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="toggleAllWalletHistoryLines(true)" class="text-[10px] font-bold text-primary hover:underline">Tampilkan Semua</button>
+                <span class="text-gray-300 dark:text-gray-600">|</span>
+                <button type="button" onclick="toggleAllWalletHistoryLines(false)" class="text-[10px] font-bold text-gray-400 hover:text-error hover:underline">Sembunyikan Semua</button>
+              </div>
+            </div>
+            <div id="wallet-history-chips" class="flex flex-wrap items-center gap-1.5 sm:gap-2"></div>
+          </div>
         </div>
 
         <!-- CANVAS AREA DIAGRAM -->
@@ -9903,26 +9931,29 @@ function formatReadableSheets(ss, parsed) {
       let totalEnd = totalTrajectory[totalTrajectory.length - 1] || 0;
       let totalDiff = totalEnd - totalStart;
 
-      // 4. Render Stat Cards
+      // 4. Render Stat Cards (Kompak & Anti-Truncate)
       if (statsEl) {
         let diffColor = totalDiff > 0 ? 'text-green-600 dark:text-green-400' : (totalDiff < 0 ? 'text-red-500' : 'text-gray-400');
         let diffSign = totalDiff > 0 ? '+' : '';
         statsEl.innerHTML = `
-          <div class="p-3 rounded-2xl bg-surface-container-low dark:bg-slate-700/40 border border-outline-variant/60 flex flex-col justify-between">
-            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Total Saldo Terkini</span>
-            <p class="text-sm sm:text-base font-extrabold text-primary dark:text-blue-400 font-mono-data mt-1">${formatRp(totalCurrentAll)}</p>
+          <div class="p-2.5 sm:p-3 rounded-2xl bg-surface-container-low dark:bg-slate-700/40 border border-outline-variant/60 flex flex-col justify-between min-w-0">
+            <span class="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-wider truncate">Total Saldo</span>
+            <p class="text-xs sm:text-base font-extrabold text-primary dark:text-blue-400 font-mono-data mt-0.5 truncate">${formatRp(totalCurrentAll)}</p>
           </div>
-          <div class="p-3 rounded-2xl bg-surface-container-low dark:bg-slate-700/40 border border-outline-variant/60 flex flex-col justify-between">
-            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider truncate">Fluktuasi (${badgeText})</span>
-            <p class="text-xs sm:text-sm font-extrabold ${diffColor} font-mono-data mt-1">${isBalanceMasked ? 'Rp ••••••' : (diffSign + formatRp(totalDiff))}</p>
+          <div class="p-2.5 sm:p-3 rounded-2xl bg-surface-container-low dark:bg-slate-700/40 border border-outline-variant/60 flex flex-col justify-between min-w-0">
+            <span class="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-wider truncate">Fluktuasi</span>
+            <p class="text-xs sm:text-sm font-extrabold ${diffColor} font-mono-data mt-0.5 truncate">${isBalanceMasked ? 'Rp ••••••' : (diffSign + formatRp(totalDiff))}</p>
           </div>
-          <div class="p-3 rounded-2xl bg-surface-container-low dark:bg-slate-700/40 border border-outline-variant/60 flex flex-col justify-between">
-            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Saldo Terbesar</span>
-            <p class="text-xs sm:text-sm font-extrabold text-on-surface truncate mt-1">${highestAccName || '-'} <span class="font-mono-data text-[10px] opacity-75">(${formatRp(highestAccBal > 0 ? highestAccBal : 0)})</span></p>
+          <div class="p-2.5 sm:p-3 rounded-2xl bg-surface-container-low dark:bg-slate-700/40 border border-outline-variant/60 flex flex-col justify-between min-w-0">
+            <span class="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-wider truncate">Saldo Terbesar</span>
+            <div class="mt-0.5 min-w-0">
+              <p class="text-xs font-extrabold text-on-surface truncate">${highestAccName || '-'}</p>
+              <p class="font-mono-data text-[10px] text-gray-500 truncate font-bold">${formatRp(highestAccBal > 0 ? highestAccBal : 0)}</p>
+            </div>
           </div>
-          <div class="p-3 rounded-2xl bg-surface-container-low dark:bg-slate-700/40 border border-outline-variant/60 flex flex-col justify-between">
-            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Rentang Waktu</span>
-            <p class="text-xs sm:text-sm font-extrabold text-on-surface font-mono-data mt-1">${dateList.length} Hari (${monthNames[startDate.getMonth()]} - ${monthNames[endDate.getMonth()]})</p>
+          <div class="p-2.5 sm:p-3 rounded-2xl bg-surface-container-low dark:bg-slate-700/40 border border-outline-variant/60 flex flex-col justify-between min-w-0">
+            <span class="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-wider truncate">Rentang Waktu</span>
+            <p class="text-xs sm:text-sm font-extrabold text-on-surface font-mono-data mt-0.5 truncate">${dateList.length} Hari <span class="text-[9px] sm:text-[10px] font-normal text-gray-500">(${monthNames[startDate.getMonth()]}-${monthNames[endDate.getMonth()]})</span></p>
           </div>
         `;
       }
@@ -9995,6 +10026,31 @@ function formatReadableSheets(ss, parsed) {
           hidden: hiddenMap[acc] || false
         });
       });
+
+      // Populate Dropdown Filter Akun
+      let accSelect = document.getElementById('wallet-history-account-select');
+      if (accSelect) {
+        let currentVal = accSelect.value || '__ALL__';
+        accSelect.innerHTML = `
+          <option value="__ALL__">📊 Semua Garis Rekening (${accounts.length} Akun)</option>
+          <option value="__TOTAL__">📈 Total Saldo Gabungan Saja</option>
+        `;
+        let optGroup = document.createElement('optgroup');
+        optGroup.label = 'Pilih Satu Rekening (Fokus):';
+        accounts.forEach(acc => {
+          let bal = (globalData.currentBalances && globalData.currentBalances[acc]) ? globalData.currentBalances[acc] : 0;
+          let opt = document.createElement('option');
+          opt.value = acc;
+          opt.textContent = `${acc} (${formatRp(bal)})`;
+          optGroup.appendChild(opt);
+        });
+        accSelect.appendChild(optGroup);
+        if (Array.from(accSelect.options).some(o => o.value === currentVal)) {
+          accSelect.value = currentVal;
+        } else {
+          accSelect.value = '__ALL__';
+        }
+      }
 
       // 7. Render Interactive Chips (Filter Garis Rekening)
       if (chipsEl) {
@@ -10138,13 +10194,65 @@ function formatReadableSheets(ss, parsed) {
       renderWalletHistoryChartChipsOnly();
     }
 
+    function onWalletHistoryAccountSelectChange(val) {
+      if (!walletHistoryLineChart) return;
+      if (val === '__ALL__') {
+        walletHistoryLineChart.data.datasets.forEach((ds, idx) => {
+          let meta = walletHistoryLineChart.getDatasetMeta(idx);
+          if (meta) meta.hidden = false;
+          ds.hidden = false;
+        });
+      } else if (val === '__TOTAL__') {
+        let chk = document.getElementById('wallet-history-toggle-total');
+        if (chk && !chk.checked) {
+          chk.checked = true;
+          renderWalletHistoryChart();
+          setTimeout(() => onWalletHistoryAccountSelectChange('__TOTAL__'), 60);
+          return;
+        }
+        walletHistoryLineChart.data.datasets.forEach((ds, idx) => {
+          let isTotal = ds.label === 'Total Saldo Gabungan';
+          let meta = walletHistoryLineChart.getDatasetMeta(idx);
+          if (meta) meta.hidden = !isTotal;
+          ds.hidden = !isTotal;
+        });
+      } else {
+        walletHistoryLineChart.data.datasets.forEach((ds, idx) => {
+          let isTarget = ds.label === val;
+          let meta = walletHistoryLineChart.getDatasetMeta(idx);
+          if (meta) meta.hidden = !isTarget;
+          ds.hidden = !isTarget;
+        });
+      }
+      walletHistoryLineChart.update();
+      renderWalletHistoryChartChipsOnly();
+    }
+    window.onWalletHistoryAccountSelectChange = onWalletHistoryAccountSelectChange;
+
+    function toggleWalletHistoryChipsDrawer() {
+      let drawer = document.getElementById('wallet-history-chips-drawer');
+      let btn = document.getElementById('btn-toggle-wallet-chips');
+      if (!drawer) return;
+      drawer.classList.toggle('hidden');
+      if (btn) {
+        let isOpen = !drawer.classList.contains('hidden');
+        btn.classList.toggle('bg-primary/10', isOpen);
+        btn.classList.toggle('text-primary', isOpen);
+      }
+    }
+    window.toggleWalletHistoryChipsDrawer = toggleWalletHistoryChipsDrawer;
+
     function renderWalletHistoryChartChipsOnly() {
       if (!walletHistoryLineChart) return;
       let chipsEl = document.getElementById('wallet-history-chips');
       if (!chipsEl) return;
       chipsEl.innerHTML = '';
+      
+      let visibleDatasets = [];
       walletHistoryLineChart.data.datasets.forEach((ds, dsIdx) => {
-        let isHidden = ds.hidden;
+        let meta = walletHistoryLineChart.getDatasetMeta(dsIdx);
+        let isHidden = meta ? meta.hidden : ds.hidden;
+        if (!isHidden) visibleDatasets.push(ds.label);
         let activeClasses = isHidden
           ? 'opacity-40 line-through bg-surface-container-low text-gray-400 border-outline-variant'
           : 'bg-white dark:bg-slate-700 text-on-surface shadow-xs border-outline-variant hover:border-primary';
@@ -10156,6 +10264,18 @@ function formatReadableSheets(ss, parsed) {
           </button>
         `;
       });
+
+      // Sinkronkan pilihan ke dropdown jika sesuai
+      let accSelect = document.getElementById('wallet-history-account-select');
+      if (accSelect) {
+        if (visibleDatasets.length === walletHistoryLineChart.data.datasets.length) {
+          accSelect.value = '__ALL__';
+        } else if (visibleDatasets.length === 1 && visibleDatasets[0] === 'Total Saldo Gabungan') {
+          accSelect.value = '__TOTAL__';
+        } else if (visibleDatasets.length === 1 && Array.from(accSelect.options).some(o => o.value === visibleDatasets[0])) {
+          accSelect.value = visibleDatasets[0];
+        }
+      }
     }
 
     function calculateEmergencyRunway() {
@@ -12543,7 +12663,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v6.5';
+              let currentCacheInApp = 'keuanganku-pwa-v6.6';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
