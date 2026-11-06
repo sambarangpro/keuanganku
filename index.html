@@ -1820,29 +1820,13 @@
     </div>
 
     <!-- PAGE: REKAPITULASI & ANALISIS FINANSIAL (MENU KHUSUS PEMILIK) -->
-    <div id="page-rekapitulasi" class="hidden space-y-6">
-      <!-- Header Halaman Rekapitulasi Sederhana & Bersih -->
-      <div class="flex items-center justify-between pb-1 border-b border-outline-variant/40">
-        <div>
-          <h2 class="font-headline-md font-bold text-on-surface text-lg sm:text-xl flex items-center gap-2">
-            <span class="material-symbols-outlined text-primary">analytics</span>
-            <span>Rekapitulasi Keuangan</span>
-          </h2>
-          <p class="text-xs text-gray-500 dark:text-gray-400">Pilih modul laporan dan rencana finansial di bawah ini.</p>
-        </div>
+    <div id="page-rekapitulasi" class="hidden space-y-4">
+      <div>
+        <h2 class="font-headline-md font-bold text-on-surface text-xl">Rekapitulasi</h2>
+        <p class="text-xs text-gray-500">Pilih laporan finansial untuk melihat rincian.</p>
       </div>
 
-      <!-- GRID 9 KARTU MODAL REKAPITULASI INTERAKTIF -->
-      <section class="space-y-3 pt-1">
-        <div class="flex items-center justify-between">
-          <h3 class="font-title-sm font-bold text-on-surface flex items-center gap-2">
-            <span class="material-symbols-outlined text-primary">grid_view</span>
-            <span>Menu Rekapitulasi & Detail Laporan</span>
-          </h3>
-          <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">KLIK KARTU UNTUK RINCIAN</span>
-        </div>
-
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-5">
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-5">
           <!-- 1. Monthly Budgeting -->
           <div onclick="openRecapModal('budget')" class="bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-4 shadow-sm hover:border-orange-500 hover:shadow-md transition-all text-left flex flex-col justify-between group cursor-pointer active:scale-95">
             <div class="flex justify-between items-start">
@@ -1969,7 +1953,6 @@
             </div>
           </div>
         </div>
-      </section>
     </div>
 
     <!-- PAGE 2: TRANSAKSI -->
@@ -12476,7 +12459,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v5.9';
+              let currentCacheInApp = 'keuanganku-pwa-v6.0';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
