@@ -12,6 +12,13 @@
         document.documentElement.classList.add('light');
         document.documentElement.classList.remove('dark');
       }
+      try {
+        var isAuthPassed = (sessionStorage.getItem("KEUANGANKU_PIN_PASSED") === "true") ||
+                           (localStorage.getItem("KEUANGANKU_SESSION_ACTIVE") === "true");
+        if (isAuthPassed) {
+          document.documentElement.classList.add('app-already-authenticated');
+        }
+      } catch(e) {}
     })();
   </script>
   <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
@@ -103,6 +110,13 @@
     }
     #splash-screen.hidden {
       display: none !important;
+    }
+    /* Anti-Flicker Splash Lockscreen: jika sudah terlanjur login, jangan pernah tampilkan splash login lagi saat refresh */
+    html.app-already-authenticated #splash-screen {
+      display: none !important;
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
     }
 
     /* Fullscreen Liquid Silk Mesh Gradient Container */
@@ -4001,12 +4015,21 @@
 
       let license = getSavedLicense();
       let splashScreen = document.getElementById('splash-screen');
-      let isAlreadyPassed = sessionStorage.getItem("KEUANGANKU_PIN_PASSED") === "true";
+      let isAlreadyPassed = (sessionStorage.getItem("KEUANGANKU_PIN_PASSED") === "true") ||
+                            (localStorage.getItem("KEUANGANKU_SESSION_ACTIVE") === "true");
 
       if (isAlreadyPassed) {
-        if (splashScreen) splashScreen.classList.add('hidden');
+        markUserSessionAuthenticated();
+        if (splashScreen) {
+          splashScreen.classList.add('hidden', 'opacity-0');
+          splashScreen.style.display = 'none';
+        }
+        if (typeof initApp === 'function') initApp();
       } else {
-        if (splashScreen) splashScreen.classList.remove('hidden');
+        if (splashScreen) {
+          splashScreen.classList.remove('hidden');
+          splashScreen.style.display = '';
+        }
 
         // Tampilkan layar masuk dengan tab cerdas
         switchSplashView('pin');
@@ -4074,7 +4097,7 @@
           // Lisensi diblokir secara resmi oleh Developer
           if (res.reason === "BLOCKED") {
             localStorage.removeItem("KEUANGANKU_LICENSE_DATA");
-            sessionStorage.removeItem("KEUANGANKU_PIN_PASSED");
+            clearUserSessionAuthentication();
             let splashScreen = document.getElementById('splash-screen');
             if (splashScreen) {
               splashScreen.classList.remove('hidden', 'opacity-0');
@@ -4724,7 +4747,7 @@
           } catch(e) {}
 
           localStorage.removeItem("KEUANGANKU_LICENSE_DATA");
-          sessionStorage.removeItem("KEUANGANKU_PIN_PASSED");
+          clearUserSessionAuthentication();
           closeDeviceConfirmModal();
           alert("Lisensi berhasil dilepas dari perangkat ini.");
           location.reload();
@@ -5562,10 +5585,35 @@
       return `${year}-${month}-${day}`;
     }
 
+    
+    // === KONTROL STATUS SESI PENGGUNA TEROTENTIKASI (ANTI-LOGOUT SAAT REFRESH) ===
+    function markUserSessionAuthenticated() {
+      try {
+        sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
+        localStorage.setItem("KEUANGANKU_SESSION_ACTIVE", "true");
+        localStorage.setItem("KEUANGANKU_LAST_ACTIVE_TIME", Date.now().toString());
+        if (document.documentElement) {
+          document.documentElement.classList.add('app-already-authenticated');
+        }
+      } catch(e) {}
+    }
+
+    function clearUserSessionAuthentication() {
+      try {
+        sessionStorage.removeItem("KEUANGANKU_PIN_PASSED");
+        localStorage.removeItem("KEUANGANKU_SESSION_ACTIVE");
+        localStorage.removeItem("KEUANGANKU_LAST_ACTIVE_TIME");
+        if (document.documentElement) {
+          document.documentElement.classList.remove('app-already-authenticated');
+        }
+      } catch(e) {}
+    }
+
     function isUserAuthenticated() {
-      let isPassed = sessionStorage.getItem("KEUANGANKU_PIN_PASSED") === "true";
+      let isPassed = (sessionStorage.getItem("KEUANGANKU_PIN_PASSED") === "true") ||
+                     (localStorage.getItem("KEUANGANKU_SESSION_ACTIVE") === "true");
       let splash = document.getElementById('splash-screen');
-      let isSplashActive = splash && !splash.classList.contains('hidden');
+      let isSplashActive = splash && !splash.classList.contains('hidden') && splash.style.display !== 'none';
       return isPassed && !isSplashActive;
     }
 
@@ -5795,13 +5843,14 @@
     }
 
 function hideSplashScreenAndTriggerAlerts() {
-      sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
+      markUserSessionAuthenticated();
       if (typeof pauseSplashShader === "function") pauseSplashShader();
       let splash = document.getElementById('splash-screen');
       if (splash) {
         splash.classList.add('opacity-0');
         setTimeout(() => {
           splash.classList.add('hidden');
+          splash.style.display = 'none';
           // Setelah layar PIN berhasil dibuka & disembunyikan, periksa pengingat secara aman
           if (typeof checkDueDateAlerts === 'function') checkDueDateAlerts();
           if (typeof checkReceivableAlerts === 'function') checkReceivableAlerts();
@@ -5815,7 +5864,11 @@ function hideSplashScreenAndTriggerAlerts() {
     }
 
     window.onload = function() {
-      if (typeof initSplashShaderGradient === "function") initSplashShaderGradient();
+      let isPassedOnload = (sessionStorage.getItem("KEUANGANKU_PIN_PASSED") === "true") ||
+                           (localStorage.getItem("KEUANGANKU_SESSION_ACTIVE") === "true");
+      if (!isPassedOnload && typeof initSplashShaderGradient === "function") {
+        initSplashShaderGradient();
+      }
       updateThemeIcon();
       loadStorageData();
       checkAppLicenseOnStartup();
@@ -12618,7 +12671,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v5.6';
+              let currentCacheInApp = 'keuanganku-pwa-v5.7';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
