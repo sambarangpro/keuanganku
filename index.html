@@ -1813,40 +1813,20 @@
         <!-- STAT MINI HIGHLIGHTS (KOTAK RINGKASAN TREN) -->
         <div id="wallet-history-stats" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 text-xs"></div>
 
-        <!-- FILTER AKUN (DROPDOWN COMPACT DENGAN MODE MANUAL OPSIONAL) -->
-        <div class="space-y-2">
-          <div class="flex items-center justify-between gap-2">
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-1.5">
-                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-0.5 flex-shrink-0">
-                  <span class="material-symbols-outlined text-xs text-primary">filter_alt</span>
-                  <span class="hidden sm:inline">Garis:</span>
-                </span>
-                <select id="wallet-history-account-select" onchange="onWalletHistoryAccountSelectChange(this.value)" class="flex-1 bg-surface-container-low dark:bg-slate-700/60 text-[11px] sm:text-xs font-bold text-on-surface px-2.5 py-1.5 rounded-xl border border-outline-variant outline-none cursor-pointer truncate shadow-xs">
-                  <!-- Diisi otomatis oleh JavaScript -->
-                </select>
-              </div>
-            </div>
-            <div class="flex items-center gap-1.5 flex-shrink-0">
-              <button type="button" onclick="toggleWalletHistoryChipsDrawer()" id="btn-toggle-wallet-chips" class="px-2.5 py-1.5 rounded-xl border border-outline-variant bg-surface-container-low hover:bg-surface-container text-[10px] sm:text-[11px] font-bold text-gray-600 dark:text-gray-300 flex items-center gap-1 transition-all active:scale-95" title="Buka / Tutup Pilihan Garis Lengkap">
-                <span class="material-symbols-outlined text-xs text-primary">tune</span>
-                <span>Pilih Manual</span>
-              </button>
+        <!-- FILTER GARIS REKENING (PILIH MANUAL LANGSUNG - KOMPAK & RAPI) -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between text-[11px]">
+            <span class="font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1">
+              <span class="material-symbols-outlined text-xs text-primary">tune</span>
+              <span>Filter Garis Rekening:</span>
+            </span>
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="toggleAllWalletHistoryLines(true)" class="text-[10px] font-bold text-primary hover:underline">Tampilkan Semua</button>
+              <span class="text-gray-300 dark:text-gray-600">|</span>
+              <button type="button" onclick="toggleAllWalletHistoryLines(false)" class="text-[10px] font-bold text-gray-400 hover:text-error hover:underline">Sembunyikan Semua</button>
             </div>
           </div>
-
-          <!-- DRAWER CHIPS MANUAL (TERSEMBUNYI SECARA DEFAULT AGAR TIDAK MEMAKAN RUANG) -->
-          <div id="wallet-history-chips-drawer" class="hidden p-2.5 sm:p-3 rounded-2xl bg-surface-container-lowest/60 dark:bg-slate-900/40 border border-outline-variant/60 space-y-2 animate-fadeIn">
-            <div class="flex items-center justify-between text-[11px]">
-              <span class="text-[10px] font-bold text-gray-400">Klik akun untuk sembunyikan / tampilkan:</span>
-              <div class="flex items-center gap-2">
-                <button type="button" onclick="toggleAllWalletHistoryLines(true)" class="text-[10px] font-bold text-primary hover:underline">Tampilkan Semua</button>
-                <span class="text-gray-300 dark:text-gray-600">|</span>
-                <button type="button" onclick="toggleAllWalletHistoryLines(false)" class="text-[10px] font-bold text-gray-400 hover:text-error hover:underline">Sembunyikan Semua</button>
-              </div>
-            </div>
-            <div id="wallet-history-chips" class="flex flex-wrap items-center gap-1.5 sm:gap-2"></div>
-          </div>
+          <div id="wallet-history-chips" class="flex flex-wrap items-center gap-1.5"></div>
         </div>
 
         <!-- CANVAS AREA DIAGRAM -->
@@ -10027,32 +10007,7 @@ function formatReadableSheets(ss, parsed) {
         });
       });
 
-      // Populate Dropdown Filter Akun
-      let accSelect = document.getElementById('wallet-history-account-select');
-      if (accSelect) {
-        let currentVal = accSelect.value || '__ALL__';
-        accSelect.innerHTML = `
-          <option value="__ALL__">📊 Semua Garis Rekening (${accounts.length} Akun)</option>
-          <option value="__TOTAL__">📈 Total Saldo Gabungan Saja</option>
-        `;
-        let optGroup = document.createElement('optgroup');
-        optGroup.label = 'Pilih Satu Rekening (Fokus):';
-        accounts.forEach(acc => {
-          let bal = (globalData.currentBalances && globalData.currentBalances[acc]) ? globalData.currentBalances[acc] : 0;
-          let opt = document.createElement('option');
-          opt.value = acc;
-          opt.textContent = `${acc} (${formatRp(bal)})`;
-          optGroup.appendChild(opt);
-        });
-        accSelect.appendChild(optGroup);
-        if (Array.from(accSelect.options).some(o => o.value === currentVal)) {
-          accSelect.value = currentVal;
-        } else {
-          accSelect.value = '__ALL__';
-        }
-      }
-
-      // 7. Render Interactive Chips (Filter Garis Rekening)
+      // 7. Render Interactive Chips (Pilih Manual Kompak & Rapi)
       if (chipsEl) {
         chipsEl.innerHTML = '';
         datasets.forEach((ds, dsIdx) => {
@@ -10062,9 +10017,9 @@ function formatReadableSheets(ss, parsed) {
             : 'bg-white dark:bg-slate-700 text-on-surface shadow-xs border-outline-variant hover:border-primary';
 
           chipsEl.innerHTML += `
-            <button type="button" onclick="toggleWalletLineSeries(${dsIdx})" class="px-2.5 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-2 transition-all active:scale-95 ${activeClasses}" title="Klik untuk sembunyikan/tampilkan garis ${ds.label}">
-              <span class="w-2.5 h-2.5 rounded-full inline-block flex-shrink-0" style="background-color: ${ds.borderColor};"></span>
-              <span class="truncate max-w-[140px] sm:max-w-none">${ds.label}</span>
+            <button type="button" onclick="toggleWalletLineSeries(${dsIdx})" class="px-2.5 py-1 rounded-lg border text-[11px] font-bold flex items-center gap-1.5 transition-all active:scale-95 ${activeClasses}" title="Klik untuk sembunyikan/tampilkan garis ${ds.label}">
+              <span class="w-2 h-2 rounded-full inline-block flex-shrink-0" style="background-color: ${ds.borderColor};"></span>
+              <span>${ds.label}</span>
             </button>
           `;
         });
@@ -10247,35 +10202,20 @@ function formatReadableSheets(ss, parsed) {
       let chipsEl = document.getElementById('wallet-history-chips');
       if (!chipsEl) return;
       chipsEl.innerHTML = '';
-      
-      let visibleDatasets = [];
       walletHistoryLineChart.data.datasets.forEach((ds, dsIdx) => {
         let meta = walletHistoryLineChart.getDatasetMeta(dsIdx);
         let isHidden = meta ? meta.hidden : ds.hidden;
-        if (!isHidden) visibleDatasets.push(ds.label);
         let activeClasses = isHidden
           ? 'opacity-40 line-through bg-surface-container-low text-gray-400 border-outline-variant'
           : 'bg-white dark:bg-slate-700 text-on-surface shadow-xs border-outline-variant hover:border-primary';
 
         chipsEl.innerHTML += `
-          <button type="button" onclick="toggleWalletLineSeries(${dsIdx})" class="px-2.5 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-2 transition-all active:scale-95 ${activeClasses}" title="Klik untuk sembunyikan/tampilkan garis ${ds.label}">
-            <span class="w-2.5 h-2.5 rounded-full inline-block flex-shrink-0" style="background-color: ${ds.borderColor};"></span>
-            <span class="truncate max-w-[140px] sm:max-w-none">${ds.label}</span>
+          <button type="button" onclick="toggleWalletLineSeries(${dsIdx})" class="px-2.5 py-1 rounded-lg border text-[11px] font-bold flex items-center gap-1.5 transition-all active:scale-95 ${activeClasses}" title="Klik untuk sembunyikan/tampilkan garis ${ds.label}">
+            <span class="w-2 h-2 rounded-full inline-block flex-shrink-0" style="background-color: ${ds.borderColor};"></span>
+            <span>${ds.label}</span>
           </button>
         `;
       });
-
-      // Sinkronkan pilihan ke dropdown jika sesuai
-      let accSelect = document.getElementById('wallet-history-account-select');
-      if (accSelect) {
-        if (visibleDatasets.length === walletHistoryLineChart.data.datasets.length) {
-          accSelect.value = '__ALL__';
-        } else if (visibleDatasets.length === 1 && visibleDatasets[0] === 'Total Saldo Gabungan') {
-          accSelect.value = '__TOTAL__';
-        } else if (visibleDatasets.length === 1 && Array.from(accSelect.options).some(o => o.value === visibleDatasets[0])) {
-          accSelect.value = visibleDatasets[0];
-        }
-      }
     }
 
     function calculateEmergencyRunway() {
@@ -12663,7 +12603,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v6.6';
+              let currentCacheInApp = 'keuanganku-pwa-v6.7';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
