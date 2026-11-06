@@ -1821,70 +1821,14 @@
 
     <!-- PAGE: REKAPITULASI & ANALISIS FINANSIAL (MENU KHUSUS PEMILIK) -->
     <div id="page-rekapitulasi" class="hidden space-y-6">
-      <!-- Header Banner Rekapitulasi -->
-      <div class="flex items-center justify-between flex-wrap gap-3 pb-2 border-b border-outline-variant/40">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 flex items-center justify-center">
-            <span class="material-symbols-outlined text-2xl">analytics</span>
-          </div>
-          <div>
-            <h2 class="font-headline-md font-bold text-on-surface text-lg sm:text-xl">Rekapitulasi & Analisis Finansial</h2>
-            <p class="text-xs text-gray-500 dark:text-gray-400">Evaluasi menyeluruh batas anggaran, arus kas, tabungan, dan aset kekayaan bersih.</p>
-          </div>
-        </div>
-
-        <!-- Filter Periode Bulan & Tahun -->
-        <div class="flex items-center gap-2">
-          <select id="rekap-month-select" onchange="renderRekapitulasiPage()" class="p-2 border border-outline-variant rounded-xl font-bold text-xs bg-surface text-on-surface outline-none cursor-pointer">
-            <option value="0">Januari</option>
-            <option value="1">Februari</option>
-            <option value="2">Maret</option>
-            <option value="3">April</option>
-            <option value="4">Mei</option>
-            <option value="5">Juni</option>
-            <option value="6">Juli</option>
-            <option value="7">Agustus</option>
-            <option value="8">September</option>
-            <option value="9">Oktober</option>
-            <option value="10">November</option>
-            <option value="11">Desember</option>
-          </select>
-          <select id="rekap-year-select" onchange="renderRekapitulasiPage()" class="p-2 border border-outline-variant rounded-xl font-bold text-xs bg-surface text-on-surface outline-none cursor-pointer">
-            <option value="2025">2025</option>
-            <option value="2026" selected>2026</option>
-            <option value="2027">2027</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- 4 Kartu Ringkasan Performa Finansial -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div class="p-4 bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl shadow-sm space-y-1">
-          <p class="text-[11px] text-gray-500 flex items-center gap-1">
-            <span class="material-symbols-outlined text-emerald-500 text-sm">arrow_downward</span> Pemasukan Bulan Ini
-          </p>
-          <p id="rekap-sum-income" class="font-mono-data font-bold text-base sm:text-lg text-emerald-600 dark:text-emerald-400">Rp 0</p>
-        </div>
-
-        <div class="p-4 bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl shadow-sm space-y-1">
-          <p class="text-[11px] text-gray-500 flex items-center gap-1">
-            <span class="material-symbols-outlined text-rose-500 text-sm">arrow_upward</span> Pengeluaran Bulan Ini
-          </p>
-          <p id="rekap-sum-expense" class="font-mono-data font-bold text-base sm:text-lg text-rose-600 dark:text-rose-400">Rp 0</p>
-        </div>
-
-        <div class="p-4 bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl shadow-sm space-y-1">
-          <p class="text-[11px] text-gray-500 flex items-center gap-1">
-            <span class="material-symbols-outlined text-primary text-sm">balance</span> Sisa Kas (Cashflow)
-          </p>
-          <p id="rekap-sum-net" class="font-mono-data font-bold text-base sm:text-lg text-primary">+Rp 0</p>
-        </div>
-
-        <div class="p-4 bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl shadow-sm space-y-1">
-          <p class="text-[11px] text-gray-500 flex items-center gap-1">
-            <span class="material-symbols-outlined text-indigo-500 text-sm">trending_up</span> Rasio Tabungan
-          </p>
-          <p id="rekap-sum-savings-rate" class="font-mono-data font-bold text-base sm:text-lg text-indigo-600 dark:text-indigo-400">0%</p>
+      <!-- Header Halaman Rekapitulasi Sederhana & Bersih -->
+      <div class="flex items-center justify-between pb-1 border-b border-outline-variant/40">
+        <div>
+          <h2 class="font-headline-md font-bold text-on-surface text-lg sm:text-xl flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">analytics</span>
+            <span>Rekapitulasi Keuangan</span>
+          </h2>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Pilih modul laporan dan rencana finansial di bawah ini.</p>
         </div>
       </div>
 
@@ -2006,8 +1950,8 @@
               <span class="material-symbols-outlined text-gray-300 dark:text-slate-600 group-hover:text-teal-500 group-hover:translate-x-0.5 transition-all text-lg">arrow_forward</span>
             </div>
             <div class="mt-3">
-              <h4 class="font-bold text-xs sm:text-sm text-on-surface group-hover:text-teal-600 transition-colors leading-tight">Grafik Bulanan</h4>
-              <p class="text-[10px] text-gray-400 mt-0.5">Visual arus kas tahunan</p>
+              <h4 class="font-bold text-xs sm:text-sm text-on-surface group-hover:text-teal-600 transition-colors leading-tight">Laporan Arus Kas</h4>
+              <p class="text-[10px] text-gray-400 mt-0.5">Pemasukan vs pengeluaran</p>
             </div>
           </div>
 
@@ -12532,7 +12476,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v5.8';
+              let currentCacheInApp = 'keuanganku-pwa-v5.9';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
