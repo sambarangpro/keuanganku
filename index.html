@@ -13,10 +13,13 @@
         document.documentElement.classList.remove('dark');
       }
       try {
-        var isAuthPassed = (sessionStorage.getItem("KEUANGANKU_PIN_PASSED") === "true") ||
-                           (localStorage.getItem("KEUANGANKU_SESSION_ACTIVE") === "true");
+        // Bersihkan residu flag sesi persisten lama agar setiap masuk aplikasi wajib melewati PIN/Login
+        localStorage.removeItem("KEUANGANKU_SESSION_ACTIVE");
+        var isAuthPassed = (sessionStorage.getItem("KEUANGANKU_PIN_PASSED") === "true");
         if (isAuthPassed) {
           document.documentElement.classList.add('app-already-authenticated');
+        } else {
+          document.documentElement.classList.remove('app-already-authenticated');
         }
       } catch(e) {}
     })();
@@ -1535,6 +1538,11 @@
 
         <button onclick="toggleDarkMode()" class="p-2 rounded-full hover:bg-surface-container transition-colors flex items-center gap-1 text-xs font-bold cursor-pointer" title="Ubah Tema Gelap/Terang">
           <span id="header-theme-icon" class="material-symbols-outlined text-on-surface-variant">dark_mode</span>
+        </button>
+
+        <!-- TOMBOL KUNCI APLIKASI (LOCKSCREEN PIN) -->
+        <button onclick="lockAppNow()" class="p-2 rounded-full hover:bg-surface-container transition-colors flex items-center gap-1 text-xs font-bold cursor-pointer text-on-surface-variant hover:text-primary active:scale-95" title="Kunci Aplikasi (Layar Masuk PIN)">
+          <span class="material-symbols-outlined text-base">lock</span>
         </button>
       </div>
     </div>
@@ -3975,8 +3983,7 @@
 
       let license = getSavedLicense();
       let splashScreen = document.getElementById('splash-screen');
-      let isAlreadyPassed = (sessionStorage.getItem("KEUANGANKU_PIN_PASSED") === "true") ||
-                            (localStorage.getItem("KEUANGANKU_SESSION_ACTIVE") === "true");
+      let isAlreadyPassed = (sessionStorage.getItem("KEUANGANKU_PIN_PASSED") === "true");
 
       if (isAlreadyPassed) {
         markUserSessionAuthenticated();
@@ -3986,8 +3993,11 @@
         }
         if (typeof initApp === 'function') initApp();
       } else {
+        if (document.documentElement) {
+          document.documentElement.classList.remove('app-already-authenticated');
+        }
         if (splashScreen) {
-          splashScreen.classList.remove('hidden');
+          splashScreen.classList.remove('hidden', 'opacity-0');
           splashScreen.style.display = '';
         }
 
@@ -4027,6 +4037,11 @@
             pinInp.value = savedPin;
           }
         }
+        setTimeout(() => {
+          if (pinInp && !pinInp.value) {
+            pinInp.focus();
+          }
+        }, 300);
       }
 
       if (license && license.token) {
@@ -5546,11 +5561,11 @@
     }
 
     
-    // === KONTROL STATUS SESI PENGGUNA TEROTENTIKASI (ANTI-LOGOUT SAAT REFRESH) ===
+    // === KONTROL STATUS SESI PENGGUNA TEROTENTIKASI (SESI PIN AMAN) ===
     function markUserSessionAuthenticated() {
       try {
         sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
-        localStorage.setItem("KEUANGANKU_SESSION_ACTIVE", "true");
+        localStorage.removeItem("KEUANGANKU_SESSION_ACTIVE");
         localStorage.setItem("KEUANGANKU_LAST_ACTIVE_TIME", Date.now().toString());
         if (document.documentElement) {
           document.documentElement.classList.add('app-already-authenticated');
@@ -5561,6 +5576,7 @@
     function clearUserSessionAuthentication() {
       try {
         sessionStorage.removeItem("KEUANGANKU_PIN_PASSED");
+        sessionStorage.removeItem("KEUANGANKU_SETUP_UNLOCKED");
         localStorage.removeItem("KEUANGANKU_SESSION_ACTIVE");
         localStorage.removeItem("KEUANGANKU_LAST_ACTIVE_TIME");
         if (document.documentElement) {
@@ -5570,11 +5586,25 @@
     }
 
     function isUserAuthenticated() {
-      let isPassed = (sessionStorage.getItem("KEUANGANKU_PIN_PASSED") === "true") ||
-                     (localStorage.getItem("KEUANGANKU_SESSION_ACTIVE") === "true");
+      let isPassed = (sessionStorage.getItem("KEUANGANKU_PIN_PASSED") === "true");
       let splash = document.getElementById('splash-screen');
       let isSplashActive = splash && !splash.classList.contains('hidden') && splash.style.display !== 'none';
       return isPassed && !isSplashActive;
+    }
+
+    function lockAppNow() {
+      clearUserSessionAuthentication();
+      let splash = document.getElementById('splash-screen');
+      if (splash) {
+        splash.classList.remove('hidden', 'opacity-0');
+        splash.style.display = '';
+        if (typeof switchSplashView === 'function') switchSplashView('pin');
+        let pinInp = document.getElementById('bumper-pin-input');
+        if (pinInp) {
+          pinInp.value = '';
+          setTimeout(() => pinInp.focus(), 150);
+        }
+      }
     }
 
         // === SISTEM AUTENTIKASI BIOMETRIK (WEBAUTHN - FACE ID & SIDIK JARI) ===
@@ -5824,8 +5854,7 @@ function hideSplashScreenAndTriggerAlerts() {
     }
 
     window.onload = function() {
-      let isPassedOnload = (sessionStorage.getItem("KEUANGANKU_PIN_PASSED") === "true") ||
-                           (localStorage.getItem("KEUANGANKU_SESSION_ACTIVE") === "true");
+      let isPassedOnload = (sessionStorage.getItem("KEUANGANKU_PIN_PASSED") === "true");
       if (!isPassedOnload && typeof initSplashShaderGradient === "function") {
         initSplashShaderGradient();
       }
@@ -12923,7 +12952,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v6.16';
+              let currentCacheInApp = 'keuanganku-pwa-v6.17';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
