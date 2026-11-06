@@ -10573,8 +10573,8 @@ function formatReadableSheets(ss, parsed) {
             </div>
           ` : ''}
 
-          <!-- Baris Angka Utama & Progress Bar (Sejajar di Tablet/PC, Rapi di Mobile) -->
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-0.5">
+          <!-- Baris Angka Utama & Progress Bar (Memanjang Memenuhi Sisa Space) -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-6 pt-0.5">
             <div class="flex items-baseline gap-1.5 shrink-0">
               <span class="text-2xl sm:text-3xl md:text-4xl font-black font-mono-data text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-white to-blue-200">
                 ${isMasked ? '•••' : m}
@@ -10583,15 +10583,15 @@ function formatReadableSheets(ss, parsed) {
               <span class="text-[11px] text-slate-400 font-medium">(~${isMasked ? '•••' : Math.round(m * 30)} Hari)</span>
             </div>
 
-            <div class="flex-1 sm:max-w-xs md:max-w-sm space-y-1">
+            <div class="flex-1 w-full space-y-1.5">
               <div class="flex justify-between text-[8px] sm:text-[9px] text-slate-400 font-bold uppercase tracking-wider">
                 <span>0 Bln</span>
                 <span>1 Bln</span>
                 <span>3 Bln</span>
                 <span>6+ Bln (Ideal)</span>
               </div>
-              <div class="w-full bg-slate-800/80 h-2 rounded-full overflow-hidden border border-white/10 p-0.5">
-                <div class="h-full rounded-full bg-gradient-to-r ${barGradient} transition-all duration-700" style="width: ${progressPct}%"></div>
+              <div class="w-full bg-slate-800/80 h-2.5 rounded-full overflow-hidden border border-white/10 p-0.5 shadow-inner">
+                <div class="h-full rounded-full bg-gradient-to-r ${barGradient} transition-all duration-700 shadow-xs" style="width: ${progressPct}%"></div>
               </div>
             </div>
           </div>
@@ -12827,7 +12827,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v6.13';
+              let currentCacheInApp = 'keuanganku-pwa-v6.14';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
