@@ -497,6 +497,24 @@
       animation: pulseGentle 2.2s ease-in-out infinite;
     }
 
+    /* ANIMASI PING-PONG TEKS NAMA KARTU YANG KEPANJANGAN (KIRI-KANAN BERULANG) */
+    @keyframes marqueePingPong {
+      0%, 22% {
+        transform: translateX(0);
+      }
+      78%, 100% {
+        transform: translateX(var(--scroll-dist, -40px));
+      }
+    }
+    .animate-marquee-pingpong {
+      display: inline-block !important;
+      white-space: nowrap !important;
+      animation: marqueePingPong var(--marquee-duration, 4s) cubic-bezier(0.4, 0, 0.2, 1) infinite alternate !important;
+      will-change: transform;
+    }
+    .animate-marquee-pingpong:hover {
+      animation-play-state: paused;
+    }
   </style>
 </head>
 <body class="bg-background text-on-surface font-body-md min-h-screen pb-32">
@@ -9483,6 +9501,40 @@ function formatReadableSheets(ss, parsed) {
     }
     function getCategoryCashflowNet(categoryName) { let net = 0, used = 0; if (!globalData.recentHistory) return { net, used }; globalData.recentHistory.forEach(tx => { if (tx.category === categoryName) { if (['Invest / Savings', 'Financial Goals', 'Income', 'Dari Asset / Saving'].includes(tx.cashflow)) net += tx.amount; if (tx.cashflow === 'Spending') used += tx.amount; } }); return { net, used }; }
     
+    // === ANIMASI MARQUEE BOLAK-BALIK UNTUK NAMA AKUN YANG KEPANJANGAN ===
+    function applyMarqueeForLongTitles() {
+      setTimeout(() => {
+        const titles = document.querySelectorAll('.acc-marquee-title');
+        titles.forEach(el => {
+          const parent = el.parentElement;
+          if (!parent) return;
+
+          // Reset status animasi terlebih dahulu agar kalkulasi lebar akurat
+          el.classList.remove('animate-marquee-pingpong');
+          el.style.removeProperty('--scroll-dist');
+          el.style.removeProperty('--marquee-duration');
+
+          // Cek apakah teks meluap (overflow) dari kontainer kartu
+          const overflowDist = el.scrollWidth - parent.clientWidth;
+          if (overflowDist > 4) {
+            // Teks terlalu panjang! Hitung jarak geser ditambah sedikit padding akhir
+            const travelDist = overflowDist + 10;
+            el.style.setProperty('--scroll-dist', `-${travelDist}px`);
+            // Durasi dinamis agar kecepatan membaca tetap santai dan nyaman
+            const duration = Math.min(7.5, Math.max(3.8, travelDist * 0.05 + 2.5));
+            el.style.setProperty('--marquee-duration', `${duration}s`);
+            el.classList.add('animate-marquee-pingpong');
+          }
+        });
+      }, 60);
+    }
+    window.applyMarqueeForLongTitles = applyMarqueeForLongTitles;
+
+    window.addEventListener('resize', () => {
+      if (window._marqueeResizeTimer) clearTimeout(window._marqueeResizeTimer);
+      window._marqueeResizeTimer = setTimeout(applyMarqueeForLongTitles, 150);
+    });
+
     let walletChart = null;
     function renderWalletDistChart(labels, data, bgColors, totalBank, maxBal, topWalletName) {
       let ctx = document.getElementById('walletDistChart');
@@ -10591,11 +10643,13 @@ function formatReadableSheets(ss, parsed) {
           grid.innerHTML += `
             <div class="p-2.5 sm:p-4 bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl shadow-sm hover:border-primary transition-all flex flex-col justify-between border-l-4 min-h-[112px]" style="border-left-color: ${color};">
               <div class="flex justify-between items-start gap-1">
-                <div class="min-w-0 flex-1">
-                  <p class="text-[11px] sm:text-xs font-extrabold uppercase tracking-wide flex items-center gap-1.5 truncate" style="color: ${color};" title="${acc}">
+                <div class="min-w-0 flex-1 overflow-hidden">
+                  <div class="flex items-center gap-1.5 overflow-hidden">
                     <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full inline-block flex-shrink-0" style="background-color: ${color};"></span>
-                    <span class="truncate">${acc}</span>
-                  </p>
+                    <div class="overflow-hidden flex-1 min-w-0">
+                      <span class="acc-marquee-title text-[11px] sm:text-xs font-extrabold uppercase tracking-wide inline-block whitespace-nowrap" style="color: ${color};" title="${acc}">${acc}</span>
+                    </div>
+                  </div>
                   <p class="text-[9px] sm:text-[10px] text-gray-500 mt-0.5 truncate">${dt.bankName || '-'}</p>
                 </div>
                 <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background-color: ${color}15; color: ${color};">
@@ -10618,6 +10672,11 @@ function formatReadableSheets(ss, parsed) {
         if (accCountBadge) {
           accCountBadge.textContent = `${globalData.accounts.length} Akun`;
           accCountBadge.classList.remove('hidden');
+        }
+
+        // Terapkan animasi marquee bolak-balik jika nama kartu panjang
+        if (typeof applyMarqueeForLongTitles === 'function') {
+          applyMarqueeForLongTitles();
         }
       } 
       
@@ -12484,7 +12543,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v6.4';
+              let currentCacheInApp = 'keuanganku-pwa-v6.5';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
