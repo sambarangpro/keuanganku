@@ -2059,20 +2059,38 @@
 
         <form id="tx-form" onsubmit="submitTransaction(event)" class="bg-white dark:bg-slate-800 border border-outline-variant p-6 space-y-4 shadow-sm relative rounded-2xl">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="flex flex-col gap-1"><label class="text-xs font-bold uppercase text-gray-500">Waktu / Tanggal</label><input type="date" id="tx-date" required class="w-full px-3 py-2.5 border border-outline rounded-xl text-sm focus:ring-1 focus:ring-primary outline-none bg-surface"></div>
-            <div class="flex flex-col gap-1"><label class="text-xs font-bold uppercase text-gray-500">Nama Transaksi</label><input type="text" id="tx-name" placeholder="Contoh: Honor / Belanja ATK" required class="w-full px-3 py-2.5 border border-outline rounded-xl text-sm focus:ring-1 focus:ring-primary outline-none bg-surface"></div>
+            <div class="flex flex-col gap-1.5">
+              <label class="text-xs font-bold uppercase text-on-surface-variant flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm text-primary">calendar_today</span>
+                <span>Waktu / Tanggal</span>
+              </label>
+              <input type="date" id="tx-date" required class="w-full px-3 py-2.5 border border-outline-variant bg-surface dark:bg-slate-900 rounded-xl text-sm font-medium focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all shadow-2xs">
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label class="text-xs font-bold uppercase text-on-surface-variant flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm text-primary">edit_note</span>
+                <span>Nama Transaksi</span>
+              </label>
+              <input type="text" id="tx-name" placeholder="Contoh: Honor / Belanja ATK" required class="w-full px-3 py-2.5 border border-outline-variant bg-surface dark:bg-slate-900 rounded-xl text-sm font-medium focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all shadow-2xs">
+            </div>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="flex flex-col gap-1">
-              <label class="text-xs font-bold uppercase text-gray-500">Nominal (Rp)</label>
+            <div class="flex flex-col gap-1.5">
+              <label class="text-xs font-bold uppercase text-on-surface-variant flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm text-primary">payments</span>
+                <span>Nominal (Rp)</span>
+              </label>
               <div class="relative">
                 <span class="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-primary text-sm">Rp</span>
-                <input type="text" id="tx-amount" placeholder="0" required oninput="formatInputNominal(this)" class="w-full pl-9 pr-3 py-2.5 border border-outline rounded-xl font-mono-data text-sm focus:ring-1 focus:ring-primary outline-none font-bold bg-surface">
+                <input type="text" id="tx-amount" placeholder="0" required oninput="formatInputNominal(this)" class="w-full pl-9 pr-3 py-2.5 border border-outline-variant bg-surface dark:bg-slate-900 rounded-xl font-mono-data text-sm font-bold focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all shadow-2xs">
               </div>
             </div>
-            <div class="flex flex-col gap-1">
-              <label class="text-xs font-bold uppercase text-gray-500">Tipe Cashflow</label>
-              <select id="tx-cashflow" onchange="applyCashflowLogic()" required class="w-full px-3 py-2.5 border border-outline rounded-xl text-sm bg-white dark:bg-slate-900 text-on-surface focus:ring-1 focus:ring-primary outline-none font-semibold">
+            <div class="flex flex-col gap-1.5">
+              <label class="text-xs font-bold uppercase text-on-surface-variant flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm text-primary">swap_horiz</span>
+                <span>Tipe Cashflow</span>
+              </label>
+              <select id="tx-cashflow" onchange="applyCashflowLogic()" required class="w-full px-3 py-2.5 border border-outline-variant rounded-xl text-sm bg-surface dark:bg-slate-900 text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none font-semibold transition-all shadow-2xs cursor-pointer">
                 <option value="">-- Pilih Cashflow --</option>
                 <option value="Income">Income (Pemasukan)</option><option value="Spending">Spending (Pengeluaran)</option>
                 <option value="Invest / Savings">Invest / Savings</option><option value="Financial Goals">Financial Goals</option>
@@ -2084,18 +2102,60 @@
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2 border-t border-outline-variant">
-            <div id="box-category" class="flex flex-col gap-1"><label class="text-xs font-bold uppercase text-on-surface-variant">Category</label><select id="tx-category" class="w-full px-3 py-2.5 border border-outline rounded-xl text-sm bg-white dark:bg-slate-900 text-on-surface disabled:bg-gray-100 font-medium"><option value="- not applicable -">- not applicable -</option></select></div>
-            <div id="box-dari" class="flex flex-col gap-1"><label class="text-xs font-bold uppercase text-on-surface-variant">Dari Account</label><select id="tx-dari" class="w-full px-3 py-2.5 border border-outline rounded-xl text-sm bg-white dark:bg-slate-900 text-on-surface disabled:bg-gray-100 font-medium"><option value="- not applicable -">- not applicable -</option></select></div>
-            <div id="box-ke" class="flex flex-col gap-1"><label class="text-xs font-bold uppercase text-on-surface-variant">Ke Account</label><select id="tx-ke" class="w-full px-3 py-2.5 border border-outline rounded-xl text-sm bg-white dark:bg-slate-900 text-on-surface disabled:bg-gray-100 font-medium"><option value="- not applicable -">- not applicable -</option></select></div>
+            <div id="box-category" class="flex flex-col gap-1.5">
+              <label class="text-xs font-bold uppercase text-on-surface-variant flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm text-primary">category</span>
+                <span>Kategori</span>
+              </label>
+              <select id="tx-category" class="w-full px-3 py-2.5 border border-outline-variant rounded-xl text-sm bg-surface dark:bg-slate-900 text-on-surface disabled:bg-gray-100 dark:disabled:bg-slate-800 disabled:text-gray-400 font-medium focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all shadow-2xs cursor-pointer">
+                <option value="- not applicable -">- not applicable -</option>
+              </select>
+            </div>
+            <div id="box-dari" class="flex flex-col gap-1.5">
+              <label class="text-xs font-bold uppercase text-on-surface-variant flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm text-primary">outbox</span>
+                <span>Dari Akun</span>
+              </label>
+              <select id="tx-dari" class="w-full px-3 py-2.5 border border-outline-variant rounded-xl text-sm bg-surface dark:bg-slate-900 text-on-surface disabled:bg-gray-100 dark:disabled:bg-slate-800 disabled:text-gray-400 font-medium focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all shadow-2xs cursor-pointer">
+                <option value="- not applicable -">- not applicable -</option>
+              </select>
+            </div>
+            <div id="box-ke" class="flex flex-col gap-1.5">
+              <label class="text-xs font-bold uppercase text-on-surface-variant flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm text-primary">move_to_inbox</span>
+                <span>Ke Akun</span>
+              </label>
+              <select id="tx-ke" class="w-full px-3 py-2.5 border border-outline-variant rounded-xl text-sm bg-surface dark:bg-slate-900 text-on-surface disabled:bg-gray-100 dark:disabled:bg-slate-800 disabled:text-gray-400 font-medium focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all shadow-2xs cursor-pointer">
+                <option value="- not applicable -">- not applicable -</option>
+              </select>
+            </div>
           </div>
 
-          <div class="p-3 bg-surface-container dark:bg-slate-900 rounded-xl border border-outline-variant">
+          <div class="p-3.5 bg-surface-container-low dark:bg-slate-900/60 rounded-2xl border border-outline-variant">
             <div class="flex items-center justify-between cursor-pointer" onclick="document.getElementById('admin-fields').classList.toggle('hidden')">
-              <span class="text-xs font-bold text-primary flex items-center gap-1"><span class="material-symbols-outlined text-sm">add_circle</span> Biaya Admin / Transaksi</span><span class="material-symbols-outlined text-sm">expand_more</span>
+              <span class="text-xs font-bold text-primary flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm">add_circle</span>
+                <span>Biaya Admin / Transaksi</span>
+              </span>
+              <span class="material-symbols-outlined text-sm text-gray-400">expand_more</span>
             </div>
-            <div id="admin-fields" class="hidden grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-              <div><label class="text-[10px] uppercase font-bold text-on-surface-variant">Nominal Admin (Rp)</label><input type="text" id="tx-admin-fee" placeholder="0" oninput="formatInputNominal(this)" class="w-full p-2 border border-outline rounded-lg text-sm font-mono-data bg-surface"></div>
-              <div><label class="text-[10px] uppercase font-bold text-on-surface-variant">Potong Dari Akun</label><select id="tx-admin-account" class="w-full p-2 border border-outline rounded-lg text-sm bg-surface"><option value="">Sama dengan Dari Account</option></select></div>
+            <div id="admin-fields" class="hidden grid grid-cols-1 md:grid-cols-2 gap-3 mt-3 pt-2.5 border-t border-outline-variant/30">
+              <div class="flex flex-col gap-1">
+                <label class="text-[10px] uppercase font-bold text-on-surface-variant flex items-center gap-1 mb-1">
+                  <span class="material-symbols-outlined text-xs text-primary">price_change</span>
+                  <span>Nominal Admin (Rp)</span>
+                </label>
+                <input type="text" id="tx-admin-fee" placeholder="0" oninput="formatInputNominal(this)" class="w-full px-3 py-2 border border-outline-variant rounded-xl text-sm font-mono-data bg-surface dark:bg-slate-800 focus:ring-1 focus:ring-primary outline-none">
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="text-[10px] uppercase font-bold text-on-surface-variant flex items-center gap-1 mb-1">
+                  <span class="material-symbols-outlined text-xs text-primary">account_balance_wallet</span>
+                  <span>Potong Dari Akun</span>
+                </label>
+                <select id="tx-admin-account" class="w-full px-3 py-2 border border-outline-variant rounded-xl text-sm bg-surface dark:bg-slate-800 text-on-surface focus:ring-1 focus:ring-primary outline-none cursor-pointer">
+                  <option value="">Sama dengan Dari Account</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -2125,8 +2185,14 @@
           </div>
 
           <div class="flex items-center gap-3 pt-3 border-t border-outline-variant">
-            <button type="submit" id="btn-submit" class="flex-1 bg-primary hover:bg-primary-container text-white py-3 rounded-xl font-bold text-sm shadow">Simpan Transaksi</button>
-            <button type="reset" class="px-5 py-3 border border-outline-variant rounded-xl text-sm">Batal</button>
+            <button type="submit" id="btn-submit" class="flex-1 bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-600 hover:from-blue-700 hover:via-indigo-700 hover:to-sky-700 text-white py-3.5 px-6 rounded-2xl font-bold text-sm shadow-md hover:shadow-lg shadow-indigo-500/25 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer border border-white/15">
+              <span class="material-symbols-outlined text-lg">check_circle</span>
+              <span class="tracking-wide">Simpan Transaksi</span>
+            </button>
+            <button type="reset" class="px-5 py-3.5 border border-outline-variant bg-surface-container-low hover:bg-surface-container text-gray-500 hover:text-error rounded-2xl text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer">
+              <span class="material-symbols-outlined text-sm">restart_alt</span>
+              <span>Reset</span>
+            </button>
           </div>
         </form>
       </section>
@@ -2147,13 +2213,16 @@
           </div>
         </div>
 
-        <!-- FILTER TRANSAKSI TERBARU -->
-        <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border shadow-sm space-y-3 text-xs">
+        <!-- FILTER TRANSAKSI TERBARU (SIMPEL, ELEGAN & PROFESIONAL) -->
+        <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-outline-variant shadow-sm space-y-3 text-xs">
           <!-- Baris 1: Filter Waktu & Kontainer Input Dinamis -->
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label class="text-[10px] font-bold uppercase text-gray-500">Mode Filter Waktu</label>
-              <select id="rep-filter-mode" onchange="toggleFilterModeInputs()" class="w-full p-2 border rounded-xl font-bold bg-surface text-on-surface outline-none cursor-pointer">
+              <label class="text-[10px] font-bold uppercase text-on-surface-variant flex items-center gap-1 mb-1">
+                <span class="material-symbols-outlined text-xs text-primary">calendar_today</span>
+                <span>Mode Waktu</span>
+              </label>
+              <select id="rep-filter-mode" onchange="toggleFilterModeInputs()" class="w-full px-3 py-2 bg-surface-container-low dark:bg-slate-700/60 border border-outline-variant hover:border-primary/50 rounded-xl font-bold text-xs text-on-surface outline-none focus:ring-1 focus:ring-primary shadow-2xs cursor-pointer transition-all">
                 <option value="current_month" selected>Bulan Ini (Default)</option>
                 <option value="exact_month">Pilih Bulan Tertentu</option>
                 <option value="date_range">Rentang Tanggal</option>
@@ -2166,22 +2235,31 @@
           </div>
 
           <!-- Baris 2: Filter Cashflow, Kategori Spending/Income, & Akun -->
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-outline-variant/40">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2.5 border-t border-outline-variant/40">
             <div>
-              <label class="text-[10px] font-bold uppercase text-gray-500">Filter Cashflow</label>
-              <select id="rep-filter-cashflow" onchange="onCashflowFilterChange()" class="w-full p-2 border rounded-xl font-bold bg-surface text-on-surface outline-none cursor-pointer">
+              <label class="text-[10px] font-bold uppercase text-on-surface-variant flex items-center gap-1 mb-1">
+                <span class="material-symbols-outlined text-xs text-primary">swap_horiz</span>
+                <span>Cashflow</span>
+              </label>
+              <select id="rep-filter-cashflow" onchange="onCashflowFilterChange()" class="w-full px-3 py-2 bg-surface-container-low dark:bg-slate-700/60 border border-outline-variant hover:border-primary/50 rounded-xl font-bold text-xs text-on-surface outline-none focus:ring-1 focus:ring-primary shadow-2xs cursor-pointer transition-all">
                 <option value="all">Semua Cashflow</option>
               </select>
             </div>
             <div>
-              <label class="text-[10px] font-bold uppercase text-gray-500">Filter Kategori (Spending/Income)</label>
-              <select id="rep-filter-category" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-bold bg-surface text-on-surface outline-none cursor-pointer">
+              <label class="text-[10px] font-bold uppercase text-on-surface-variant flex items-center gap-1 mb-1">
+                <span class="material-symbols-outlined text-xs text-primary">category</span>
+                <span>Kategori</span>
+              </label>
+              <select id="rep-filter-category" onchange="renderHistoryTable()" class="w-full px-3 py-2 bg-surface-container-low dark:bg-slate-700/60 border border-outline-variant hover:border-primary/50 rounded-xl font-bold text-xs text-on-surface outline-none focus:ring-1 focus:ring-primary shadow-2xs cursor-pointer transition-all">
                 <option value="all">Semua Kategori</option>
               </select>
             </div>
             <div>
-              <label class="text-[10px] font-bold uppercase text-gray-500">Filter Akun</label>
-              <select id="rep-filter-account" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-bold bg-surface text-on-surface outline-none cursor-pointer">
+              <label class="text-[10px] font-bold uppercase text-on-surface-variant flex items-center gap-1 mb-1">
+                <span class="material-symbols-outlined text-xs text-primary">account_balance_wallet</span>
+                <span>Akun</span>
+              </label>
+              <select id="rep-filter-account" onchange="renderHistoryTable()" class="w-full px-3 py-2 bg-surface-container-low dark:bg-slate-700/60 border border-outline-variant hover:border-primary/50 rounded-xl font-bold text-xs text-on-surface outline-none focus:ring-1 focus:ring-primary shadow-2xs cursor-pointer transition-all">
                 <option value="all">Semua Akun</option>
               </select>
             </div>
@@ -10573,30 +10651,33 @@ function formatReadableSheets(ss, parsed) {
             </div>
           ` : ''}
 
-          <!-- Baris Angka Utama & Progress Bar (Memanjang Memenuhi Sisa Space) -->
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-6 pt-0.5">
-            <div class="flex items-baseline gap-1.5 shrink-0">
-              <span class="text-2xl sm:text-3xl md:text-4xl font-black font-mono-data text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-white to-blue-200">
-                ${isMasked ? '•••' : m}
-              </span>
-              <span class="text-sm font-bold text-slate-200">Bulan</span>
-              <span class="text-[11px] text-slate-400 font-medium">(~${isMasked ? '•••' : Math.round(m * 30)} Hari)</span>
+          <!-- Baris Angka Utama & Progress Bar (Memanjang Penuh Mengisi Seluruh Sisa Space) -->
+          <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 lg:gap-8 pt-0.5">
+            <!-- Sisi Kiri: Angka Utama & Keterangan Saran Ringkas -->
+            <div class="shrink-0 space-y-0.5 sm:max-w-[240px] md:max-w-[280px]">
+              <div class="flex items-baseline gap-1.5">
+                <span class="text-2xl sm:text-3xl md:text-4xl font-black font-mono-data text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-white to-blue-200">
+                  ${isMasked ? '•••' : m}
+                </span>
+                <span class="text-sm font-bold text-slate-200">Bulan</span>
+                <span class="text-[11px] text-slate-400 font-medium">(~${isMasked ? '•••' : Math.round(m * 30)} Hari)</span>
+              </div>
+              <p class="text-[10px] text-slate-300 leading-tight italic">${advice}</p>
             </div>
 
-            <div class="flex-1 w-full space-y-1.5">
+            <!-- Sisi Kanan: Bar Timeline 0 - 6+ Bulan (Memanjang Penuh Mengisi Seluruh Sisa Space) -->
+            <div class="flex-1 min-w-0 w-full space-y-1.5">
               <div class="flex justify-between text-[8px] sm:text-[9px] text-slate-400 font-bold uppercase tracking-wider">
                 <span>0 Bln</span>
                 <span>1 Bln</span>
                 <span>3 Bln</span>
                 <span>6+ Bln (Ideal)</span>
               </div>
-              <div class="w-full bg-slate-800/80 h-2.5 rounded-full overflow-hidden border border-white/10 p-0.5 shadow-inner">
+              <div class="w-full bg-slate-800/80 h-3 rounded-full overflow-hidden border border-white/10 p-0.5 shadow-inner">
                 <div class="h-full rounded-full bg-gradient-to-r ${barGradient} transition-all duration-700 shadow-xs" style="width: ${progressPct}%"></div>
               </div>
             </div>
           </div>
-          
-          <p class="text-[10px] text-slate-300 leading-tight italic truncate sm:whitespace-normal">${advice}</p>
 
           <!-- 3 Metrik Inti: BERSEBELAHAN (3 Kolom) di Mobile & Desktop -->
           <div class="grid grid-cols-3 gap-1.5 sm:gap-3 pt-2 border-t border-white/10">
@@ -11984,49 +12065,64 @@ function formatReadableSheets(ss, parsed) {
         let months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
         let monthName = months[now.getMonth()];
         container.innerHTML = `
-          <div class="p-2 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-xl text-primary dark:text-blue-300 font-bold flex items-center gap-2">
+          <div class="px-3 py-2 bg-primary/10 dark:bg-blue-950/40 border border-primary/20 dark:border-blue-800 rounded-xl text-primary dark:text-blue-300 font-bold flex items-center gap-2 text-xs">
             <span class="material-symbols-outlined text-base">calendar_month</span>
-            <span>Menampilkan Bulan Berjalan: <b>${monthName} ${now.getFullYear()}</b></span>
+            <span>Bulan Berjalan: <b>${monthName} ${now.getFullYear()}</b></span>
           </div>
         `;
       } else if (mode === 'date_range') { 
         container.innerHTML = `
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="text-[10px] font-bold uppercase text-gray-500">Dari Tanggal</label>
-              <input type="date" id="rep-date-start" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-medium bg-surface text-on-surface">
+              <label class="text-[10px] font-bold uppercase text-on-surface-variant flex items-center gap-1 mb-1">
+                <span class="material-symbols-outlined text-xs text-primary">start</span>
+                <span>Dari Tanggal</span>
+              </label>
+              <input type="date" id="rep-date-start" onchange="renderHistoryTable()" class="w-full px-3 py-1.5 border border-outline-variant rounded-xl font-bold text-xs bg-surface-container-low dark:bg-slate-700/60 text-on-surface outline-none focus:ring-1 focus:ring-primary shadow-2xs">
             </div>
             <div>
-              <label class="text-[10px] font-bold uppercase text-gray-500">Sampai Tanggal</label>
-              <input type="date" id="rep-date-end" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-medium bg-surface text-on-surface">
+              <label class="text-[10px] font-bold uppercase text-on-surface-variant flex items-center gap-1 mb-1">
+                <span class="material-symbols-outlined text-xs text-primary">event</span>
+                <span>Sampai Tanggal</span>
+              </label>
+              <input type="date" id="rep-date-end" onchange="renderHistoryTable()" class="w-full px-3 py-1.5 border border-outline-variant rounded-xl font-bold text-xs bg-surface-container-low dark:bg-slate-700/60 text-on-surface outline-none focus:ring-1 focus:ring-primary shadow-2xs">
             </div>
           </div>
         `; 
       } else if (mode === 'exact_date') { 
         container.innerHTML = `
           <div>
-            <label class="text-[10px] font-bold uppercase text-gray-500">Pilih Tanggal Spesifik</label>
-            <input type="date" id="rep-exact-date" value="${curDateStr}" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-medium bg-surface text-on-surface">
+            <label class="text-[10px] font-bold uppercase text-on-surface-variant flex items-center gap-1 mb-1">
+              <span class="material-symbols-outlined text-xs text-primary">event_available</span>
+              <span>Pilih Tanggal Spesifik</span>
+            </label>
+            <input type="date" id="rep-exact-date" value="${curDateStr}" onchange="renderHistoryTable()" class="w-full px-3 py-1.5 border border-outline-variant rounded-xl font-bold text-xs bg-surface-container-low dark:bg-slate-700/60 text-on-surface outline-none focus:ring-1 focus:ring-primary shadow-2xs">
           </div>
         `; 
       } else if (mode === 'exact_month') { 
         container.innerHTML = `
           <div>
-            <label class="text-[10px] font-bold uppercase text-gray-500">Pilih Bulan & Tahun</label>
-            <input type="month" id="rep-exact-month" value="${curMonthStr}" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-medium bg-surface text-on-surface">
+            <label class="text-[10px] font-bold uppercase text-on-surface-variant flex items-center gap-1 mb-1">
+              <span class="material-symbols-outlined text-xs text-primary">calendar_month</span>
+              <span>Pilih Bulan & Tahun</span>
+            </label>
+            <input type="month" id="rep-exact-month" value="${curMonthStr}" onchange="renderHistoryTable()" class="w-full px-3 py-1.5 border border-outline-variant rounded-xl font-bold text-xs bg-surface-container-low dark:bg-slate-700/60 text-on-surface outline-none focus:ring-1 focus:ring-primary shadow-2xs">
           </div>
         `; 
       } else if (mode === 'exact_year') { 
         container.innerHTML = `
           <div>
-            <label class="text-[10px] font-bold uppercase text-gray-500">Pilih Tahun</label>
-            <input type="number" id="rep-exact-year" value="${now.getFullYear()}" onchange="renderHistoryTable()" class="w-full p-2 border rounded-xl font-medium bg-surface text-on-surface">
+            <label class="text-[10px] font-bold uppercase text-on-surface-variant flex items-center gap-1 mb-1">
+              <span class="material-symbols-outlined text-xs text-primary">date_range</span>
+              <span>Pilih Tahun</span>
+            </label>
+            <input type="number" id="rep-exact-year" value="${now.getFullYear()}" onchange="renderHistoryTable()" class="w-full px-3 py-1.5 border border-outline-variant rounded-xl font-bold text-xs bg-surface-container-low dark:bg-slate-700/60 text-on-surface outline-none focus:ring-1 focus:ring-primary shadow-2xs">
           </div>
         `; 
       } else { 
         container.innerHTML = `
-          <div class="p-2 bg-gray-100 dark:bg-slate-900 border border-outline-variant/60 rounded-xl text-gray-600 dark:text-gray-300 font-bold flex items-center gap-2">
-            <span class="material-symbols-outlined text-base">all_inclusive</span>
+          <div class="px-3 py-2 bg-surface-container dark:bg-slate-900 border border-outline-variant/60 rounded-xl text-on-surface-variant font-bold flex items-center gap-2 text-xs">
+            <span class="material-symbols-outlined text-base text-primary">all_inclusive</span>
             <span>Menampilkan seluruh riwayat transaksi tanpa batasan waktu</span>
           </div>
         `; 
@@ -12827,7 +12923,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v6.14';
+              let currentCacheInApp = 'keuanganku-pwa-v6.16';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
