@@ -1776,20 +1776,26 @@
         <!-- STAT MINI HIGHLIGHTS (KOTAK RINGKASAN TREN) -->
         <div id="wallet-history-stats" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 text-xs"></div>
 
-        <!-- TOOLBAR KONTROL 1 BARIS: FILTER AKUN, DROPDOWN PERIODE, TOTAL GABUNGAN -->
+        <!-- TOOLBAR KONTROL 1 BARIS: TOMBOL FILTER, DROPDOWN AKUN, DROPDOWN PERIODE, TOTAL GABUNGAN -->
         <div class="space-y-2">
           <div class="flex items-center gap-1.5 sm:gap-2">
-            <!-- 1. Tombol Filter Akun / Wallet (Kompak dengan Ikon) -->
-            <button type="button" onclick="toggleWalletHistoryChipsDrawer()" id="btn-toggle-wallet-chips" class="flex-1 sm:flex-initial px-2.5 py-1.5 rounded-xl border border-outline-variant bg-surface-container-low hover:bg-surface-container text-xs font-bold text-on-surface flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-xs cursor-pointer truncate" title="Pilih garis akun yang ditampilkan di grafik">
-              <span class="material-symbols-outlined text-sm text-primary flex-shrink-0">tune</span>
-              <span class="text-[11px] sm:text-xs">Akun</span>
-              <span id="wallet-chips-count-badge" class="px-1.5 py-0.2 rounded-full text-[9px] bg-primary/10 text-primary font-bold flex-shrink-0"></span>
-              <span id="wallet-chips-chevron" class="material-symbols-outlined text-xs text-gray-400 transition-transform flex-shrink-0">expand_more</span>
+            <!-- 1. Tombol Filter (Buka/Tutup Drawer Chip Manual) -->
+            <button type="button" onclick="toggleWalletHistoryChipsDrawer()" id="btn-toggle-wallet-chips" class="p-2 sm:px-2.5 sm:py-1.5 rounded-xl border border-outline-variant bg-surface-container-low hover:bg-surface-container text-xs font-bold text-on-surface flex items-center justify-center gap-1 transition-all active:scale-95 shadow-xs cursor-pointer flex-shrink-0" title="Buka / Tutup Filter Chip Manual">
+              <span class="material-symbols-outlined text-base sm:text-lg text-primary">tune</span>
+              <span id="wallet-chips-count-badge" class="px-1.5 py-0.2 rounded-full text-[9px] bg-primary/10 text-primary font-bold hidden sm:inline-block"></span>
             </button>
 
-            <!-- 2. Dropdown Periode (Kompak dengan Ikon Kalender) -->
-            <div class="flex-1 sm:flex-initial flex items-center bg-surface-container-low dark:bg-slate-700/60 px-2 py-1.5 rounded-xl border border-outline-variant text-xs font-bold min-w-0 shadow-xs">
-              <span class="material-symbols-outlined text-sm text-secondary flex-shrink-0 mr-1">calendar_today</span>
+            <!-- 2. Dropdown Filter Akun & Wallet -->
+            <div class="flex-1 min-w-0 flex items-center bg-surface-container-low dark:bg-slate-700/60 px-2 py-1.5 rounded-xl border border-outline-variant shadow-xs">
+              <span class="material-symbols-outlined text-sm sm:text-base text-primary mr-1 flex-shrink-0">account_balance_wallet</span>
+              <select id="wallet-history-account-select" onchange="onWalletHistoryAccountSelectChange(this.value)" class="w-full bg-transparent text-[11px] sm:text-xs font-bold text-on-surface outline-none cursor-pointer truncate">
+                <!-- Diisi otomatis oleh JavaScript -->
+              </select>
+            </div>
+
+            <!-- 3. Dropdown Periode (Kompak dengan Ikon Kalender) -->
+            <div class="flex-1 min-w-0 flex items-center bg-surface-container-low dark:bg-slate-700/60 px-2 py-1.5 rounded-xl border border-outline-variant text-xs font-bold shadow-xs">
+              <span class="material-symbols-outlined text-sm sm:text-base text-secondary mr-1 flex-shrink-0">calendar_today</span>
               <select id="wallet-history-range" onchange="onWalletHistoryRangeChange()" class="w-full bg-transparent text-[11px] sm:text-xs font-bold text-on-surface outline-none cursor-pointer truncate">
                 <option value="30" selected>30 Hari</option>
                 <option value="month">Bulan Ini</option>
@@ -1805,13 +1811,11 @@
               </select>
             </div>
 
-            <!-- 3. Centang Total Gabungan (Kompak dengan Ikon) -->
-            <label class="flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-outline-variant bg-surface-container-low hover:bg-surface-container cursor-pointer text-xs font-bold text-on-surface select-none transition-all shadow-xs" title="Tampilkan / sembunyikan kurva total gabungan">
+            <!-- 4. Tombol Centang Total Gabungan (Kompak dengan Ikon) -->
+            <label class="flex-shrink-0 flex items-center justify-center p-2 sm:px-2.5 sm:py-1.5 rounded-xl border border-outline-variant bg-surface-container-low hover:bg-surface-container cursor-pointer transition-all shadow-xs gap-1" title="Tampilkan / Sembunyikan Kurva Total Gabungan">
               <input type="checkbox" id="wallet-history-toggle-total" onchange="renderWalletHistoryChart()" class="rounded text-primary focus:ring-0 w-3.5 h-3.5 cursor-pointer">
-              <span class="text-[11px] flex items-center gap-1">
-                <span class="material-symbols-outlined text-sm text-sky-500">stacked_line_chart</span>
-                <span>Total</span>
-              </span>
+              <span class="material-symbols-outlined text-base sm:text-lg text-sky-500">stacked_line_chart</span>
+              <span class="hidden sm:inline text-[11px] font-bold">Total</span>
             </label>
           </div>
 
@@ -1820,9 +1824,11 @@
             <div class="flex items-center justify-between text-[11px] pb-1 border-b border-outline-variant/30">
               <div class="flex items-center gap-2">
                 <span class="text-[10px] font-bold text-gray-400">Pilih garis di grafik:</span>
-                <button type="button" onclick="toggleAllWalletHistoryLines(true)" class="text-[10px] font-bold text-primary hover:underline cursor-pointer">Semua</button>
-                <span class="text-gray-300 dark:text-gray-600 text-[10px]">•</span>
-                <button type="button" onclick="toggleAllWalletHistoryLines(false)" class="text-[10px] font-bold text-gray-400 hover:text-error hover:underline cursor-pointer">Sembunyikan</button>
+                <!-- Satu Tombol Toggle Pintar (Tampilkan / Sembunyikan Semua) -->
+                <button type="button" id="btn-smart-toggle-all-lines" onclick="toggleAllWalletHistoryLinesSmart()" class="text-[10px] font-bold flex items-center gap-1 px-2 py-0.5 rounded-lg border border-outline-variant bg-surface-container-low hover:bg-surface-container text-gray-500 hover:text-error transition-all active:scale-95 cursor-pointer">
+                  <span id="icon-smart-toggle-all" class="material-symbols-outlined text-xs">visibility_off</span>
+                  <span id="text-smart-toggle-all">Sembunyikan Semua</span>
+                </button>
               </div>
               <button type="button" onclick="toggleWalletHistoryChipsDrawer()" class="text-[10px] text-gray-400 hover:text-on-surface font-bold flex items-center gap-0.5 cursor-pointer">
                 <span>Tutup</span>
@@ -10011,6 +10017,30 @@ function formatReadableSheets(ss, parsed) {
         });
       });
 
+      // Populate Dropdown Filter Akun & Wallet
+      let accSelect = document.getElementById('wallet-history-account-select');
+      if (accSelect) {
+        let currentVal = accSelect.value || '__ALL__';
+        accSelect.innerHTML = `
+          <option value="__ALL__">Semua Akun (${accounts.length})</option>
+          <option value="__TOTAL__">Total Gabungan</option>
+        `;
+        let optGroup = document.createElement('optgroup');
+        optGroup.label = 'Pilih Satu Akun:';
+        accounts.forEach(acc => {
+          let opt = document.createElement('option');
+          opt.value = acc;
+          opt.textContent = acc;
+          optGroup.appendChild(opt);
+        });
+        accSelect.appendChild(optGroup);
+        if (Array.from(accSelect.options).some(o => o.value === currentVal)) {
+          accSelect.value = currentVal;
+        } else {
+          accSelect.value = '__ALL__';
+        }
+      }
+
       // 7. Render Interactive Chips (Pilih Manual Kompak & Rapi)
       if (chipsEl) {
         chipsEl.innerHTML = '';
@@ -10159,6 +10189,18 @@ function formatReadableSheets(ss, parsed) {
       renderWalletHistoryChartChipsOnly();
     }
 
+    function toggleAllWalletHistoryLinesSmart() {
+      if (!walletHistoryLineChart) return;
+      let anyVisible = walletHistoryLineChart.data.datasets.some((ds, idx) => {
+        let meta = walletHistoryLineChart.getDatasetMeta(idx);
+        return meta ? !meta.hidden : !ds.hidden;
+      });
+      // Jika ada yang tampil -> sembunyikan semua. Jika semua sembunyi -> tampilkan semua.
+      let showAll = !anyVisible;
+      toggleAllWalletHistoryLines(showAll);
+    }
+    window.toggleAllWalletHistoryLinesSmart = toggleAllWalletHistoryLinesSmart;
+
     function onWalletHistoryAccountSelectChange(val) {
       if (!walletHistoryLineChart) return;
       if (val === '__ALL__') {
@@ -10247,6 +10289,45 @@ function formatReadableSheets(ss, parsed) {
       let badge = document.getElementById('wallet-chips-count-badge');
       if (badge) {
         badge.textContent = `${visibleCount}/${totalDatasets}`;
+      }
+
+      // Update Tampilan Tombol Tunggal Tampilkan/Sembunyikan Semua
+      let anyVisible = visibleCount > 0;
+      let iconEl = document.getElementById('icon-smart-toggle-all');
+      let textEl = document.getElementById('text-smart-toggle-all');
+      let btnSmart = document.getElementById('btn-smart-toggle-all-lines');
+      if (anyVisible) {
+        if (iconEl) iconEl.textContent = 'visibility_off';
+        if (textEl) textEl.textContent = 'Sembunyikan Semua';
+        if (btnSmart) {
+          btnSmart.className = "text-[10px] font-bold flex items-center gap-1 px-2 py-0.5 rounded-lg border border-outline-variant bg-surface-container-low hover:bg-surface-container text-gray-500 hover:text-error transition-all active:scale-95 cursor-pointer";
+        }
+      } else {
+        if (iconEl) iconEl.textContent = 'visibility';
+        if (textEl) textEl.textContent = 'Tampilkan Semua';
+        if (btnSmart) {
+          btnSmart.className = "text-[10px] font-bold flex items-center gap-1 px-2 py-0.5 rounded-lg border border-primary/30 bg-primary/10 text-primary transition-all active:scale-95 cursor-pointer";
+        }
+      }
+
+      // Sinkronkan pilihan ke Dropdown Filter Akun jika sesuai
+      let accSelect = document.getElementById('wallet-history-account-select');
+      if (accSelect) {
+        if (visibleCount === totalDatasets) {
+          accSelect.value = '__ALL__';
+        } else if (visibleCount === 1) {
+          let visibleDs = walletHistoryLineChart.data.datasets.find((ds, idx) => {
+            let meta = walletHistoryLineChart.getDatasetMeta(idx);
+            return meta ? !meta.hidden : !ds.hidden;
+          });
+          if (visibleDs) {
+            if (visibleDs.label === 'Total Saldo Gabungan') {
+              accSelect.value = '__TOTAL__';
+            } else if (Array.from(accSelect.options).some(o => o.value === visibleDs.label)) {
+              accSelect.value = visibleDs.label;
+            }
+          }
+        }
       }
     }
 
@@ -12635,7 +12716,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v6.9';
+              let currentCacheInApp = 'keuanganku-pwa-v6.10';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
