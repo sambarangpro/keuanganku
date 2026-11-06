@@ -1666,56 +1666,19 @@
 
       <!-- SECTION DIAGRAM PERGERAKAN SALDO SEMUA REKENING / WALLET (1 BULAN) -->
       <section class="w-full bg-white dark:bg-slate-800 border border-outline-variant rounded-3xl p-5 sm:p-7 shadow-sm space-y-4">
-        <!-- HEADER DIAGRAM (RINGKAS & TO THE POINT) -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-outline-variant/50">
-          <div class="flex items-center justify-between gap-2">
-            <div class="flex items-center gap-2.5 min-w-0">
-              <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-500 text-white flex items-center justify-center shadow-sm flex-shrink-0">
-                <span class="material-symbols-outlined text-lg sm:text-xl">show_chart</span>
-              </div>
-              <div class="min-w-0">
-                <div class="flex items-center gap-2">
-                  <h3 class="font-title-sm font-bold text-on-surface text-sm sm:text-base truncate">Tren Saldo Rekening</h3>
-                  <span id="wallet-history-badge" class="hidden sm:inline-block px-2 py-0.5 text-[9px] font-extrabold uppercase rounded-full bg-blue-100 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">30 Hari</span>
-                </div>
-                <p class="hidden sm:block text-[11px] text-gray-500 truncate">Pantau dinamika fluktuasi saldo seluruh akun bank & e-wallet</p>
-              </div>
+        <!-- HEADER DIAGRAM (MINIMAL & ELEGAN) -->
+        <div class="flex items-center justify-between pb-2 border-b border-outline-variant/40">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-500 text-white flex items-center justify-center shadow-sm flex-shrink-0">
+              <span class="material-symbols-outlined text-lg sm:text-xl">show_chart</span>
             </div>
-
-            <!-- Tombol Refresh di Mobile -->
-            <button type="button" onclick="renderWalletHistoryChart()" title="Segarkan Diagram" class="sm:hidden w-7 h-7 rounded-lg border border-outline-variant bg-surface text-gray-500 hover:text-primary flex items-center justify-center transition-all active:scale-90 flex-shrink-0">
-              <span class="material-symbols-outlined text-sm">refresh</span>
-            </button>
+            <h3 class="font-title-sm font-bold text-on-surface text-sm sm:text-base">Tren Saldo Rekening</h3>
+            <span id="wallet-history-badge" class="hidden"></span>
           </div>
 
-          <!-- KONTROL FILTER & WAKTU -->
-          <div class="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
-            <div class="flex-1 sm:flex-initial flex items-center bg-surface-container-highest dark:bg-slate-700/60 rounded-xl p-0.5 border border-outline-variant min-w-0">
-              <select id="wallet-history-range" onchange="onWalletHistoryRangeChange()" class="w-full sm:w-auto bg-transparent text-[11px] sm:text-xs font-bold text-on-surface px-2 py-1 outline-none cursor-pointer truncate">
-                <option value="30" selected>30 Hari Terakhir (1 Bulan)</option>
-                <option value="month">Bulan Ini Berjalan</option>
-                <option value="prev_month">Bulan Lalu Penuh</option>
-                <option value="2months">Antara 2 Bulan</option>
-                <option value="3months">Antara 3 Bulan (Kuartal)</option>
-                <option value="6months">Antara 6 Bulan (Semester)</option>
-                <option value="ytd">Tahun Ini (YTD)</option>
-                <option value="custom_range">📅 Kustom Rentang...</option>
-                <option value="custom_single">📅 Pilih 1 Bulan...</option>
-                <option value="14">14 Hari Terakhir</option>
-                <option value="7">7 Hari Terakhir</option>
-              </select>
-            </div>
-            
-            <label class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-outline-variant bg-surface hover:bg-surface-container-high cursor-pointer text-xs font-medium text-on-surface select-none transition-all flex-shrink-0">
-              <input type="checkbox" id="wallet-history-toggle-total" onchange="renderWalletHistoryChart()" class="rounded text-primary focus:ring-0 w-3.5 h-3.5">
-              <span class="text-[10px] sm:text-[11px] font-bold">Total Gabungan</span>
-            </label>
-
-            <!-- Tombol Refresh di Layar Lebar -->
-            <button type="button" onclick="renderWalletHistoryChart()" title="Segarkan Diagram" class="hidden sm:flex w-8 h-8 rounded-xl border border-outline-variant bg-surface hover:bg-surface-container-high text-gray-500 hover:text-primary items-center justify-center transition-all active:scale-90 flex-shrink-0">
-              <span class="material-symbols-outlined text-base">refresh</span>
-            </button>
-          </div>
+          <button type="button" onclick="renderWalletHistoryChart()" title="Segarkan Diagram" class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg border border-outline-variant bg-surface-container-low hover:bg-surface-container text-gray-500 hover:text-primary flex items-center justify-center transition-all active:scale-90 cursor-pointer flex-shrink-0">
+            <span class="material-symbols-outlined text-sm sm:text-base">refresh</span>
+          </button>
         </div>
 
         <!-- SUB-FILTER BAR: RENTANG ANTARA BULAN (KUSTOM DARI BULAN X S/D BULAN Y) -->
@@ -1813,28 +1776,54 @@
         <!-- STAT MINI HIGHLIGHTS (KOTAK RINGKASAN TREN) -->
         <div id="wallet-history-stats" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 text-xs"></div>
 
-        <!-- KONTROL FILTER AKUN / WALLET (COLLAPSIBLE DRAWER - HEMAT RUANG) -->
+        <!-- TOOLBAR KONTROL 1 BARIS: FILTER AKUN, DROPDOWN PERIODE, TOTAL GABUNGAN -->
         <div class="space-y-2">
-          <div class="flex items-center justify-between gap-2">
-            <button type="button" onclick="toggleWalletHistoryChipsDrawer()" id="btn-toggle-wallet-chips" class="px-3 py-1.5 rounded-xl border border-outline-variant bg-surface-container-low hover:bg-surface-container text-xs font-bold text-on-surface flex items-center gap-2 transition-all active:scale-95 shadow-xs cursor-pointer">
-              <span class="material-symbols-outlined text-sm text-primary">tune</span>
-              <span>Filter Akun / Wallet</span>
-              <span id="wallet-chips-count-badge" class="px-1.5 py-0.5 rounded-full text-[10px] bg-primary/10 text-primary font-bold"></span>
-              <span id="wallet-chips-chevron" class="material-symbols-outlined text-xs text-gray-400 transition-transform">expand_more</span>
+          <div class="flex items-center gap-1.5 sm:gap-2">
+            <!-- 1. Tombol Filter Akun / Wallet (Kompak dengan Ikon) -->
+            <button type="button" onclick="toggleWalletHistoryChipsDrawer()" id="btn-toggle-wallet-chips" class="flex-1 sm:flex-initial px-2.5 py-1.5 rounded-xl border border-outline-variant bg-surface-container-low hover:bg-surface-container text-xs font-bold text-on-surface flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-xs cursor-pointer truncate" title="Pilih garis akun yang ditampilkan di grafik">
+              <span class="material-symbols-outlined text-sm text-primary flex-shrink-0">tune</span>
+              <span class="text-[11px] sm:text-xs">Akun</span>
+              <span id="wallet-chips-count-badge" class="px-1.5 py-0.2 rounded-full text-[9px] bg-primary/10 text-primary font-bold flex-shrink-0"></span>
+              <span id="wallet-chips-chevron" class="material-symbols-outlined text-xs text-gray-400 transition-transform flex-shrink-0">expand_more</span>
             </button>
 
-            <!-- Shortcut Tampilkan / Sembunyikan Semua -->
-            <div class="flex items-center gap-2 text-[10px]">
-              <button type="button" onclick="toggleAllWalletHistoryLines(true)" class="font-bold text-primary hover:underline cursor-pointer">Tampilkan Semua</button>
-              <span class="text-gray-300 dark:text-gray-600">|</span>
-              <button type="button" onclick="toggleAllWalletHistoryLines(false)" class="font-bold text-gray-400 hover:text-error hover:underline cursor-pointer">Sembunyikan Semua</button>
+            <!-- 2. Dropdown Periode (Kompak dengan Ikon Kalender) -->
+            <div class="flex-1 sm:flex-initial flex items-center bg-surface-container-low dark:bg-slate-700/60 px-2 py-1.5 rounded-xl border border-outline-variant text-xs font-bold min-w-0 shadow-xs">
+              <span class="material-symbols-outlined text-sm text-secondary flex-shrink-0 mr-1">calendar_today</span>
+              <select id="wallet-history-range" onchange="onWalletHistoryRangeChange()" class="w-full bg-transparent text-[11px] sm:text-xs font-bold text-on-surface outline-none cursor-pointer truncate">
+                <option value="30" selected>30 Hari</option>
+                <option value="month">Bulan Ini</option>
+                <option value="prev_month">Bulan Lalu</option>
+                <option value="2months">2 Bulan</option>
+                <option value="3months">3 Bulan</option>
+                <option value="6months">6 Bulan</option>
+                <option value="ytd">Tahun Ini</option>
+                <option value="custom_range">📅 Kustom...</option>
+                <option value="custom_single">📅 1 Bulan...</option>
+                <option value="14">14 Hari</option>
+                <option value="7">7 Hari</option>
+              </select>
             </div>
+
+            <!-- 3. Centang Total Gabungan (Kompak dengan Ikon) -->
+            <label class="flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-outline-variant bg-surface-container-low hover:bg-surface-container cursor-pointer text-xs font-bold text-on-surface select-none transition-all shadow-xs" title="Tampilkan / sembunyikan kurva total gabungan">
+              <input type="checkbox" id="wallet-history-toggle-total" onchange="renderWalletHistoryChart()" class="rounded text-primary focus:ring-0 w-3.5 h-3.5 cursor-pointer">
+              <span class="text-[11px] flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm text-sky-500">stacked_line_chart</span>
+                <span>Total</span>
+              </span>
+            </label>
           </div>
 
-          <!-- PANEL DRAWER CHIPS (TERSEMBUNYI SECARA DEFAULT AGAR TIDAK MEMAKAN RUANG) -->
+          <!-- PANEL DRAWER CHIPS MANUAL (TERSEMBUNYI SECARA DEFAULT) -->
           <div id="wallet-history-chips-drawer" class="hidden p-3 rounded-2xl bg-surface-container-lowest/80 dark:bg-slate-900/60 border border-outline-variant/60 space-y-2 animate-fadeIn">
             <div class="flex items-center justify-between text-[11px] pb-1 border-b border-outline-variant/30">
-              <span class="text-[10px] font-bold text-gray-400">Pilih garis akun yang ingin ditampilkan di grafik:</span>
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-bold text-gray-400">Pilih garis di grafik:</span>
+                <button type="button" onclick="toggleAllWalletHistoryLines(true)" class="text-[10px] font-bold text-primary hover:underline cursor-pointer">Semua</button>
+                <span class="text-gray-300 dark:text-gray-600 text-[10px]">•</span>
+                <button type="button" onclick="toggleAllWalletHistoryLines(false)" class="text-[10px] font-bold text-gray-400 hover:text-error hover:underline cursor-pointer">Sembunyikan</button>
+              </div>
               <button type="button" onclick="toggleWalletHistoryChipsDrawer()" class="text-[10px] text-gray-400 hover:text-on-surface font-bold flex items-center gap-0.5 cursor-pointer">
                 <span>Tutup</span>
                 <span class="material-symbols-outlined text-xs">close</span>
@@ -12646,7 +12635,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v6.8';
+              let currentCacheInApp = 'keuanganku-pwa-v6.9';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
