@@ -10257,19 +10257,22 @@ function formatReadableSheets(ss, parsed) {
 
           <!-- 3 Metrik Inti: BERSEBELAHAN (3 Kolom) di Mobile & Desktop -->
           <div class="grid grid-cols-3 gap-1.5 sm:gap-3 pt-2 border-t border-white/10">
-            <div class="p-2 sm:p-2.5 bg-white/5 rounded-xl border border-white/5 space-y-0.5 min-w-0">
+            <div class="p-2 sm:p-2.5 bg-white/5 rounded-xl border border-white/5 min-w-0 flex flex-col justify-between">
               <span class="text-[8px] sm:text-[9px] text-slate-400 font-bold uppercase tracking-wider block truncate">KAS PRIBADI</span>
-              <p class="text-[11px] sm:text-xs md:text-sm font-extrabold text-cyan-300 font-mono-data truncate">${isMasked ? '••••••' : formatRp(stats.totalLiquid)}</p>
+              <p class="text-[11px] sm:text-xs md:text-sm font-extrabold text-cyan-300 font-mono-data truncate mt-0.5">${isMasked ? '••••••' : formatRp(stats.totalLiquid)}</p>
+              <span class="text-[8px] sm:text-[9px] text-cyan-400/80 font-medium block mt-0.5">Total Likuid</span>
             </div>
             
-            <div class="p-2 sm:p-2.5 bg-white/5 rounded-xl border border-white/5 space-y-0.5 min-w-0">
+            <div class="p-2 sm:p-2.5 bg-white/5 rounded-xl border border-white/5 min-w-0 flex flex-col justify-between">
               <span class="text-[8px] sm:text-[9px] text-slate-400 font-bold uppercase tracking-wider block truncate">PENGELUARAN</span>
-              <p class="text-[11px] sm:text-xs md:text-sm font-extrabold text-slate-200 font-mono-data truncate">${isMasked ? '••••••' : formatRp(stats.avgMonthlyExpense)} <span class="text-[8px] font-normal text-slate-400">/bln</span></p>
+              <p class="text-[11px] sm:text-xs md:text-sm font-extrabold text-slate-200 font-mono-data truncate mt-0.5">${isMasked ? '••••••' : formatRp(stats.avgMonthlyExpense)}</p>
+              <span class="text-[8px] sm:text-[9px] text-slate-400 font-semibold block mt-0.5">/ bulan</span>
             </div>
             
-            <div class="p-2 sm:p-2.5 bg-white/5 rounded-xl border border-white/5 space-y-0.5 min-w-0">
+            <div class="p-2 sm:p-2.5 bg-white/5 rounded-xl border border-white/5 min-w-0 flex flex-col justify-between">
               <span class="text-[8px] sm:text-[9px] text-slate-400 font-bold uppercase tracking-wider block truncate">BURN RATE</span>
-              <p class="text-[11px] sm:text-xs md:text-sm font-extrabold text-amber-300 font-mono-data truncate">~${isMasked ? '••••••' : formatRp(stats.dailyBurnRate)} <span class="text-[8px] font-normal text-slate-400">/hari</span></p>
+              <p class="text-[11px] sm:text-xs md:text-sm font-extrabold text-amber-300 font-mono-data truncate mt-0.5">~${isMasked ? '••••••' : formatRp(stats.dailyBurnRate)}</p>
+              <span class="text-[8px] sm:text-[9px] text-amber-300/90 font-semibold block mt-0.5">/ hari</span>
             </div>
           </div>
         </div>
@@ -12467,7 +12470,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v6.1';
+              let currentCacheInApp = 'keuanganku-pwa-v6.2';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
