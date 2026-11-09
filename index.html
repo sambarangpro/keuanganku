@@ -2407,36 +2407,30 @@
         <!-- SUBTAB 1: PENGATURAN APLIKASI              -->
         <!-- ========================================== -->
         <div id="setup-view-pengaturan" class="space-y-6">
-          <!-- SUB-MENU KATEGORI PENGATURAN DI ATAS (DESKTOP & MOBILE) -->
-          <div class="bg-surface dark:bg-slate-900 border border-outline-variant/70 p-1.5 rounded-2xl shadow-sm flex items-center gap-1.5 overflow-x-auto no-scrollbar sm:grid sm:grid-cols-4">
-            
-            <!-- Nav 1: Akun & Lisensi -->
-            <button type="button" id="setup-nav-account" onclick="switchSetupCategory('account')" class="flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer bg-primary text-white shadow-sm">
-              <span class="material-symbols-outlined text-base">manage_accounts</span>
-              <span class="sm:hidden">Akun</span>
-              <span class="hidden sm:inline">Akun & Lisensi</span>
-            </button>
+          <!-- SUB-MENU KATEGORI PENGATURAN (ICON ONLY, SEDERHANA & RINGKAS) -->
+          <div class="flex items-center justify-center">
+            <div class="inline-flex p-1.5 bg-surface dark:bg-slate-900 border border-outline-variant/70 rounded-2xl shadow-sm gap-2">
+              
+              <!-- Nav 1: Akun & Lisensi -->
+              <button type="button" id="setup-nav-account" onclick="switchSetupCategory('account')" class="w-12 h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer bg-primary text-white shadow-sm" title="Akun & Lisensi">
+                <span class="material-symbols-outlined text-xl">manage_accounts</span>
+              </button>
 
-            <!-- Nav 2: Database & Cadangan -->
-            <button type="button" id="setup-nav-database" onclick="switchSetupCategory('database')" class="flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container">
-              <span class="material-symbols-outlined text-base">cloud_sync</span>
-              <span class="sm:hidden">Database</span>
-              <span class="hidden sm:inline">Database & Cadangan</span>
-            </button>
+              <!-- Nav 2: Database & Cadangan -->
+              <button type="button" id="setup-nav-database" onclick="switchSetupCategory('database')" class="w-12 h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container" title="Database & Cadangan">
+                <span class="material-symbols-outlined text-xl">cloud_sync</span>
+              </button>
 
-            <!-- Nav 3: Fitur & Notifikasi -->
-            <button type="button" id="setup-nav-features" onclick="switchSetupCategory('features')" class="flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container">
-              <span class="material-symbols-outlined text-base">tune</span>
-              <span class="sm:hidden">Fitur</span>
-              <span class="hidden sm:inline">Fitur & Notifikasi</span>
-            </button>
+              <!-- Nav 3: Fitur & Notifikasi -->
+              <button type="button" id="setup-nav-features" onclick="switchSetupCategory('features')" class="w-12 h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container" title="Fitur & Notifikasi">
+                <span class="material-symbols-outlined text-xl">tune</span>
+              </button>
 
-            <!-- Nav 4: Sistem & Tentang -->
-            <button type="button" id="setup-nav-system" onclick="switchSetupCategory('system')" class="flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container">
-              <span class="material-symbols-outlined text-base">info</span>
-              <span class="sm:hidden">Sistem</span>
-              <span class="hidden sm:inline">Sistem & Tentang</span>
-            </button>
+              <!-- Nav 4: Sistem & Tentang -->
+              <button type="button" id="setup-nav-system" onclick="switchSetupCategory('system')" class="w-12 h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container" title="Sistem & Tentang">
+                <span class="material-symbols-outlined text-xl">info</span>
+              </button>
+            </div>
           </div>
 
           <!-- KONTEN SETTING UTAMA (LEGA PENUH DI DESKTOP & MOBILE) -->
@@ -2505,7 +2499,7 @@
                 <!-- Tombol Aksi BYODb -->
                 <!-- 1. Tombol Saat Belum Terhubung -->
                 <div id="byodb-connect-action-container" class="pt-1">
-                  <button type="button" onclick="handleGoogleSignIn()" class="w-full py-2.5 px-4 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-white font-bold text-xs rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2.5 transition-all active:scale-95 cursor-pointer">
+                  <button type="button" onclick="handleGoogleSignIn()" class="w-full sm:w-auto inline-flex py-2.5 px-5 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-white font-bold text-xs rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 items-center justify-center gap-2.5 transition-all active:scale-95 cursor-pointer">
                     <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                       <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -2518,7 +2512,7 @@
 
                 <!-- 2. Tombol Saat Sudah Terhubung -->
                 <div id="byodb-connected-actions-container" class="hidden space-y-2.5 pt-1">
-                  <div class="grid grid-cols-2 gap-2.5">
+                  <div class="grid grid-cols-2 gap-2.5 max-w-sm">
                     <button type="button" onclick="syncByodbNow(true)" class="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer" title="Simpan perubahan data di perangkat ini ke Google Drive">
                       <span class="material-symbols-outlined text-base">cloud_upload</span>
                       <span>Upload ke Drive</span>
@@ -2606,7 +2600,7 @@
                   </div>
 
                   <!-- 2 Tombol Aksi Utama Bersih & Simetris -->
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1 max-w-md">
                     <button type="button" onclick="openPrimaryDeviceScannerModal()" class="py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm active:scale-95 transition-all cursor-pointer" title="Buka Kamera HP untuk Scan Barcode di Layar PC / iPad">
                       <span class="material-symbols-outlined text-base">photo_camera</span>
                       <span>Scan Barcode QR</span>
@@ -2685,7 +2679,7 @@
                   </p>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 max-w-lg">
                   <div class="sm:col-span-2 relative flex items-center">
                     <input type="password" id="new-pass-input" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="Masukkan 6 Digit Angka PIN Baru (Contoh: 190412)" class="w-full p-2.5 pr-10 border rounded-xl text-xs font-mono-data bg-surface text-on-surface tracking-wider outline-none focus:border-primary">
                     <button type="button" onclick="toggleNewPassVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface flex items-center justify-center p-1 cursor-pointer focus:outline-none" title="Lihat / Sembunyikan PIN">
@@ -2781,7 +2775,7 @@
                     Setiap transaksi otomatis tersimpan di Google Drive pribadi Anda. Gunakan tombol di bawah jika ingin memaksakan sinkronisasi data secara manual:
                   </p>
 
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1 max-w-md">
                     <button type="button" onclick="syncByodbNow()" class="py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
                       <span class="material-symbols-outlined text-base">cloud_upload</span>
                       <span>Upload ke Google Drive</span>
@@ -2814,7 +2808,7 @@
                     Download salinan file database ke komputer / flashdisk, atau pulihkan data dari file cadangan sebelumnya:
                   </p>
 
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1 max-w-md">
                     <button type="button" onclick="openManualBackupModal('export')" class="py-2.5 px-4 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 font-bold text-xs rounded-xl shadow-2xs flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer" title="Download File Cadangan .json">
                       <span class="material-symbols-outlined text-base">download</span>
                       <span>Cadangkan File (.json)</span>
@@ -3012,7 +3006,7 @@
                   Dapatkan notifikasi otomatis di layar & bilah status HP/Laptop saat tanggal jatuh tempo pembayaran cicilan, utang, atau tagihan rutin tiba.
                 </p>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1 max-w-lg">
                   <button id="btn-toggle-notif-perm" onclick="requestNotificationPermissionInteractive()" class="py-2.5 px-3 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer">
                     <span class="material-symbols-outlined text-base">notifications</span>
                     <span id="btn-toggle-notif-label">Aktifkan Izin</span>
@@ -3087,7 +3081,7 @@
                 <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
                   Pasang KEUANGANKU langsung di layar utama HP atau desktop laptop Anda untuk akses instan tanpa bilah browser. Memiliki ikon tersendiri dan siap dibuka secara offline.
                 </p>
-                <button onclick="triggerPWAInstall()" class="w-full py-2.5 bg-primary hover:bg-primary-container text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
+                <button onclick="triggerPWAInstall()" class="w-full sm:w-auto inline-flex py-2.5 px-5 bg-primary hover:bg-primary-container text-white font-bold text-xs rounded-xl shadow-sm items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
                   <span class="material-symbols-outlined text-base">add_to_home_screen</span> Pasang Aplikasi Sekarang
                 </button>
               </section>
@@ -3112,7 +3106,7 @@
                 <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
                   Gunakan tombol di bawah untuk memeriksa pembaruan fitur terbaru dari GitHub atau membersihkan cache browser.
                 </p>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1 max-w-md">
                   <button id="btn-check-app-update" onclick="checkAppUpdatesManual()" class="py-2.5 px-3 bg-primary hover:bg-primary-container text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
                     <span id="icon-check-app-update" class="material-symbols-outlined text-base">sync</span>
                     <span>Periksa Pembaruan</span>
@@ -3137,7 +3131,7 @@
                     </div>
                   </div>
                   <div class="pt-2">
-                    <a href="poster-panduan-penggunaan.html" target="_blank" class="w-full py-2.5 px-4 bg-sky-500/10 hover:bg-sky-500/20 text-sky-600 dark:text-cyan-400 border border-sky-500/30 font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition-all">
+                    <a href="poster-panduan-penggunaan.html" target="_blank" class="w-full sm:w-auto inline-flex py-2.5 px-5 bg-sky-500/10 hover:bg-sky-500/20 text-sky-600 dark:text-cyan-400 border border-sky-500/30 font-bold rounded-xl text-xs items-center justify-center gap-2 transition-all">
                       <span class="material-symbols-outlined text-base">open_in_new</span>
                       <span>Buka Buku Panduan Bergambar ↗</span>
                     </a>
@@ -12659,17 +12653,17 @@ function formatReadableSheets(ss, parsed) {
 
         if (dBtn) {
           if (isActive) {
-            dBtn.className = "flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer bg-primary text-white shadow-sm";
+            dBtn.className = "w-12 h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer bg-primary text-white shadow-sm";
           } else {
-            dBtn.className = "flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container";
+            dBtn.className = "w-12 h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container";
           }
         }
 
         if (mBtn) {
           if (isActive) {
-            mBtn.className = "px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap flex items-center gap-1.5 bg-primary text-white shadow-sm transition-all";
+            mBtn.className = "w-12 h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer bg-primary text-white shadow-sm";
           } else {
-            mBtn.className = "px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap flex items-center gap-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all";
+            mBtn.className = "w-12 h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container";
           }
         }
       });
@@ -13238,7 +13232,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v6.23';
+              let currentCacheInApp = 'keuanganku-pwa-v6.24';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
