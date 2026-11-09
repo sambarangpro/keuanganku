@@ -2407,30 +2407,32 @@
         <!-- SUBTAB 1: PENGATURAN APLIKASI              -->
         <!-- ========================================== -->
         <div id="setup-view-pengaturan" class="space-y-6">
-          <!-- SUB-MENU KATEGORI PENGATURAN (ICON ONLY, SEDERHANA & RINGKAS) -->
-          <div class="flex items-center justify-center">
-            <div class="inline-flex p-1.5 bg-surface dark:bg-slate-900 border border-outline-variant/70 rounded-2xl shadow-sm gap-2">
-              
-              <!-- Nav 1: Akun & Lisensi -->
-              <button type="button" id="setup-nav-account" onclick="switchSetupCategory('account')" class="w-12 h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer bg-primary text-white shadow-sm" title="Akun & Lisensi">
-                <span class="material-symbols-outlined text-xl">manage_accounts</span>
-              </button>
+          <!-- SUB-MENU KATEGORI PENGATURAN DI ATAS (DESKTOP & MOBILE) -->
+          <div class="bg-surface dark:bg-slate-900 border border-outline-variant/70 p-1.5 rounded-2xl shadow-sm flex items-center gap-1.5 overflow-x-auto no-scrollbar sm:grid sm:grid-cols-4">
+            
+            <!-- Nav 1: Akun & Lisensi -->
+            <button type="button" id="setup-nav-account" onclick="switchSetupCategory('account')" class="shrink-0 sm:shrink flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer bg-primary text-white shadow-sm" title="Akun & Lisensi">
+              <span class="material-symbols-outlined text-base">manage_accounts</span>
+              <span>Akun & Lisensi</span>
+            </button>
 
-              <!-- Nav 2: Database & Cadangan -->
-              <button type="button" id="setup-nav-database" onclick="switchSetupCategory('database')" class="w-12 h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container" title="Database & Cadangan">
-                <span class="material-symbols-outlined text-xl">cloud_sync</span>
-              </button>
+            <!-- Nav 2: Database & Cadangan -->
+            <button type="button" id="setup-nav-database" onclick="switchSetupCategory('database')" class="shrink-0 sm:shrink flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container" title="Database & Cadangan">
+              <span class="material-symbols-outlined text-base">cloud_sync</span>
+              <span>Database & Cadangan</span>
+            </button>
 
-              <!-- Nav 3: Fitur & Notifikasi -->
-              <button type="button" id="setup-nav-features" onclick="switchSetupCategory('features')" class="w-12 h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container" title="Fitur & Notifikasi">
-                <span class="material-symbols-outlined text-xl">tune</span>
-              </button>
+            <!-- Nav 3: Fitur & Notifikasi -->
+            <button type="button" id="setup-nav-features" onclick="switchSetupCategory('features')" class="shrink-0 sm:shrink flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container" title="Fitur & Notifikasi">
+              <span class="material-symbols-outlined text-base">tune</span>
+              <span>Fitur & Notifikasi</span>
+            </button>
 
-              <!-- Nav 4: Sistem & Tentang -->
-              <button type="button" id="setup-nav-system" onclick="switchSetupCategory('system')" class="w-12 h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container" title="Sistem & Tentang">
-                <span class="material-symbols-outlined text-xl">info</span>
-              </button>
-            </div>
+            <!-- Nav 4: Sistem & Tentang -->
+            <button type="button" id="setup-nav-system" onclick="switchSetupCategory('system')" class="shrink-0 sm:shrink flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container" title="Sistem & Tentang">
+              <span class="material-symbols-outlined text-base">info</span>
+              <span>Sistem & Tentang</span>
+            </button>
           </div>
 
           <!-- KONTEN SETTING UTAMA (LEGA PENUH DI DESKTOP & MOBILE) -->
@@ -12653,9 +12655,9 @@ function formatReadableSheets(ss, parsed) {
 
         if (dBtn) {
           if (isActive) {
-            dBtn.className = "w-12 h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer bg-primary text-white shadow-sm";
+            dBtn.className = "shrink-0 sm:shrink flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer bg-primary text-white shadow-sm";
           } else {
-            dBtn.className = "w-12 h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container";
+            dBtn.className = "shrink-0 sm:shrink flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container";
           }
         }
 
@@ -13232,7 +13234,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v6.24';
+              let currentCacheInApp = 'keuanganku-pwa-v6.25';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
