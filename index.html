@@ -2391,14 +2391,14 @@
               <span id="badge-db-total-count" class="ml-1 px-2 py-0.5 text-[10px] bg-primary/15 text-primary dark:text-blue-400 rounded-full font-extrabold">12</span>
             </button>
           </div>
-          <div class="flex items-center gap-2 w-full sm:w-auto flex-wrap">
-            <a href="poster-panduan-penggunaan.html" target="_blank" class="flex-1 sm:flex-none px-4 py-2.5 bg-sky-500/10 hover:bg-sky-500/20 text-sky-600 dark:text-cyan-400 border border-sky-500/30 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all" title="Buka Petunjuk Penggunaan Lengkap Bergambar">
+          <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+            <a href="poster-panduan-penggunaan.html" target="_blank" class="px-3.5 py-2 bg-sky-500/10 hover:bg-sky-500/20 text-sky-600 dark:text-cyan-400 border border-sky-500/30 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all" title="Buka Buku Panduan Bergambar">
               <span class="material-symbols-outlined text-base">menu_book</span>
-              <span>Buku Panduan Bergambar</span>
+              <span class="hidden sm:inline">Panduan</span>
             </a>
-            <button onclick="manualSaveSetup()" class="flex-1 sm:flex-none px-5 py-2.5 bg-gradient-to-r from-primary to-indigo-600 hover:brightness-110 text-white font-bold rounded-xl text-xs shadow flex items-center justify-center gap-1.5 active:scale-95 transition-all">
+            <button onclick="manualSaveSetup()" class="px-4 py-2 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl text-xs shadow-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer">
               <span class="material-symbols-outlined text-base">save</span>
-              <span>SIMPAN PERUBAHAN</span>
+              <span>Simpan Perubahan</span>
             </button>
           </div>
         </div>
@@ -2541,14 +2541,14 @@
                 <!-- Tombol Aksi BYODb -->
                 <!-- 1. Tombol Saat Belum Terhubung -->
                 <div id="byodb-connect-action-container" class="pt-1">
-                  <button type="button" onclick="handleGoogleSignIn()" class="w-full py-2.5 px-3 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-white font-bold text-xs rounded-xl shadow-md border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2.5 transition-all active:scale-95 cursor-pointer">
+                  <button type="button" onclick="handleGoogleSignIn()" class="w-full py-2.5 px-4 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-white font-bold text-xs rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2.5 transition-all active:scale-95 cursor-pointer">
                     <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                       <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                       <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
                       <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
                     </svg>
-                    <span>Hubungkan Akun Google & Buat Database Drive</span>
+                    <span>Hubungkan Akun Google & Drive</span>
                   </button>
                 </div>
 
@@ -2565,12 +2565,10 @@
                     </button>
                   </div>
 
-
-
                   <div class="pt-0.5 flex justify-end">
                     <button type="button" onclick="disconnectGoogleAccount()" class="text-[11px] text-rose-500 hover:text-rose-700 hover:underline flex items-center gap-1 cursor-pointer">
                       <span class="material-symbols-outlined text-xs">logout</span>
-                      <span>Putuskan Akun Google di Perangkat Ini</span>
+                      <span>Putuskan Sambungan Akun</span>
                     </button>
                   </div>
                 </div>
@@ -2638,37 +2636,40 @@
                         <p class="text-[10px] text-slate-400">Kelola dan cabut akses perangkat dari jarak jauh</p>
                       </div>
                     </div>
+                    <button type="button" onclick="loadConnectedDevices(true)" class="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-all cursor-pointer" title="Perbarui daftar perangkat terhubung">
+                      <span id="btn-refresh-devices-icon" class="material-symbols-outlined text-base">refresh</span>
+                    </button>
                   </div>
 
-                  <!-- Baris Tombol Aksi Seragam & Senada (Royal Blue & Slate) -->
-                  <div class="flex items-center gap-2 flex-wrap pt-1">
-                    <button type="button" onclick="openPrimaryDeviceScannerModal()" class="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-blue-600/25 active:scale-95 transition-all cursor-pointer" title="Buka Kamera HP untuk Scan Barcode di Layar PC / iPad (WhatsApp Web Style)">
+                  <!-- 2 Tombol Aksi Utama Bersih & Simetris -->
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                    <button type="button" onclick="openPrimaryDeviceScannerModal()" class="py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm active:scale-95 transition-all cursor-pointer" title="Buka Kamera HP untuk Scan Barcode di Layar PC / iPad">
                       <span class="material-symbols-outlined text-base">photo_camera</span>
-                      <span class="text-[11px]">Scan QR di PC / iPad</span>
+                      <span>Scan Barcode QR</span>
                     </button>
-                    <button type="button" onclick="openPairDeviceModal()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-blue-200 hover:text-white border border-blue-500/30 hover:border-blue-500/50 text-xs font-semibold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer" title="Tampilkan Barcode Lisensi di Layar Ini (untuk di-scan oleh HP ke-2, ke-3, dst)">
+                    <button type="button" onclick="openPairDeviceModal()" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-blue-200 hover:text-white border border-blue-500/30 text-xs font-bold flex items-center justify-center gap-2 shadow-sm active:scale-95 transition-all cursor-pointer" title="Tampilkan Barcode Lisensi di Layar Ini">
                       <span class="material-symbols-outlined text-base text-blue-400">qr_code_2</span>
-                      <span class="text-[11px]">Tampilkan Barcode Lisensi</span>
+                      <span>Tampilkan Barcode</span>
                     </button>
-                    <label class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 hover:border-slate-600 text-xs font-semibold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer" title="Upload file foto barcode (cocok bila kamera buram atau tidak ada webcam)">
-                      <span class="material-symbols-outlined text-base text-slate-400">upload_file</span>
-                      <span class="text-[11px]">Upload Foto Barcode</span>
+                  </div>
+
+                  <!-- Baris Opsi Lanjutan / Sekunder -->
+                  <div class="flex items-center justify-between gap-2 pt-0.5 flex-wrap text-xs">
+                    <label class="text-[11px] text-slate-400 hover:text-blue-300 flex items-center gap-1 cursor-pointer transition-colors" title="Upload file foto barcode (cocok bila kamera buram atau tidak ada webcam)">
+                      <span class="material-symbols-outlined text-sm">upload_file</span>
+                      <span>Upload Foto Barcode</span>
                       <input type="file" accept="image/*" onchange="handleDirectQrUpload(this)" class="hidden">
                     </label>
-                    <button type="button" onclick="loadConnectedDevices(true)" class="px-3 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer" title="Perbarui daftar perangkat terhubung">
-                      <span id="btn-refresh-devices-icon" class="material-symbols-outlined text-base">refresh</span>
-                      <span class="text-[11px]">Segarkan</span>
-                    </button>
-                    <button type="button" id="btn-kick-all-others" onclick="handleDeactivateAllOtherDevices()" class="hidden px-3.5 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 hover:text-rose-200 border border-rose-500/30 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer" title="Keluarkan semua perangkat lain jika ada HP/Laptop hilang atau lupa logout">
-                      <span class="material-symbols-outlined text-base">phonelink_erase</span>
-                      <span class="text-[11px] font-bold">Keluarkan Perangkat Lain</span>
+                    <button type="button" id="btn-kick-all-others" onclick="handleDeactivateAllOtherDevices()" class="hidden text-[11px] text-rose-400 hover:text-rose-300 hover:underline flex items-center gap-1 cursor-pointer" title="Keluarkan semua perangkat lain jika ada HP/Laptop hilang atau lupa logout">
+                      <span class="material-symbols-outlined text-sm">phonelink_erase</span>
+                      <span>Keluarkan Perangkat Lain</span>
                     </button>
                   </div>
 
                   <!-- Banner Info Lembut -->
                   <div class="p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl text-[11px] text-blue-200/90 flex items-start gap-2.5">
                     <span class="material-symbols-outlined text-blue-400 text-base shrink-0 mt-0.5">info</span>
-                    <p class="leading-relaxed">Jika ada HP atau Laptop Anda yang <b>hilang</b> atau <b>lupa keluar (logout)</b>, Anda dapat mengklik tombol <b>Keluarkan</b> di bawah untuk mencabut akses perangkat tersebut seketika dan membebaskan kuota slot lisensi.</p>
+                    <p class="leading-relaxed">Jika ada HP atau Laptop Anda yang <b>hilang</b> atau <b>lupa keluar (logout)</b>, Anda dapat mengklik tombol <b>Keluarkan</b> di samping nama perangkat untuk mencabut akses seketika.</p>
                   </div>
 
                   <!-- List Kontainer Perangkat -->
@@ -2684,7 +2685,7 @@
                 <div class="flex flex-col sm:flex-row items-center justify-between gap-2.5 pt-3 border-t border-slate-800/80">
                   <button onclick="handleDeactivateCurrentDevice()" class="w-full sm:w-auto px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 hover:text-rose-200 border border-rose-500/30 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer">
                     <span class="material-symbols-outlined text-sm">logout</span>
-                    Keluar dari Perangkat Ini Saja
+                    Keluar dari Akun Lisensi
                   </button>
                   <a href="dev-dashboard.html" id="btn-open-dev-dashboard" target="_blank" class="hidden w-full sm:w-auto px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold items-center justify-center gap-1.5 shadow-md shadow-blue-600/20 transition-all cursor-pointer">
                     <span class="material-symbols-outlined text-sm">terminal</span>
@@ -2727,8 +2728,8 @@
                       <span class="material-symbols-outlined text-lg" id="new-pass-eye-icon">visibility</span>
                     </button>
                   </div>
-                  <button id="btn-save-personal-pin" onclick="handleBurnTokenAndSetPin()" class="w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs rounded-xl shadow flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95">
-                    <span class="material-symbols-outlined text-sm">local_fire_department</span> BUAT PIN & HANGUSKAN
+                  <button id="btn-save-personal-pin" onclick="handleBurnTokenAndSetPin()" class="w-full py-2.5 bg-primary hover:bg-primary/90 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95">
+                    <span class="material-symbols-outlined text-sm">lock_reset</span> <span>Simpan PIN Baru</span>
                   </button>
                 </div>
               </section>
@@ -2816,12 +2817,12 @@
                     Setiap transaksi otomatis tersimpan di Google Drive pribadi Anda. Gunakan tombol di bawah jika ingin memaksakan sinkronisasi data secara manual:
                   </p>
 
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                    <button type="button" onclick="syncByodbNow()" class="py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-2xl shadow-md flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                    <button type="button" onclick="syncByodbNow()" class="py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
                       <span class="material-symbols-outlined text-base">cloud_upload</span>
                       <span>Upload ke Google Drive</span>
                     </button>
-                    <button type="button" onclick="pullByodbNow()" class="py-3 px-4 bg-surface-container dark:bg-slate-700 hover:bg-emerald-50 dark:hover:bg-slate-600 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 font-bold text-xs rounded-2xl shadow-sm flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
+                    <button type="button" onclick="pullByodbNow()" class="py-2.5 px-4 bg-surface-container dark:bg-slate-700 hover:bg-emerald-50 dark:hover:bg-slate-600 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
                       <span class="material-symbols-outlined text-base">cloud_download</span>
                       <span>Tarik dari Google Drive</span>
                     </button>
@@ -2849,14 +2850,14 @@
                     Download salinan file database ke komputer / flashdisk, atau pulihkan data dari file cadangan sebelumnya:
                   </p>
 
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                    <button type="button" onclick="openManualBackupModal('export')" class="py-3 px-4 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 font-bold text-xs rounded-2xl shadow-2xs flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer" title="Download File Cadangan .json">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                    <button type="button" onclick="openManualBackupModal('export')" class="py-2.5 px-4 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 font-bold text-xs rounded-xl shadow-2xs flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer" title="Download File Cadangan .json">
                       <span class="material-symbols-outlined text-base">download</span>
-                      <span>1. CADANGKAN (EXPORT)</span>
+                      <span>Cadangkan File (.json)</span>
                     </button>
-                    <button type="button" onclick="openManualBackupModal('import')" class="py-3 px-4 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 font-bold text-xs rounded-2xl shadow-2xs flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer" title="Pulihkan File Cadangan .json">
+                    <button type="button" onclick="openManualBackupModal('import')" class="py-2.5 px-4 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 font-bold text-xs rounded-xl shadow-2xs flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer" title="Pulihkan File Cadangan .json">
                       <span class="material-symbols-outlined text-base">upload_file</span>
-                      <span>2. PULIHKAN (IMPORT)</span>
+                      <span>Pulihkan File (.json)</span>
                     </button>
                   </div>
                 </section>
@@ -3000,11 +3001,11 @@
                   <div class="flex items-center gap-2 pt-1 flex-wrap">
                     <button type="button" id="btn-activate-demo-data" onclick="activateShowcaseDemoData()" class="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-extrabold text-xs rounded-xl shadow-sm flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer">
                       <span class="material-symbols-outlined text-base">play_circle</span>
-                      <span>Aktifkan Akun Demo Iklan</span>
+                      <span>Mulai Mode Demo Iklan</span>
                     </button>
                     <button type="button" id="btn-restore-real-data" onclick="restoreUserRealData()" class="hidden px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl shadow flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer">
                       <span class="material-symbols-outlined text-base text-emerald-400">restart_alt</span>
-                      <span>Kembalikan Data Asli Saya</span>
+                      <span>Kembalikan Data Asli</span>
                     </button>
                   </div>
                 </div>
@@ -3020,7 +3021,7 @@
                   </div>
                   <a href="dev-dashboard.html" target="_blank" class="px-3.5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-md shrink-0 active:scale-95">
                     <span class="material-symbols-outlined text-sm">open_in_new</span>
-                    <span>Buka Dev Dashboard</span>
+                    <span>Dev Dashboard</span>
                   </a>
                 </div>
               </section>
@@ -3054,11 +3055,11 @@
                   </button>
                   <button onclick="testSystemNotification()" class="py-2.5 px-3 bg-surface dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-slate-700 border border-amber-300 dark:border-amber-900/60 text-amber-700 dark:text-amber-400 font-bold text-xs rounded-xl shadow-2xs flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer" title="Kirim notifikasi uji coba ke bilah status HP/PC">
                     <span class="material-symbols-outlined text-base">send_to_mobile</span>
-                    <span>Tes Notifikasi HP/PC</span>
+                    <span>Tes Notifikasi</span>
                   </button>
-                  <button onclick="openDueDateModalPopupDemo()" class="py-2.5 px-3 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer" title="Buka dialog pop-up pengingat jatuh tempo lengkap dengan tombol close (X)">
-                    <span class="material-symbols-outlined text-base">notifications_active</span>
-                    <span>Buka Pop-up (✕)</span>
+                  <button onclick="openDueDateModalPopupDemo()" class="py-2.5 px-3 bg-surface dark:bg-slate-800 hover:bg-surface-container dark:hover:bg-slate-700 border border-outline-variant text-on-surface font-semibold text-xs rounded-xl shadow-2xs flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer" title="Pratinjau dialog pengingat jatuh tempo">
+                    <span class="material-symbols-outlined text-base text-amber-600 dark:text-amber-400">visibility</span>
+                    <span>Pratinjau Pop-up</span>
                   </button>
                 </div>
 
@@ -3122,8 +3123,8 @@
                 <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
                   Pasang KEUANGANKU langsung di layar utama HP atau desktop laptop Anda untuk akses instan tanpa bilah browser. Memiliki ikon tersendiri dan siap dibuka secara offline.
                 </p>
-                <button onclick="triggerPWAInstall()" class="w-full py-2.5 bg-primary hover:bg-primary-container text-white font-bold text-xs rounded-xl shadow flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
-                  <span class="material-symbols-outlined text-base">add_to_home_screen</span> PASANG / INSTAL APLIKASI SEKARANG
+                <button onclick="triggerPWAInstall()" class="w-full py-2.5 bg-primary hover:bg-primary-container text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
+                  <span class="material-symbols-outlined text-base">add_to_home_screen</span> Pasang Aplikasi Sekarang
                 </button>
               </section>
 
@@ -3150,11 +3151,11 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
                   <button id="btn-check-app-update" onclick="checkAppUpdatesManual()" class="py-2.5 px-3 bg-primary hover:bg-primary-container text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
                     <span id="icon-check-app-update" class="material-symbols-outlined text-base">sync</span>
-                    <span>PERIKSA PEMBARUAN</span>
+                    <span>Periksa Pembaruan</span>
                   </button>
                   <button onclick="forceHardRefreshApp()" class="py-2.5 px-3 bg-surface dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-slate-700 border border-rose-300 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 font-bold text-xs rounded-xl shadow-2xs flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer" title="Bersihkan cache browser dan muat ulang halaman">
                     <span class="material-symbols-outlined text-base">delete_sweep</span>
-                    <span>BERSIHKAN CACHE & RESET</span>
+                    <span>Bersihkan Cache & Reset</span>
                   </button>
                 </div>
                 <div id="update-check-status-text" class="hidden text-[11px] text-center font-medium pt-1"></div>
@@ -3172,9 +3173,9 @@
                     </div>
                   </div>
                   <div class="pt-2">
-                    <a href="poster-panduan-penggunaan.html" target="_blank" class="w-full py-3 px-4 bg-sky-500/10 hover:bg-sky-500/20 text-sky-600 dark:text-cyan-400 border border-sky-500/30 font-bold rounded-2xl text-xs flex items-center justify-center gap-2 transition-all">
+                    <a href="poster-panduan-penggunaan.html" target="_blank" class="w-full py-2.5 px-4 bg-sky-500/10 hover:bg-sky-500/20 text-sky-600 dark:text-cyan-400 border border-sky-500/30 font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition-all">
                       <span class="material-symbols-outlined text-base">open_in_new</span>
-                      <span>BUKA BUKU PANDUAN BERGAMBAR ↗</span>
+                      <span>Buka Buku Panduan Bergambar ↗</span>
                     </a>
                   </div>
                   <p class="text-[11px] text-gray-400 dark:text-gray-500 text-center pt-2">
@@ -3256,14 +3257,15 @@
               </p>
               <p class="text-xs text-gray-600 dark:text-gray-400">Hapus seluruh riwayat transaksi yang pernah dicatat tanpa menghapus susunan kategori master database Anda.</p>
             </div>
-            <button onclick="resetTransactionHistory()" class="px-5 py-2.5 bg-error hover:bg-red-700 text-white font-bold rounded-xl text-xs shadow flex items-center justify-center gap-1.5 transition-colors shrink-0 cursor-pointer">
+            <button onclick="resetTransactionHistory()" class="px-5 py-2.5 bg-error hover:bg-red-700 text-white font-bold rounded-xl text-xs shadow-sm flex items-center justify-center gap-1.5 transition-colors shrink-0 cursor-pointer">
               <span class="material-symbols-outlined text-sm">delete_forever</span>
-              <span>RESET RIWAYAT</span>
+              <span>Reset Riwayat Transaksi</span>
             </button>
           </section>
 
-          <button onclick="manualSaveSetup()" class="w-full py-4 bg-primary text-white font-extrabold text-sm rounded-2xl shadow-lg hover:brightness-110 flex items-center justify-center gap-2 transition-all">
-            <span class="material-symbols-outlined">save</span> SIMPAN SELURUH PERUBAHAN DATABASE
+          <button onclick="manualSaveSetup()" class="w-full py-3 bg-primary hover:bg-primary/90 text-white font-bold text-xs rounded-xl shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95">
+            <span class="material-symbols-outlined text-base">save</span>
+            <span>Simpan Perubahan Database</span>
           </button>
         </div>
       </div>
@@ -3298,8 +3300,8 @@
                 <span class="text-blue-700 dark:text-blue-300"><b>Contoh:</b> Rekening BCA, BRI, Bank Mandiri, Bank Jago, SeaBank, Kas Tunai (Cash), GoPay, OVO, DANA.</span>
               </div>
               <div id="setup-account-list" class="space-y-3"></div>
-              <button onclick="addAccountItem()" class="w-full py-3.5 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2 hover:bg-surface-container-high transition-all">
-                <span class="material-symbols-outlined text-sm">add</span> TAMBAHKAN ACCOUNT BANK / DOMPET
+              <button onclick="addAccountItem()" class="w-full py-2.5 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-sm">add_circle</span> <span>Tambah Akun Bank / Dompet</span>
               </button>
             </div>
 
@@ -3310,8 +3312,8 @@
                 <span class="text-green-700 dark:text-green-300"><b>Contoh:</b> Gaji Bulanan, Bonus Kinerja, THR, Hasil Penjualan/Usaha, Komisi, Hadiah/Hibah.</span>
               </div>
               <div id="setup-income-tags" class="flex flex-wrap gap-2 mb-4"></div>
-              <button onclick="addSimpleCategory('incomes', 'Income')" class="w-full py-3 border-2 border-dashed rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:border-primary text-primary transition-all">
-                <span class="material-symbols-outlined text-sm">add_circle</span> TAMBAHKAN KATEGORI INCOME
+              <button onclick="addSimpleCategory('incomes', 'Income')" class="w-full py-2.5 bg-green-500/10 hover:bg-green-500/20 text-green-700 dark:text-green-300 border border-green-500/30 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-sm">add_circle</span> <span>Tambah Kategori Income</span>
               </button>
             </div>
 
@@ -3322,8 +3324,8 @@
                 <span class="text-blue-700 dark:text-blue-300"><b>Contoh:</b> Listrik PLN, Air PDAM, Wi-Fi Indihome, BPJS Kesehatan, Iuran IPL Lingkungan.</span>
               </div>
               <div id="setup-bills-list" class="space-y-2 mb-4"></div>
-              <button onclick="addSimpleCategory('bills', 'Tagihan')" class="w-full py-3 border-2 border-dashed rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:border-primary text-primary transition-all">
-                <span class="material-symbols-outlined text-sm">add_circle</span> TAMBAHKAN POS BILLS
+              <button onclick="addSimpleCategory('bills', 'Tagihan')" class="w-full py-2.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-500/30 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-sm">add_circle</span> <span>Tambah Pos Bills</span>
               </button>
             </div>
 
@@ -3334,8 +3336,8 @@
                 <span class="text-rose-700 dark:text-rose-300"><b>Contoh:</b> Makan & Minum, Belanja Dapur / Sembako, Bensin / Transportasi, Jajan / Nongkrong, Pakaian, Sedekah.</span>
               </div>
               <div id="setup-spending-tags" class="flex flex-wrap gap-2 mb-4"></div>
-              <button onclick="addSimpleCategory('spendings', 'Spending')" class="w-full py-3.5 bg-primary text-white rounded-xl font-bold text-xs shadow flex items-center justify-center gap-2 hover:brightness-110 transition-all">
-                <span class="material-symbols-outlined text-sm">add</span> TAMBAHKAN POS SPENDING
+              <button onclick="addSimpleCategory('spendings', 'Spending')" class="w-full py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-500/30 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-sm">add_circle</span> <span>Tambah Pos Spending</span>
               </button>
             </div>
 
@@ -3346,8 +3348,8 @@
                 <span class="text-cyan-700 dark:text-cyan-300"><b>Contoh:</b> Dana Darurat, Reksadana Pasar Uang, Deposito Bank Digital, Simpanan Modal Usaha, Tabungan Hari Tua.</span>
               </div>
               <div id="setup-invest-list" class="space-y-3"></div>
-              <button onclick="addValuedCategory('investData', 'Invest')" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2 hover:bg-surface-container-high transition-all">
-                <span class="material-symbols-outlined text-sm">add</span> TAMBAH POS INVEST / TABUNGAN
+              <button onclick="addValuedCategory('investData', 'Invest')" class="w-full py-2.5 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 border border-cyan-500/30 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-sm">add_circle</span> <span>Tambah Pos Invest / Tabungan</span>
               </button>
             </div>
 
@@ -3358,8 +3360,8 @@
                 <span class="text-purple-700 dark:text-purple-300"><b>Contoh:</b> Pajak Kendaraan Tahunan, Servis Mobil/Motor, Kurban Idul Adha, Dana Mudik Lebaran, Biaya Masuk Sekolah Anak.</span>
               </div>
               <div id="setup-sinking-list" class="space-y-3"></div>
-              <button onclick="addValuedCategory('sinkingData', 'Sinking Fund')" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2 hover:bg-surface-container-high transition-all">
-                <span class="material-symbols-outlined text-sm">add</span> TAMBAH POS SINKING FUND
+              <button onclick="addValuedCategory('sinkingData', 'Sinking Fund')" class="w-full py-2.5 bg-purple-500/10 hover:bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/30 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-sm">add_circle</span> <span>Tambah Pos Sinking Fund</span>
               </button>
             </div>
 
@@ -3370,8 +3372,8 @@
                 <span class="text-amber-700 dark:text-amber-300"><b>Contoh:</b> Beli Rumah / DP KPR (Target Rp 100 Jt), Beli Mobil Baru, Biaya Pernikahan, Ibadah Umroh / Haji, Liburan Luar Negeri.</span>
               </div>
               <div id="setup-goals-list" class="space-y-3"></div>
-              <button onclick="addValuedCategory('goalsData', 'Goals')" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2 hover:bg-surface-container-high transition-all">
-                <span class="material-symbols-outlined text-sm">add</span> TAMBAH TARGET FINANCIAL GOAL
+              <button onclick="addValuedCategory('goalsData', 'Goals')" class="w-full py-2.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-sm">add_circle</span> <span>Tambah Target Financial Goal</span>
               </button>
             </div>
 
@@ -3382,8 +3384,8 @@
                 <span class="text-teal-700 dark:text-teal-300"><b>Contoh:</b> Pinjaman Teman / Kerabat, Talangan Belanja Kantor, Invoice Penjualan Barang yang Belum Dilunasi Pembeli.</span>
               </div>
               <div id="setup-receivables-list" class="space-y-3"></div>
-              <button onclick="addValuedCategory('receivablesData', 'Piutang')" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2 hover:bg-surface-container-high transition-all">
-                <span class="material-symbols-outlined text-sm">add</span> TAMBAH DATA PIUTANG
+              <button onclick="addValuedCategory('receivablesData', 'Piutang')" class="w-full py-2.5 bg-teal-500/10 hover:bg-teal-500/20 text-teal-700 dark:text-teal-300 border border-teal-500/30 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-sm">add_circle</span> <span>Tambah Catatan Piutang</span>
               </button>
             </div>
 
@@ -3394,8 +3396,8 @@
                 <span class="text-yellow-700 dark:text-yellow-300"><b>Contoh:</b> Logam Mulia / Emas Antam (Gram), Tanah / Bangunan Properti, Kendaraan (Mobil/Motor), Saham Usaha, Hewan Ternak.</span>
               </div>
               <div id="setup-nonmoney-list" class="space-y-3"></div>
-              <button onclick="addValuedCategory('nonMoneyAssets', 'Aset')" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2 hover:bg-surface-container-high transition-all">
-                <span class="material-symbols-outlined text-sm">add</span> TAMBAH ASET NON-UANG
+              <button onclick="addValuedCategory('nonMoneyAssets', 'Aset')" class="w-full py-2.5 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 border border-yellow-500/30 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-sm">add_circle</span> <span>Tambah Aset Non-Uang</span>
               </button>
             </div>
 
@@ -3406,8 +3408,8 @@
                 <span class="text-red-700 dark:text-red-300"><b>Contoh:</b> Cicilan KPR Rumah, Kredit Kendaraan (Leasing), Utang Kartu Kredit, Pinjaman Usaha / KUR, Paylater.</span>
               </div>
               <div id="setup-debt-list" class="space-y-3"></div>
-              <button onclick="addDebtItemModal()" class="w-full py-3 bg-surface-container text-primary font-bold text-xs border rounded-xl flex items-center justify-center gap-2 hover:bg-surface-container-high transition-all">
-                <span class="material-symbols-outlined text-sm">add</span> TAMBAH UTANG / CICILAN
+              <button onclick="addDebtItemModal()" class="w-full py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-700 dark:text-red-300 border border-red-500/30 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-sm">add_circle</span> <span>Tambah Utang / Cicilan</span>
               </button>
             </div>
 
@@ -3418,8 +3420,8 @@
                 <span class="text-violet-700 dark:text-violet-300"><b>Contoh:</b> Listrik PLN (tgl 5), Wi-Fi Indihome (tgl 15), BPJS Kesehatan (tgl 10), Sewa Tempat / Server (tgl 25).</span>
               </div>
               <div id="setup-routine-list" class="space-y-2"></div>
-              <button onclick="addRoutinePaymentItem()" class="w-full py-3 bg-surface-container hover:bg-surface-container-high border rounded-xl text-primary font-bold text-xs flex items-center justify-center gap-1 transition-all">
-                <span class="material-symbols-outlined text-sm">add</span> TAMBAHKAN JADWAL RUTIN
+              <button onclick="addRoutinePaymentItem()" class="w-full py-2.5 bg-violet-500/10 hover:bg-violet-500/20 text-violet-700 dark:text-violet-300 border border-violet-500/30 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-sm">add_circle</span> <span>Tambah Jadwal Rutin</span>
               </button>
             </div>
 
@@ -4423,8 +4425,8 @@
             <p>Token pembelian bawaan Anda telah <b>HANGUS</b> secara permanen di server master. Anda dapat memperbarui PIN Pribadi Anda kapan saja di bawah ini.</p>
           `;
         }
-        btnSave.className = "w-full py-2.5 bg-primary hover:bg-primary-container text-white font-bold text-xs rounded-xl shadow flex items-center justify-center gap-1.5 transition-all cursor-pointer";
-        btnSave.innerHTML = `<span class="material-symbols-outlined text-sm">save</span> SIMPAN PIN BARU`;
+        btnSave.className = "w-full py-2.5 bg-primary hover:bg-primary/90 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95";
+        btnSave.innerHTML = `<span class="material-symbols-outlined text-sm">lock_reset</span> Simpan PIN Baru`;
       } else {
         if (iconEl) { iconEl.className = "material-symbols-outlined text-amber-500 text-xl"; iconEl.textContent = "key"; }
         if (titleEl) titleEl.textContent = "Buat PIN Pribadi (Hanguskan Token)";
@@ -4443,8 +4445,8 @@
             </p>
           `;
         }
-        btnSave.className = "w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs rounded-xl shadow flex items-center justify-center gap-1.5 transition-all cursor-pointer";
-        btnSave.innerHTML = `<span class="material-symbols-outlined text-sm">local_fire_department</span> BUAT PIN & HANGUSKAN`;
+        btnSave.className = "w-full py-2.5 bg-primary hover:bg-primary/90 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95";
+        btnSave.innerHTML = `<span class="material-symbols-outlined text-sm">lock_reset</span> Simpan PIN Baru`;
       }
     }
 
@@ -13274,7 +13276,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v6.21';
+              let currentCacheInApp = 'keuanganku-pwa-v6.22';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
