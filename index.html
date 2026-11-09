@@ -122,6 +122,15 @@
       pointer-events: none !important;
     }
 
+    @keyframes pin-shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+    .animate-pin-shake {
+      animation: pin-shake 0.4s ease-in-out;
+    }
+
     /* Fullscreen Liquid Silk Mesh Gradient Container */
     .fluid-gradient-container {
       position: absolute;
@@ -617,30 +626,89 @@
       <!-- CONTAINER UTAMA LOGIN -->
       <div id="bumper-pin-section" class="pt-1 space-y-3">
 
-        <!-- TAB 1: MASUK CEPAT DENGAN PIN (SUPER BERSIH & FOKUS UNTUK HARIAN) -->
-        <div id="bumper-view-pin" class="space-y-3">
-          <div class="relative">
-            <input type="password" id="bumper-pin-input" placeholder="Masukkan PIN Anda" maxlength="35" onkeyup="if(event.key === 'Enter') verifyBumperPin()" class="w-full py-2.5 pl-3 pr-10 bg-white/10 border border-white/30 rounded-xl text-center text-white placeholder-blue-200 text-sm font-mono-data outline-none tracking-widest focus:border-white">
-            <button type="button" onclick="toggleBumperPinVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-blue-200 hover:text-white cursor-pointer" title="Lihat PIN">
-              <span class="material-symbols-outlined text-lg" id="bumper-eye-icon">visibility</span>
-            </button>
+        <!-- TAB 1: MASUK CEPAT DENGAN PIN (KEYPAD ANGKA MODERN & BEBAS KEYBOARD HP) -->
+        <div id="bumper-view-pin" class="space-y-2">
+          <!-- Hidden input untuk kompatibilitas penuh skrip verifikasi -->
+          <input type="hidden" id="bumper-pin-input" value="">
+
+          <!-- SUB-MODE 1: KEYPAD ANGKA KHUSUS (DEFAULT) -->
+          <div id="pin-mode-keypad" class="space-y-2.5">
+            <!-- Indikator 6 Bulatan PIN -->
+            <div class="py-1">
+              <div id="pin-dots-container" class="flex items-center justify-center gap-3.5">
+                <div class="pin-dot w-3.5 h-3.5 rounded-full bg-transparent border-2 border-white/35 transition-all"></div>
+                <div class="pin-dot w-3.5 h-3.5 rounded-full bg-transparent border-2 border-white/35 transition-all"></div>
+                <div class="pin-dot w-3.5 h-3.5 rounded-full bg-transparent border-2 border-white/35 transition-all"></div>
+                <div class="pin-dot w-3.5 h-3.5 rounded-full bg-transparent border-2 border-white/35 transition-all"></div>
+                <div class="pin-dot w-3.5 h-3.5 rounded-full bg-transparent border-2 border-white/35 transition-all"></div>
+                <div class="pin-dot w-3.5 h-3.5 rounded-full bg-transparent border-2 border-white/35 transition-all"></div>
+              </div>
+            </div>
+
+            <p id="bumper-error-msg" class="text-[11px] text-red-200 font-semibold leading-relaxed hidden">PIN Salah! Coba lagi.</p>
+
+            <!-- Papan Tombol Angka 3x4 Grid -->
+            <div class="grid grid-cols-3 gap-2.5 max-w-[260px] mx-auto select-none pt-0.5">
+              <button type="button" onclick="keypadPress('1')" class="h-12 rounded-2xl bg-white/10 hover:bg-white/20 active:bg-white/30 active:scale-95 text-white font-bold text-xl flex items-center justify-center border border-white/15 transition-all shadow-sm cursor-pointer">1</button>
+              <button type="button" onclick="keypadPress('2')" class="h-12 rounded-2xl bg-white/10 hover:bg-white/20 active:bg-white/30 active:scale-95 text-white font-bold text-xl flex items-center justify-center border border-white/15 transition-all shadow-sm cursor-pointer">2</button>
+              <button type="button" onclick="keypadPress('3')" class="h-12 rounded-2xl bg-white/10 hover:bg-white/20 active:bg-white/30 active:scale-95 text-white font-bold text-xl flex items-center justify-center border border-white/15 transition-all shadow-sm cursor-pointer">3</button>
+              <button type="button" onclick="keypadPress('4')" class="h-12 rounded-2xl bg-white/10 hover:bg-white/20 active:bg-white/30 active:scale-95 text-white font-bold text-xl flex items-center justify-center border border-white/15 transition-all shadow-sm cursor-pointer">4</button>
+              <button type="button" onclick="keypadPress('5')" class="h-12 rounded-2xl bg-white/10 hover:bg-white/20 active:bg-white/30 active:scale-95 text-white font-bold text-xl flex items-center justify-center border border-white/15 transition-all shadow-sm cursor-pointer">5</button>
+              <button type="button" onclick="keypadPress('6')" class="h-12 rounded-2xl bg-white/10 hover:bg-white/20 active:bg-white/30 active:scale-95 text-white font-bold text-xl flex items-center justify-center border border-white/15 transition-all shadow-sm cursor-pointer">6</button>
+              <button type="button" onclick="keypadPress('7')" class="h-12 rounded-2xl bg-white/10 hover:bg-white/20 active:bg-white/30 active:scale-95 text-white font-bold text-xl flex items-center justify-center border border-white/15 transition-all shadow-sm cursor-pointer">7</button>
+              <button type="button" onclick="keypadPress('8')" class="h-12 rounded-2xl bg-white/10 hover:bg-white/20 active:bg-white/30 active:scale-95 text-white font-bold text-xl flex items-center justify-center border border-white/15 transition-all shadow-sm cursor-pointer">8</button>
+              <button type="button" onclick="keypadPress('9')" class="h-12 rounded-2xl bg-white/10 hover:bg-white/20 active:bg-white/30 active:scale-95 text-white font-bold text-xl flex items-center justify-center border border-white/15 transition-all shadow-sm cursor-pointer">9</button>
+              <button type="button" id="btn-keypad-action-left" onclick="keypadActionLeft()" class="h-12 rounded-2xl bg-white/5 hover:bg-white/15 active:bg-white/25 active:scale-95 text-blue-200 hover:text-white flex items-center justify-center border border-white/10 transition-all shadow-sm cursor-pointer" title="Sidik Jari / Hapus Semua">
+                <span class="material-symbols-outlined text-xl" id="keypad-action-left-icon">fingerprint</span>
+              </button>
+              <button type="button" onclick="keypadPress('0')" class="h-12 rounded-2xl bg-white/10 hover:bg-white/20 active:bg-white/30 active:scale-95 text-white font-bold text-xl flex items-center justify-center border border-white/15 transition-all shadow-sm cursor-pointer">0</button>
+              <button type="button" onclick="keypadBackspace()" class="h-12 rounded-2xl bg-white/5 hover:bg-white/15 active:bg-white/25 active:scale-95 text-blue-200 hover:text-white flex items-center justify-center border border-white/10 transition-all shadow-sm cursor-pointer" title="Hapus Satu Digit">
+                <span class="material-symbols-outlined text-xl">backspace</span>
+              </button>
+            </div>
+
+            <!-- Baris Navigasi Bawah Keypad: Ingatkan Saya & Switcher ke Keyboard Huruf -->
+            <div class="flex items-center justify-between text-xs text-blue-200 px-1 pt-1">
+              <label class="flex items-center gap-1.5 cursor-pointer select-none">
+                <input type="checkbox" id="bumper-remember-pin" onchange="let t = document.getElementById('bumper-remember-text'); if(t) t.checked = this.checked;" class="w-3.5 h-3.5 rounded text-blue-600 focus:ring-0 cursor-pointer accent-blue-500">
+                <span class="text-[10px] font-medium text-blue-100">Ingatkan di HP ini</span>
+              </label>
+              <button type="button" onclick="togglePinInputMode('text')" class="text-[10px] sm:text-[11px] text-cyan-300 hover:text-white flex items-center gap-1 font-semibold cursor-pointer transition-colors py-1">
+                <span class="material-symbols-outlined text-xs">keyboard</span>
+                <span>Gunakan Keyboard</span>
+              </button>
+            </div>
           </div>
 
-          <!-- Opsi Ingatkan Saya -->
-          <div class="flex items-center justify-between text-xs text-blue-200 px-1">
-            <label class="flex items-center gap-2 cursor-pointer select-none">
-              <input type="checkbox" id="bumper-remember-pin" class="w-4 h-4 rounded text-blue-600 focus:ring-0 cursor-pointer accent-blue-500">
-              <span class="text-[11px] font-medium text-blue-100">Ingatkan saya di perangkat ini</span>
-            </label>
+          <!-- SUB-MODE 2: INPUT TEKS BIASA (UNTUK PASSWORD HURUF / TOKEN LISENSI) -->
+          <div id="pin-mode-text" class="space-y-3 hidden">
+            <div class="relative">
+              <input type="password" id="bumper-pin-input-text" placeholder="Ketik Password / PIN Huruf" maxlength="35" onkeyup="if(event.key === 'Enter') verifyBumperPinFromText()" class="w-full py-2.5 pl-3 pr-10 bg-white/10 border border-white/30 rounded-xl text-center text-white placeholder-blue-200 text-sm font-mono-data outline-none tracking-widest focus:border-white">
+              <button type="button" onclick="toggleBumperTextVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-blue-200 hover:text-white cursor-pointer" title="Lihat Password">
+                <span class="material-symbols-outlined text-lg" id="bumper-text-eye-icon">visibility</span>
+              </button>
+            </div>
+
+            <button type="button" id="btn-bumper-text-login" onclick="verifyBumperPinFromText()" class="w-full py-2.5 bg-white text-primary font-bold rounded-xl text-xs hover:bg-blue-50 shadow transition-all cursor-pointer">MASUK APLIKASI</button>
+            <p id="bumper-text-error-msg" class="text-[11px] text-red-200 font-semibold leading-relaxed hidden">PIN / Password Salah! Coba lagi.</p>
+
+            <!-- Opsi Ingatkan & Beralih ke Keypad -->
+            <div class="flex items-center justify-between text-xs text-blue-200 px-1 pt-1">
+              <label class="flex items-center gap-1.5 cursor-pointer select-none">
+                <input type="checkbox" id="bumper-remember-text" onchange="let p = document.getElementById('bumper-remember-pin'); if(p) p.checked = this.checked;" class="w-3.5 h-3.5 rounded text-blue-600 focus:ring-0 cursor-pointer accent-blue-500">
+                <span class="text-[10px] font-medium text-blue-100">Ingatkan di HP ini</span>
+              </label>
+              <button type="button" onclick="togglePinInputMode('keypad')" class="text-[10px] sm:text-[11px] text-cyan-300 hover:text-white inline-flex items-center gap-1 font-semibold cursor-pointer transition-colors">
+                <span class="material-symbols-outlined text-xs">dialpad</span>
+                <span>Beralih ke Keypad</span>
+              </button>
+            </div>
           </div>
 
-          <button id="btn-bumper-login" onclick="verifyBumperPin()" class="w-full py-2.5 bg-white text-primary font-bold rounded-xl text-xs hover:bg-blue-50 shadow transition-all cursor-pointer">MASUK APLIKASI</button>
-          <p id="bumper-error-msg" class="text-[11px] text-red-200 font-semibold leading-relaxed hidden">PIN Salah! Coba lagi.</p>
-
-          <!-- OPSI BIOMETRIK (SIDIK JARI / FACE ID) -->
-          <div id="bumper-biometric-section" class="hidden pt-3 border-t border-white/10 space-y-2">
+          <!-- OPSI BIOMETRIK (SIDIK JARI / FACE ID TOMBOL BESAR) -->
+          <div id="bumper-biometric-section" class="hidden pt-2 border-t border-white/10 space-y-2">
             <button type="button" id="btn-bumper-biometric" onclick="loginWithBiometrics()" class="w-full py-2.5 bg-white hover:bg-slate-100 active:scale-95 border border-white text-slate-900 font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md">
-              <span class="material-symbols-outlined text-base text-blue-200">fingerprint</span>
+              <span class="material-symbols-outlined text-base text-blue-600">fingerprint</span>
               <span id="bumper-biometric-label">Masuk dengan Sidik Jari / Face ID</span>
             </button>
           </div>
@@ -2648,13 +2716,13 @@
                     <span class="material-symbols-outlined text-sm">security</span> Kunci Keamanan Anti-Sharing
                   </p>
                   <p id="setup-pass-info-text">
-                    Saat ini Anda masih masuk menggunakan Token Bawaan (akses terkunci hanya 1 perangkat). Tentukan <b>PIN Pribadi</b> Anda di bawah ini. Setelah PIN disimpan, Token bawaan akan otomatis <b>HANGUS</b> sehingga tidak bisa digunakan orang lain, dan fitur Sinkronisasi Multi-Perangkat akan aktif!
+                    Saat ini Anda masih masuk menggunakan Token Bawaan (akses terkunci hanya 1 perangkat). Tentukan <b>6 Digit Angka PIN Pribadi</b> Anda di bawah ini (contoh: 190412). Setelah PIN disimpan, Token bawaan akan otomatis <b>HANGUS</b> dan Anda dapat masuk dengan mudah menggunakan Keypad Angka Modern!
                   </p>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
                   <div class="sm:col-span-2 relative flex items-center">
-                    <input type="password" id="new-pass-input" placeholder="Masukkan PIN Pribadi Baru (4-12 Karakter)" class="w-full p-2.5 pr-10 border rounded-xl text-xs font-mono-data bg-surface text-on-surface tracking-wider outline-none focus:border-primary">
+                    <input type="password" id="new-pass-input" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="Masukkan 6 Digit Angka PIN Baru (Contoh: 190412)" class="w-full p-2.5 pr-10 border rounded-xl text-xs font-mono-data bg-surface text-on-surface tracking-wider outline-none focus:border-primary">
                     <button type="button" onclick="toggleNewPassVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface flex items-center justify-center p-1 cursor-pointer focus:outline-none" title="Lihat / Sembunyikan PIN">
                       <span class="material-symbols-outlined text-lg" id="new-pass-eye-icon">visibility</span>
                     </button>
@@ -4030,19 +4098,19 @@
         // Cek apakah opsi "Ingatkan Saya" aktif
         let isRemember = localStorage.getItem("KEUANGANKU_REMEMBER_PIN") === "true";
         let remCheck = document.getElementById('bumper-remember-pin');
+        let remTextCheck = document.getElementById('bumper-remember-text');
         let pinInp = document.getElementById('bumper-pin-input');
+        let textInp = document.getElementById('bumper-pin-input-text');
         if (remCheck) remCheck.checked = isRemember;
-        if (isRemember && pinInp) {
+        if (remTextCheck) remTextCheck.checked = isRemember;
+        if (isRemember) {
           let savedPin = localStorage.getItem("KEUANGANKU_SAVED_PIN");
           if (savedPin) {
-            pinInp.value = savedPin;
+            if (pinInp) pinInp.value = savedPin;
+            if (textInp) textInp.value = savedPin;
           }
         }
-        setTimeout(() => {
-          if (pinInp && !pinInp.value) {
-            pinInp.focus();
-          }
-        }, 300);
+        if (typeof detectInitialPinMode === 'function') detectInitialPinMode();
       }
 
       if (license && license.token) {
@@ -4384,8 +4452,8 @@
       let pinInput = document.getElementById('new-pass-input');
       if (!pinInput) return;
       let newPin = pinInput.value.trim();
-      if (!newPin || newPin.length < 3) {
-        alert("PIN Pribadi minimal 3 karakter!");
+      if (!newPin || !/^[0-9]{4,6}$/.test(newPin)) {
+        alert("PIN Pribadi Baru harus berupa 4 hingga 6 digit angka (contoh: 190412)!");
         return;
       }
 
@@ -5603,10 +5671,231 @@
         let pinInp = document.getElementById('bumper-pin-input');
         if (pinInp) {
           pinInp.value = '';
-          setTimeout(() => pinInp.focus(), 150);
+        }
+        if (typeof keypadClear === 'function') keypadClear();
+        if (typeof detectInitialPinMode === 'function') detectInitialPinMode();
+      }
+    }
+
+    // === SISTEM KEYPAD PIN ANGKA MODERN ===
+    let currentKeypadPin = "";
+
+    function keypadPress(digit) {
+      if (currentKeypadPin.length >= 6) return;
+      currentKeypadPin += String(digit);
+      updatePinDots();
+      updateKeypadActionLeftButton();
+      if (navigator.vibrate) {
+        try { navigator.vibrate(20); } catch(e) {}
+      }
+      let pinInp = document.getElementById('bumper-pin-input');
+      if (pinInp) pinInp.value = currentKeypadPin;
+
+      let errKeypad = document.getElementById('bumper-error-msg');
+      if (errKeypad) errKeypad.classList.add('hidden');
+      let errText = document.getElementById('bumper-text-error-msg');
+      if (errText) errText.classList.add('hidden');
+
+      if (currentKeypadPin.length === 6) {
+        setTimeout(() => {
+          verifyBumperPin();
+        }, 120);
+      }
+    }
+
+    function keypadBackspace() {
+      if (currentKeypadPin.length > 0) {
+        currentKeypadPin = currentKeypadPin.slice(0, -1);
+        updatePinDots();
+        updateKeypadActionLeftButton();
+        if (navigator.vibrate) {
+          try { navigator.vibrate(15); } catch(e) {}
+        }
+        let pinInp = document.getElementById('bumper-pin-input');
+        if (pinInp) pinInp.value = currentKeypadPin;
+      }
+    }
+
+    function keypadClear() {
+      currentKeypadPin = "";
+      updatePinDots();
+      updateKeypadActionLeftButton();
+      let pinInp = document.getElementById('bumper-pin-input');
+      if (pinInp) pinInp.value = "";
+    }
+
+    function updatePinDots() {
+      let container = document.getElementById('pin-dots-container');
+      if (!container) return;
+      let dots = container.querySelectorAll('.pin-dot');
+      let len = currentKeypadPin.length;
+      dots.forEach((dot, idx) => {
+        if (idx < len) {
+          dot.className = "pin-dot w-3.5 h-3.5 rounded-full bg-white border-2 border-white shadow-[0_0_10px_rgba(255,255,255,0.7)] scale-110 transition-all";
+        } else {
+          dot.className = "pin-dot w-3.5 h-3.5 rounded-full bg-transparent border-2 border-white/35 transition-all";
+        }
+      });
+    }
+
+    function updateKeypadActionLeftButton() {
+      let btn = document.getElementById('btn-keypad-action-left');
+      let icon = document.getElementById('keypad-action-left-icon');
+      if (!btn || !icon) return;
+
+      let len = currentKeypadPin.length;
+      let isBioEnabled = localStorage.getItem("KEUANGANKU_BIOMETRIC_ENABLED") === "true";
+
+      if (len >= 4 && len < 6) {
+        icon.textContent = 'check';
+        btn.title = "Masuk Aplikasi";
+        btn.className = "h-12 rounded-2xl bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 active:scale-95 text-white flex items-center justify-center border border-emerald-400/50 transition-all shadow-md cursor-pointer animate-pulse";
+      } else {
+        btn.className = "h-12 rounded-2xl bg-white/5 hover:bg-white/15 active:bg-white/25 active:scale-95 text-blue-200 hover:text-white flex items-center justify-center border border-white/10 transition-all shadow-sm cursor-pointer";
+        if (isBioEnabled && len === 0) {
+          icon.textContent = 'fingerprint';
+          btn.title = "Masuk dengan Biometrik (Face ID / Sidik Jari)";
+        } else {
+          icon.textContent = 'clear_all';
+          btn.title = "Hapus Semua Digit PIN";
         }
       }
     }
+
+    function onPinVerifyFailed(customMsg) {
+      if (navigator.vibrate) {
+        try { navigator.vibrate([60, 40, 60]); } catch(e) {}
+      }
+      let dotsContainer = document.getElementById('pin-dots-container');
+      if (dotsContainer) {
+        dotsContainer.classList.remove('animate-pin-shake');
+        void dotsContainer.offsetWidth;
+        dotsContainer.classList.add('animate-pin-shake');
+        setTimeout(() => {
+          dotsContainer.classList.remove('animate-pin-shake');
+        }, 450);
+      }
+      let defaultMsg = "PIN / Password Salah! Coba lagi.";
+      let finalMsg = customMsg || defaultMsg;
+      let errKeypad = document.getElementById('bumper-error-msg');
+      if (errKeypad) {
+        errKeypad.innerHTML = finalMsg;
+        errKeypad.classList.remove('hidden');
+      }
+      let errText = document.getElementById('bumper-text-error-msg');
+      if (errText) {
+        errText.innerHTML = finalMsg;
+        errText.classList.remove('hidden');
+      }
+      keypadClear();
+    }
+
+    function keypadActionLeft() {
+      let len = currentKeypadPin.length;
+      let isBioEnabled = localStorage.getItem("KEUANGANKU_BIOMETRIC_ENABLED") === "true";
+
+      if (len >= 4) {
+        verifyBumperPin();
+      } else if (isBioEnabled && len === 0 && typeof loginWithBiometrics === 'function') {
+        loginWithBiometrics();
+      } else {
+        keypadClear();
+      }
+    }
+
+    function togglePinInputMode(mode, silent) {
+      let keypadDiv = document.getElementById('pin-mode-keypad');
+      let textDiv = document.getElementById('pin-mode-text');
+      let pinInp = document.getElementById('bumper-pin-input');
+      let textInp = document.getElementById('bumper-pin-input-text');
+
+      if (mode === 'text') {
+        if (keypadDiv) keypadDiv.classList.add('hidden');
+        if (textDiv) textDiv.classList.remove('hidden');
+        if (textInp) {
+          if (currentKeypadPin) {
+            textInp.value = currentKeypadPin;
+          }
+          if (!silent) setTimeout(() => textInp.focus(), 150);
+        }
+      } else {
+        if (textDiv) textDiv.classList.add('hidden');
+        if (keypadDiv) keypadDiv.classList.remove('hidden');
+        if (textInp && /^[0-9]{0,6}$/.test(textInp.value)) {
+          currentKeypadPin = textInp.value;
+        } else {
+          currentKeypadPin = "";
+        }
+        if (pinInp) pinInp.value = currentKeypadPin;
+        updatePinDots();
+        updateKeypadActionLeftButton();
+      }
+    }
+
+    function verifyBumperPinFromText() {
+      let textInp = document.getElementById('bumper-pin-input-text');
+      let pinInp = document.getElementById('bumper-pin-input');
+      if (textInp && pinInp) {
+        pinInp.value = (textInp.value || '').trim();
+      }
+      verifyBumperPin();
+    }
+
+    function toggleBumperTextVisibility() {
+      let textInp = document.getElementById('bumper-pin-input-text');
+      let icon = document.getElementById('bumper-text-eye-icon');
+      if (!textInp) return;
+      if (textInp.type === 'password') {
+        textInp.type = 'text';
+        if (icon) icon.textContent = 'visibility_off';
+      } else {
+        textInp.type = 'password';
+        if (icon) icon.textContent = 'visibility';
+      }
+    }
+
+    function detectInitialPinMode() {
+      let savedPin = localStorage.getItem("KEUANGANKU_SAVED_PIN") || "";
+      let lic = (typeof getSavedLicense === 'function') ? getSavedLicense() : null;
+      let personalPin = (lic && lic.personalPin) ? String(lic.personalPin) : "";
+      let appPin = (globalData && globalData.appPin) ? String(globalData.appPin) : "";
+
+      let targetPin = savedPin || personalPin || appPin;
+      let hasAlpha = targetPin && !/^[0-9]*$/.test(targetPin);
+
+      if (hasAlpha) {
+        togglePinInputMode('text', true);
+      } else {
+        togglePinInputMode('keypad', true);
+      }
+    }
+
+    window.addEventListener('keydown', (e) => {
+      let splash = document.getElementById('splash-screen');
+      if (!splash || splash.classList.contains('hidden') || splash.style.display === 'none') return;
+      
+      let keypadDiv = document.getElementById('pin-mode-keypad');
+      if (!keypadDiv || keypadDiv.classList.contains('hidden')) return;
+
+      let bumperPinView = document.getElementById('bumper-view-pin');
+      if (!bumperPinView || bumperPinView.classList.contains('hidden')) return;
+
+      if (e.key >= '0' && e.key <= '9') {
+        e.preventDefault();
+        keypadPress(e.key);
+      } else if (e.key === 'Backspace') {
+        e.preventDefault();
+        keypadBackspace();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        keypadClear();
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (currentKeypadPin.length >= 3) {
+          verifyBumperPin();
+        }
+      }
+    });
 
         // === SISTEM AUTENTIKASI BIOMETRIK (WEBAUTHN - FACE ID & SIDIK JARI) ===
     function bufferToBase64Url(buffer) {
@@ -5798,6 +6087,17 @@
           bumperSec.classList.remove('hidden');
         } else {
           bumperSec.classList.add('hidden');
+        }
+      }
+      let keypadLeftIcon = document.getElementById('keypad-action-left-icon');
+      let keypadLeftBtn = document.getElementById('btn-keypad-action-left');
+      if (keypadLeftIcon) {
+        if (isSupported && isEnabled) {
+          keypadLeftIcon.textContent = 'fingerprint';
+          if (keypadLeftBtn) keypadLeftBtn.title = "Masuk dengan Biometrik (Face ID / Sidik Jari)";
+        } else {
+          keypadLeftIcon.textContent = 'clear_all';
+          if (keypadLeftBtn) keypadLeftBtn.title = "Hapus Semua Digit PIN";
         }
       }
 
@@ -6256,9 +6556,13 @@ function hideSplashScreenAndTriggerAlerts() {
       let isOwner = (typeof isOwnerDevice === 'function') ? isOwnerDevice() : false;
 
       if (err) err.classList.add('hidden');
+      let errText = document.getElementById('bumper-text-error-msg');
+      if (errText) errText.classList.add('hidden');
 
       if (!pinInput) {
-        if (err) {
+        if (typeof onPinVerifyFailed === 'function') {
+          onPinVerifyFailed("Masukkan PIN atau Kode Token Lisensi Anda.");
+        } else if (err) {
           err.textContent = "Masukkan PIN atau Kode Token Lisensi Anda.";
           err.classList.remove('hidden');
         }
@@ -6357,7 +6661,9 @@ function hideSplashScreenAndTriggerAlerts() {
         }
 
         let remCheck = document.getElementById('bumper-remember-pin');
-        if (remCheck && remCheck.checked) {
+        let remTextCheck = document.getElementById('bumper-remember-text');
+        let isRemChecked = (remCheck && remCheck.checked) || (remTextCheck && remTextCheck.checked);
+        if (isRemChecked) {
           localStorage.setItem("KEUANGANKU_REMEMBER_PIN", "true");
           localStorage.setItem("KEUANGANKU_SAVED_PIN", pinInput);
         } else {
@@ -6477,7 +6783,9 @@ function hideSplashScreenAndTriggerAlerts() {
             sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
 
             let remCheck = document.getElementById('bumper-remember-pin');
-            if (remCheck && remCheck.checked && finalPin) {
+            let remTextCheck = document.getElementById('bumper-remember-text');
+            let isRemChecked = (remCheck && remCheck.checked) || (remTextCheck && remTextCheck.checked);
+            if (isRemChecked && finalPin) {
               localStorage.setItem("KEUANGANKU_REMEMBER_PIN", "true");
               localStorage.setItem("KEUANGANKU_SAVED_PIN", finalPin);
             }
@@ -6559,7 +6867,9 @@ function hideSplashScreenAndTriggerAlerts() {
             sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
 
             let remCheck = document.getElementById('bumper-remember-pin');
-            if (remCheck && remCheck.checked) {
+            let remTextCheck = document.getElementById('bumper-remember-text');
+            let isRemChecked = (remCheck && remCheck.checked) || (remTextCheck && remTextCheck.checked);
+            if (isRemChecked) {
               localStorage.setItem("KEUANGANKU_REMEMBER_PIN", "true");
               localStorage.setItem("KEUANGANKU_SAVED_PIN", pinInput);
             }
@@ -6609,7 +6919,9 @@ function hideSplashScreenAndTriggerAlerts() {
               }
 
               let remCheck = document.getElementById('bumper-remember-pin');
-              if (remCheck && remCheck.checked) {
+              let remTextCheck = document.getElementById('bumper-remember-text');
+              let isRemChecked = (remCheck && remCheck.checked) || (remTextCheck && remTextCheck.checked);
+              if (isRemChecked) {
                 localStorage.setItem("KEUANGANKU_REMEMBER_PIN", "true");
                 localStorage.setItem("KEUANGANKU_SAVED_PIN", pinInput);
               }
@@ -6629,15 +6941,20 @@ function hideSplashScreenAndTriggerAlerts() {
 
       // 5. Jika perangkat belum memiliki lisensi sama sekali
       if (!lic) {
-        if (err) {
-          err.innerHTML = "Perangkat ini belum diaktivasi lisensi.<br>Masukkan <b>Kode Token Pembelian</b> Anda (format: PRO-XXXX-XXXX-XXXX) atau klik <b>'Tautkan via Barcode'</b> di bawah.";
+        let noLicMsg = "Perangkat ini belum diaktivasi lisensi.<br>Masukkan <b>Kode Token Pembelian</b> Anda (format: PRO-XXXX-XXXX-XXXX) atau klik <b>'Tautkan via Barcode'</b> di bawah.";
+        if (typeof onPinVerifyFailed === 'function') {
+          onPinVerifyFailed(noLicMsg);
+        } else if (err) {
+          err.innerHTML = noLicMsg;
           err.classList.remove('hidden');
         }
         return;
       }
 
       // 6. Salah PIN reguler
-      if (err) {
+      if (typeof onPinVerifyFailed === 'function') {
+        onPinVerifyFailed("PIN / Password Salah! Coba lagi.");
+      } else if (err) {
         err.textContent = "PIN / Password Salah! Coba lagi.";
         err.classList.remove('hidden');
       }
@@ -12658,6 +12975,10 @@ function formatReadableSheets(ss, parsed) {
       let np = document.getElementById('new-pass-input').value; 
       if (np && np.trim() !== "") { 
         let cleanPass = np.trim();
+        if (!/^[0-9]{4,6}$/.test(cleanPass)) {
+          alert("PIN Akses Baru harus berupa 4 hingga 6 digit angka (contoh: 190412)!");
+          return;
+        }
         globalData.ownerPassword = cleanPass; 
         globalData.appPin = cleanPass;
         saveStorageData(); 
@@ -12953,7 +13274,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v6.20';
+              let currentCacheInApp = 'keuanganku-pwa-v6.21';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
