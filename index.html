@@ -543,8 +543,8 @@
 
     <div class="relative z-10 text-center space-y-4 p-5 sm:p-6 max-w-xs sm:max-w-sm w-full bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl my-auto">
       <!-- Minimalist Wallet Logo Box -->
-      <div class="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center mx-auto shadow-xl border border-white/20 p-3 animate-pulse-gentle">
-        <svg class="w-full h-full text-white" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <div class="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center mx-auto shadow-xl p-2.5 animate-pulse-gentle">
+        <svg class="w-full h-full text-white" viewBox="110 115 295 282" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M 355 206 L 355 185 A 40 40 0 0 0 315 145 L 180 145 A 40 40 0 0 0 140 185 L 140 327 A 40 40 0 0 0 180 367 L 315 367 A 40 40 0 0 0 355 327 L 355 306" 
                 stroke="#ffffff" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" />
           <rect x="260" y="206" width="115" height="100" rx="26" fill="#2563eb" stroke="#ffffff" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" />
@@ -12952,7 +12952,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v6.17';
+              let currentCacheInApp = 'keuanganku-pwa-v6.18';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
