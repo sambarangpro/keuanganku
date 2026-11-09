@@ -6714,7 +6714,7 @@ function hideSplashScreenAndTriggerAlerts() {
       icon.className = "material-symbols-outlined text-[22px] transition-transform";
       if (status === 'syncing') {
         icon.classList.add('animate-spin', 'text-blue-500');
-        icon.textContent = 'sync';
+        icon.textContent = 'progress_activity';
         if (txt) txt.textContent = text || 'Sinkronisasi...';
         if (btn) btn.title = "Sedang menyinkronkan data dengan Cloud...";
       } else if (status === 'synced') {
@@ -12953,7 +12953,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v6.19';
+              let currentCacheInApp = 'keuanganku-pwa-v6.20';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
