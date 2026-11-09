@@ -2407,76 +2407,40 @@
         <!-- SUBTAB 1: PENGATURAN APLIKASI              -->
         <!-- ========================================== -->
         <div id="setup-view-pengaturan" class="space-y-6">
-          <div class="flex flex-col md:flex-row gap-6 items-start">
+          <!-- SUB-MENU KATEGORI PENGATURAN DI ATAS (DESKTOP & MOBILE) -->
+          <div class="bg-surface dark:bg-slate-900 border border-outline-variant/70 p-1.5 rounded-2xl shadow-sm flex items-center gap-1.5 overflow-x-auto no-scrollbar sm:grid sm:grid-cols-4">
             
-            <!-- SIDEBAR KATEGORI PENGATURAN (MIRIP IPAD / ANDROID SETTINGS) -->
-            <div class="w-full md:w-64 lg:w-72 shrink-0">
-              <!-- Desktop / Tablet Vertical Sidebar -->
-              <div class="bg-surface dark:bg-slate-900 border border-outline-variant/70 rounded-3xl p-3 shadow-sm space-y-1.5 hidden md:block sticky top-24">
-                <div class="px-3.5 py-2 text-[10px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-                  Kategori Pengaturan
-                </div>
-                
-                <!-- Nav 1: Akun & Lisensi -->
-                <button type="button" id="setup-nav-account" onclick="switchSetupCategory('account')" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl font-bold text-xs transition-all cursor-pointer bg-primary text-white shadow-sm">
-                  <div class="flex items-center gap-3">
-                    <span class="material-symbols-outlined text-lg">manage_accounts</span>
-                    <span>Akun & Lisensi</span>
-                  </div>
-                  <span class="material-symbols-outlined text-sm opacity-70">chevron_right</span>
-                </button>
+            <!-- Nav 1: Akun & Lisensi -->
+            <button type="button" id="setup-nav-account" onclick="switchSetupCategory('account')" class="flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer bg-primary text-white shadow-sm">
+              <span class="material-symbols-outlined text-base">manage_accounts</span>
+              <span class="sm:hidden">Akun</span>
+              <span class="hidden sm:inline">Akun & Lisensi</span>
+            </button>
 
-                <!-- Nav 2: Database & Cadangan -->
-                <button type="button" id="setup-nav-database" onclick="switchSetupCategory('database')" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl font-semibold text-xs transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container">
-                  <div class="flex items-center gap-3">
-                    <span class="material-symbols-outlined text-lg">cloud_sync</span>
-                    <span>Database & Cadangan</span>
-                  </div>
-                  <span class="material-symbols-outlined text-sm opacity-70">chevron_right</span>
-                </button>
+            <!-- Nav 2: Database & Cadangan -->
+            <button type="button" id="setup-nav-database" onclick="switchSetupCategory('database')" class="flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container">
+              <span class="material-symbols-outlined text-base">cloud_sync</span>
+              <span class="sm:hidden">Database</span>
+              <span class="hidden sm:inline">Database & Cadangan</span>
+            </button>
 
-                <!-- Nav 3: Fitur & Notifikasi -->
-                <button type="button" id="setup-nav-features" onclick="switchSetupCategory('features')" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl font-semibold text-xs transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container">
-                  <div class="flex items-center gap-3">
-                    <span class="material-symbols-outlined text-lg">tune</span>
-                    <span>Fitur & Notifikasi</span>
-                  </div>
-                  <span class="material-symbols-outlined text-sm opacity-70">chevron_right</span>
-                </button>
+            <!-- Nav 3: Fitur & Notifikasi -->
+            <button type="button" id="setup-nav-features" onclick="switchSetupCategory('features')" class="flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container">
+              <span class="material-symbols-outlined text-base">tune</span>
+              <span class="sm:hidden">Fitur</span>
+              <span class="hidden sm:inline">Fitur & Notifikasi</span>
+            </button>
 
-                <!-- Nav 4: Sistem & Tentang -->
-                <button type="button" id="setup-nav-system" onclick="switchSetupCategory('system')" class="w-full flex items-center justify-between px-3.5 py-3 rounded-2xl font-semibold text-xs transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container">
-                  <div class="flex items-center gap-3">
-                    <span class="material-symbols-outlined text-lg">info</span>
-                    <span>Sistem & Tentang</span>
-                  </div>
-                  <span class="material-symbols-outlined text-sm opacity-70">chevron_right</span>
-                </button>
-              </div>
+            <!-- Nav 4: Sistem & Tentang -->
+            <button type="button" id="setup-nav-system" onclick="switchSetupCategory('system')" class="flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container">
+              <span class="material-symbols-outlined text-base">info</span>
+              <span class="sm:hidden">Sistem</span>
+              <span class="hidden sm:inline">Sistem & Tentang</span>
+            </button>
+          </div>
 
-              <!-- Mobile Horizontal Pill Navigation (Tampil di Layar HP) -->
-              <div class="md:hidden flex items-center gap-1.5 p-1.5 bg-surface dark:bg-slate-900 border border-outline-variant/70 rounded-2xl overflow-x-auto no-scrollbar shadow-sm">
-                <button type="button" id="setup-mnav-account" onclick="switchSetupCategory('account')" class="px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap flex items-center gap-1.5 bg-primary text-white shadow-sm transition-all">
-                  <span class="material-symbols-outlined text-base">manage_accounts</span>
-                  <span>Akun</span>
-                </button>
-                <button type="button" id="setup-mnav-database" onclick="switchSetupCategory('database')" class="px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap flex items-center gap-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all">
-                  <span class="material-symbols-outlined text-base">cloud_sync</span>
-                  <span>Database</span>
-                </button>
-                <button type="button" id="setup-mnav-features" onclick="switchSetupCategory('features')" class="px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap flex items-center gap-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all">
-                  <span class="material-symbols-outlined text-base">tune</span>
-                  <span>Fitur</span>
-                </button>
-                <button type="button" id="setup-mnav-system" onclick="switchSetupCategory('system')" class="px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap flex items-center gap-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all">
-                  <span class="material-symbols-outlined text-base">info</span>
-                  <span>Sistem</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- RIGHT CONTENT AREA (ISI SETTING MENURUT KATEGORI) -->
-            <div class="flex-1 min-w-0 w-full space-y-6">
+          <!-- KONTEN SETTING UTAMA (LEGA PENUH DI DESKTOP & MOBILE) -->
+          <div class="w-full space-y-6">
 
               <!-- ======================================================== -->
               <!-- KATEGORI 1: AKUN & LISENSI                               -->
@@ -3185,8 +3149,6 @@
               </div>
 
             </div>
-
-          </div>
         </div>
 
         <!-- ========================================== -->
@@ -12697,9 +12659,9 @@ function formatReadableSheets(ss, parsed) {
 
         if (dBtn) {
           if (isActive) {
-            dBtn.className = "w-full flex items-center justify-between px-3.5 py-3 rounded-2xl font-bold text-xs transition-all cursor-pointer bg-primary text-white shadow-sm";
+            dBtn.className = "flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer bg-primary text-white shadow-sm";
           } else {
-            dBtn.className = "w-full flex items-center justify-between px-3.5 py-3 rounded-2xl font-semibold text-xs transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container";
+            dBtn.className = "flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container";
           }
         }
 
@@ -13276,7 +13238,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v6.22';
+              let currentCacheInApp = 'keuanganku-pwa-v6.23';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
