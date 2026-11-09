@@ -1531,18 +1531,19 @@
           <span class="text-[11px] font-bold hidden sm:inline">Instal App</span>
         </button>
 
-        <!-- TOMBOL & INDIKATOR SINKRONISASI OTOMATIS (Cukup Animasi Icon Saja) -->
-        <button id="header-sync-btn" onclick="syncWithCloud(true)" title="Status Sinkronisasi Cloud (Klik untuk sinkron sekarang)" class="p-2 rounded-xl bg-surface-container dark:bg-slate-800 border border-outline-variant/60 hover:border-primary active:scale-95 transition-all shadow-sm flex items-center justify-center cursor-pointer">
-          <span id="header-sync-icon" class="material-symbols-outlined text-base text-green-500">cloud_done</span>
+        <!-- TOMBOL & INDIKATOR SINKRONISASI OTOMATIS -->
+        <button id="header-sync-btn" onclick="syncWithCloud(true)" title="Status Sinkronisasi Cloud (Klik untuk sinkron sekarang)" class="w-9 h-9 rounded-full hover:bg-surface-container transition-colors flex items-center justify-center cursor-pointer text-on-surface-variant active:scale-95">
+          <span id="header-sync-icon" class="material-symbols-outlined text-[22px] text-green-500 transition-transform">cloud_done</span>
         </button>
 
-        <button onclick="toggleDarkMode()" class="p-2 rounded-full hover:bg-surface-container transition-colors flex items-center gap-1 text-xs font-bold cursor-pointer" title="Ubah Tema Gelap/Terang">
-          <span id="header-theme-icon" class="material-symbols-outlined text-on-surface-variant">dark_mode</span>
+        <!-- TOMBOL UBAH TEMA -->
+        <button onclick="toggleDarkMode()" class="w-9 h-9 rounded-full hover:bg-surface-container transition-colors flex items-center justify-center cursor-pointer text-on-surface-variant hover:text-primary active:scale-95" title="Ubah Tema Gelap/Terang">
+          <span id="header-theme-icon" class="material-symbols-outlined text-[22px] text-on-surface-variant">dark_mode</span>
         </button>
 
         <!-- TOMBOL KUNCI APLIKASI (LOCKSCREEN PIN) -->
-        <button onclick="lockAppNow()" class="p-2 rounded-full hover:bg-surface-container transition-colors flex items-center gap-1 text-xs font-bold cursor-pointer text-on-surface-variant hover:text-primary active:scale-95" title="Kunci Aplikasi (Layar Masuk PIN)">
-          <span class="material-symbols-outlined text-base">lock</span>
+        <button onclick="lockAppNow()" class="w-9 h-9 rounded-full hover:bg-surface-container transition-colors flex items-center justify-center cursor-pointer text-on-surface-variant hover:text-primary active:scale-95" title="Kunci Aplikasi (Layar Masuk PIN)">
+          <span class="material-symbols-outlined text-[22px] text-on-surface-variant hover:text-primary">lock</span>
         </button>
       </div>
     </div>
@@ -6710,7 +6711,7 @@ function hideSplashScreenAndTriggerAlerts() {
       let txt = document.getElementById('header-sync-text');
       if (!icon) return;
 
-      icon.className = "material-symbols-outlined text-base transition-transform";
+      icon.className = "material-symbols-outlined text-[22px] transition-transform";
       if (status === 'syncing') {
         icon.classList.add('animate-spin', 'text-blue-500');
         icon.textContent = 'sync';
@@ -6742,7 +6743,7 @@ function hideSplashScreenAndTriggerAlerts() {
         setSyncStatus('synced', 'Mode Demo (Cloud Dijeda)');
         let icon = document.getElementById('header-sync-icon');
         if (icon) {
-          icon.className = "material-symbols-outlined text-base text-amber-500 animate-pulse";
+          icon.className = "material-symbols-outlined text-[22px] text-amber-500 animate-pulse";
           icon.textContent = "movie";
         }
         if (isManualClick) {
@@ -12952,7 +12953,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v6.18';
+              let currentCacheInApp = 'keuanganku-pwa-v6.19';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
