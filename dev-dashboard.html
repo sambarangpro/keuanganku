@@ -3337,6 +3337,13 @@
         // Load & Cache Sales Settings (Katalog, Voucher, Rekening)
         if (res.salesSettings && typeof res.salesSettings === 'object') {
           cachedSalesSettings = res.salesSettings;
+          // Pastikan paket di dev dashboard selalu memakai versi baru (Personal min 3 devices)
+          if (cachedSalesSettings && Array.isArray(cachedSalesSettings.packages)) {
+            let pPers = cachedSalesSettings.packages.find(p => p.id === 'pkg-personal');
+            if (!pPers || pPers.devices < 3) {
+              cachedSalesSettings.packages = JSON.parse(JSON.stringify(getDefaultSalesSettingsFallback().packages));
+            }
+          }
           localStorage.setItem('KEUANGANKU_DEV_SALES_SETTINGS', JSON.stringify(cachedSalesSettings));
         } else {
           try {
@@ -3347,6 +3354,12 @@
         }
         if (!cachedSalesSettings) {
           cachedSalesSettings = getDefaultSalesSettingsFallback();
+        } else if (Array.isArray(cachedSalesSettings.packages)) {
+          let pPers = cachedSalesSettings.packages.find(p => p.id === 'pkg-personal');
+          if (!pPers || pPers.devices < 3) {
+            cachedSalesSettings.packages = JSON.parse(JSON.stringify(getDefaultSalesSettingsFallback().packages));
+            localStorage.setItem('KEUANGANKU_DEV_SALES_SETTINGS', JSON.stringify(cachedSalesSettings));
+          }
         }
 
         try {

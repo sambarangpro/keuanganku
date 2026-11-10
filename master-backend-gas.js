@@ -2227,6 +2227,14 @@ function getStoredSalesSettings() {
         if (!parsed.sellerWhatsApp || parsed.sellerWhatsApp.includes("123456789")) {
           parsed.sellerWhatsApp = "087788197916";
         }
+        // Auto-heal paket lama: jika paket personal masih 1 device, upgrade ke struktur baru (min 3 devices)
+        var pPersonal = parsed.packages.find(function(p) { return p.id === 'pkg-personal'; });
+        if (!pPersonal || pPersonal.devices < 3) {
+          parsed.packages = getDefaultSalesSettings().packages;
+          try {
+            PropertiesService.getScriptProperties().setProperty("KEUANGANKU_SALES_SETTINGS", JSON.stringify(parsed));
+          } catch(e) {}
+        }
         if (Array.isArray(parsed.paymentAccounts)) {
           var hasDummy = parsed.paymentAccounts.some(function(acc) {
             return acc.accountNo === "1234567890" || acc.accountNo === "08123456789" || (acc.bank && acc.bank.indexOf("Transfer BCA") !== -1);

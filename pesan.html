@@ -1226,7 +1226,15 @@
             heroTag.textContent = isLive ? "Lisensi Resmi Seumur Hidup (v1.0 Lifetime)" : "Masa Uji Coba Lisensi (v0.1 BETA)";
           }
 
-          if (Array.isArray(res.packages) && res.packages.length > 0) catalog.packages = res.packages;
+          if (Array.isArray(res.packages) && res.packages.length > 0) {
+            let pPers = res.packages.find(p => p.id === 'pkg-personal');
+            // Hanya gunakan paket dari server jika sudah versi baru (personal minimal 3 perangkat)
+            if (pPers && pPers.devices >= 3) {
+              catalog.packages = res.packages;
+            } else {
+              catalog.packages = JSON.parse(JSON.stringify(DEFAULT_CATALOG.packages));
+            }
+          }
           if (Array.isArray(res.vouchers)) {
             let mergedVouchers = res.vouchers.slice();
             DEFAULT_CATALOG.vouchers.forEach(defV => {
