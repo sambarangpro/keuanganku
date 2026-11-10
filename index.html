@@ -1621,7 +1621,7 @@
   <div id="demo-mode-sticky-bar" class="hidden fixed top-16 left-0 w-full z-40 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-slate-950 px-4 py-2 text-xs font-bold flex items-center justify-between shadow-md">
     <div class="flex items-center gap-2">
       <span class="material-symbols-outlined text-base animate-pulse">movie</span>
-      <span class="truncate">🎬 Mode Demo Iklan Aktif: Semua Fitur Baru Terbuka • Cloud Dijeda</span>
+      <span class="truncate">🎬 Mode Demo Iklan Aktif: Semua Fitur Baru Terbuka • Cloud & Drive Pribadi Terkunci Aman</span>
     </div>
     <button onclick="restoreUserRealData()" class="px-3 py-1 bg-slate-950 text-amber-300 hover:text-white rounded-lg text-[11px] font-extrabold flex items-center gap-1 active:scale-95 transition-all cursor-pointer shrink-0 ml-2">
       <span class="material-symbols-outlined text-xs text-emerald-400">restart_alt</span>
@@ -2478,6 +2478,17 @@
                   </p>
                   <p class="text-[11px] opacity-90">
                     Seluruh data transaksi dan foto nota disimpan langsung di Google Spreadsheet pada akun Google Drive Anda. Server developer tidak pernah menyimpan atau membaca data transaksi pribadi Anda.
+                  </p>
+                </div>
+
+                <!-- Banner Proteksi Mode Demo Iklan (Muncul saat Mode Demo Aktif) -->
+                <div id="byodb-demo-protection-banner" class="hidden p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/40 text-amber-900 dark:text-amber-200 text-xs space-y-1.5 leading-relaxed">
+                  <div class="flex items-center gap-2 font-bold text-amber-700 dark:text-amber-400">
+                    <span class="material-symbols-outlined text-base">shield_lock</span>
+                    <span>Wadah Demo Terisolasi (Google Drive Asli Dikunci Aman)</span>
+                  </div>
+                  <p class="text-[11px] opacity-90">
+                    Mode Demo Iklan sedang aktif. Google Drive akun pribadi Anda <b>dikunci 100%</b> sehingga tidak akan tertimpa data demo. Untuk demonstrasi video promosi, Anda dapat menghubungkan Akun Google khusus Demo / cadangan secara terpisah.
                   </p>
                 </div>
 
@@ -8110,6 +8121,10 @@ function formatReadableSheets(ss, parsed) {
           syncBtn.title = "Status Sinkronisasi Cloud (Klik untuk sinkron sekarang)";
         }
       }
+
+      if (typeof updateByodbUi === 'function') {
+        updateByodbUi();
+      }
     }
 
     function activateShowcaseDemoData(isSilent = false) {
@@ -8118,11 +8133,44 @@ function formatReadableSheets(ss, parsed) {
       if (!isAlreadyDemo) {
         try {
           localStorage.setItem('KEUANGANKU_USER_REAL_BACKUP', JSON.stringify(globalData));
+
+          let realGoogle = localStorage.getItem('KEUANGANKU_GOOGLE_USER');
+          if (realGoogle) localStorage.setItem('KEUANGANKU_USER_REAL_GOOGLE_USER', realGoogle);
+
+          let realSheet = localStorage.getItem('KEUANGANKU_BYODB_SHEET_ID');
+          if (realSheet) localStorage.setItem('KEUANGANKU_USER_REAL_BYODB_SHEET_ID', realSheet);
+
+          let realLic = localStorage.getItem('KEUANGANKU_LICENSE_DATA');
+          if (realLic) localStorage.setItem('KEUANGANKU_USER_REAL_LICENSE_DATA', realLic);
         } catch(e) {}
       }
 
       // 2. Tandai mode demo aktif
       localStorage.setItem('KEUANGANKU_IS_DEMO_MODE', 'true');
+
+      // 3. Pasang Sesi Google Demo Terisolasi (Gunakan demo tersimpan jika ada, atau virtual demo)
+      try {
+        let savedDemoGoogle = localStorage.getItem('KEUANGANKU_DEMO_GOOGLE_USER');
+        let savedDemoSheet = localStorage.getItem('KEUANGANKU_DEMO_BYODB_SHEET_ID');
+        if (savedDemoGoogle) {
+          localStorage.setItem('KEUANGANKU_GOOGLE_USER', savedDemoGoogle);
+        } else {
+          localStorage.setItem('KEUANGANKU_GOOGLE_USER', JSON.stringify({
+            email: "demo@keuanganku.id",
+            name: "Akun Demo Iklan (Google Drive Terisolasi)",
+            picture: "icon-96.png",
+            accessToken: "demo_isolated_token",
+            tokenExpiresAt: Date.now() + 86400000,
+            isDemoAccount: true
+          }));
+        }
+
+        if (savedDemoSheet) {
+          localStorage.setItem('KEUANGANKU_BYODB_SHEET_ID', savedDemoSheet);
+        } else {
+          localStorage.setItem('KEUANGANKU_BYODB_SHEET_ID', "1Demo_Spreadsheet_Keuanganku_PRO_2026");
+        }
+      } catch(e) {}
 
       // 3. Bangun data demo yang dinamis, realistis, dan super lengkap dengan SEMUA FITUR TERBARU
       let now = new Date();
@@ -8302,10 +8350,11 @@ function formatReadableSheets(ss, parsed) {
       saveStorageData();
       initApp();
       updateDemoModeUI();
+      if (typeof updateByodbUi === 'function') updateByodbUi();
 
       if (!isSilent) {
         showSyncToast("🎬 Akun Demo Iklan Aktif!");
-        alert("🎬 AKUN DEMO IKLAN BERHASIL DIAKTIFKAN!\n\nSemua fitur terbaru aktif lengkap:\n✓ Kalkulator Bisnis & Finansial (HPP Sablon/Konveksi & Murabahah)\n✓ Indikator Ketahanan Kas (Emergency Runway 6.9 Bulan)\n✓ Visual Moodboard Impian (Goals) Lengkap Countdown Hari\n✓ Zakat Maal & Nisab Hub Syariah\n✓ Transaksi dengan Lampiran Foto Bukti Struk & Transfer\n✓ Layout Setup 2 Kolom Simetris\n\nCatatan: Data asli pribadi Anda aman di cadangan lokal. Klik tombol 'Kembalikan Data Asli' kapan saja untuk memulihkan data pribadi Anda.");
+        alert("🎬 AKUN DEMO IKLAN BERHASIL DIAKTIFKAN!\n\nSemua fitur terbaru aktif lengkap:\n✓ Kalkulator Bisnis & Finansial (HPP Sablon/Konveksi & Murabahah)\n✓ Indikator Ketahanan Kas (Emergency Runway 6.9 Bulan)\n✓ Visual Moodboard Impian (Goals) Lengkap Countdown Hari\n✓ Zakat Maal & Nisab Hub Syariah\n✓ Transaksi dengan Lampiran Foto Bukti Struk & Transfer\n✓ Layout Setup 2 Kolom Simetris\n\n🛡️ KEAMANAN GOOGLE DRIVE:\nGoogle Drive akun asli Anda telah DIKUNCI 100% AMAN.\nSesi Google dialihkan ke Wadah Demo (Sandbox). Anda dapat menghubungkan Akun Google cadangan/demo khusus untuk perekaman iklan tanpa risiko menimpa data asli Anda.");
       }
     }
 
@@ -8324,17 +8373,58 @@ function formatReadableSheets(ss, parsed) {
         alert("Informasi: Anda saat ini sudah menggunakan database asli Anda.");
         return;
       }
-      if (!confirm("KEMBALIKAN DATA ASLI PRIBADI ANDA?\n\nMode demo iklan akan dinonaktifkan dan seluruh data transaksi & saldo asli Anda akan dipulihkan seperti semula.")) return;
+      if (!confirm("KEMBALIKAN DATA ASLI PRIBADI ANDA?\n\nMode demo iklan akan dinonaktifkan, akun Google Drive asli Anda akan dipulihkan, dan seluruh data transaksi & saldo pribadi Anda akan kembali seperti semula.")) return;
 
       try {
+        // 1. Amankan sesi akun Google Demo jika pengguna sempat login akun demo Google riil
+        try {
+          let curGoogle = localStorage.getItem('KEUANGANKU_GOOGLE_USER');
+          let curSheet = localStorage.getItem('KEUANGANKU_BYODB_SHEET_ID');
+          if (curGoogle) {
+            let parsed = JSON.parse(curGoogle);
+            if (parsed && parsed.email && !parsed.email.includes('demo@keuanganku.id')) {
+              localStorage.setItem('KEUANGANKU_DEMO_GOOGLE_USER', curGoogle);
+            }
+          }
+          if (curSheet && curSheet !== '1Demo_Spreadsheet_Keuanganku_PRO_2026') {
+            localStorage.setItem('KEUANGANKU_DEMO_BYODB_SHEET_ID', curSheet);
+          }
+        } catch(e) {}
+
+        // 2. Pulihkan Sesi Google Pribadi Asli
+        let realGoogle = localStorage.getItem('KEUANGANKU_USER_REAL_GOOGLE_USER');
+        if (realGoogle) {
+          localStorage.setItem('KEUANGANKU_GOOGLE_USER', realGoogle);
+          localStorage.removeItem('KEUANGANKU_USER_REAL_GOOGLE_USER');
+        } else {
+          localStorage.removeItem('KEUANGANKU_GOOGLE_USER');
+        }
+
+        // 3. Pulihkan Sheet ID Google Drive Asli
+        let realSheet = localStorage.getItem('KEUANGANKU_USER_REAL_BYODB_SHEET_ID');
+        if (realSheet) {
+          localStorage.setItem('KEUANGANKU_BYODB_SHEET_ID', realSheet);
+          localStorage.removeItem('KEUANGANKU_USER_REAL_BYODB_SHEET_ID');
+        } else {
+          localStorage.removeItem('KEUANGANKU_BYODB_SHEET_ID');
+        }
+
+        // 4. Pulihkan Lisensi Asli
+        let realLic = localStorage.getItem('KEUANGANKU_USER_REAL_LICENSE_DATA');
+        if (realLic) {
+          localStorage.setItem('KEUANGANKU_LICENSE_DATA', realLic);
+          localStorage.removeItem('KEUANGANKU_USER_REAL_LICENSE_DATA');
+        }
+
         globalData = JSON.parse(backupStr);
         localStorage.removeItem('KEUANGANKU_IS_DEMO_MODE');
         localStorage.removeItem('KEUANGANKU_USER_REAL_BACKUP');
         saveStorageData();
         initApp();
         updateDemoModeUI();
+        if (typeof updateByodbUi === 'function') updateByodbUi();
         syncWithCloud(true); // Langsung sambungkan kembali ke Cloud
-        alert("✅ DATA ASLI BERHASIL DIPULIHKAN!\n\nMode demo iklan telah dinonaktifkan. Seluruh data transaksi & saldo asli Anda telah kembali aktif dan sinkronisasi Cloud dilanjutkan.");
+        alert("✅ DATA ASLI & AKUN GOOGLE PRIBADI BERHASIL DIPULIHKAN!\n\nMode demo iklan telah dinonaktifkan.\n\nAkun Google Drive asli dan seluruh data transaksi & saldo pribadi Anda telah kembali aktif 100%.");
       } catch(e) {
         alert("Gagal memulihkan data: " + e.message);
       }
@@ -13234,7 +13324,7 @@ function formatReadableSheets(ss, parsed) {
               let testResp = await fetch('./sw.js?_t=' + Date.now(), { cache: 'no-store' });
               let testText = await testResp.text();
               let match = testText.match(/const CACHE_NAME = ['"](.*?)['"]/);
-              let currentCacheInApp = 'keuanganku-pwa-v6.25';
+              let currentCacheInApp = 'keuanganku-pwa-v6.26';
               if (match && match[1] && match[1] !== currentCacheInApp) {
                 forceHardRefreshApp();
                 return;
@@ -13343,10 +13433,19 @@ async function handleGoogleSignIn() {
   let isDemo = localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true';
   let lic = (typeof getSavedLicense === 'function') ? getSavedLicense() : null;
 
-  // Jika akun demo iklan, langsung jalankan simulasi BYODb instan
+  // Jika akun demo iklan, berikan opsi hubungkan akun Google demo asli atau simulasi instan
   if (isDemo || (lic && lic.token === 'PRO-DEMO-IKLAN-2026')) {
-    loginDemoByodb();
-    return;
+    let pickRealDemo = confirm(
+      "🎬 KONEKSI GOOGLE DRIVE (MODE DEMO IKLAN):\n\n" +
+      "Anda sedang dalam Mode Demo. Google Drive akun asli Anda telah DIKUNCI 100% AMAN.\n\n" +
+      "Pilih jenis koneksi untuk demonstrasi video iklan:\n" +
+      "• Klik OK: Hubungkan Akun Google Cadangan / Khusus Demo (Membuka login resmi Google untuk memilih akun demo Anda)\n" +
+      "• Klik BATAL: Gunakan Simulasi Drive Otomatis (Tanpa login, langsung aktif)"
+    );
+    if (!pickRealDemo) {
+      loginDemoByodb();
+      return;
+    }
   }
 
   // Cek jika dibuka via file:/// (Google OAuth mutlak melarang origin file://)
@@ -13528,6 +13627,49 @@ async function processGoogleLoginToken(accessToken) {
       accessToken: accessToken,
       tokenExpiresAt: Date.now() + 3500000
     };
+
+    let isDemo = localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true';
+
+    // CEK KEAMANAN ISOLASI MODE DEMO IKLAN
+    if (isDemo) {
+      let realUserStr = localStorage.getItem('KEUANGANKU_USER_REAL_GOOGLE_USER');
+      let realEmail = "";
+      try {
+        if (realUserStr) realEmail = (JSON.parse(realUserStr).email || "").toLowerCase();
+      } catch(e) {}
+
+      if (realEmail && detectedEmail.toLowerCase() === realEmail) {
+        alert("⚠️ PERINGATAN KEAMANAN DATA PRIBADI:\n\nAnda memilih Akun Google pribadi asli Anda (" + detectedEmail + ") saat Mode Demo aktif!\n\nDemi mencegah data demo menimpa Google Drive asli Anda, proses ini dibatalkan secara otomatis.\n\nSilakan pilih akun Google lain (khusus demo/cadangan) untuk demonstrasi iklan.");
+        if (btnText) btnText.textContent = 'Masuk dengan Akun Google';
+        return;
+      }
+
+      // Ini adalah Akun Google Khusus Demo / Cadangan (Sandbox)
+      localStorage.setItem('KEUANGANKU_DEMO_GOOGLE_USER', JSON.stringify(googleUser));
+      saveGoogleSession(googleUser);
+
+      if (btnText) btnText.textContent = 'Mempersiapkan Drive Demo...';
+      let demoSheetId = await findExistingByodbSpreadsheet(accessToken);
+      if (!demoSheetId) {
+        demoSheetId = await provisionNewByodbSpreadsheet(accessToken, googleUser);
+      }
+
+      if (demoSheetId) {
+        localStorage.setItem("KEUANGANKU_BYODB_SHEET_ID", demoSheetId);
+        localStorage.setItem("KEUANGANKU_DEMO_BYODB_SHEET_ID", demoSheetId);
+        try {
+          await writeGlobalDataToByodbSheet(accessToken, demoSheetId);
+        } catch(e) {}
+      }
+
+      playSuccessSound();
+      showSyncToast("🎬 Akun Google Demo Terhubung: " + googleUser.email);
+      hideSplashScreenAndTriggerAlerts();
+      if (typeof updateByodbUi === 'function') updateByodbUi();
+
+      alert(`🎬 AKUN GOOGLE DEMO TERHUBUNG!\n\nEmail Demo: ${googleUser.email}\nStatus: Wadah Demo Terisolasi (Sandbox).\n\nDatabase percontohan berhasil dibuat di Google Drive akun demo Anda.\n\n🛡️ Google Drive akun pribadi Anda tetap 100% AMAN & TERKUNCI.`);
+      return;
+    }
 
     saveGoogleSession(googleUser);
 
@@ -13900,6 +14042,9 @@ Database Google Sheets telah otomatis dibuat di Google Drive Anda. Di perangkat 
  * Buat file Google Spreadsheet baru di Google Drive Pengguna via REST API
  */
 async function provisionNewByodbSpreadsheet(accessToken, userInfo) {
+  if (accessToken === 'demo_simulated_token' || accessToken === 'demo_isolated_token') {
+    return "1Demo_Spreadsheet_Keuanganku_PRO_2026";
+  }
   try {
     let title = "Database Keuanganku PRO - " + ((userInfo && userInfo.name) || (userInfo && userInfo.email) || "Pribadi");
     let payload = {
@@ -13984,6 +14129,37 @@ async function provisionNewByodbSpreadsheet(accessToken, userInfo) {
  */
 async function writeGlobalDataToByodbSheet(accessToken, sheetId) {
   if (!accessToken) throw new Error("Akses token Google tidak ditemukan. Silakan hubungkan ulang akun Google.");
+
+  // HARD-LOCK PROTEKSI MUTLAK MODE DEMO IKLAN
+  let isDemo = localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true';
+  let realSheetId = localStorage.getItem('KEUANGANKU_USER_REAL_BYODB_SHEET_ID');
+  let realGoogleStr = localStorage.getItem('KEUANGANKU_USER_REAL_GOOGLE_USER');
+  let realGoogleEmail = "";
+  try {
+    if (realGoogleStr) realGoogleEmail = (JSON.parse(realGoogleStr).email || "").toLowerCase();
+  } catch(e) {}
+
+  let gUser = getGoogleSession() || { name: "Pengguna Keuanganku", email: "" };
+
+  // Hard-lock 1: Sheet ID sama dengan Sheet ID pribadi asli
+  if (isDemo && realSheetId && sheetId && sheetId === realSheetId) {
+    console.warn("🛡️ HARD-LOCK BYODB: Penulisan data demo ke Sheet ID asli pribadi DIBLOKIR!");
+    showSyncToast("🛡️ Mode Demo: Drive pribadi dikunci");
+    return { success: false, blocked: true, sheetId: sheetId };
+  }
+
+  // Hard-lock 2: Akun Google aktif sama dengan email pribadi asli
+  if (isDemo && realGoogleEmail && gUser.email && gUser.email.toLowerCase() === realGoogleEmail) {
+    console.warn("🛡️ HARD-LOCK BYODB: Akun Google aktif sama dengan akun pribadi asli DIBLOKIR!");
+    showSyncToast("🛡️ Mode Demo: Akun pribadi dikunci");
+    return { success: false, blocked: true, sheetId: sheetId };
+  }
+
+  // SIMULASI VIRTUAL: Jika token simulasi instan
+  if (accessToken === 'demo_simulated_token' || accessToken === 'demo_isolated_token') {
+    await new Promise(r => setTimeout(r, 600));
+    return { success: true, sheetId: sheetId || "1Demo_Spreadsheet_Keuanganku_PRO_2026", simulated: true };
+  }
   
   // Jika sheetId belum ada, buat otomatis di Google Drive user
   if (!sheetId || sheetId === "null" || sheetId === "undefined") {
@@ -14065,6 +14241,10 @@ async function writeGlobalDataToByodbSheet(accessToken, sheetId) {
  * Tarik data keuangan dari Spreadsheet BYODb Pengguna
  */
 async function pullDataFromByodbSpreadsheet(accessToken, sheetId) {
+  if (accessToken === 'demo_simulated_token' || accessToken === 'demo_isolated_token') {
+    await new Promise(r => setTimeout(r, 500));
+    return true;
+  }
   if (!sheetId || !accessToken) return false;
   try {
     let url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Database_Keuangan!A1:Z1`;
@@ -14115,6 +14295,7 @@ async function pullDataFromByodbSpreadsheet(accessToken, sheetId) {
  * Push / Sinkronkan data lokal ke Spreadsheet BYODb Pengguna
  */
 async function syncByodbNow(isManualClick = true) {
+  let isDemo = localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true';
   let gUser = getGoogleSession();
   let sheetId = localStorage.getItem("KEUANGANKU_BYODB_SHEET_ID");
 
@@ -14126,20 +14307,47 @@ async function syncByodbNow(isManualClick = true) {
     return;
   }
 
+  // Jika akun simulasi demo instan
+  if (isDemo && (gUser.accessToken === 'demo_simulated_token' || gUser.accessToken === 'demo_isolated_token')) {
+    let statusText = document.getElementById('byodb-status-text');
+    let origText = statusText ? statusText.textContent : 'GOOGLE DRIVE TERHUBUNG';
+    if (statusText) statusText.textContent = 'MENYINKRONKAN (SIMULASI)...';
+
+    await new Promise(r => setTimeout(r, 600));
+    if (statusText) statusText.textContent = 'TERSIMPAN DI DRIVE DEMO';
+    showSyncToast("✓ (Simulasi) Tersimpan di Google Drive Demo!");
+    if (isManualClick) {
+      playSuccessSound();
+      alert("✓ (SIMULASI IKLAN BERHASIL)\n\nData percontohan tersimpan di Google Drive Demo ('Database Keuanganku PRO')!\n\n🛡️ Keamanan: Google Drive akun pribadi Anda tetap 100% aman dan terkunci.");
+      updateByodbUi();
+    }
+    return;
+  }
+
   let statusText = document.getElementById('byodb-status-text');
   let origText = statusText ? statusText.textContent : 'GOOGLE DRIVE TERHUBUNG';
   if (statusText) statusText.textContent = 'MENYINKRONKAN...';
 
   try {
     let result = await writeGlobalDataToByodbSheet(gUser.accessToken, sheetId);
+    if (result && result.blocked) {
+      if (statusText) statusText.textContent = origText;
+      if (isManualClick) {
+        alert("🛡️ MODE DEMO IKLAN AKTIF:\n\nSinkronisasi ke Google Drive asli Anda telah DIBLOKIR demi keamanan data pribadi Anda.\n\nUntuk demonstrasi Drive, Anda dapat menghubungkan Akun Google khusus Demo.");
+      }
+      return;
+    }
     if (result && result.sheetId) {
       localStorage.setItem("KEUANGANKU_BYODB_SHEET_ID", result.sheetId);
     }
-    if (statusText) statusText.textContent = 'TERSIMPAN DI GOOGLE DRIVE';
-    showSyncToast("✓ Tersimpan di Google Drive!");
+    if (statusText) statusText.textContent = isDemo ? 'TERSIMPAN DI DRIVE DEMO' : 'TERSIMPAN DI GOOGLE DRIVE';
+    showSyncToast(isDemo ? "✓ Tersimpan di Drive Demo!" : "✓ Tersimpan di Google Drive!");
     if (isManualClick) {
       playSuccessSound();
-      alert("✓ Seluruh data keuangan Anda berhasil disimpan ke Google Drive ('Database Keuanganku PRO')!");
+      alert(isDemo
+        ? "✓ Seluruh data percontohan berhasil disimpan ke Google Drive Demo ('Database Keuanganku PRO')!\n\n🛡️ Google Drive pribadi Anda tetap aman terlindungi."
+        : "✓ Seluruh data keuangan Anda berhasil disimpan ke Google Drive ('Database Keuanganku PRO')!"
+      );
       updateByodbUi();
     }
   } catch(err) {
@@ -14160,11 +14368,25 @@ async function syncByodbNow(isManualClick = true) {
  * Tarik data keuangan dari Google Drive BYODb ke perangkat ini
  */
 async function pullByodbNow(isManualClick = true) {
+  let isDemo = localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true';
   let gUser = getGoogleSession();
   let sheetId = localStorage.getItem("KEUANGANKU_BYODB_SHEET_ID");
 
   if (!gUser || !gUser.accessToken || !sheetId) {
     if (isManualClick) alert("Google Drive belum terhubung.");
+    return;
+  }
+
+  // Jika akun simulasi demo instan
+  if (isDemo && (gUser.accessToken === 'demo_simulated_token' || gUser.accessToken === 'demo_isolated_token')) {
+    let statusText = document.getElementById('byodb-status-text');
+    let origText = statusText ? statusText.textContent : 'GOOGLE DRIVE TERHUBUNG';
+    if (statusText) statusText.textContent = 'MENGUNDUH DARI DRIVE (SIMULASI)...';
+
+    await new Promise(r => setTimeout(r, 500));
+    if (statusText) statusText.textContent = 'TERSIMPAN DI DRIVE DEMO';
+    showSyncToast("✓ (Simulasi) Data dimuat dari Google Drive Demo!");
+    if (isManualClick) alert("✓ (SIMULASI IKLAN BERHASIL)\n\nData percontohan berhasil dimuat dari Google Drive Demo!");
     return;
   }
 
@@ -14259,6 +14481,7 @@ async function migrateOldCloudToByodb() {
  * Update Tampilan Kartu BYODb di Menu Pengaturan
  */
 function updateByodbUi() {
+  let isDemo = localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true';
   let gUser = getGoogleSession();
   let sheetId = localStorage.getItem("KEUANGANKU_BYODB_SHEET_ID");
 
@@ -14271,28 +14494,57 @@ function updateByodbUi() {
   let statusText = document.getElementById('byodb-status-text');
   let connectContainer = document.getElementById('byodb-connect-action-container');
   let connectedContainer = document.getElementById('byodb-connected-actions-container');
+  let demoBanner = document.getElementById('byodb-demo-protection-banner');
+
+  if (demoBanner) {
+    if (isDemo) demoBanner.classList.remove('hidden');
+    else demoBanner.classList.add('hidden');
+  }
 
   if (gUser && gUser.email) {
-    if (nameEl) nameEl.textContent = gUser.name || 'Pengguna Google';
+    let isSimulated = (gUser.accessToken === 'demo_simulated_token' || gUser.accessToken === 'demo_isolated_token' || gUser.email === 'demo@keuanganku.id');
+
+    if (nameEl) nameEl.textContent = gUser.name || (isDemo ? 'Akun Google Demo' : 'Pengguna Google');
     if (emailEl) emailEl.textContent = gUser.email;
     if (avatarEl && gUser.picture) avatarEl.src = gUser.picture;
 
     if (sheetId && sheetLink) {
-      sheetLink.href = `https://docs.google.com/spreadsheets/d/${sheetId}/edit`;
+      if (isSimulated) {
+        sheetLink.href = "javascript:alert('Mode Demo Simulasi: Spreadsheet database ini berjalan di memori demo terisolasi. Google Drive pribadi Anda tetap aman terlindungi.');";
+      } else {
+        sheetLink.href = `https://docs.google.com/spreadsheets/d/${sheetId}/edit`;
+      }
       sheetLink.classList.remove('hidden');
     }
-    if (statusText) statusText.textContent = 'GOOGLE DRIVE TERHUBUNG';
-    if (statusBadge) {
-      statusBadge.className = "px-2.5 py-1 bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 text-[10px] font-extrabold rounded-full flex items-center gap-1.5 border border-emerald-200 dark:border-emerald-800";
-    }
-    if (statusDot) {
-      statusDot.className = "w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse";
+
+    if (isDemo) {
+      if (isSimulated) {
+        if (statusText) statusText.textContent = 'DRIVE DEMO SIMULASI';
+        if (statusBadge) {
+          statusBadge.className = "px-2.5 py-1 bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-200 text-[10px] font-extrabold rounded-full flex items-center gap-1.5 border border-amber-300 dark:border-amber-700";
+        }
+        if (statusDot) statusDot.className = "w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse";
+      } else {
+        if (statusText) statusText.textContent = 'DRIVE DEMO TERHUBUNG';
+        if (statusBadge) {
+          statusBadge.className = "px-2.5 py-1 bg-purple-100 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 text-[10px] font-extrabold rounded-full flex items-center gap-1.5 border border-purple-200 dark:border-purple-800";
+        }
+        if (statusDot) statusDot.className = "w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse";
+      }
+    } else {
+      if (statusText) statusText.textContent = 'GOOGLE DRIVE TERHUBUNG';
+      if (statusBadge) {
+        statusBadge.className = "px-2.5 py-1 bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 text-[10px] font-extrabold rounded-full flex items-center gap-1.5 border border-emerald-200 dark:border-emerald-800";
+      }
+      if (statusDot) {
+        statusDot.className = "w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse";
+      }
     }
     if (connectContainer) connectContainer.classList.add('hidden');
     if (connectedContainer) connectedContainer.classList.remove('hidden');
   } else {
-    if (nameEl) nameEl.textContent = 'Akun Google Pemilik';
-    if (emailEl) emailEl.textContent = 'Belum terhubung (Masuk via PIN/Token)';
+    if (nameEl) nameEl.textContent = isDemo ? 'Akun Google Demo' : 'Akun Google Pemilik';
+    if (emailEl) emailEl.textContent = isDemo ? 'Belum terhubung akun demo' : 'Belum terhubung (Masuk via PIN/Token)';
     if (sheetLink) sheetLink.classList.add('hidden');
     if (statusText) statusText.textContent = 'BELUM TERHUBUNG';
     if (statusBadge) {
@@ -14310,10 +14562,22 @@ function updateByodbUi() {
  * Putuskan / Ganti Akun Google
  */
 function disconnectGoogleAccount() {
-  if (confirm("Apakah Anda yakin ingin memutuskan tautan akun Google pada perangkat ini?\n\nData lokal Anda tidak akan terhapus.")) {
-    clearGoogleSession();
+  let isDemo = localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true';
+  let confirmMsg = isDemo
+    ? "Apakah Anda yakin ingin memutuskan tautan akun Google Demo pada perangkat ini?"
+    : "Apakah Anda yakin ingin memutuskan tautan akun Google pada perangkat ini?\n\nData lokal Anda tidak akan terhapus.";
+
+  if (confirm(confirmMsg)) {
+    if (isDemo) {
+      localStorage.removeItem('KEUANGANKU_DEMO_GOOGLE_USER');
+      localStorage.removeItem('KEUANGANKU_DEMO_BYODB_SHEET_ID');
+      localStorage.removeItem('KEUANGANKU_GOOGLE_USER');
+      localStorage.removeItem('KEUANGANKU_BYODB_SHEET_ID');
+    } else {
+      clearGoogleSession();
+    }
     updateByodbUi();
-    showSyncToast("Akun Google telah diputuskan dari perangkat ini.");
+    showSyncToast(isDemo ? "Akun Google Demo telah diputuskan." : "Akun Google telah diputuskan dari perangkat ini.");
   }
 }
 
@@ -14321,12 +14585,30 @@ function disconnectGoogleAccount() {
  * Mode Demo BYODb (Simulasi Langsung 1-Klik untuk Iklan & Pengujian)
  */
 function loginDemoByodb() {
+  let isAlreadyDemo = localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true';
+  if (!isAlreadyDemo) {
+    try {
+      localStorage.setItem('KEUANGANKU_USER_REAL_BACKUP', JSON.stringify(globalData));
+
+      let realGoogle = localStorage.getItem('KEUANGANKU_GOOGLE_USER');
+      if (realGoogle) localStorage.setItem('KEUANGANKU_USER_REAL_GOOGLE_USER', realGoogle);
+
+      let realSheet = localStorage.getItem('KEUANGANKU_BYODB_SHEET_ID');
+      if (realSheet) localStorage.setItem('KEUANGANKU_USER_REAL_BYODB_SHEET_ID', realSheet);
+
+      let realLic = localStorage.getItem('KEUANGANKU_LICENSE_DATA');
+      if (realLic) localStorage.setItem('KEUANGANKU_USER_REAL_LICENSE_DATA', realLic);
+    } catch(e) {}
+  }
+  localStorage.setItem('KEUANGANKU_IS_DEMO_MODE', 'true');
+
   let demoUser = {
     email: "demo@keuanganku.id",
     name: "Moh Athhar (Demo Keuanganku)",
     picture: "icon-96.png",
     accessToken: "demo_simulated_token",
-    tokenExpiresAt: Date.now() + 86400000
+    tokenExpiresAt: Date.now() + 86400000,
+    isDemoAccount: true
   };
 
   saveGoogleSession(demoUser);
@@ -14340,7 +14622,7 @@ function loginDemoByodb() {
     cloudUrl: "",
     pinStatus: "PIN_CHANGED",
     personalPin: "190412",
-    maxDevices: 10,
+    maxDevices: 12,
     deviceCount: 1
   };
 
@@ -14355,13 +14637,14 @@ function loginDemoByodb() {
   showSyncToast("🎬 Mode Demo BYODb Aktif!");
   hideSplashScreenAndTriggerAlerts();
 
+  updateDemoModeUI();
   updateByodbUi();
   updateSetupLicenseDisplay(demoLicense);
   updateTokenSecurityBanner(demoLicense);
   updateCloudSyncLockUI(demoLicense);
   renderSetupPasswordCard(demoLicense);
 
-  alert("Selamat datang di Mode Demo BYODb Keuanganku PRO!\n\nSimulasi login 1-klik akun Google dan akses Google Drive berhasil aktif dengan data percontohan resmi.");
+  alert("Selamat datang di Mode Demo BYODb Keuanganku PRO!\n\nSimulasi login 1-klik akun Google dan akses Google Drive berhasil aktif dengan data percontohan resmi.\n\n🛡️ Google Drive akun pribadi Anda tetap 100% AMAN & TERKUNCI.");
 }
 
 /**
