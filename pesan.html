@@ -899,8 +899,8 @@
             <span id="succ-token-copy-btn-text">Salin</span>
           </button>
         </div>
-        <p class="text-[11px] text-slate-300 leading-relaxed">
-          Lisensi ini bersifat <b>Permanen (Akses Seumur Hidup)</b> untuk <b>Multi-Device (3 Perangkat)</b>: HP, Laptop, dan Tablet bersamaan.
+        <p id="succ-token-desc" class="text-[11px] text-slate-300 leading-relaxed">
+          Lisensi ini bersifat <b>Permanen (Akses Seumur Hidup)</b> untuk <b>Multi-Device</b>: HP, Laptop, dan Tablet bersamaan.
         </p>
       </div>
 
@@ -1010,10 +1010,10 @@
       appVersion: "v0.1",
       sellerWhatsApp: "087788197916",
       packages: [
-        { id: "pkg-personal", name: "PRO Personal (1 Perangkat)", devices: 1, price: "Rp 99.000", priceNum: 99000, description: "Untuk penggunaan pribadi di 1 HP atau 1 Laptop. Akses seumur hidup.", popular: false },
-        { id: "pkg-multi", name: "PRO Multi-Device (3 Perangkat)", devices: 3, price: "Rp 149.000", priceNum: 149000, description: "Paling Populer! Sinkronisasi otomatis di HP, Laptop, dan Tablet secara hening.", popular: true },
-        { id: "pkg-bisnis", name: "PRO Bisnis (5 Perangkat)", devices: 5, price: "Rp 249.000", priceNum: 249000, description: "Solusi hemat untuk keluarga / tim usaha kecil hingga 5 perangkat bersama.", popular: false },
-        { id: "pkg-master", name: "PRO Developer Master (10 Perangkat)", devices: 10, price: "Rp 499.000", priceNum: 499000, description: "Akses maksimal hingga 10 perangkat untuk profesional / multi-kantor.", popular: false }
+        { id: "pkg-personal", name: "PRO Personal (3 Perangkat)", devices: 3, price: "Rp 79.000", priceNum: 79000, description: "Ideal untuk 1 orang dengan ekosistem lengkap: HP, Laptop, dan Tablet bersamaan. Akses seumur hidup.", popular: true },
+        { id: "pkg-multi", name: "PRO Keluarga / Pasutri (5 Perangkat)", devices: 5, price: "Rp 149.000", priceNum: 149000, description: "Sinkronisasi otomatis HP Suami, Istri, dan Laptop keluarga. Catatan pos belanja rumah tangga transparan.", popular: false },
+        { id: "pkg-bisnis", name: "PRO Bisnis UMKM (8 Perangkat)", devices: 8, price: "Rp 249.000", priceNum: 249000, description: "Solusi operasional toko & kantor kecil (Owner, Kasir, Admin, Gudang) + akses kalkulator usaha lengkap.", popular: false },
+        { id: "pkg-master", name: "PRO Master / Multi-Cabang (12 Perangkat)", devices: 12, price: "Rp 399.000", priceNum: 399000, description: "Kapasitas besar hingga 12 perangkat untuk profesional, konsultan, atau multi-cabang usaha.", popular: false }
       ],
       vouchers: [
         { code: "PROMOLAUNCHING", type: "percent", value: 30, minPrice: 0, targetPackage: "ALL", maxUses: 0, usedCount: 0, status: "ACTIVE", description: "Diskon Peluncuran 30% Hingga Desember" },
@@ -1045,6 +1045,13 @@
       }
       if (!Array.isArray(catalog.packages) || catalog.packages.length === 0) {
         catalog.packages = JSON.parse(JSON.stringify(DEFAULT_CATALOG.packages));
+      } else {
+        // Perbarui struktur paket jika cache browser masih menyimpan paket 1 perangkat lama
+        let pPers = catalog.packages.find(p => p.id === 'pkg-personal');
+        if (!pPers || pPers.devices < 3) {
+          catalog.packages = JSON.parse(JSON.stringify(DEFAULT_CATALOG.packages));
+          try { localStorage.setItem("KEUANGANKU_PUBLIC_CATALOG_CACHE", JSON.stringify(catalog)); } catch(e) {}
+        }
       }
       if (Array.isArray(catalog.paymentAccounts)) {
         let hasDummy = catalog.paymentAccounts.some(acc => (acc.accountNo === '1234567890' || acc.accountNo === '08123456789' || (acc.bank && acc.bank.includes('Transfer BCA'))));
@@ -2044,6 +2051,10 @@
       if (issuedToken) {
         if (tokenBox) tokenBox.classList.remove('hidden');
         if (tokenCodeEl) tokenCodeEl.textContent = issuedToken;
+        let tokenDescEl = document.getElementById('succ-token-desc');
+        if (tokenDescEl && selectedPackage) {
+          tokenDescEl.innerHTML = `Lisensi ini bersifat <b>Permanen (Akses Seumur Hidup)</b> untuk <b>${escapeHtml(selectedPackage.name)}</b>.`;
+        }
         if (pioneerBadge) pioneerBadge.classList.remove('hidden');
         if (btnOpenApp) {
           btnOpenApp.classList.remove('hidden');
