@@ -614,6 +614,22 @@ function handleRequest(params) {
         result = adminSetOrderMode(params);
         break;
 
+      case "admin_send_fonnte":
+        if (!checkAdminAuth(params.adminPassword)) {
+          result = { success: false, status: false, message: "Akses ditolak: Password Admin salah." };
+          break;
+        }
+        result = adminSendFonnte(params);
+        break;
+
+      case "admin_check_fonnte_device":
+        if (!checkAdminAuth(params.adminPassword)) {
+          result = { success: false, status: false, message: "Akses ditolak: Password Admin salah." };
+          break;
+        }
+        result = adminCheckFonnteDevice(params);
+        break;
+
       // -------------------------------------------------------------
       // API SINKRONISASI DATA KEUANGAN PENGGUNA
       // -------------------------------------------------------------
@@ -2176,6 +2192,8 @@ function getDefaultSalesSettings() {
     orderMode: "TESTING", // "TESTING" (v0.1) | "LIVE" (v1.0)
     launchSeqOffset: 0,
     sellerWhatsApp: "087788197916",
+    fonnteToken: "",
+    fonnteAutoSend: false,
     orderFormUrl: "https://sambarangpro.github.io/keuanganku/pesan.html",
     packages: [
       { id: "pkg-personal", name: "PRO Personal (3 Perangkat)", devices: 3, price: "Rp 79.000", priceNum: 79000, description: "Ideal untuk 1 orang dengan ekosistem lengkap: HP, Laptop, dan Tablet bersamaan. Akses seumur hidup.", popular: true },
@@ -2549,6 +2567,8 @@ function adminSaveSalesSettings(params) {
   } catch(e) {}
   if (params.sellerWhatsApp !== undefined) current.sellerWhatsApp = String(params.sellerWhatsApp).trim();
   if (params.orderFormUrl !== undefined) current.orderFormUrl = String(params.orderFormUrl).trim();
+  if (params.fonnteToken !== undefined) current.fonnteToken = String(params.fonnteToken).trim();
+  if (params.fonnteAutoSend !== undefined) current.fonnteAutoSend = !!params.fonnteAutoSend;
   if (params.orderMode !== undefined) current.orderMode = String(params.orderMode).trim().toUpperCase();
   if (params.launchSeqOffset !== undefined) current.launchSeqOffset = parseInt(params.launchSeqOffset, 10) || 0;
 
@@ -2933,4 +2953,70 @@ function saveSpreadsheetId(params) {
   }
 
   return { success: false, message: "Lisensi tidak ditemukan untuk menyimpan Spreadsheet ID." };
+}
+
+// ============================================================
+// FONNTE WHATSAPP GATEWAY SERVER PROXY
+// ============================================================
+
+function adminSendFonnte(params) {
+  var token = params.fonnteToken;
+  if (!token) {
+    try {
+      var s = getStoredSalesSettings();
+      token = s.fonnteToken;
+    } catch(e) {}
+  }
+  if (!token) return { success: false, status: false, message: "Fonnte API Token belum diatur di server." };
+
+  var target = String(params.target || "").trim().replace(/[^0-9]/g, "");
+  if (target.indexOf("0") === 0) target = "62" + target.substring(1);
+  if (target.indexOf("8") === 0) target = "628" + target.substring(1);
+
+  if (!target || target.length < 9) {
+    return { success: false, status: false, message: "Nomor WhatsApp tujuan tidak valid: " + params.target };
+  }
+
+  try {
+    var response = UrlFetchApp.fetch("https://api.fonnte.com/send", {
+      method: "post",
+      headers: { "Authorization": token },
+      payload: {
+        target: target,
+        message: params.message || "",
+        countryCode: "62"
+      },
+      muteHttpExceptions: true
+    });
+    var resJson = JSON.parse(response.getContentText());
+    if (resJson && resJson.status === true) {
+      logEvent("FONNTE_WA_SENT", "-", "-", "-", "-", "Pesan WhatsApp via Fonnte terkirim ke: " + target);
+    }
+    return resJson;
+  } catch(e) {
+    return { success: false, status: false, message: "UrlFetch Fonnte Error: " + e.message };
+  }
+}
+
+function adminCheckFonnteDevice(params) {
+  var token = params.fonnteToken;
+  if (!token) {
+    try {
+      var s = getStoredSalesSettings();
+      token = s.fonnteToken;
+    } catch(e) {}
+  }
+  if (!token) return { success: false, status: false, message: "Fonnte API Token belum diatur." };
+
+  try {
+    var response = UrlFetchApp.fetch("https://api.fonnte.com/device", {
+      method: "post",
+      headers: { "Authorization": token },
+      muteHttpExceptions: true
+    });
+    var resJson = JSON.parse(response.getContentText());
+    return resJson;
+  } catch(e) {
+    return { success: false, status: false, message: "UrlFetch Fonnte Error: " + e.message };
+  }
 }
