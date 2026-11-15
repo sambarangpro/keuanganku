@@ -22,8 +22,177 @@
  * ==============================================================================
  */
 
-// Ganti kata sandi admin rahasia Anda di sini:
+// Kata sandi admin awal. PENTING: file ini publik di GitHub, jadi segera ganti kata sandi
+// lewat menu "Ganti Password" di Developer Dashboard setelah deploy. Kata sandi baru
+// disimpan di Script Properties (DEV_PORTAL_PASSWORD) dan TIDAK ikut tersimpan di GitHub.
 var MASTER_ADMIN_PASSWORD = "adminKeuanganku2026!";
+
+// Token & email pemilik (developer). Bisa ditimpa lewat Script Properties:
+//   OWNER_TOKENS = "PRO-XXXX-XXXX-XXXX,PRO-YYYY-YYYY-YYYY"
+//   OWNER_EMAILS = "email1@gmail.com,email2@gmail.com"
+// Hanya pencocokan PERSIS yang dipakai (bukan potongan nama/email).
+var DEFAULT_OWNER_TOKENS = "PRO-S8GF-HQT5-CNVE,PRO-G82P-4QTS-C6RT,PRO-W9J2-RAYM-3KKL";
+var DEFAULT_OWNER_EMAILS = "sambaranofficial@gmail.com,sambarang.pro@gmail.com";
+var DEMO_TOKEN = "PRO-DEMO-IKLAN-2026";
+
+function getListProperty_(name, fallback) {
+  var raw = "";
+  try { raw = PropertiesService.getScriptProperties().getProperty(name) || ""; } catch(e) {}
+  if (!raw) raw = fallback || "";
+  return raw.split(",").map(function(s) { return String(s).trim(); }).filter(function(s) { return !!s; });
+}
+
+function normalizeToken_(tok) {
+  return String(tok || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+}
+
+/** Token milik developer (bebas kunci email & kuota 10 perangkat). Tidak termasuk token demo publik. */
+function isOwnerToken_(tok) {
+  var n = normalizeToken_(tok);
+  if (!n) return false;
+  return getListProperty_("OWNER_TOKENS", DEFAULT_OWNER_TOKENS).some(function(t) { return normalizeToken_(t) === n; });
+}
+
+/** Token yang mendapat kuota perangkat besar (pemilik + akun demo iklan). */
+function hasPriorityQuota_(tok) {
+  return isOwnerToken_(tok) || normalizeToken_(tok) === normalizeToken_(DEMO_TOKEN);
+}
+
+function isOwnerEmail_(email) {
+  var e = String(email || "").trim().toLowerCase();
+  if (!e) return false;
+  return getListProperty_("OWNER_EMAILS", DEFAULT_OWNER_EMAILS).some(function(x) { return x.toLowerCase() === e; });
+}
+
+function tokensMatch_(a, b) {
+  var na = normalizeToken_(a), nb = normalizeToken_(b);
+  return !!na && na === nb;
+}
+
+/** Cegah "formula injection": teks dari pengguna yang diawali = + - @ disimpan sebagai teks biasa. */
+function safeCell_(v) {
+  if (typeof v === "string" && /^[=+\-@\t\r]/.test(v)) return "'" + v;
+  return v;
+}
+function safeRow_(arr) {
+  return arr.map(safeCell_);
+}
+
+// ---------- Pembatas percobaan (anti tebak PIN / password) ----------
+function rlKey_(kind, id) {
+  return "RL_" + kind + "_" + String(id || "-").replace(/[^A-Za-z0-9]/g, "").substring(0, 80);
+}
+function isRateLimited_(kind, id, max) {
+  try {
+    var c = CacheService.getScriptCache().get(rlKey_(kind, id));
+    return !!c && parseInt(c, 10) >= max;
+  } catch(e) { return false; }
+}
+function registerFailure_(kind, id, windowSec) {
+  try {
+    var cache = CacheService.getScriptCache();
+    var k = rlKey_(kind, id);
+    var n = parseInt(cache.get(k) || "0", 10) + 1;
+    cache.put(k, String(n), windowSec || 900);
+    return n;
+  } catch(e) { return 0; }
+}
+function clearFailures_(kind, id) {
+  try { CacheService.getScriptCache().remove(rlKey_(kind, id)); } catch(e) {}
+}
+
+/**
+ * Verifikasi akun Google di sisi server: email diambil langsung dari Google
+ * menggunakan access token milik pengguna, BUKAN dari email yang dikirim aplikasi.
+ * Mengembalikan email (huruf kecil) atau "" jika gagal.
+ */
+function getVerifiedGoogleEmail_(accessToken) {
+  var tok = String(accessToken || "").trim();
+  if (!tok || tok.length > 4096) return "";
+  // Opsional: isi Script Property GOOGLE_CLIENT_ID agar hanya token dari aplikasi ini yang diterima
+  var expectedClientId = "";
+  try { expectedClientId = PropertiesService.getScriptProperties().getProperty("GOOGLE_CLIENT_ID") || ""; } catch(e) {}
+
+  try {
+    var resp = UrlFetchApp.fetch("https://oauth2.googleapis.com/tokeninfo?access_token=" + encodeURIComponent(tok), {
+      muteHttpExceptions: true
+    });
+    if (resp.getResponseCode() === 200) {
+      var info = JSON.parse(resp.getContentText());
+      var verified = (info.email_verified === true || info.email_verified === "true");
+      var audOk = !expectedClientId || info.aud === expectedClientId || info.azp === expectedClientId;
+      if (info && info.email && verified && audOk) {
+        return String(info.email).trim().toLowerCase();
+      }
+      if (!audOk) return "";
+    }
+  } catch(e) {}
+
+  // Cadangan: endpoint userinfo (jika tokeninfo sedang bermasalah)
+  if (expectedClientId) return ""; // jika client ID dikunci, hanya tokeninfo yang bisa memeriksa audiens
+  try {
+    var resp2 = UrlFetchApp.fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+      headers: { "Authorization": "Bearer " + tok },
+      muteHttpExceptions: true
+    });
+    if (resp2.getResponseCode() !== 200) return "";
+    var info2 = JSON.parse(resp2.getContentText());
+    if (info2 && info2.email && (info2.email_verified === true || info2.email_verified === "true")) {
+      return String(info2.email).trim().toLowerCase();
+    }
+  } catch(e2) {}
+  return "";
+}
+
+/** Cari baris token & cek apakah deviceId sudah terdaftar di lisensi tersebut. */
+function findTokenRow_(data, colMap, tokenInput) {
+  for (var i = 1; i < data.length; i++) {
+    if (tokensMatch_(data[i][colMap.token], tokenInput)) return i;
+  }
+  return -1;
+}
+/**
+ * Boleh mengganti URL Cloud tersimpan? Hanya alamat Google Apps Script resmi yang diterima,
+ * dan URL yang sudah berkunci (?k=...) tidak boleh ditimpa oleh URL lama tanpa kunci.
+ */
+function shouldReplaceCloudUrl_(currentUrl, newUrl) {
+  var cur = String(currentUrl || "").trim();
+  var nu = String(newUrl || "").trim();
+  if (!nu || nu === cur) return false;
+  if (nu.indexOf("https://script.google.com/") !== 0) return false;
+  var curHasKey = /[?&]k=/.test(cur);
+  var newHasKey = /[?&]k=/.test(nu);
+  if (curHasKey && !newHasKey) return false;
+  return true;
+}
+
+/** Bandingkan PIN. Google Sheets kadang membuang angka 0 di depan PIN, jadi itu ditoleransi. */
+function pinEquals_(a, b) {
+  a = String(a == null ? "" : a).trim();
+  b = String(b == null ? "" : b).trim();
+  if (!a || !b) return false;
+  if (a === b) return true;
+  if (/^\d+$/.test(a) && /^\d+$/.test(b)) return a.replace(/^0+/, "") === b.replace(/^0+/, "");
+  return false;
+}
+
+/** Simpan PIN sebagai TEKS agar angka 0 di depan tidak hilang. */
+function writePin_(sheet, rowNum, colIdx, pin) {
+  var cell = sheet.getRange(rowNum, colIdx + 1);
+  try { cell.setNumberFormat("@"); } catch(e) {}
+  cell.setValue(String(pin || ""));
+}
+
+function parseDevices_(raw) {
+  try { var d = raw ? JSON.parse(raw) : []; return Array.isArray(d) ? d : []; } catch(e) { return []; }
+}
+function deviceIndex_(devices, deviceId) {
+  if (!deviceId) return -1;
+  for (var d = 0; d < devices.length; d++) {
+    if (devices[d] && devices[d].deviceId === deviceId) return d;
+  }
+  return -1;
+}
 
 // Jika Anda membuat script Apps Script ini langsung dari https://script.google.com (Standalone Script)
 // dan BUKAN dari menu Ekstensi di dalam Google Sheet, masukkan Link/URL atau ID Google Sheet Anda di sini:
@@ -384,32 +553,18 @@ function doGet(e) {
     return handleRequest(params);
   }
 
-  // 2. Jika TIDAK ada parameter action, ini adalah permintaan GET Sinkronisasi Data Keuangan
-  var data = null;
-  try {
-    var doc = PropertiesService.getScriptProperties();
-    data = doc.getProperty("KEUANGANKU_DATA");
-  } catch(eProp) {}
+  // 2. Tanpa action: server lisensi TIDAK lagi melayani data keuangan.
+  // (Dulu siapa pun bisa membaca/menimpa data di sini tanpa login.)
+  // Data keuangan disimpan di Google Sheet milik masing-masing pengguna / Cloud Script pribadi.
+  return financialEndpointDisabled_();
+}
 
-  // Jika di PropertiesService belum ada (atau data besar yang disimpan via chunking), baca dari tab Database_Keuangan
-  if (!data) {
-    try {
-      var ss = getSpreadsheet();
-      data = readFinancialDataFromSheets(ss);
-    } catch(err) {}
-  }
-
-  if (!data) {
-    return ContentService.createTextOutput(JSON.stringify({ 
-      status: "empty", 
-      accounts: [], 
-      recentHistory: [],
-      message: "Database keuangan cloud belum berisi data. Klik 'Paksa Upload ke Cloud' di aplikasi untuk mengunggah data pertama kali." 
-    })).setMimeType(ContentService.MimeType.JSON);
-  }
-
-  return ContentService.createTextOutput(data)
-    .setMimeType(ContentService.MimeType.JSON);
+function financialEndpointDisabled_() {
+  return ContentService.createTextOutput(JSON.stringify({
+    status: "disabled",
+    success: false,
+    message: "Server lisensi tidak menyimpan data keuangan. Gunakan Cloud Script pribadi atau Google Drive (BYODb)."
+  })).setMimeType(ContentService.MimeType.JSON);
 }
 
 function doPost(e) {
@@ -432,54 +587,37 @@ function doPost(e) {
     return handleRequest(params);
   }
 
-  // 2. Jika TIDAK ada action (atau berisi data keuangan accounts / recentHistory / globalData):
-  // Ini adalah UPLOAD SINKRONISASI DATABASE KEUANGAN PENGGUNA!
-  try {
-    if (rawData) {
-      // Simpan ke Script Properties HANYA jika ukuran di bawah kuota (8KB) untuk respon instan
-      try {
-        var doc = PropertiesService.getScriptProperties();
-        if (rawData.length < 8000) {
-          doc.setProperty("KEUANGANKU_DATA", rawData);
-        } else {
-          doc.deleteProperty("KEUANGANKU_DATA"); // Bersihkan agar doGet otomatis baca chunking dari Spreadsheet
-        }
-      } catch(pErr) {}
-
-      // Simpan & format ke tab Spreadsheet fisik (dengan chunking aman)
-      saveFinancialDataToSheets(rawData, params);
-
-      return ContentService.createTextOutput(JSON.stringify({
-        status: "success",
-        success: true,
-        message: "Data keuangan berhasil disimpan dan disinkronkan ke Google Sheets",
-        timestamp: new Date()
-      })).setMimeType(ContentService.MimeType.JSON);
-    }
-  } catch(err) {
-    return ContentService.createTextOutput(JSON.stringify({
-      status: "error",
-      success: false,
-      message: "Gagal menyimpan data keuangan: " + err.toString()
-    })).setMimeType(ContentService.MimeType.JSON);
-  }
-
-  return handleRequest(params);
+  // 2. Tanpa action: upload data keuangan ke server lisensi sudah dimatikan (lihat doGet).
+  return financialEndpointDisabled_();
 }
+
+// Aksi yang hanya membaca & tidak perlu antre kunci (LockService)
+var READ_ONLY_ACTIONS = {
+  "create_pair_session": true,
+  "check_pair_session": true,
+  "get_public_catalog": true,
+  "admin_login": true,
+  "admin_get_data": true,
+  "admin_check_fonnte_device": true
+};
 
 function handleRequest(params) {
   var action = params.action || "";
   var result = { success: false, message: "Action tidak dikenal" };
+  var lock = null;
 
   try {
-    // Simpan sheetUrl jika dikirimkan oleh parameter
-    if (params.sheetUrl && typeof params.sheetUrl === 'string' && params.sheetUrl.trim()) {
-      try {
-        var customSs = SpreadsheetApp.openByUrl(params.sheetUrl.trim());
-        if (customSs) {
-          PropertiesService.getScriptProperties().setProperty("SPREADSHEET_ID", customSs.getId());
-        }
-      } catch(e) {}
+    // Catatan keamanan: parameter "sheetUrl" dari luar TIDAK lagi diterima
+    // (dulu siapa pun bisa memindahkan database lisensi ke spreadsheet lain).
+
+    // Antrekan aksi yang menulis data agar dua permintaan bersamaan tidak saling menimpa
+    if (!READ_ONLY_ACTIONS[action]) {
+      lock = LockService.getScriptLock();
+      if (!lock.tryLock(20000)) {
+        lock = null;
+        return ContentService.createTextOutput(JSON.stringify({ success: false, message: "Server sedang sibuk, silakan coba lagi beberapa detik lagi." }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
     }
 
     // Aksi pairing barcode sesi TIDAK memerlukan spreadsheet (hanya butuh CacheService)
@@ -634,39 +772,21 @@ function handleRequest(params) {
       // API SINKRONISASI DATA KEUANGAN PENGGUNA
       // -------------------------------------------------------------
       case "get_financial_data":
-        var savedData = null;
-        try {
-          savedData = PropertiesService.getScriptProperties().getProperty("KEUANGANKU_DATA");
-        } catch(e) {}
-        if (!savedData) {
-          try {
-            var ssGet = getSpreadsheet();
-            savedData = readFinancialDataFromSheets(ssGet);
-          } catch(e) {}
-        }
-        return ContentService.createTextOutput(savedData || "{}").setMimeType(ContentService.MimeType.JSON);
-
       case "save_financial_data":
-        if (params.data) {
-          var dataStr = typeof params.data === 'string' ? params.data : JSON.stringify(params.data);
-          var parsedObj = typeof params.data === 'string' ? JSON.parse(params.data) : params.data;
-          try {
-            if (dataStr.length < 8000) {
-              PropertiesService.getScriptProperties().setProperty("KEUANGANKU_DATA", dataStr);
-            } else {
-              PropertiesService.getScriptProperties().deleteProperty("KEUANGANKU_DATA");
-            }
-          } catch(e) {}
-          saveFinancialDataToSheets(dataStr, parsedObj);
-        }
-        result = { success: true, message: "Data keuangan berhasil disimpan." };
+        // Dimatikan demi keamanan: server lisensi tidak menyimpan data keuangan siapa pun.
+        result = { success: false, status: "disabled", message: "Server lisensi tidak menyimpan data keuangan." };
         break;
 
       default:
-        result = { success: false, message: "Action '" + action + "' tidak valid." };
+        result = { success: false, message: "Action tidak valid." };
     }
   } catch(err) {
     result = { success: false, message: "Server error: " + err.toString() };
+  } finally {
+    if (lock) {
+      try { SpreadsheetApp.flush(); } catch(eFlush) {}
+      try { lock.releaseLock(); } catch(eRel) {}
+    }
   }
 
   return ContentService.createTextOutput(JSON.stringify(result))
@@ -689,6 +809,13 @@ function validateClientToken(params) {
   if (!deviceId) {
     return { success: false, message: "Device ID tidak terdeteksi oleh sistem." };
   }
+  // Perangkat "uji" dari form pemesanan tidak boleh memakan slot perangkat pembeli
+  if (/^ORDER-TEST/i.test(deviceId)) {
+    return { success: false, message: "Validasi token dari form pemesanan tidak didukung." };
+  }
+  if (isRateLimited_("PIN", tokenInput, 6)) {
+    return { success: false, isBurned: true, message: "Terlalu banyak percobaan PIN yang salah. Tunggu 15 menit lalu coba lagi." };
+  }
 
   var ss = getSpreadsheet();
   var sheet = ss.getSheetByName(SHEET_TOKENS);
@@ -709,8 +836,8 @@ function validateClientToken(params) {
       var buyerName = data[i][colMap.buyerName] || "";
       var maxDevices = parseInt(data[i][colMap.maxDevices]) || 3;
       if (maxDevices < 3) maxDevices = 3; // Standar lisensi resmi Keuanganku PRO Multi-Device minimal 3 perangkat
-      // Berikan batas kuota prioritas pemilik/developer akun agar bebas multi-perangkat saat pengujian
-      if (tokenInput === 'PRO-S8GF-HQT5-CNVE' || tokenInput === 'PRO-W9J2-RAYM-3KKL' || tokenInput === 'PRO-DEMO-IKLAN-2026' || String(buyerName).toLowerCase().includes('akbar') || String(buyerName).toLowerCase().includes('demo')) {
+      // Kuota prioritas hanya untuk token pemilik/demo yang terdaftar persis (bukan berdasarkan nama)
+      if (hasPriorityQuota_(tokenInput)) {
         maxDevices = Math.max(maxDevices, 10);
       }
       var status = String(data[i][colMap.status] || "ACTIVE").trim().toUpperCase();
@@ -743,8 +870,9 @@ function validateClientToken(params) {
         if (pinStatus !== "PIN_CHANGED" && storedPersonalPin && storedPersonalPin.length <= 20 && !storedPersonalPin.includes("GMT")) {
           pinStatus = "PIN_CHANGED";
         } else if (pinStatus !== "PIN_CHANGED") {
-          // Jika perangkat sudah >= 2 atau inputPin dikirim, pasti akun sudah dipersonalisasi
-          if (devices.length >= 2 || (inputPin && inputPin.length >= 3)) {
+          // Jika perangkat sudah >= 2, pasti akun sudah dipersonalisasi.
+          // (PIN yang dikirim perangkat baru TIDAK lagi dianggap bukti personalisasi.)
+          if (devices.length >= 2) {
             pinStatus = "PIN_CHANGED";
           } else {
             pinStatus = "USING_TOKEN";
@@ -782,7 +910,18 @@ function validateClientToken(params) {
               message: "Token pembelian ini sudah HANGUS karena telah diaktivasi dan PIN telah diganti. Masukkan PIN Pribadi yang telah Anda buat untuk menghubungkan perangkat baru ini."
             };
           }
-          if (storedPersonalPin && inputPin !== storedPersonalPin) {
+          if (!storedPersonalPin) {
+            // PIN pribadi tidak tercatat di server: jangan terima PIN apa pun dari perangkat baru
+            // (dulu PIN kiriman perangkat baru langsung disimpan = bisa dibajak).
+            logEvent("NEW_DEVICE_NO_STORED_PIN", tokenInput, buyerName, deviceId, deviceName, "Ditolak: PIN pribadi belum tercatat di server");
+            return {
+              success: false,
+              isBurned: true,
+              message: "PIN pribadi lisensi ini belum tercatat di server. Tautkan perangkat baru lewat Scan QR dari HP utama Anda, atau hubungi developer."
+            };
+          }
+          if (!pinEquals_(inputPin, storedPersonalPin)) {
+            registerFailure_("PIN", tokenInput, 900);
             logEvent("WRONG_PERSONAL_PIN", tokenInput, buyerName, deviceId, deviceName, "Salah memasukkan PIN pribadi");
             return {
               success: false,
@@ -790,15 +929,12 @@ function validateClientToken(params) {
               message: "PIN Pribadi salah! Masukkan PIN pribadi yang telah Anda buat sebelumnya."
             };
           }
-          if (!storedPersonalPin) {
-            // Auto-simpan PIN jika sebelumnya belum terisi
-            sheet.getRange(i + 1, colMap.personalPin + 1).setValue(inputPin);
-            storedPersonalPin = inputPin;
-          }
+          clearFailures_("PIN", tokenInput);
         } else {
           // JIKA PERANGKAT SUDAH TERDAFTAR (EXISTING DEVICE):
           // Jika inputPin dikirim untuk re-autentikasi:
-          if (inputPin && storedPersonalPin && inputPin !== storedPersonalPin) {
+          if (inputPin && storedPersonalPin && !pinEquals_(inputPin, storedPersonalPin)) {
+            registerFailure_("PIN", tokenInput, 900);
             logEvent("WRONG_PERSONAL_PIN_EXISTING", tokenInput, buyerName, deviceId, deviceName, "Perangkat terdaftar salah memasukkan PIN pribadi");
             return {
               success: false,
@@ -821,20 +957,18 @@ function validateClientToken(params) {
       }
 
       var currentCloudUrl = (colMap.cloudUrl !== undefined && data[i][colMap.cloudUrl]) ? String(data[i][colMap.cloudUrl]).trim() : "";
-      if (params.cloudUrl && colMap.cloudUrl !== undefined) {
-        var newCloudUrl = String(params.cloudUrl).trim();
-        if (newCloudUrl && newCloudUrl !== currentCloudUrl) {
-          currentCloudUrl = newCloudUrl;
-          sheet.getRange(i + 1, colMap.cloudUrl + 1).setValue(currentCloudUrl);
-        }
+      if (params.cloudUrl && colMap.cloudUrl !== undefined && shouldReplaceCloudUrl_(currentCloudUrl, params.cloudUrl)) {
+        currentCloudUrl = String(params.cloudUrl).trim();
+        sheet.getRange(i + 1, colMap.cloudUrl + 1).setValue(currentCloudUrl);
       }
 
       // -------------------------------------------------------------
       // BYODb: PENGUNCIAN & TAUTAN AKUN GOOGLE (EMAIL BINDING)
+      // Email hanya dipercaya jika sudah diverifikasi langsung ke Google (googleAccessToken).
       // -------------------------------------------------------------
-      var inputEmail = String(params.email || "").trim().toLowerCase();
+      var inputEmail = params.googleAccessToken ? getVerifiedGoogleEmail_(params.googleAccessToken) : "";
       var boundEmail = (colMap.buyerEmail !== undefined && data[i][colMap.buyerEmail]) ? String(data[i][colMap.buyerEmail]).trim().toLowerCase() : "";
-      var isOwnerToken = (tokenInput === 'PRO-G82P-4QTS-C6RT' || tokenInput === 'PRO-S8GF-HQT5-CNVE' || tokenInput === 'PRO-W9J2-RAYM-3KKL' || tokenInput === 'PRO-DEMO-IKLAN-2026' || String(buyerName).toLowerCase().includes('akbar') || String(buyerName).toLowerCase().includes('athhar') || String(buyerName).toLowerCase().includes('demo'));
+      var isOwnerToken = isOwnerToken_(tokenInput);
 
       if (inputEmail) {
         if (!boundEmail) {
@@ -989,11 +1123,28 @@ function createPairSession(params) {
   var deviceId = (params.deviceId || "").trim();
   var deviceName = (params.deviceName || "Perangkat Web").trim();
 
-  if (!sessionId) {
-    sessionId = "PAIR-" + Utilities.getUuid().substring(0, 8).toUpperCase();
+  // ID sesi harus panjang & acak agar tidak bisa ditebak. ID pendek dari klien diganti ID server.
+  if (!sessionId || sessionId.length < 16 || !/^[A-Za-z0-9-]+$/.test(sessionId)) {
+    sessionId = "PAIR-" + Utilities.getUuid().replace(/-/g, "").toUpperCase();
+  }
+  if (!deviceId) {
+    return { success: false, message: "Device ID tidak terdeteksi." };
   }
 
   var cache = CacheService.getScriptCache();
+  // Jangan izinkan sesi yang sudah ada ditimpa (mencegah pembajakan barcode)
+  var existingRaw = cache.get(sessionId);
+  if (existingRaw) {
+    try {
+      var existingObj = JSON.parse(existingRaw);
+      if (existingObj && existingObj.deviceId !== deviceId) {
+        return { success: false, message: "Sesi barcode sudah dipakai. Muat ulang barcode." };
+      }
+      if (existingObj && existingObj.status === "AUTHORIZED") {
+        return { success: true, sessionId: sessionId, status: "AUTHORIZED" };
+      }
+    } catch(e) {}
+  }
   var sessionObj = {
     status: "WAITING",
     sessionId: sessionId,
@@ -1026,6 +1177,19 @@ function checkPairSession(params) {
   }
 
   var sessionObj = JSON.parse(raw);
+  var requesterDeviceId = String(params.deviceId || "").trim();
+
+  if (sessionObj.status !== "AUTHORIZED") {
+    return { success: true, status: sessionObj.status || "WAITING" };
+  }
+
+  // Data lisensi & PIN hanya diberikan ke perangkat yang membuat barcode ini
+  if (!requesterDeviceId || requesterDeviceId !== sessionObj.deviceId) {
+    return { success: true, status: "WAITING", message: "Menunggu scan dari HP Utama..." };
+  }
+
+  // Sekali ambil: setelah dibaca oleh perangkat yang benar, sesi dihapus
+  try { cache.remove(sessionId); } catch(e) {}
   return {
     success: true,
     status: sessionObj.status,
@@ -1046,23 +1210,28 @@ function authorizePairSession(params) {
     return { success: false, message: "Token lisensi tidak valid." };
   }
 
+  if (!approverDeviceId) {
+    return { success: false, message: "Aplikasi di HP utama perlu dimuat ulang (versi lama). Tutup lalu buka kembali aplikasi, kemudian scan ulang." };
+  }
+  if (isRateLimited_("PIN", tokenInput, 6)) {
+    return { success: false, message: "Terlalu banyak percobaan PIN yang salah. Tunggu 15 menit lalu coba lagi." };
+  }
+
   var cache = CacheService.getScriptCache();
   var raw = cache.get(sessionId);
   var sessionObj = null;
   if (raw) {
     try { sessionObj = JSON.parse(raw); } catch(e) {}
   }
-  if (!sessionObj) {
-    sessionObj = {
-      status: "WAITING",
-      sessionId: sessionId,
-      deviceId: (params.targetDeviceId || "").trim() || ("DEV-" + Date.now().toString(36).toUpperCase()),
-      deviceName: (params.targetDeviceName || "").trim() || "Perangkat Web",
-      createdAt: Date.now()
-    };
+  // Sesi WAJIB dibuat oleh perangkat baru lebih dulu (tidak boleh dibuat dari sisi HP utama)
+  if (!sessionObj || !sessionObj.deviceId) {
+    return { success: false, message: "Barcode sudah kedaluwarsa. Muat ulang barcode di perangkat baru lalu scan lagi." };
+  }
+  if (sessionObj.status === "AUTHORIZED") {
+    return { success: false, message: "Barcode ini sudah dipakai. Muat ulang barcode di perangkat baru." };
   }
 
-  var targetDeviceId = sessionObj.deviceId || (params.targetDeviceId || "").trim() || ("DEV-" + Date.now().toString(36).toUpperCase());
+  var targetDeviceId = sessionObj.deviceId;
   var targetDeviceName = sessionObj.deviceName || (params.targetDeviceName || "").trim() || "Perangkat Tambahan";
 
   // Validasi lisensi di Spreadsheet Tokens
@@ -1102,7 +1271,7 @@ function authorizePairSession(params) {
   var rawDevices = rowData[colMap.usedDevices];
 
   // Prioritas Kuota Developer / Pemilik Akun
-  if (tokenInput === 'PRO-S8GF-HQT5-CNVE' || tokenInput === 'PRO-W9J2-RAYM-3KKL' || String(buyerName).toLowerCase().includes('akbar')) {
+  if (hasPriorityQuota_(tokenInput)) {
     maxDevices = Math.max(maxDevices, 10);
   }
 
@@ -1111,8 +1280,20 @@ function authorizePairSession(params) {
   }
 
   // Parse devices
-  var devices = [];
-  try { devices = rawDevices ? JSON.parse(rawDevices) : []; } catch(e) { devices = []; }
+  var devices = parseDevices_(rawDevices);
+
+  // HP yang menyetujui (scan barcode) HARUS perangkat yang sudah terdaftar di lisensi ini
+  if (deviceIndex_(devices, approverDeviceId) === -1) {
+    logEvent("PAIR_REJECTED_UNKNOWN_APPROVER", tokenInput, buyerName, approverDeviceId, "-", "Ditolak: HP penyetuju tidak terdaftar di lisensi");
+    return { success: false, message: "HP ini belum terdaftar sebagai perangkat lisensi " + tokenInput + ". Masuk ulang dengan Token + PIN di HP ini terlebih dahulu." };
+  }
+
+  // Jika lisensi sudah punya PIN pribadi, PIN yang dikirim HP utama harus cocok
+  if (storedPersonalPin && !pinEquals_(inputPin, storedPersonalPin)) {
+    registerFailure_("PIN", tokenInput, 900);
+    logEvent("PAIR_WRONG_PIN", tokenInput, buyerName, approverDeviceId, "-", "Ditolak: PIN tidak cocok saat menautkan perangkat");
+    return { success: false, message: "PIN di HP utama tidak cocok dengan PIN lisensi. Buka Setup > ganti/konfirmasi PIN lalu coba lagi." };
+  }
 
   // Cek apakah device sudah terdaftar
   var existing = false;
@@ -1144,23 +1325,24 @@ function authorizePairSession(params) {
   sheet.getRange(foundRow, colMap.deviceCount + 1).setValue(devices.length);
   sheet.getRange(foundRow, colMap.usedDevices + 1).setValue(JSON.stringify(devices));
 
-  // Pastikan status pinStatus adalah PIN_CHANGED dan personalPin tersimpan di database token
-  var effectivePin = inputPin || storedPersonalPin || "";
-  if (effectivePin && effectivePin.length >= 3) {
-    pinStatus = "PIN_CHANGED";
-    storedPersonalPin = effectivePin;
-    sheet.getRange(foundRow, colMap.pinStatus + 1).setValue("PIN_CHANGED");
-    sheet.getRange(foundRow, colMap.personalPin + 1).setValue(effectivePin);
+  // Pastikan status pinStatus adalah PIN_CHANGED dan personalPin tersimpan di database token.
+  // PIN lama yang sudah tersimpan TIDAK pernah ditimpa dari sini.
+  if (!storedPersonalPin && inputPin && inputPin.length >= 3) {
+    storedPersonalPin = inputPin;
+    writePin_(sheet, foundRow, colMap.personalPin, inputPin);
   }
+  if (storedPersonalPin) {
+    pinStatus = "PIN_CHANGED";
+    sheet.getRange(foundRow, colMap.pinStatus + 1).setValue("PIN_CHANGED");
+  }
+  clearFailures_("PIN", tokenInput);
 
   logEvent("PAIR_SESSION_AUTHORIZED", tokenInput, buyerName, targetDeviceId, targetDeviceName, "Perangkat berhasil ditautkan via Scan HP WhatsApp Style");
 
   var currentCloudUrl = (colMap.cloudUrl !== undefined && data[foundRow - 1][colMap.cloudUrl]) ? String(data[foundRow - 1][colMap.cloudUrl]).trim() : "";
-  if (params.cloudUrl) {
+  if (params.cloudUrl && colMap.cloudUrl !== undefined && shouldReplaceCloudUrl_(currentCloudUrl, params.cloudUrl)) {
     currentCloudUrl = String(params.cloudUrl).trim();
-    if (colMap.cloudUrl !== undefined) {
-      sheet.getRange(foundRow, colMap.cloudUrl + 1).setValue(currentCloudUrl);
-    }
+    sheet.getRange(foundRow, colMap.cloudUrl + 1).setValue(currentCloudUrl);
   }
 
   // Update session di cache Google Apps Script agar PC/iPad langsung otomatis login
@@ -1170,14 +1352,15 @@ function authorizePairSession(params) {
     token: tokenInput,
     buyerName: buyerName,
     pinStatus: pinStatus,
-    personalPin: inputPin || storedPersonalPin || "",
+    personalPin: storedPersonalPin || "",
     isPasswordChanged: (pinStatus === "PIN_CHANGED"),
     maxDevices: maxDevices,
     deviceCount: devices.length,
     cloudUrl: currentCloudUrl
   };
-  sessionObj.pin = inputPin || storedPersonalPin || "";
-  sessionObj.masterUrl = params.masterUrl || "";
+  sessionObj.pin = storedPersonalPin || "";
+  var masterUrlParam = String(params.masterUrl || "").trim();
+  sessionObj.masterUrl = (masterUrlParam.indexOf("https://script.google.com/") === 0) ? masterUrlParam : "";
   sessionObj.cloudUrl = currentCloudUrl;
 
   cache.put(sessionId, JSON.stringify(sessionObj), 300);
@@ -1220,9 +1403,22 @@ function clientChangePersonalPin(params) {
       tokenInput = rowToken;
       var buyerName = data[i][colMap.buyerName] || "";
 
+      // Hanya perangkat yang sudah terdaftar di lisensi ini yang boleh mengganti PIN
+      var pinDevices = parseDevices_(data[i][colMap.usedDevices]);
+      if (deviceIndex_(pinDevices, deviceId) === -1) {
+        logEvent("PIN_CHANGE_REJECTED", tokenInput, buyerName, deviceId, "-", "Ditolak: ganti PIN dari perangkat yang tidak terdaftar");
+        return { success: false, message: "Perangkat ini tidak terdaftar di lisensi. Masuk ulang dengan Token + PIN terlebih dahulu." };
+      }
+      if (String(data[i][colMap.status] || "ACTIVE").trim().toUpperCase() === "BLOCKED") {
+        return { success: false, message: "Lisensi ini sedang diblokir oleh developer." };
+      }
+      if (newPin.length < 4 || newPin.length > 20) {
+        return { success: false, message: "PIN pribadi harus 4-20 karakter." };
+      }
+
       // Update PIN Status menjadi PIN_CHANGED (Token Hangus) & simpan PIN Pribadi
       sheet.getRange(i + 1, colMap.pinStatus + 1).setValue("PIN_CHANGED");
-      sheet.getRange(i + 1, colMap.personalPin + 1).setValue(newPin);
+      writePin_(sheet, i + 1, colMap.personalPin, newPin);
 
       logEvent("PIN_CHANGED_TOKEN_BURNED", tokenInput, buyerName, deviceId, "-", "Pengguna mengganti PIN pribadi. Token bawaan sekarang HANGUS & Cloud Sync terbuka.");
 
@@ -1252,7 +1448,7 @@ function verifyClientStatus(params) {
   var colMap = getTokenColumnIndexes(data[0]);
 
   for (var i = 1; i < data.length; i++) {
-    if (String(data[i][colMap.token]).trim().toUpperCase() === tokenInput) {
+    if (tokensMatch_(data[i][colMap.token], tokenInput)) {
       var status = String(data[i][colMap.status] || "ACTIVE").trim().toUpperCase();
       var pinStatus = String(data[i][colMap.pinStatus] || "UNCLAIMED").trim().toUpperCase();
 
@@ -1277,33 +1473,19 @@ function verifyClientStatus(params) {
         }
       }
 
-      // Auto-register jika perangkat berada dalam kuota atau merupakan akun pemilik/developer
-      var isOwner = (tokenInput === 'PRO-S8GF-HQT5-CNVE' || tokenInput === 'PRO-W9J2-RAYM-3KKL' || tokenInput === 'PRO-DEMO-IKLAN-2026' || String(data[i][colMap.buyerName] || "").toLowerCase().includes('akbar'));
+      var isOwner = hasPriorityQuota_(tokenInput);
       var maxDevLimit = isOwner ? Math.max(parseInt(data[i][colMap.maxDevices]) || 3, 10) : Math.max(parseInt(data[i][colMap.maxDevices]) || 3, 3);
 
+      // Perangkat yang belum terdaftar TIDAK lagi didaftarkan otomatis di sini
+      // (dulu cukup tahu token saja sudah bisa menambah perangkat tanpa PIN).
       if (!isFound) {
-        if (devices.length < maxDevLimit || isOwner) {
-          devices.push({
-            deviceId: deviceId,
-            deviceName: (params.deviceName || "Perangkat Web").trim(),
-            activatedAt: new Date().toISOString(),
-            lastActive: new Date().toISOString()
-          });
-          sheet.getRange(i + 1, colMap.deviceCount + 1).setValue(devices.length);
-          sheet.getRange(i + 1, colMap.usedDevices + 1).setValue(JSON.stringify(devices));
-          isFound = true;
-        } else {
-          return { success: true, active: false, reason: "DEVICE_REMOVED", message: "Perangkat ini telah dilepas dari lisensi." };
-        }
+        return { success: true, active: false, reason: "DEVICE_REMOVED", message: "Perangkat ini belum/tidak lagi terdaftar di lisensi. Silakan masuk ulang dengan Token + PIN." };
       }
 
       var currentCloudUrl = (colMap.cloudUrl !== undefined && data[i][colMap.cloudUrl]) ? String(data[i][colMap.cloudUrl]).trim() : "";
-      if (params.cloudUrl && colMap.cloudUrl !== undefined) {
-        var newCloudUrl = String(params.cloudUrl).trim();
-        if (newCloudUrl && newCloudUrl !== currentCloudUrl) {
-          currentCloudUrl = newCloudUrl;
-          sheet.getRange(i + 1, colMap.cloudUrl + 1).setValue(currentCloudUrl);
-        }
+      if (params.cloudUrl && colMap.cloudUrl !== undefined && shouldReplaceCloudUrl_(currentCloudUrl, params.cloudUrl)) {
+        currentCloudUrl = String(params.cloudUrl).trim();
+        sheet.getRange(i + 1, colMap.cloudUrl + 1).setValue(currentCloudUrl);
       }
 
       return { 
@@ -1334,7 +1516,7 @@ function clientGetDevices(params) {
   var colMap = getTokenColumnIndexes(data[0]);
 
   for (var i = 1; i < data.length; i++) {
-    if (String(data[i][colMap.token]).trim().toUpperCase() === tokenInput) {
+    if (tokensMatch_(data[i][colMap.token], tokenInput)) {
       var buyerName = data[i][colMap.buyerName];
       var status = String(data[i][colMap.status] || "ACTIVE").trim().toUpperCase();
       if (status !== "ACTIVE") {
@@ -1342,13 +1524,16 @@ function clientGetDevices(params) {
       }
 
       var rawDevices = data[i][colMap.usedDevices];
-      var devices = [];
-      try { devices = rawDevices ? JSON.parse(rawDevices) : []; } catch(e) {}
+      var devices = parseDevices_(rawDevices);
+
+      // Daftar perangkat hanya boleh dilihat dari perangkat yang terdaftar
+      if (deviceIndex_(devices, currentDeviceId) === -1) {
+        return { success: false, message: "Perangkat ini tidak terdaftar di lisensi." };
+      }
 
       var maxDevices = parseInt(data[i][colMap.maxDevices]) || 3;
       if (maxDevices < 3) maxDevices = 3;
-      // Berikan batas kuota prioritas pemilik/developer akun agar bebas multi-perangkat saat pengujian
-      if (tokenInput === 'PRO-S8GF-HQT5-CNVE' || tokenInput === 'PRO-W9J2-RAYM-3KKL' || tokenInput === 'PRO-DEMO-IKLAN-2026' || String(buyerName).toLowerCase().includes('akbar') || String(buyerName).toLowerCase().includes('demo')) {
+      if (hasPriorityQuota_(tokenInput)) {
         maxDevices = Math.max(maxDevices, 10);
       }
       var pinStatus = String(data[i][colMap.pinStatus] || "UNCLAIMED").trim().toUpperCase();
@@ -1394,11 +1579,17 @@ function deactivateClientDevice(params) {
   var colMap = getTokenColumnIndexes(data[0]);
 
   for (var i = 1; i < data.length; i++) {
-    if (String(data[i][colMap.token]).trim().toUpperCase() === tokenInput) {
+    if (tokensMatch_(data[i][colMap.token], tokenInput)) {
       var buyerName = data[i][colMap.buyerName];
       var rawDevices = data[i][colMap.usedDevices];
-      var devices = [];
-      try { devices = rawDevices ? JSON.parse(rawDevices) : []; } catch(e) {}
+      var devices = parseDevices_(rawDevices);
+
+      // Yang meminta harus perangkat terdaftar. Tanpa currentDeviceId, hanya boleh melepas dirinya sendiri.
+      var requesterId = currentDeviceId || (targetDeviceId !== "ALL_OTHERS" ? targetDeviceId : "");
+      if (!requesterId || deviceIndex_(devices, requesterId) === -1) {
+        logEvent("DEVICE_REMOVE_REJECTED", tokenInput, buyerName, requesterId || "-", "-", "Ditolak: permintaan lepas perangkat dari perangkat tidak terdaftar");
+        return { success: false, message: "Perangkat ini tidak terdaftar di lisensi, jadi tidak bisa mengelola perangkat lain." };
+      }
 
       var updated = [];
       var removedName = targetDeviceId;
@@ -1446,8 +1637,13 @@ function getActiveAdminPassword() {
 }
 
 function checkAdminAuth(password) {
+  // Kunci sementara setelah terlalu banyak percobaan salah (anti tebak password)
+  if (isRateLimited_("ADMIN", "GLOBAL", 10)) return false;
   var effectivePass = getActiveAdminPassword();
-  return (password && String(password).trim() === effectivePass);
+  var ok = !!(password && String(password).trim() === effectivePass);
+  // "TEST_VERSION_CHECK" = cek versi dari Dashboard, bukan tebakan password
+  if (!ok && password && password !== "TEST_VERSION_CHECK") registerFailure_("ADMIN", "GLOBAL", 900);
+  return ok;
 }
 
 function adminChangePassword(params) {
@@ -1455,8 +1651,11 @@ function adminChangePassword(params) {
     return { success: false, message: "Kata sandi lama yang Anda masukkan salah!" };
   }
   var newPass = (params.newAdminPassword || "").trim();
-  if (!newPass || newPass.length < 4) {
-    return { success: false, message: "Kata sandi baru minimal 4 karakter." };
+  if (!newPass || newPass.length < 10) {
+    return { success: false, message: "Kata sandi baru minimal 10 karakter." };
+  }
+  if (newPass === MASTER_ADMIN_PASSWORD) {
+    return { success: false, message: "Jangan memakai kata sandi bawaan yang tercantum di kode publik." };
   }
   PropertiesService.getScriptProperties().setProperty("DEV_PORTAL_PASSWORD", newPass);
   logEvent("ADMIN_PASSWORD_CHANGED", "-", "Developer", "-", "-", "Password Developer Portal berhasil diperbarui.");
@@ -1464,6 +1663,9 @@ function adminChangePassword(params) {
 }
 
 function adminLogin(params) {
+  if (isRateLimited_("ADMIN", "GLOBAL", 10)) {
+    return { success: false, message: "Terlalu banyak percobaan password salah. Login dikunci 15 menit." };
+  }
   if (!checkAdminAuth(params.adminPassword)) {
     return { success: false, message: "Kata sandi Developer salah!" };
   }
@@ -1536,7 +1738,7 @@ function adminGetData(params) {
       buyerEmail: (colMap.buyerEmail !== undefined && data[i][colMap.buyerEmail]) ? String(data[i][colMap.buyerEmail]).trim() : '',
       spreadsheetId: (colMap.spreadsheetId !== undefined && data[i][colMap.spreadsheetId]) ? String(data[i][colMap.spreadsheetId]).trim() : '',
       cloudUrl: (colMap.cloudUrl !== undefined && data[i][colMap.cloudUrl]) ? String(data[i][colMap.cloudUrl]).trim() : '',
-      maxDevices: parseInt(data[i][colMap.maxDevices]) || 2,
+      maxDevices: parseInt(data[i][colMap.maxDevices]) || 3,
       deviceCount: parsedDev.length,
       usedDevices: parsedDev,
       status: st,
@@ -1794,14 +1996,18 @@ function adminToggleStatus(params) {
   var token = (params.token || "").trim().toUpperCase();
   var newStatus = (params.status || "ACTIVE").trim().toUpperCase();
 
+  if (newStatus !== "ACTIVE" && newStatus !== "BLOCKED") newStatus = "ACTIVE";
+
   var ss = getSpreadsheet();
   var sheet = ss.getSheetByName(SHEET_TOKENS);
   var data = sheet.getDataRange().getValues();
+  if (!data || data.length < 2) return { success: false, message: "Token tidak ditemukan" };
+  var colMap = getTokenColumnIndexes(data[0]);
 
   for (var i = 1; i < data.length; i++) {
-    if (String(data[i][0]).trim().toUpperCase() === token) {
-      sheet.getRange(i + 1, 7).setValue(newStatus);
-      logEvent("STATUS_TOGGLED", token, data[i][1], "-", "-", "Status lisensi diubah ke: " + newStatus);
+    if (tokensMatch_(data[i][colMap.token], token)) {
+      sheet.getRange(i + 1, colMap.status + 1).setValue(newStatus);
+      logEvent("STATUS_TOGGLED", token, data[i][colMap.buyerName], "-", "-", "Status lisensi diubah ke: " + newStatus);
       return { success: true, message: "Status token berhasil diubah menjadi " + newStatus };
     }
   }
@@ -1814,11 +2020,13 @@ function adminDeleteToken(params) {
   var ss = getSpreadsheet();
   var sheet = ss.getSheetByName(SHEET_TOKENS);
   var data = sheet.getDataRange().getValues();
+  if (!data || data.length < 2) return { success: false, message: "Token tidak ditemukan" };
+  var colMap = getTokenColumnIndexes(data[0]);
 
   for (var i = 1; i < data.length; i++) {
-    if (String(data[i][0]).trim().toUpperCase() === token) {
+    if (tokensMatch_(data[i][colMap.token], token)) {
       sheet.deleteRow(i + 1);
-      logEvent("TOKEN_DELETED", token, data[i][1], "-", "-", "Token dihapus permanen oleh Developer.");
+      logEvent("TOKEN_DELETED", token, data[i][colMap.buyerName], "-", "-", "Token dihapus permanen oleh Developer.");
       return { success: true, message: "Token berhasil dihapus." };
     }
   }
@@ -1826,13 +2034,14 @@ function adminDeleteToken(params) {
 }
 
 function generateRandomToken() {
-  var chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  function block(len) {
-    var str = "";
-    for (var i = 0; i < len; i++) str += chars.charAt(Math.floor(Math.random() * chars.length));
-    return str;
+  // Acak kriptografis (UUID v4) & 12 karakter (~60 bit) agar token tidak bisa ditebak
+  var chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // 32 karakter, tanpa huruf/angka yang mirip
+  var bytes = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, Utilities.getUuid() + Utilities.getUuid() + Date.now());
+  var out = "";
+  for (var i = 0; i < 12; i++) {
+    out += chars.charAt((bytes[i] & 0xff) % 32);
   }
-  return "PRO-" + block(4) + "-" + block(4);
+  return "PRO-" + out.substring(0, 4) + "-" + out.substring(4, 8) + "-" + out.substring(8, 12);
 }
 
 function logEvent(event, token, buyerName, deviceId, deviceName, details) {
@@ -1841,7 +2050,7 @@ function logEvent(event, token, buyerName, deviceId, deviceName, details) {
     var sheet = ss.getSheetByName(SHEET_LOGS);
     if (!sheet) return;
     var nowStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
-    sheet.appendRow([nowStr, event, token, buyerName, deviceId, deviceName, details]);
+    sheet.appendRow(safeRow_([nowStr, event, String(token == null ? "" : token), String(buyerName == null ? "" : buyerName), String(deviceId == null ? "" : deviceId), String(deviceName == null ? "" : deviceName), String(details == null ? "" : details)]));
   } catch(e) {}
 }
 
@@ -1929,7 +2138,7 @@ function adminAddOrder(params) {
       nowStr,
       buyerName,
       whatsapp,
-      email,
+      safeCell_(email),
       pkg,
       maxDevices,
       price,
@@ -1947,7 +2156,7 @@ function adminAddOrder(params) {
       nowStr,
       buyerName,
       whatsapp,
-      email,
+      safeCell_(email),
       pkg,
       maxDevices,
       price,
@@ -2328,19 +2537,78 @@ function saveProofImageToDrive(base64Data, orderId) {
 }
 
 function submitPublicOrder(params) {
-  var buyerName = (params.buyerName || "").trim();
-  var whatsapp = (params.whatsapp || "").trim();
-  var email = (params.email || "").trim();
-  var pkg = (params.package || "PRO Personal (1 Perangkat)").trim();
-  var maxDevices = parseInt(params.maxDevices) || 1;
-  var price = (params.price || "Rp 99.000").trim();
-  var paymentMethod = (params.paymentMethod || "Bank Syariah Indonesia (BSI)").trim();
-  var paymentProof = (params.paymentProof || "").trim();
-  var voucherCode = (params.voucherCode || "").trim().toUpperCase();
-  var notes = (params.notes || "").trim();
+  var buyerName = String(params.buyerName || "").trim().substring(0, 100);
+  var whatsapp = String(params.whatsapp || "").trim().substring(0, 30);
+  var email = String(params.email || "").trim().substring(0, 120);
+  var pkgInput = String(params.package || "").trim();
+  var paymentMethod = String(params.paymentMethod || "Bank Syariah Indonesia (BSI)").trim().substring(0, 100);
+  var paymentProof = String(params.paymentProof || "").trim();
+  var voucherCode = String(params.voucherCode || "").trim().toUpperCase().substring(0, 40);
+  var notes = String(params.notes || "").trim().substring(0, 500);
 
   if (!buyerName) return { success: false, message: "Nama pemesan wajib diisi." };
   if (!whatsapp) return { success: false, message: "Nomor WhatsApp aktif wajib diisi." };
+  if (email && !/^[^\s@|,;]+@[^\s@|,;]+\.[^\s@|,;]+$/.test(email)) {
+    return { success: false, message: "Format email tidak valid." };
+  }
+  // Teks dari form publik disimpan sebagai teks biasa (cegah formula berbahaya di Google Sheets)
+  buyerName = safeCell_(buyerName);
+  whatsapp = safeCell_(whatsapp);
+  notes = safeCell_(notes);
+  paymentMethod = safeCell_(paymentMethod);
+
+  // ---- Harga & kuota perangkat DIHITUNG DI SERVER dari katalog (tidak percaya kiriman form) ----
+  var catalogSettings = getStoredSalesSettings();
+  var pkgObj = null;
+  (catalogSettings.packages || []).forEach(function(p) {
+    if (!pkgObj && (p.id === params.packageId || p.name === pkgInput)) pkgObj = p;
+  });
+  if (!pkgObj) return { success: false, message: "Paket yang dipilih tidak dikenali. Muat ulang halaman pemesanan." };
+  var pkg = pkgObj.name;
+  var maxDevices = parseInt(pkgObj.devices, 10) || 3;
+  var basePrice = Number(pkgObj.priceNum) || parseInt(String(pkgObj.price || "").replace(/[^0-9]/g, ""), 10) || 0;
+
+  var appliedVoucher = null;
+  var voucherLookup = voucherCode;
+  if (voucherLookup === "ORANGDALAM" || voucherLookup === "UJICOBA" || voucherLookup === "TESTING" || voucherLookup === "BETA") voucherLookup = "UJICOBA-PRO";
+  if (voucherLookup) {
+    (catalogSettings.vouchers || []).forEach(function(v) {
+      if (appliedVoucher) return;
+      if (String(v.code || "").trim().toUpperCase() !== voucherLookup) return;
+      if (String(v.status || "ACTIVE").toUpperCase() !== "ACTIVE") return;
+      var vMax = Number(v.maxUses) || 0;
+      if (vMax > 0 && (Number(v.usedCount) || 0) >= vMax) return;
+      if ((Number(v.minPrice) || 0) > basePrice) return;
+      var tgt = v.targetPackage || "ALL";
+      if (tgt !== "ALL" && tgt !== pkgObj.id && tgt !== pkgObj.name) return;
+      appliedVoucher = v;
+    });
+  }
+  var discount = 0;
+  if (appliedVoucher) {
+    discount = (appliedVoucher.type === "percent")
+      ? Math.round(basePrice * (Number(appliedVoucher.value) || 0) / 100)
+      : (Number(appliedVoucher.value) || 0);
+  }
+  var priceAfterDiscount = Math.max(0, basePrice - discount);
+  var clientUniqueCode = parseInt(params.uniqueCode, 10);
+  var uniqueForPrice = (priceAfterDiscount > 0 && clientUniqueCode >= 1 && clientUniqueCode <= 99) ? clientUniqueCode : 0;
+  var price = "Rp " + String(priceAfterDiscount + uniqueForPrice).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  if (voucherCode && !appliedVoucher && !(voucherCode.indexOf("PRO-") === 0 || voucherCode.indexOf("KEU-") === 0)) {
+    notes = (notes ? notes + " | " : "") + "[Voucher " + voucherCode + " tidak berlaku/kuota habis]";
+  }
+
+  // Validasi foto bukti transfer: hanya gambar, maksimal ~5 MB
+  if (paymentProof && paymentProof.indexOf("data:") === 0) {
+    if (!/^data:image\/(png|jpe?g|webp);base64,/i.test(paymentProof)) {
+      return { success: false, message: "Bukti transfer harus berupa gambar (JPG/PNG/WEBP)." };
+    }
+    if (paymentProof.length > 7 * 1024 * 1024) {
+      return { success: false, message: "Ukuran foto bukti transfer terlalu besar (maks. 5 MB)." };
+    }
+  } else if (paymentProof.length > 500) {
+    paymentProof = paymentProof.substring(0, 500);
+  }
 
   var ss = getSpreadsheet();
   var sheet = ss.getSheetByName(SHEET_ORDERS);
@@ -2359,9 +2627,10 @@ function submitPublicOrder(params) {
   var rawSeq = Math.max(1, lastRow);
   var orderSeq = (launchSeqOffset > 0 && rawSeq >= launchSeqOffset) ? Math.max(1, rawSeq - launchSeqOffset + 1) : rawSeq;
   var computedUniqueCode = ((orderSeq - 1) % 99) + 1;
-  var uniqueCode = parseInt(params.uniqueCode, 10) || computedUniqueCode;
+  var uniqueCode = uniqueForPrice || computedUniqueCode;
   var uCodePadded = (uniqueCode < 10 ? "0" : "") + uniqueCode;
-  var orderId = (params.orderId && !params.orderId.includes("NaN")) ? params.orderId : ("ORD-" + dateCompact + "-" + uCodePadded);
+  // Order ID selalu dibuat server (unik), tidak memakai kiriman form
+  var orderId = "ORD-" + dateCompact + "-" + uCodePadded + "-" + Utilities.getUuid().substring(0, 4).toUpperCase();
 
   // Jika paymentProof berupa base64 foto struk, simpan langsung ke Google Drive
   if (paymentProof && paymentProof.indexOf("data:image/") === 0) {
@@ -2377,21 +2646,11 @@ function submitPublicOrder(params) {
   var modeTag = (orderMode === "TESTING") ? "[UJI COBA] " : "";
   if (voucherCode) {
     fullNotes = (fullNotes ? fullNotes + " | " : "") + "Voucher: " + voucherCode;
-    // Auto increment voucher usedCount if matched
+    // Tambah hitungan pemakaian HANYA jika voucher benar-benar berlaku (sudah dicek di atas)
     try {
-      if (salesSettings && Array.isArray(salesSettings.vouchers)) {
-        var foundVoucher = null;
-        for (var vi = 0; vi < salesSettings.vouchers.length; vi++) {
-          var vCode = String(salesSettings.vouchers[vi].code || "").trim().toUpperCase();
-          if (vCode === voucherCode || (voucherCode === "ORANGDALAM" && vCode === "UJICOBA-PRO") || (voucherCode === "UJICOBA" && vCode === "UJICOBA-PRO")) {
-            foundVoucher = salesSettings.vouchers[vi];
-            foundVoucher.usedCount = (Number(foundVoucher.usedCount) || 0) + 1;
-            break;
-          }
-        }
-        if (foundVoucher) {
-          PropertiesService.getScriptProperties().setProperty("KEUANGANKU_SALES_SETTINGS", JSON.stringify(salesSettings));
-        }
+      if (appliedVoucher) {
+        appliedVoucher.usedCount = (Number(appliedVoucher.usedCount) || 0) + 1;
+        PropertiesService.getScriptProperties().setProperty("KEUANGANKU_SALES_SETTINGS", JSON.stringify(catalogSettings));
       }
     } catch(errVoucher) {}
   }
@@ -2399,9 +2658,10 @@ function submitPublicOrder(params) {
     fullNotes = (fullNotes ? fullNotes + " | " : "") + modeTag + "Kode Unik: " + uCodePadded + " (Urutan #" + orderSeq + ")";
   }
 
-  var isPioneerVoucher = (voucherCode === "UJICOBA-PRO" || voucherCode === "ORANGDALAM" || voucherCode === "UJICOBA");
-  var isZeroPrice = (price === "Rp 0" || price === "0" || price === "Rp0" || price === 0);
-  var isExistingToken = (voucherCode.startsWith("PRO-") || voucherCode.startsWith("KEU-"));
+  // Lisensi gratis HANYA jika harga hasil hitungan server = 0 karena voucher yang sah
+  var isPioneerVoucher = !!(appliedVoucher && String(appliedVoucher.code).toUpperCase() === "UJICOBA-PRO");
+  var isZeroPrice = !!(appliedVoucher && priceAfterDiscount === 0);
+  var isExistingToken = (voucherCode.indexOf("PRO-") === 0 || voucherCode.indexOf("KEU-") === 0);
 
   var tokenGenerated = "";
   var orderStatus = "PENDING";
@@ -2512,7 +2772,7 @@ function submitPublicOrder(params) {
       nowStr,
       buyerName,
       whatsapp,
-      email,
+      safeCell_(email),
       pkg,
       maxDevices,
       price,
@@ -2529,7 +2789,7 @@ function submitPublicOrder(params) {
       nowStr,
       buyerName,
       whatsapp,
-      email,
+      safeCell_(email),
       pkg,
       maxDevices,
       price,
@@ -2707,12 +2967,13 @@ function maskEmail(email) {
  * Dipanggil saat pengguna mengklik tombol "Masuk dengan Akun Google"
  */
 function verifyGoogleAccount(params) {
-  var emailInput = String(params.email || "").trim().toLowerCase();
   var deviceId = String(params.deviceId || "").trim();
   var deviceName = String(params.deviceName || "Perangkat Google").trim();
 
+  // Email WAJIB diverifikasi langsung ke Google. Email kiriman aplikasi tidak dipercaya.
+  var emailInput = getVerifiedGoogleEmail_(params.googleAccessToken);
   if (!emailInput) {
-    return { success: false, message: "Email Google tidak terdeteksi oleh sistem." };
+    return { success: false, needsReauth: true, message: "Akun Google tidak dapat diverifikasi. Silakan masuk ulang dengan Google (pastikan izin email dicentang)." };
   }
   if (!deviceId) {
     return { success: false, message: "Device ID tidak terdeteksi oleh sistem." };
@@ -2743,25 +3004,25 @@ function verifyGoogleAccount(params) {
     // 2. ATAU Kolom "Buyer Contact" berisi emailInput (jika pembeli memasukkan email saat beli)
     // 3. ATAU Akun Khusus Pemilik Developer (Moh Athhar / Sambarang)
     // 4. ATAU Akun Demo Iklan (demo@keuanganku.id atau PRO-DEMO-IKLAN-2026)
+    // Kontak pembeli bisa berisi "0812xxxx | email@gmail.com" -> cocokkan email secara PERSIS per bagian
+    var contactEmails = contactVal.split(/[|,;\s]+/).map(function(s) { return s.trim(); }).filter(function(s) { return s.indexOf("@") > 0; });
+
     var isMatch = false;
     if (boundEmail && boundEmail === emailInput) {
       isMatch = true;
-    } else if (!boundEmail && contactVal && contactVal.includes(emailInput)) {
+    } else if (!boundEmail && contactEmails.indexOf(emailInput) !== -1) {
       isMatch = true;
       if (colMap.buyerEmail !== undefined) {
         sheet.getRange(i + 1, colMap.buyerEmail + 1).setValue(emailInput);
         boundEmail = emailInput;
       }
-    } else if (rowToken === 'PRO-G82P-4QTS-C6RT' || rowToken === 'PRO-S8GF-HQT5-CNVE' || rowToken === 'PRO-W9J2-RAYM-3KKL') {
-      if (emailInput.includes('sambaran') || emailInput.includes('athhar') || emailInput === 'sambaranofficial@gmail.com') {
-        isMatch = true;
-        if (!boundEmail && colMap.buyerEmail !== undefined) {
-          sheet.getRange(i + 1, colMap.buyerEmail + 1).setValue(emailInput);
-          boundEmail = emailInput;
-        }
-      }
-    } else if (rowToken === 'PRO-DEMO-IKLAN-2026' && (emailInput === 'demo@keuanganku.id' || emailInput === 'demo.iklan@keuanganku.id')) {
+    } else if (isOwnerToken_(rowToken) && isOwnerEmail_(emailInput)) {
+      // Email pemilik terdaftar (persis) boleh masuk ke token pemilik
       isMatch = true;
+      if (!boundEmail && colMap.buyerEmail !== undefined) {
+        sheet.getRange(i + 1, colMap.buyerEmail + 1).setValue(emailInput);
+        boundEmail = emailInput;
+      }
     }
 
     if (isMatch) {
@@ -2778,7 +3039,7 @@ function verifyGoogleAccount(params) {
 
       var maxDevices = parseInt(data[i][colMap.maxDevices]) || 3;
       if (maxDevices < 3) maxDevices = 3;
-      if (rowToken === 'PRO-G82P-4QTS-C6RT' || rowToken === 'PRO-S8GF-HQT5-CNVE' || rowToken === 'PRO-DEMO-IKLAN-2026' || buyerName.toLowerCase().includes('akbar') || buyerName.toLowerCase().includes('athhar') || buyerName.toLowerCase().includes('demo')) {
+      if (hasPriorityQuota_(rowToken)) {
         maxDevices = Math.max(maxDevices, 10);
       }
 
@@ -2863,12 +3124,16 @@ function verifyGoogleAccount(params) {
  */
 function bindGoogleAccount(params) {
   var tokenInput = String(params.token || "").trim().toUpperCase();
-  var emailInput = String(params.email || "").trim().toLowerCase();
   var deviceId = String(params.deviceId || "").trim();
   var deviceName = String(params.deviceName || "Perangkat Google").trim();
 
-  if (!tokenInput || !emailInput) {
-    return { success: false, message: "Token dan Email Google wajib diisi." };
+  if (!tokenInput) {
+    return { success: false, message: "Token lisensi wajib diisi." };
+  }
+  // Email diambil dari Google langsung, bukan dari kiriman aplikasi
+  var emailInput = getVerifiedGoogleEmail_(params.googleAccessToken);
+  if (!emailInput) {
+    return { success: false, needsReauth: true, message: "Akun Google tidak dapat diverifikasi. Silakan masuk ulang dengan Google." };
   }
 
   var ss = getSpreadsheet();
@@ -2888,15 +3153,39 @@ function bindGoogleAccount(params) {
       var buyerName = String(data[i][colMap.buyerName] || "");
       var boundEmail = (colMap.buyerEmail !== undefined && data[i][colMap.buyerEmail]) ? String(data[i][colMap.buyerEmail]).trim().toLowerCase() : "";
 
-      var isOwnerToken = (rowToken === 'PRO-G82P-4QTS-C6RT' || rowToken === 'PRO-S8GF-HQT5-CNVE' || rowToken === 'PRO-DEMO-IKLAN-2026' || buyerName.toLowerCase().includes('akbar') || buyerName.toLowerCase().includes('athhar'));
-      if (boundEmail && boundEmail !== emailInput && !isOwnerToken) {
+      var bindStatus = String(data[i][colMap.status] || "ACTIVE").trim().toUpperCase();
+      if (bindStatus === "BLOCKED") {
+        return { success: false, message: "Lisensi ini sedang diblokir oleh developer." };
+      }
+
+      if (boundEmail && boundEmail !== emailInput && !(isOwnerToken_(rowToken) && isOwnerEmail_(emailInput))) {
         return {
           success: false,
           message: "Token ini sudah terhubung secara permanen dengan akun Google lain (" + maskEmail(boundEmail) + "). Gunakan akun tersebut atau hubungi developer."
         };
       }
 
-      if (colMap.buyerEmail !== undefined) {
+      // Token yang sudah dipersonalisasi (PIN pribadi) hanya boleh ditautkan dari perangkat
+      // yang sudah terdaftar, agar orang yang hanya tahu token tidak bisa mengklaimnya.
+      var bindDevices = parseDevices_(data[i][colMap.usedDevices]);
+      var bindPinStatus = String(data[i][colMap.pinStatus] || "").trim().toUpperCase();
+      var bindStoredPin = String(data[i][colMap.personalPin] || "").trim();
+      if (!boundEmail && bindDevices.length > 0 && deviceIndex_(bindDevices, deviceId) === -1) {
+        var pinOk = bindStoredPin && pinEquals_(params.pin, bindStoredPin);
+        if (!pinOk) {
+          if (params.pin) registerFailure_("PIN", rowToken, 900);
+          logEvent("GOOGLE_BIND_REJECTED", rowToken, buyerName, deviceId, deviceName, "Ditolak: tautkan Google dari perangkat tidak terdaftar tanpa PIN benar (" + emailInput + ")");
+          return {
+            success: false,
+            needsPin: true,
+            message: (bindPinStatus === "PIN_CHANGED" || bindStoredPin)
+              ? "Token ini sudah aktif di perangkat lain. Tautkan akun Google dari HP yang sudah aktif, atau masukkan PIN Pribadi Anda."
+              : "Token ini sudah aktif di perangkat lain. Tautkan akun Google dari HP yang sudah aktif tersebut."
+          };
+        }
+      }
+
+      if (colMap.buyerEmail !== undefined && !boundEmail) {
         sheet.getRange(i + 1, colMap.buyerEmail + 1).setValue(emailInput);
       }
 
@@ -2939,15 +3228,27 @@ function saveSpreadsheetId(params) {
   if (!data || data.length < 2) return { success: false, message: "Database lisensi masih kosong." };
   var colMap = getTokenColumnIndexes(data[0]);
 
+  var verifiedEmail = params.googleAccessToken ? getVerifiedGoogleEmail_(params.googleAccessToken) : "";
+  var reqDeviceId = String(params.deviceId || "").trim();
+
   for (var i = 1; i < data.length; i++) {
     var rowToken = String(data[i][colMap.token] || "").trim().toUpperCase();
     var boundEmail = (colMap.buyerEmail !== undefined && data[i][colMap.buyerEmail]) ? String(data[i][colMap.buyerEmail]).trim().toLowerCase() : "";
 
     var isMatch = false;
-    if (tokenInput && rowToken === tokenInput) isMatch = true;
-    else if (emailInput && boundEmail === emailInput) isMatch = true;
+    if (tokenInput && tokensMatch_(rowToken, tokenInput)) isMatch = true;
+    else if (!tokenInput && verifiedEmail && boundEmail === verifiedEmail) isMatch = true;
 
     if (isMatch) {
+      // Hanya pemilik sah: perangkat terdaftar ATAU akun Google terverifikasi yang tertaut ke token ini
+      var ssDevices = parseDevices_(data[i][colMap.usedDevices]);
+      var authorized = (deviceIndex_(ssDevices, reqDeviceId) !== -1) || (verifiedEmail && boundEmail && verifiedEmail === boundEmail);
+      if (!authorized) {
+        return { success: false, message: "Tidak diizinkan menyimpan Spreadsheet ID untuk lisensi ini." };
+      }
+      if (!/^[A-Za-z0-9_-]{20,100}$/.test(spreadsheetId)) {
+        return { success: false, message: "Format Spreadsheet ID tidak valid." };
+      }
       if (colMap.spreadsheetId !== undefined) {
         sheet.getRange(i + 1, colMap.spreadsheetId + 1).setValue(spreadsheetId);
         logEvent("SPREADSHEET_ID_SAVED", rowToken, String(data[i][colMap.buyerName] || ""), "-", "-", "Spreadsheet ID BYODb disimpan: " + spreadsheetId);

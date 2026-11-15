@@ -1,4 +1,4 @@
-const CACHE_NAME = 'keuanganku-pwa-v6.26';
+const CACHE_NAME = 'keuanganku-pwa-v6.27';
 const ASSETS_TO_CACHE = [
   './login-bg.jpg',
   './',
@@ -24,7 +24,8 @@ self.addEventListener('install', (event) => {
       return cache.addAll(ASSETS_TO_CACHE).catch(() => {});
     })
   );
-  self.skipWaiting();
+  // Tidak langsung skipWaiting: versi baru menunggu sampai pengguna menekan tombol "Perbarui"
+  // (lihat applyAppUpdate di index.html) agar halaman tidak reload saat sedang mengisi form.
 });
 
 // Message Event (Menerima perintah update dari aplikasi)
@@ -73,7 +74,8 @@ self.addEventListener('fetch', (event) => {
   if (event.request.url.includes('script.google.com') || 
       event.request.url.includes('accounts.google.com') || 
       event.request.url.includes('sheets.googleapis.com') || 
-      event.request.url.includes('googleapis.com')) return;
+      event.request.url.includes('googleapis.com') ||
+      event.request.url.includes('er-api.com')) return; // kurs mata uang harus selalu terbaru
 
   const url = new URL(event.request.url);
   const isHtmlRequest = event.request.mode === 'navigate' || 

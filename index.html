@@ -47,7 +47,7 @@
   <link rel="apple-touch-icon" sizes="167x167" href="icon-192.png"/>
 
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.6.1/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
@@ -1006,8 +1006,8 @@
             <span class="material-symbols-outlined text-2xl">cloud_sync</span>
           </div>
           <div>
-            <h3 class="font-headline-md font-extrabold text-sm sm:text-base text-white">Kode Script Cloud Google Sheets (v2.5)</h3>
-            <p class="text-[10px] text-cyan-300/90">Dukungan Penuh Multi-Row Chunking (Bebas Limit 9KB & Foto Bukti Bayar)</p>
+            <h3 class="font-headline-md font-extrabold text-sm sm:text-base text-white">Kode Script Cloud Google Sheets (v3.0 Berkunci)</h3>
+            <p class="text-[10px] text-cyan-300/90">Data Cloud hanya bisa dibuka aplikasi Anda • Multi-Row Chunking • Foto Bukti Bayar</p>
           </div>
         </div>
         <button type="button" onclick="closeCloudScriptModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors">
@@ -1037,10 +1037,21 @@
             <li>Buka Spreadsheet Google Anda di browser ➔ klik menu <b>Ekstensi ➔ Apps Script</b>.</li>
             <li>Hapus seluruh kode lama di layar, lalu klik tombol <b class="text-primary dark:text-blue-400">"SALIN KODE SCRIPT"</b> di bawah dan tempelkan (<b>Ctrl + V</b>).</li>
             <li>Klik tombol biru <b>Terapkan (Deploy)</b> di kanan atas ➔ pilih <b>Kelola Penerapan (Manage Deployments)</b> ➔ klik ikon pensil (<b>Edit</b>) ➔ ubah Versi jadi <b>"Versi Baru" (New Version)</b> ➔ klik <b>Terapkan</b>.</li>
+            <li>Kembali ke sini, pastikan Link Web App di bawah sudah benar, lalu klik <b class="text-emerald-600 dark:text-emerald-400">"AKTIFKAN KUNCI"</b>.</li>
           </ol>
           <p class="text-[10px] text-gray-500 italic pt-1">
-            *Catatan: Link Web App Anda <b>TIDAK AKAN BERUBAH</b>, jadi tidak perlu memasukkan ulang link di aplikasi.
+            *Catatan: Kode di bawah berisi <b>kunci rahasia</b> khusus untuk Anda. Jangan bagikan kode ini ke siapa pun. Lakukan langkah ini di <b>satu perangkat saja</b>; perangkat lain akan ikut memakai kunci yang sama secara otomatis.
           </p>
+        </div>
+
+        <!-- Aktivasi Kunci -->
+        <div class="p-3.5 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-2xl space-y-2">
+          <label for="cloud-script-url-input" class="font-bold text-emerald-800 dark:text-emerald-300 block text-xs">Link Web App Google Apps Script Anda:</label>
+          <input id="cloud-script-url-input" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://script.google.com/macros/s/.../exec" class="w-full px-3 py-2 rounded-xl border border-outline-variant bg-white dark:bg-slate-900 text-[11px] font-mono-data">
+          <button type="button" onclick="activateCloudSyncKey()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow active:scale-95 transition-all cursor-pointer">
+            <span class="material-symbols-outlined text-sm">lock</span> AKTIFKAN KUNCI
+          </button>
+          <p id="cloud-script-activate-status" class="text-[11px] text-gray-500"></p>
         </div>
 
         <!-- Tombol Salin Cepat -->
@@ -1057,7 +1068,7 @@
 
       <!-- Modal Footer -->
       <div class="p-3 sm:p-4 border-t border-outline-variant bg-surface dark:bg-slate-800 flex items-center justify-between gap-2">
-        <span class="text-[10px] text-gray-500">Versi 2.5 Multi-Row Chunking</span>
+        <span class="text-[10px] text-gray-500">Versi 3.0 Berkunci</span>
         <button type="button" onclick="closeCloudScriptModal()" class="px-5 py-2 bg-surface-container hover:bg-surface-container-high border rounded-xl text-xs font-bold text-on-surface transition-colors cursor-pointer">
           Tutup
         </button>
@@ -2798,6 +2809,16 @@
                       <span>Tarik dari Google Drive</span>
                     </button>
                   </div>
+
+                  <div class="pt-2 border-t border-outline-variant/50 flex flex-wrap items-center justify-between gap-2">
+                    <p class="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed max-w-md">
+                      Memakai <b>Cloud Script</b> (Link Web App Google Apps Script) untuk sinkron antar perangkat? Pastikan script Anda versi <b>berkunci v3.0</b> agar datanya tidak bisa dibuka orang lain.
+                    </p>
+                    <button type="button" onclick="openCloudScriptModal()" class="py-2 px-3.5 bg-white dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-slate-700 border border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 font-bold text-[11px] rounded-xl flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer">
+                      <span class="material-symbols-outlined text-sm">lock</span>
+                      <span>Amankan Cloud Script</span>
+                    </button>
+                  </div>
                 </section>
 
                 <!-- 2. KARTU CADANGAN MANUAL OFFLINE (EXPORT & IMPORT JSON) -->
@@ -3931,7 +3952,10 @@
     function getOrCreateDeviceId() {
       let devId = localStorage.getItem("KEUANGANKU_DEVICE_ID");
       if (!devId) {
-        devId = "DEV-" + Date.now().toString(36).toUpperCase() + "-" + Math.random().toString(36).substring(2, 7).toUpperCase();
+        // ID perangkat acak kriptografis (dipakai server untuk mengenali perangkat terdaftar)
+        let rb = new Uint8Array(10);
+        try { (window.crypto || window.msCrypto).getRandomValues(rb); } catch(e) { for (let i = 0; i < rb.length; i++) rb[i] = Math.floor(Math.random() * 256); }
+        devId = "DEV-" + Date.now().toString(36).toUpperCase() + "-" + Array.from(rb, b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
         localStorage.setItem("KEUANGANKU_DEVICE_ID", devId);
       }
       return devId;
@@ -4137,7 +4161,15 @@
           if (res.cloudUrl && res.cloudUrl.startsWith("http")) {
             let hasLocalCloud = globalData.cloudUrl && globalData.cloudUrl.startsWith("http");
             let localTxCount = (globalData.recentHistory || []).length;
-            if (!hasLocalCloud || localTxCount === 0) {
+            // Kunci Cloud baru diaktifkan di perangkat lain: pakai URL berkunci yang sama
+            let serverKeyed = /[?&]k=/.test(res.cloudUrl);
+            let localKeyed = hasLocalCloud && /[?&]k=/.test(globalData.cloudUrl);
+            if (serverKeyed && hasLocalCloud && !localKeyed && stripKeyFromCloudUrl(res.cloudUrl) === stripKeyFromCloudUrl(globalData.cloudUrl)) {
+              globalData.cloudUrl = res.cloudUrl;
+              localStorage.setItem("KEUANGANKU_CLOUD_URL", res.cloudUrl);
+              saveStorageData();
+              showSyncToast('🔒 Kunci Cloud diperbarui otomatis');
+            } else if (!hasLocalCloud || localTxCount === 0) {
               globalData.cloudUrl = res.cloudUrl;
               localStorage.setItem("KEUANGANKU_CLOUD_URL", res.cloudUrl);
               saveStorageData();
@@ -4190,6 +4222,24 @@
 
       if (!apiUrl || !apiUrl.startsWith("http") || apiUrl.includes("YOUR_SCRIPT_ID")) {
         throw new Error("Server lisensi developer belum dikonfigurasi.");
+      }
+
+      // 0. Data rahasia (PIN, token akses Google) dikirim lewat POST agar tidak tercatat di alamat URL
+      let isSensitive = Boolean(payload && (payload.pin || payload.newPin || payload.googleAccessToken));
+      if (isSensitive) {
+        try {
+          let sResp = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(payload),
+            redirect: 'follow'
+          });
+          if (sResp && sResp.ok) {
+            return await sResp.json();
+          }
+        } catch(eS) {
+          console.warn("POST rahasia gagal, mencoba GET...", eS);
+        }
       }
 
       // 1. Prioritaskan metode GET (100% Kebal CORS & kompatibel penuh dengan Google Apps Script Web App di semua mobile browser)
@@ -4247,7 +4297,7 @@
       if (ownerEl) ownerEl.textContent = lic.buyerName || '-';
 
       let isChanged = (lic.pinStatus === 'PIN_CHANGED');
-      let isOwner = (lic.buyerName || '').toLowerCase().includes('akbar') || (lic.token || '') === 'PRO-S8GF-HQT5-CNVE' || (lic.token || '') === 'PRO-W9J2-RAYM-3KKL';
+      let isOwner = (lic.token || '') === 'PRO-S8GF-HQT5-CNVE' || (lic.token || '') === 'PRO-W9J2-RAYM-3KKL';
       let currentDevCount = lic.deviceCount || 1;
       let maxDevicesAllowed = isOwner ? Math.max(currentDevCount, 3) : (parseInt(lic.maxDevices) || 3);
 
@@ -4882,19 +4932,26 @@
 
       let devId = getOrCreateDeviceId();
       let devName = detectDeviceName();
-      let sessionId = "PAIR-" + Date.now().toString(36).toUpperCase() + "-" + Math.random().toString(36).substring(2, 6).toUpperCase();
+      // ID sesi acak kriptografis (tidak bisa ditebak orang lain)
+      let rnd = new Uint8Array(12);
+      (window.crypto || window.msCrypto).getRandomValues(rnd);
+      let sessionId = "PAIR-" + Array.from(rnd, b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
       currentPairSessionId = sessionId;
 
       // 1. Daftarkan sesi ke Google Apps Script (in-memory cache)
       try {
         let masterUrl = DEFAULT_MASTER_LICENSE_URL;
         if (masterUrl && !masterUrl.includes("YOUR_SCRIPT_ID")) {
-          await callClientLicenseApi({
+          let cRes = await callClientLicenseApi({
             action: 'create_pair_session',
             sessionId: sessionId,
             deviceId: devId,
             deviceName: devName
           });
+          if (cRes && cRes.success && cRes.sessionId && cRes.sessionId !== sessionId) {
+            sessionId = cRes.sessionId;
+            currentPairSessionId = sessionId;
+          }
         }
       } catch(e) {
         console.warn("create_pair_session notice:", e);
@@ -4950,7 +5007,8 @@
       try {
         let res = await callClientLicenseApi({
           action: 'check_pair_session',
-          sessionId: sessionId
+          sessionId: sessionId,
+          deviceId: getOrCreateDeviceId()
         });
 
         if (res && res.success && res.status === 'AUTHORIZED' && res.session) {
@@ -5070,6 +5128,7 @@
           targetDeviceName: devName,
           token: lic.token,
           pin: pinToUse,
+          approverDeviceId: getOrCreateDeviceId(),
           masterUrl: getMasterLicenseServerUrl(),
           cloudUrl: cloudUrlToShare
         });
@@ -5244,12 +5303,12 @@
     }
 
     function downloadSplashQrCode() {
-      let dateStr = new Date().toISOString().slice(0, 10);
+      let dateStr = getLocalDateStr();
       downloadQrFromContainer('splash-qrcode-container', `KeuanganKu_QR_Login_${dateStr}.png`);
     }
 
     function downloadPairModalQrCode() {
-      let dateStr = new Date().toISOString().slice(0, 10);
+      let dateStr = getLocalDateStr();
       downloadQrFromContainer('pair-qrcode-container', `KeuanganKu_QR_Lisensi_${dateStr}.png`);
     }
 
@@ -6136,7 +6195,7 @@ function hideSplashScreenAndTriggerAlerts() {
       if (typeof applyNavigationConfig === "function") applyNavigationConfig();
       if (typeof updateByodbUi === 'function') updateByodbUi();
       let dateInput = document.getElementById('tx-date');
-      if (dateInput) dateInput.valueAsDate = new Date();
+      if (dateInput) dateInput.value = getLocalDateStr();
       requestNotificationPermission();
 
       let currentMonthIndex = new Date().getMonth();
@@ -6313,7 +6372,7 @@ function hideSplashScreenAndTriggerAlerts() {
       // Anti-spam harian: jangan kirim notifikasi yang sama lebih dari sekali dalam 24 jam
       if (tag) {
         let storageKey = 'KEUANGANKU_NOTIF_SENT_' + tag;
-        let todayDateStr = new Date().toISOString().slice(0, 10);
+        let todayDateStr = getLocalDateStr();
         if (localStorage.getItem(storageKey) === todayDateStr) {
           return;
         }
@@ -6600,22 +6659,12 @@ function hideSplashScreenAndTriggerAlerts() {
         candidates.add(String(lic.token).trim().toUpperCase());
         candidates.add(String(lic.token).replace(/[^A-Z0-9]/g, '').toUpperCase());
       }
-      candidates.add("190412");
-      candidates.add("123");
-      candidates.add("1234");
-      candidates.add("123456");
-      // Fallback default
+      // Catatan keamanan: PIN "cadangan" yang ditanam di kode (123, 1234, 123456, dst.) dan
+      // "PIN apa saja diterima di perangkat pemilik" sudah DIHAPUS. Hanya PIN milik Anda yang berlaku.
+      candidates.delete("");
 
       // 1. Jika input cocok dengan salah satu PIN / Password yang valid
       let isPinMatch = candidates.has(pinInput);
-      if (!isPinMatch && isOwner && pinInput.length >= 3 && !isTokenFormat) {
-        globalData.appPin = pinInput;
-        globalData.ownerPassword = pinInput;
-        if (lic) lic.personalPin = pinInput;
-        try { localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(lic)); } catch(e) {}
-        saveStorageData();
-        isPinMatch = true;
-      }
       let isSavedTokenValid = (lic && lic.pinStatus === 'USING_TOKEN' && lic.token && (upperInput === lic.token.toUpperCase() || cleanInput === lic.token.replace(/[^A-Z0-9]/g, '').toUpperCase()));
 
       if (isPinMatch || isSavedTokenValid) {
@@ -7075,6 +7124,15 @@ function hideSplashScreenAndTriggerAlerts() {
         
         let cloudData = await response.json();
 
+        // Cloud Script berkunci menolak akses: jangan timpa/unggah apa pun, beri tahu pengguna
+        if (cloudData && cloudData.status === 'unauthorized') {
+          setSyncStatus('error', 'Kunci Cloud Salah');
+          if (isManualClick) {
+            alert("Cloud Script menolak akses karena kunci sinkronisasi tidak cocok.\n\nBuka Setup > Sinkronisasi > 'Amankan Cloud Script' lalu klik 'AKTIFKAN KUNCI' di perangkat yang sudah memasang kode terbaru.");
+          }
+          return;
+        }
+
         if (cloudData && cloudData.accounts && Array.isArray(cloudData.accounts)) {
           let localUpdated = Number(globalData.lastUpdated) || 0;
           let cloudUpdated = Number(cloudData.lastUpdated) || 0;
@@ -7102,6 +7160,16 @@ function hideSplashScreenAndTriggerAlerts() {
             isCloudNewer = true;
           } else {
             isCloudNewer = false;
+          }
+
+          // Setelah pengguna memulihkan backup secara manual, data hasil pemulihan harus menang
+          // satu kali (lalu diunggah ke cloud), walaupun jumlah transaksinya lebih sedikit.
+          let restorePending = false;
+          try { restorePending = localStorage.getItem("KEUANGANKU_RESTORE_PENDING") === "1"; } catch(e) {}
+          if (restorePending) {
+            isCloudNewer = false;
+            localUpdated = Math.max(localUpdated, cloudUpdated + 1);
+            try { localStorage.removeItem("KEUANGANKU_RESTORE_PENDING"); } catch(e) {}
           }
 
           if (isCloudNewer) {
@@ -7174,17 +7242,8 @@ function hideSplashScreenAndTriggerAlerts() {
       if ((!globalData.cloudUrl || !globalData.cloudUrl.startsWith("http")) && backupCloudUrl) {
         globalData.cloudUrl = backupCloudUrl;
       }
-      // Auto-recovery cerdas khusus akun pemilik/developer Muh Akbar jika cloudUrl belum terisi di perangkat baru
-      if (!globalData.cloudUrl || !globalData.cloudUrl.startsWith("http")) {
-        let lic = getSavedLicense();
-        if (lic) {
-          let name = (lic.buyerName || '').toLowerCase();
-          let tok = (lic.token || '').toUpperCase();
-          if (name.includes('akbar') || name.includes('athhar') || tok === 'PRO-S8GF-HQT5-CNVE' || tok === 'PRO-G82P-4QTS-C6RT' || tok === 'PRO-W9J2-RAYM-3KKL') {
-            globalData.cloudUrl = "https://script.google.com/macros/s/AKfycbx51Rbmg0U7en7wdOywpe_YAO4cBs2kjy_7cNW_kQN-xcdQUFeatePPzoiAMrS9BPaTAw/exec";
-          }
-        }
-      }
+      // Catatan keamanan: URL Cloud pemilik TIDAK lagi ditanam di kode.
+      // Perangkat baru mendapatkan URL Cloud (berkunci) dari server lisensi setelah login sah.
       if (globalData.cloudUrl) {
         localStorage.setItem("KEUANGANKU_CLOUD_URL", globalData.cloudUrl);
       }
@@ -7252,8 +7311,6 @@ function hideSplashScreenAndTriggerAlerts() {
         let name = (lic.buyerName || '').toLowerCase();
         let tok = (lic.token || '').toUpperCase();
         if (
-          name.includes('akbar') || 
-          name.includes('sambarang') || 
           name.includes('demo') || 
           name.includes('showcase') ||
           tok === 'PRO-S8GF-HQT5-CNVE' || 
@@ -7270,12 +7327,6 @@ function hideSplashScreenAndTriggerAlerts() {
       // Mode Demo Iklan via flag
       if (localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true') {
         return true;
-      }
-      // Cek apakah terhubung ke Cloud Script pribadi milik Muh Akbar
-      if (globalData && globalData.cloudUrl && typeof globalData.cloudUrl === 'string') {
-        if (globalData.cloudUrl.includes("AKfycbx51Rbmg0U7en7wdOywpe_YAO4cBs2kjy_7cNW_kQN-xcdQUFeatePPzoiAMrS9BPaTAw")) {
-          return true;
-        }
       }
       // Cek jika sesi dev portal pernah login sah di perangkat ini
       if (localStorage.getItem("KEUANGANKU_DEV_SAVED_PASS") || localStorage.getItem("KEUANGANKU_DEV_MODE") === "true") {
@@ -7480,7 +7531,7 @@ function hideSplashScreenAndTriggerAlerts() {
     }
 
     function setZakatHaulPrompt() {
-      let cur = globalData.zakatHaulStartDate || new Date().toISOString().split('T')[0];
+      let cur = globalData.zakatHaulStartDate || getLocalDateStr();
       let val = prompt("Masukkan Tanggal Mulai Haul (Format: YYYY-MM-DD, contoh: 2025-01-01):", cur);
       if (val !== null) {
         let clean = val.trim();
@@ -7575,14 +7626,33 @@ function hideSplashScreenAndTriggerAlerts() {
 
     const MODERN_CLOUD_APPS_SCRIPT = `/**
  * ==============================================================================
- * KEUANGANKU CLOUD SCRIPT (v2.5 - MULTI-ROW CHUNKING & DUKUNGAN BUKTI BAYAR)
+ * KEUANGANKU CLOUD SCRIPT (v3.0 - BERKUNCI + MULTI-ROW CHUNKING)
  * Sambarang Production - Personal Database Sync Engine
  * Mendukung foto bukti transfer/struk, PDF, dan ribuan riwayat transaksi
  * Bebas dari batas Google ScriptProperties (9KB) & Limit Sel (50.000 karakter)
+ *
+ * KEAMANAN: data hanya bisa dibaca/diubah oleh aplikasi yang membawa KUNCI di bawah.
+ * Jangan bagikan kode ini ke orang lain (kunci di bawah bersifat rahasia).
  * ==============================================================================
  */
 
+var SYNC_KEY = "__KEUANGANKU_SYNC_KEY__";
+
+function isAuthorized_(e) {
+  var k = (e && e.parameter && e.parameter.k) ? String(e.parameter.k) : "";
+  if (!SYNC_KEY || SYNC_KEY.length < 24 || SYNC_KEY.indexOf("__") === 0) return false;
+  return k === SYNC_KEY;
+}
+
+function unauthorized_() {
+  return ContentService.createTextOutput(JSON.stringify({
+    status: "unauthorized",
+    message: "Kunci sinkronisasi tidak cocok. Buka aplikasi > Script Cloud > Aktifkan Kunci."
+  })).setMimeType(ContentService.MimeType.JSON);
+}
+
 function doGet(e) {
+  if (!isAuthorized_(e)) return unauthorized_();
   try {
     var data = readLargeData();
     if (!data) {
@@ -7602,10 +7672,15 @@ function doGet(e) {
 }
 
 function doPost(e) {
+  if (!isAuthorized_(e)) return unauthorized_();
   try {
     var rawData = "";
     if (e && e.postData && e.postData.contents) {
       rawData = e.postData.contents;
+    }
+    if (rawData && rawData.trim().charAt(0) !== "{") {
+      return ContentService.createTextOutput(JSON.stringify({ status: "error", message: "Format data tidak valid" }))
+        .setMimeType(ContentService.MimeType.JSON);
     }
     if (!rawData || rawData.trim() === "") {
       return ContentService.createTextOutput(JSON.stringify({ status: "error", message: "Data kosong" }))
@@ -7642,17 +7717,13 @@ function saveLargeData(dataString) {
     chunks.push([dataString.substring(i, i + CHUNK_SIZE)]);
   }
   if (chunks.length > 0) {
-    sheet.getRange(2, 1, chunks.length, 1).setValues(chunks);
+    var chunkRange = sheet.getRange(2, 1, chunks.length, 1);
+    chunkRange.setNumberFormat("@"); // simpan sebagai teks murni (potongan JSON tidak berubah jadi angka/rumus)
+    chunkRange.setValues(chunks);
   }
 
-  // Simpan juga ke ScriptProperties jika ukuran kecil (< 8 KB) sebagai cache instan
-  try {
-    if (dataString.length < 8000) {
-      PropertiesService.getScriptProperties().setProperty("KEUANGANKU_DATA", dataString);
-    } else {
-      PropertiesService.getScriptProperties().deleteProperty("KEUANGANKU_DATA");
-    }
-  } catch(e) {}
+  // Cache lama di ScriptProperties tidak dipakai lagi (hapus agar tidak ada salinan data tanpa kunci)
+  try { PropertiesService.getScriptProperties().deleteProperty("KEUANGANKU_DATA"); } catch(e) {}
 
   // Format tabel transaksi rapi di tab 'Transaksi' agar pengguna juga bisa baca di Google Sheets
   try {
@@ -7724,11 +7795,102 @@ function formatReadableSheets(ss, parsed) {
   }
 }`;
 
+    // ---------- Kunci rahasia sinkronisasi Cloud Script (v3.0) ----------
+    function getKeyFromCloudUrl(url) {
+      try {
+        let m = String(url || '').match(/[?&]k=([A-Za-z0-9_-]+)/);
+        return m ? m[1] : '';
+      } catch(e) { return ''; }
+    }
+    function stripKeyFromCloudUrl(url) {
+      return String(url || '').replace(/([?&])k=[A-Za-z0-9_-]+&?/, '$1').replace(/[?&]$/, '');
+    }
+    function generateCloudSyncKey() {
+      let bytes = new Uint8Array(24);
+      (window.crypto || window.msCrypto).getRandomValues(bytes);
+      return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+    }
+    function getCloudSyncKey() {
+      // 1) Kunci yang sudah aktif di URL Cloud perangkat ini
+      let active = getKeyFromCloudUrl(globalData && globalData.cloudUrl);
+      if (active) return active;
+      // 2) Kunci yang sudah dibuat sebelumnya tapi belum diaktifkan
+      let pending = '';
+      try { pending = localStorage.getItem('KEUANGANKU_CLOUD_SYNC_KEY_PENDING') || ''; } catch(e) {}
+      if (pending && pending.length >= 24) return pending;
+      // 3) Buat kunci baru
+      let fresh = generateCloudSyncKey();
+      try { localStorage.setItem('KEUANGANKU_CLOUD_SYNC_KEY_PENDING', fresh); } catch(e) {}
+      return fresh;
+    }
+    function getCloudScriptWithKey() {
+      return MODERN_CLOUD_APPS_SCRIPT.replace('__KEUANGANKU_SYNC_KEY__', getCloudSyncKey());
+    }
+    function buildKeyedCloudUrl(baseUrl, key) {
+      let base = stripKeyFromCloudUrl(baseUrl);
+      if (!base) return '';
+      return base + (base.includes('?') ? '&' : '?') + 'k=' + key;
+    }
+
+    async function activateCloudSyncKey() {
+      let currentUrl = (globalData && globalData.cloudUrl) || localStorage.getItem('KEUANGANKU_CLOUD_URL') || '';
+      let input = document.getElementById('cloud-script-url-input');
+      let typed = input ? input.value.trim() : '';
+      let baseUrl = typed || stripKeyFromCloudUrl(currentUrl);
+      if (!baseUrl || !baseUrl.startsWith('https://script.google.com/')) {
+        alert('Tempelkan dulu Link Web App Google Apps Script Anda (diawali https://script.google.com/...).');
+        if (input) input.focus();
+        return;
+      }
+      let key = getCloudSyncKey();
+      let keyedUrl = buildKeyedCloudUrl(baseUrl, key);
+
+      // Uji dulu: apakah script di Google sudah versi berkunci dengan kunci yang sama?
+      let statusEl = document.getElementById('cloud-script-activate-status');
+      if (statusEl) { statusEl.textContent = 'Menguji koneksi berkunci...'; statusEl.className = 'text-[11px] text-blue-600 dark:text-blue-300'; }
+      try {
+        let resp = await fetch(keyedUrl + '&_t=' + Date.now());
+        let data = await resp.json();
+        if (data && data.status === 'unauthorized') {
+          if (statusEl) { statusEl.textContent = '✗ Kunci belum cocok. Pastikan kode TERBARU di atas sudah ditempel & di-Deploy sebagai Versi Baru.'; statusEl.className = 'text-[11px] text-red-600 dark:text-red-400 font-bold'; }
+          return;
+        }
+        let unkeyed = await fetch(baseUrl + (baseUrl.includes('?') ? '&' : '?') + '_t=' + Date.now()).then(r => r.json()).catch(() => null);
+        if (unkeyed && (unkeyed.accounts || unkeyed.recentHistory) && unkeyed.status !== 'unauthorized') {
+          if (statusEl) { statusEl.textContent = '✗ Script di Google masih versi lama (tanpa kunci). Tempel kode di atas lalu Deploy > Versi Baru.'; statusEl.className = 'text-[11px] text-red-600 dark:text-red-400 font-bold'; }
+          return;
+        }
+      } catch(e) {
+        if (statusEl) { statusEl.textContent = '✗ Gagal menghubungi Google: ' + (e.message || e); statusEl.className = 'text-[11px] text-red-600 dark:text-red-400 font-bold'; }
+        return;
+      }
+
+      globalData.cloudUrl = keyedUrl;
+      localStorage.setItem('KEUANGANKU_CLOUD_URL', keyedUrl);
+      try { localStorage.removeItem('KEUANGANKU_CLOUD_SYNC_KEY_PENDING'); } catch(e) {}
+      globalData.lastUpdated = Date.now();
+      localStorage.setItem('KEUANGANKU_DB_V21', JSON.stringify(globalData));
+
+      // Bagikan URL berkunci ke server lisensi agar perangkat lain ikut memakainya otomatis
+      let lic = getSavedLicense();
+      if (lic && lic.token && typeof callClientLicenseApi === 'function') {
+        try {
+          await callClientLicenseApi({ action: 'verify_status', token: lic.token, deviceId: getOrCreateDeviceId(), cloudUrl: keyedUrl });
+        } catch(e) {}
+      }
+
+      if (statusEl) { statusEl.textContent = '✓ Kunci aktif! Data Cloud kini hanya bisa diakses aplikasi Anda.'; statusEl.className = 'text-[11px] text-emerald-600 dark:text-emerald-400 font-bold'; }
+      showSyncToast('🔒 Kunci Cloud aktif');
+      await forceUploadToCloud();
+    }
+
     function openCloudScriptModal() {
       let modal = document.getElementById('modal-cloud-script');
       let card = document.getElementById('modal-cloud-script-card');
       let display = document.getElementById('cloud-script-code-display');
-      if (display) display.textContent = MODERN_CLOUD_APPS_SCRIPT;
+      if (display) display.textContent = getCloudScriptWithKey();
+      let urlInput = document.getElementById('cloud-script-url-input');
+      if (urlInput && !urlInput.value) urlInput.value = stripKeyFromCloudUrl((globalData && globalData.cloudUrl) || '');
       if (!modal || !card) return;
       modal.classList.remove('hidden');
       setTimeout(() => {
@@ -7751,16 +7913,16 @@ function formatReadableSheets(ss, parsed) {
     function copyModernCloudScript() {
       let btnText = document.getElementById('btn-copy-cloud-script-text');
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(MODERN_CLOUD_APPS_SCRIPT).then(() => {
+        navigator.clipboard.writeText(getCloudScriptWithKey()).then(() => {
           if (btnText) btnText.innerHTML = "✓ KODE BERHASIL DISALIN!";
           setTimeout(() => {
             if (btnText) btnText.innerHTML = "SALIN KODE SCRIPT (1-KLIK)";
           }, 3000);
         }).catch(() => {
-          prompt("Salin manual kode Google Apps Script di bawah ini:", MODERN_CLOUD_APPS_SCRIPT);
+          prompt("Salin manual kode Google Apps Script di bawah ini:", getCloudScriptWithKey());
         });
       } else {
-        prompt("Salin manual kode Google Apps Script di bawah ini:", MODERN_CLOUD_APPS_SCRIPT);
+        prompt("Salin manual kode Google Apps Script di bawah ini:", getCloudScriptWithKey());
       }
     }
 
@@ -7981,7 +8143,7 @@ function formatReadableSheets(ss, parsed) {
         let blob = new Blob([dbCode], { type: "application/json;charset=utf-8" });
         let url = URL.createObjectURL(blob);
         let a = document.createElement('a');
-        let dateStr = new Date().toISOString().slice(0, 10);
+        let dateStr = getLocalDateStr();
         a.href = url;
         a.download = `KeuanganKu_Backup_${dateStr}.json`;
         document.body.appendChild(a);
@@ -8056,7 +8218,20 @@ function formatReadableSheets(ss, parsed) {
         if (!confirm("KONFIRMASI PEMULIHAN:\nApakah Anda yakin ingin memulihkan data ini ke aplikasi?\nData lokal yang ada saat ini akan digantikan oleh data cadangan ini.")) {
           return;
         }
+        // Lengkapi bagian yang hilang dari file cadangan lama agar simpan/edit transaksi tidak error
+        if (typeof DEFAULT_DATA === 'object' && DEFAULT_DATA) {
+          for (let k in DEFAULT_DATA) {
+            if (parsed[k] === undefined || parsed[k] === null) {
+              parsed[k] = JSON.parse(JSON.stringify(DEFAULT_DATA[k]));
+            }
+          }
+        }
+        if (!parsed.currentBalances || typeof parsed.currentBalances !== 'object') parsed.currentBalances = {};
+        if (!Array.isArray(parsed.recentHistory)) parsed.recentHistory = [];
+        // Tandai sebagai data terbaru agar sinkronisasi cloud tidak menimpa hasil pemulihan
+        parsed.lastUpdated = Date.now();
         localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(parsed));
+        localStorage.setItem("KEUANGANKU_RESTORE_PENDING", "1");
         alert("DATABASE BERHASIL DIPULIHKAN!\n\nAplikasi akan dimuat ulang (Refresh) sekarang untuk menerapkan data.");
         location.reload();
       } catch(err) {
@@ -8589,7 +8764,7 @@ function formatReadableSheets(ss, parsed) {
         let dnt = document.getElementById('dnav-tx'); 
         if (dnt) dnt.className = "px-4 py-1.5 rounded-xl text-xs font-extrabold bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 text-white shadow-lg shadow-blue-500/40 ring-2 ring-blue-400 flex items-center gap-1.5 cursor-pointer"; 
         let dateInput = document.getElementById('tx-date'); 
-        if (dateInput) dateInput.valueAsDate = new Date(); 
+        if (dateInput) dateInput.value = getLocalDateStr(); 
         populateFormDropdowns(); 
         populateReportFilterCategories(); 
         applyCashflowLogic(); 
@@ -12314,7 +12489,7 @@ function formatReadableSheets(ss, parsed) {
       pendingAttachments = [];
       renderTxFilesPreview();
       let dateInput = document.getElementById('tx-date'); 
-      if (dateInput) dateInput.valueAsDate = new Date(); 
+      if (dateInput) dateInput.value = getLocalDateStr(); 
       applyCashflowLogic(); 
       playSuccessSound(); 
       showSuccessModal(mainTx, adminAdded, dAdminFee); 
@@ -12385,15 +12560,15 @@ function formatReadableSheets(ss, parsed) {
         
         tbody.innerHTML += `
           <tr class="hover:bg-surface-container-low transition-colors hidden-action-row">
-            <td class="p-3 font-mono-data text-[11px] text-gray-500">${tx.dateTime || '-'}</td>
+            <td class="p-3 font-mono-data text-[11px] text-gray-500">${escapeHtml(tx.dateTime) || '-'}</td>
             <td class="p-3">
-              <span class="font-bold text-on-surface">${tx.name}</span>
+              <span class="font-bold text-on-surface">${escapeHtml(tx.name)}</span>
               ${attBtn ? `<div>${attBtn}</div>` : ''}
             </td>
-            <td class="p-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${badgeColor}">${tx.cashflow}</span></td>
-            <td class="p-3 text-on-surface-variant font-medium">${tx.category}</td>
-            <td class="p-3 text-gray-500">${tx.dariAcc}</td>
-            <td class="p-3 text-gray-500">${tx.keAcc}</td>
+            <td class="p-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${badgeColor}">${escapeHtml(tx.cashflow)}</span></td>
+            <td class="p-3 text-on-surface-variant font-medium">${escapeHtml(tx.category)}</td>
+            <td class="p-3 text-gray-500">${escapeHtml(tx.dariAcc)}</td>
+            <td class="p-3 text-gray-500">${escapeHtml(tx.keAcc)}</td>
             <td class="p-3 text-right">
               <div class="flex items-center justify-end gap-2">
                 <span class="font-mono-data font-extrabold text-primary dark:text-blue-400">${formatRp(tx.amount)}</span>
@@ -12456,7 +12631,7 @@ function formatReadableSheets(ss, parsed) {
 
       let now = new Date();
       let curMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-      let curDateStr = now.toISOString().split('T')[0];
+      let curDateStr = getLocalDateStr();
 
       if (mode === 'current_month') {
         let months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
@@ -12901,7 +13076,7 @@ function formatReadableSheets(ss, parsed) {
           if (!globalData.routinePayments) globalData.routinePayments = {};
           Object.keys(globalData.routinePayments).forEach(k => {
             let item = globalData.routinePayments[k];
-            rContainer.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant flex items-center justify-between gap-2 text-xs"><b class="font-bold text-primary dark:text-blue-400 w-1/3">${k}</b><div class="grid grid-cols-2 gap-2 w-2/3"><input type="number" value="${item.amount||0}" placeholder="Nominal" onchange="globalData.routinePayments['${k}'].amount=parseFloat(this.value)||0; saveStorageData();" class="p-1.5 border rounded-lg font-mono-data bg-surface text-on-surface"><div class="flex items-center gap-1"><input type="number" min="1" max="31" value="${item.dueDay||1}" placeholder="Tgl" onchange="globalData.routinePayments['${k}'].dueDay=parseInt(this.value,10)||1;" class="p-1.5 border rounded-lg font-mono-data w-16 bg-surface text-on-surface"><span onclick="removeRoutinePaymentItem('${k}')" class="material-symbols-outlined text-sm text-error cursor-pointer">close</span></div></div></div>`;
+            rContainer.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant flex items-center justify-between gap-2 text-xs"><b class="font-bold text-primary dark:text-blue-400 w-1/3">${escapeHtml(k)}</b><div class="grid grid-cols-2 gap-2 w-2/3"><input type="number" value="${item.amount||0}" placeholder="Nominal" onchange="globalData.routinePayments['${escapeForAttr(k)}'].amount=parseFloat(this.value)||0; saveStorageData();" class="p-1.5 border rounded-lg font-mono-data bg-surface text-on-surface"><div class="flex items-center gap-1"><input type="number" min="1" max="31" value="${item.dueDay||1}" placeholder="Tgl" onchange="globalData.routinePayments['${escapeForAttr(k)}'].dueDay=parseInt(this.value,10)||1;" class="p-1.5 border rounded-lg font-mono-data w-16 bg-surface text-on-surface"><span onclick="removeRoutinePaymentItem('${k}')" class="material-symbols-outlined text-sm text-error cursor-pointer">close</span></div></div></div>`;
           });
         }
       } else if (catId === 'budgets') {
@@ -12950,7 +13125,7 @@ function formatReadableSheets(ss, parsed) {
 
     function renderSetupView() { 
       let sb = document.getElementById('setup-starting-balance'); if (sb) sb.value = globalData.startingBalance || 0; 
-      let rContainer = document.getElementById('setup-routine-list'); if (rContainer) { rContainer.innerHTML = ''; if (!globalData.routinePayments) globalData.routinePayments = {}; Object.keys(globalData.routinePayments).forEach(k => { let item = globalData.routinePayments[k]; rContainer.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant flex items-center justify-between gap-2 text-xs"><b class="font-bold text-primary dark:text-blue-400 w-1/3">${k}</b><div class="grid grid-cols-2 gap-2 w-2/3"><input type="number" value="${item.amount||0}" placeholder="Nominal" onchange="globalData.routinePayments['${k}'].amount=parseFloat(this.value)||0; saveStorageData();" class="p-1.5 border rounded-lg font-mono-data bg-surface text-on-surface"><div class="flex items-center gap-1"><input type="number" min="1" max="31" value="${item.dueDay||1}" placeholder="Tgl" onchange="globalData.routinePayments['${k}'].dueDay=parseInt(this.value,10)||1;" class="p-1.5 border rounded-lg font-mono-data w-16 bg-surface text-on-surface"><span onclick="removeRoutinePaymentItem('${k}')" class="material-symbols-outlined text-sm text-error cursor-pointer">close</span></div></div></div>`; }); } 
+      let rContainer = document.getElementById('setup-routine-list'); if (rContainer) { rContainer.innerHTML = ''; if (!globalData.routinePayments) globalData.routinePayments = {}; Object.keys(globalData.routinePayments).forEach(k => { let item = globalData.routinePayments[k]; rContainer.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant flex items-center justify-between gap-2 text-xs"><b class="font-bold text-primary dark:text-blue-400 w-1/3">${escapeHtml(k)}</b><div class="grid grid-cols-2 gap-2 w-2/3"><input type="number" value="${item.amount||0}" placeholder="Nominal" onchange="globalData.routinePayments['${escapeForAttr(k)}'].amount=parseFloat(this.value)||0; saveStorageData();" class="p-1.5 border rounded-lg font-mono-data bg-surface text-on-surface"><div class="flex items-center gap-1"><input type="number" min="1" max="31" value="${item.dueDay||1}" placeholder="Tgl" onchange="globalData.routinePayments['${escapeForAttr(k)}'].dueDay=parseInt(this.value,10)||1;" class="p-1.5 border rounded-lg font-mono-data w-16 bg-surface text-on-surface"><span onclick="removeRoutinePaymentItem('${k}')" class="material-symbols-outlined text-sm text-error cursor-pointer">close</span></div></div></div>`; }); } 
       let accContainer = document.getElementById('setup-account-list'); if (accContainer && globalData.accounts) { accContainer.innerHTML = ''; if (!globalData.accountDetails) globalData.accountDetails = {}; globalData.accounts.forEach((acc, idx) => { let bal = globalData.currentBalances[acc] || 0; let dt = globalData.accountDetails[acc] || { bankName: acc, accNo: "", owner: "" }; accContainer.innerHTML += `<div class="p-4 bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant space-y-3"><div class="flex justify-between items-center border-b border-outline-variant/40 pb-2"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary dark:text-blue-400">account_balance</span><b class="text-sm font-bold text-on-surface">${acc}</b></div><button onclick="removeAccountItem(${idx})" class="text-xs text-error font-bold flex items-center gap-0.5 hover:underline"><span class="material-symbols-outlined text-sm">close</span> Hapus Akun</button></div><div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs"><div><label class="text-[10px] text-gray-500 font-bold uppercase">Nama Bank / E-Wallet</label><input type="text" value="${dt.bankName||acc}" onchange="updateAccountDetail('${acc}', 'bankName', this.value)" class="w-full bg-white dark:bg-slate-800 text-on-surface border rounded-lg p-1.5 font-bold"></div><div><label class="text-[10px] text-gray-500 font-bold uppercase">Nomor Rekening</label><input type="text" value="${dt.accNo||''}" placeholder="Contoh: 712345..." onchange="updateAccountDetail('${acc}', 'accNo', this.value)" class="w-full bg-white dark:bg-slate-800 text-on-surface border rounded-lg p-1.5 font-mono-data"></div><div><label class="text-[10px] text-gray-500 font-bold uppercase">Atas Nama (a.n)</label><input type="text" value="${dt.owner||''}" placeholder="Pemilik" onchange="updateAccountDetail('${acc}', 'owner', this.value)" class="w-full bg-white dark:bg-slate-800 text-on-surface border rounded-lg p-1.5 font-bold"></div><div><label class="text-[10px] text-gray-500 font-bold uppercase">Saldo Awal (Rp)</label><input type="number" value="${bal}" onchange="updateAccountBalance('${acc}', this.value)" class="w-full bg-white dark:bg-slate-800 text-on-surface border border-primary/50 rounded-lg p-1.5 font-mono-data font-bold text-primary dark:text-blue-400"></div></div></div>`; }); } 
       let isOwner = isOwnerDevice();
       renderSimpleCategoryTags('incomes', 'setup-income-tags'); renderSimpleCategoryTags('bills', 'setup-bills-list'); renderSimpleCategoryTags('spendings', 'setup-spending-tags'); renderValuedCategoryList('investData', 'setup-invest-list', ['initial']); renderValuedCategoryList('sinkingData', 'setup-sinking-list', ['initial', 'target', 'deadline', 'durationMonths']); renderValuedCategoryList('goalsData', 'setup-goals-list', isOwner ? ['initial', 'target', 'deadline', 'timeframeVal'] : ['initial', 'target', 'timeframeVal']); renderValuedCategoryList('receivablesData', 'setup-receivables-list', ['total', 'deadline', 'paid']); renderValuedCategoryList('nonMoneyAssets', 'setup-nonmoney-list', ['qty', 'estimatedPrice', 'type', 'unit']); renderDebtListSetup(); 
@@ -13617,7 +13792,10 @@ async function processGoogleLoginToken(accessToken) {
 
     let detectedEmail = String((profile && profile.email) || "").trim().toLowerCase();
     if (!detectedEmail) {
-      detectedEmail = "sambarang.pro@gmail.com";
+      // Jangan pernah mengisi email "pemilik" secara otomatis. Minta pengguna login ulang.
+      if (btnText) btnText.textContent = 'Masuk dengan Akun Google';
+      alert("Email akun Google tidak dapat dibaca.\n\nSilakan coba masuk lagi dan pastikan Anda mencentang izin untuk melihat alamat email.");
+      return;
     }
 
     let googleUser = {
@@ -13682,6 +13860,7 @@ async function processGoogleLoginToken(accessToken) {
       res = await callClientLicenseApi({
         action: 'verify_google_account',
         email: googleUser.email,
+        googleAccessToken: accessToken,
         deviceId: devId,
         deviceName: devName
       });
@@ -13694,17 +13873,9 @@ async function processGoogleLoginToken(accessToken) {
       localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(res.data));
       sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
 
-      // Auto-set & preserve Cloud URL (kebal akun multi-device iPad / PC)
-      let ownerCloud = "https://script.google.com/macros/s/AKfycbx51Rbmg0U7en7wdOywpe_YAO4cBs2kjy_7cNW_kQN-xcdQUFeatePPzoiAMrS9BPaTAw/exec";
+      // URL Cloud diambil dari server lisensi (sudah berkunci), bukan ditanam di kode
       let activeCloud = res.data.cloudUrl;
-      let buyerName = (res.data.buyerName || '').toLowerCase();
-      let tok = (res.data.token || '').toUpperCase();
-      if (!activeCloud || !activeCloud.startsWith("http")) {
-        if (buyerName.includes('akbar') || buyerName.includes('athhar') || tok === 'PRO-S8GF-HQT5-CNVE' || tok === 'PRO-G82P-4QTS-C6RT') {
-          activeCloud = ownerCloud;
-        }
-      }
-      if (activeCloud) {
+      if (activeCloud && activeCloud.startsWith("http")) {
         globalData.cloudUrl = activeCloud;
         localStorage.setItem("KEUANGANKU_CLOUD_URL", activeCloud);
       }
@@ -13726,6 +13897,8 @@ async function processGoogleLoginToken(accessToken) {
               action: 'save_spreadsheet_id',
               token: res.data.token,
               email: googleUser.email,
+              googleAccessToken: accessToken,
+              deviceId: devId,
               spreadsheetId: currentSheetId
             });
           } catch(e) {}
@@ -13774,6 +13947,7 @@ async function processGoogleLoginToken(accessToken) {
           action: 'bind_google_account',
           token: localLic.token,
           email: googleUser.email,
+          googleAccessToken: accessToken,
           deviceId: devId,
           deviceName: devName
         });
@@ -13798,6 +13972,8 @@ async function processGoogleLoginToken(accessToken) {
             action: 'save_spreadsheet_id',
             token: localLic.token,
             email: googleUser.email,
+            googleAccessToken: accessToken,
+            deviceId: devId,
             spreadsheetId: currentSheetId
           });
         } catch(e) {}
@@ -13812,74 +13988,9 @@ async function processGoogleLoginToken(accessToken) {
       return;
     }
 
-    // Skenario A3: PERANGKAT KE-2 / MULTI-DEVICE (Auto-Discovery Database dari Google Drive / Developer Owner)
-    let isOwnerEmail = Boolean(googleUser.email && (googleUser.email.includes('sambaran') || googleUser.email.includes('athhar') || googleUser.email === 'sambaranofficial@gmail.com'));
-    let driveSheetId = await findExistingByodbSpreadsheet(accessToken);
-
-    if (driveSheetId || isOwnerEmail) {
-      if (!googleUser.email) {
-        googleUser.email = "sambarang.pro@gmail.com";
-        googleUser.name = "Moh Athhar";
-        saveGoogleSession(googleUser);
-      }
-      if (btnText) btnText.textContent = 'Memuat Database...';
-
-      let defaultCloud = "https://script.google.com/macros/s/AKfycbx51Rbmg0U7en7wdOywpe_YAO4cBs2kjy_7cNW_kQN-xcdQUFeatePPzoiAMrS9BPaTAw/exec";
-      globalData.cloudUrl = defaultCloud;
-      localStorage.setItem("KEUANGANKU_CLOUD_URL", defaultCloud);
-
-      let ownerLicenseData = {
-        token: "PRO-S8GF-HQT5-CNVE",
-        buyerName: "Muh Akbar / Moh Athhar (Pemilik Developer)",
-        email: googleUser.email,
-        spreadsheetId: driveSheetId || "",
-        cloudUrl: defaultCloud,
-        maxDevices: 10,
-        deviceCount: 2,
-        status: "ACTIVE",
-        pinStatus: "PIN_CHANGED"
-      };
-
-      localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(ownerLicenseData));
-      sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
-
-      let driveLoaded = false;
-      if (driveSheetId) {
-        localStorage.setItem("KEUANGANKU_BYODB_SHEET_ID", driveSheetId);
-        driveLoaded = await pullDataFromByodbSpreadsheet(accessToken, driveSheetId);
-      } else {
-        let newId = await provisionNewByodbSpreadsheet(accessToken, googleUser);
-        if (newId) {
-          localStorage.setItem("KEUANGANKU_BYODB_SHEET_ID", newId);
-          driveSheetId = newId;
-        }
-      }
-
-      // Jika data dari Drive belum ada atau masih kosong, otomatis tarik dari Cloud lama
-      let hasData = Boolean(globalData && globalData.recentHistory && globalData.recentHistory.length > 0);
-      if (!driveLoaded && !hasData && defaultCloud) {
-        if (btnText) btnText.textContent = 'Menarik Data dari Cloud...';
-        await autoPullDatabaseFromCloud(defaultCloud);
-        if (driveSheetId && globalData && globalData.recentHistory && globalData.recentHistory.length > 0) {
-          try {
-            await writeGlobalDataToByodbSheet(accessToken, driveSheetId);
-          } catch(e) {}
-        }
-      }
-
-      playSuccessSound();
-      showSyncToast("✓ Perangkat Terhubung: " + googleUser.email);
-      hideSplashScreenAndTriggerAlerts();
-
-      updateByodbUi();
-      updateSetupLicenseDisplay(ownerLicenseData);
-      updateTokenSecurityBanner(ownerLicenseData);
-      updateCloudSyncLockUI(ownerLicenseData);
-      renderSetupPasswordCard(ownerLicenseData);
-
-      alert(`Selamat datang kembali di Perangkat ke-2, Moh Athhar!\n\nAplikasi Keuanganku PRO berhasil terhubung dengan akun Google (${googleUser.email}).\n\nDatabase keuangan Anda telah disinkronkan otomatis.`);
-      return;
-    }
+    // (Skenario A3 lama dihapus demi keamanan: dulu siapa pun yang punya file database di Drive
+    //  atau email mirip pemilik otomatis mendapat lisensi PEMILIK. Kini perangkat ke-2 harus login
+    //  dengan akun Google yang sudah tertaut, Token + PIN, atau Scan QR dari HP utama.)
 
     // Skenario B: Email belum terdaftar pada lisensi apa pun -> Buka Modal Penautan Token
     if (res && res.success && !res.isLicensed) {
@@ -13966,13 +14077,24 @@ async function submitBindGoogleToken() {
     let devId = getOrCreateDeviceId();
     let devName = detectDeviceName();
 
-    let res = await callClientLicenseApi({
+    let bindPayload = {
       action: 'bind_google_account',
       token: tokenVal,
       email: googleUser.email,
+      googleAccessToken: pendingGoogleAuth.accessToken,
       deviceId: devId,
       deviceName: devName
-    });
+    };
+    let res = await callClientLicenseApi(bindPayload);
+
+    // Token sudah aktif di perangkat lain: minta PIN Pribadi sebagai bukti kepemilikan
+    if (res && !res.success && res.needsPin) {
+      let pinAsk = prompt((res.message || "Token ini sudah aktif di perangkat lain.") + "\n\nMasukkan PIN Pribadi Anda:");
+      if (pinAsk && pinAsk.trim()) {
+        bindPayload.pin = pinAsk.trim();
+        res = await callClientLicenseApi(bindPayload);
+      }
+    }
 
     if (res && res.success && res.data) {
       if (btn) btn.innerHTML = `<span class="material-symbols-outlined text-sm animate-spin">progress_activity</span> MEMBUAT DATABASE DRIVE...`;
@@ -13985,6 +14107,8 @@ async function submitBindGoogleToken() {
           action: 'save_spreadsheet_id',
           token: res.data.token,
           email: googleUser.email,
+          googleAccessToken: pendingGoogleAuth.accessToken,
+          deviceId: devId,
           spreadsheetId: newSheetId
         });
       }
@@ -13993,6 +14117,7 @@ async function submitBindGoogleToken() {
       let licRes = await callClientLicenseApi({
         action: 'verify_google_account',
         email: googleUser.email,
+        googleAccessToken: pendingGoogleAuth.accessToken,
         deviceId: devId,
         deviceName: devName
       });
@@ -14419,10 +14544,8 @@ async function migrateOldCloudToByodb() {
   if (!cloudUrl && urlInput && urlInput.value) cloudUrl = urlInput.value.trim();
 
   if (!cloudUrl || !cloudUrl.startsWith("http")) {
-    cloudUrl = "https://script.google.com/macros/s/AKfycbx51Rbmg0U7en7wdOywpe_YAO4cBs2kjy_7cNW_kQN-xcdQUFeatePPzoiAMrS9BPaTAw/exec";
-    if (urlInput) urlInput.value = cloudUrl;
-    globalData.cloudUrl = cloudUrl;
-    localStorage.setItem("KEUANGANKU_CLOUD_URL", cloudUrl);
+    alert("Link Cloud Script lama belum diatur di perangkat ini.");
+    return;
   }
 
   let gUser = getGoogleSession();

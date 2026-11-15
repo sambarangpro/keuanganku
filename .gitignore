@@ -1,0 +1,5 @@
+﻿# Data keuangan pribadi / cadangan: JANGAN pernah diunggah ke GitHub (repo ini publik)
+*_backup.json
+*database_backup*.json
+*.bak
+*.bak_*

@@ -3198,8 +3198,9 @@
     async function executeLogin(resetBtnHtml = null, isAuto = false) {
       let btn = document.getElementById('btn-login');
       try {
-        let resp = await fetch(`${currentApiUrl}?action=admin_login&adminPassword=${encodeURIComponent(currentAdminPassword)}&_t=${Date.now()}`);
-        let res = await resp.json();
+        // Password dikirim lewat POST (bukan di alamat URL) agar tidak tercatat di riwayat/log
+        let res = await callDevApi({ action: 'admin_login', adminPassword: currentAdminPassword });
+        if (!res) throw new Error("Tidak ada respon dari server");
 
         if (res.success) {
           localStorage.setItem("KEUANGANKU_DEV_API_URL", currentApiUrl);
@@ -3271,8 +3272,8 @@
 
       let res;
       try {
-        let resp = await fetch(`${currentApiUrl}?action=admin_get_data&adminPassword=${encodeURIComponent(currentAdminPassword)}&_t=${Date.now()}`);
-        res = await resp.json();
+        res = await callDevApi({ action: 'admin_get_data', adminPassword: currentAdminPassword });
+        if (!res) throw new Error("Tidak ada respon dari server");
       } catch(err) {
         if (!isSilent) showToast("error", "Koneksi terputus ke Google Sheets.");
         if (refIcon) refIcon.classList.remove('animate-spin');

@@ -1396,32 +1396,8 @@
       if (!v) {
         let isTokenCandidate = code.startsWith('PRO-') || code.startsWith('KEU-') || /^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(code);
         if (isTokenCandidate) {
-          showVoucherMsg('info', '⏳ Memvalidasi kode token dengan database Google Sheets...');
-          try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 4000);
-            let checkUrl = `${apiUrl}?action=validate_token&token=${encodeURIComponent(code)}&deviceId=ORDER-TEST-DEVICE&deviceName=Verifikasi+Form`;
-            let resp = await fetch(checkUrl, { signal: controller.signal });
-            clearTimeout(timeoutId);
-            let res = await resp.json();
-            
-            if (res && res.valid) {
-              let tokQuota = (res.data && res.data.maxDevices) ? res.data.maxDevices : 3;
-              v = {
-                code: res.data.token || code,
-                type: 'percent',
-                value: 100,
-                minPrice: 0,
-                targetPackage: 'ALL',
-                maxUses: tokQuota,
-                usedCount: (res.data.devices && res.data.devices.length) ? res.data.devices.length : 0,
-                status: 'ACTIVE',
-                description: `Token Lisensi Resmi Database (${res.data.buyerName || 'Terverifikasi'} • Kuota ${tokQuota} Pengguna)`
-              };
-            }
-          } catch(e) {
-            console.log("Validasi token offline fallback:", e);
-          }
+          // Catatan: token TIDAK lagi divalidasi lewat validate_token dari form ini
+          // (dulu setiap cek memakan 1 slot perangkat milik pembeli). Server memverifikasi token saat pesanan dikirim.
 
           // Fallback lokal jika sedang uji coba offline: token format PRO- diakui dengan kuota 3 pengguna
           if (!v && (code.startsWith('PRO-') || code.startsWith('KEU-'))) {
@@ -1944,6 +1920,7 @@
         whatsapp: whatsapp,
         email: email,
         package: selectedPackage.name,
+        packageId: selectedPackage.id,
         maxDevices: selectedPackage.devices,
         price: finalPriceFormatted,
         uniqueCode: uniqueCode,
