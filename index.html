@@ -4214,6 +4214,18 @@
       }
     });
 
+    // fetch dengan batas waktu: permintaan yang menggantung (sering terjadi di Safari iPad/iPhone)
+    // dibatalkan agar aplikasi bisa mencoba cara lain / menampilkan pesan, bukan menunggu selamanya.
+    async function fetchWithTimeout(url, options = {}, timeoutMs = 15000) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        return await fetch(url, Object.assign({}, options, { signal: controller.signal }));
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
     // Helper komunikasi API lisensi klien yang kebal CORS
     async function callClientLicenseApi(payload) {
       let apiUrl = (DEFAULT_MASTER_LICENSE_URL && !DEFAULT_MASTER_LICENSE_URL.includes("YOUR_SCRIPT_ID"))
@@ -4228,7 +4240,7 @@
       let isSensitive = Boolean(payload && (payload.pin || payload.newPin || payload.googleAccessToken));
       if (isSensitive) {
         try {
-          let sResp = await fetch(apiUrl, {
+          let sResp = await fetchWithTimeout(apiUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify(payload),
@@ -4253,7 +4265,7 @@
         queryParams.append('_t', Date.now());
 
         let sep = apiUrl.includes('?') ? '&' : '?';
-        let getResp = await fetch(`${apiUrl}${sep}${queryParams.toString()}`, {
+        let getResp = await fetchWithTimeout(`${apiUrl}${sep}${queryParams.toString()}`, {
           method: 'GET',
           redirect: 'follow'
         });
@@ -4267,7 +4279,7 @@
 
       // 2. Fallback POST jika browser memerlukan POST
       try {
-        let resp = await fetch(apiUrl, {
+        let resp = await fetchWithTimeout(apiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify(payload),
@@ -7073,6 +7085,69 @@ function hideSplashScreenAndTriggerAlerts() {
       }
     }
 
+    // ==============================================================================
+    // CATATAN PENGHAPUSAN TRANSAKSI (agar transaksi yang dihapus tidak "hidup lagi" saat sinkron)
+    // Setiap transaksi diberi ID tetap. ID untuk transaksi lama dihitung dari isinya + urutan,
+    // sehingga semua perangkat dengan riwayat yang sama menghasilkan ID yang sama.
+    // ==============================================================================
+    function txFingerprint(tx) {
+      tx = tx || {};
+      let s = [tx.rawDate || '', tx.dateTime || '', tx.name || '', Number(tx.amount) || 0, tx.cashflow || '', tx.category || '', tx.dariAcc || '', tx.keAcc || ''].join('|');
+      let h = 5381;
+      for (let i = 0; i < s.length; i++) { h = ((h << 5) + h + s.charCodeAt(i)) | 0; }
+      return (h >>> 0).toString(36);
+    }
+    function materializeTxIds(doc) {
+      if (!doc || !Array.isArray(doc.recentHistory)) return;
+      let counts = {};
+      // Hitung dari transaksi TERLAMA (akhir array) agar transaksi baru di depan tidak menggeser ID lama
+      for (let i = doc.recentHistory.length - 1; i >= 0; i--) {
+        let tx = doc.recentHistory[i];
+        if (!tx || typeof tx !== 'object') continue;
+        let f = txFingerprint(tx);
+        let n = counts[f] || 0;
+        counts[f] = n + 1;
+        if (!tx.id) tx.id = 'fp-' + f + '-' + n;
+      }
+    }
+    function pruneTxTombstones(list) {
+      let cutoff = Date.now() - 365 * 24 * 3600 * 1000;
+      list = (list || []).filter(t => t && t.k && (Number(t.at) || 0) > cutoff);
+      if (list.length > 2000) list = list.slice(list.length - 2000);
+      return list;
+    }
+    function mergeTxTombstones(a, b) {
+      let map = {};
+      [].concat(a || [], b || []).forEach(t => {
+        if (t && t.k && (!map[t.k] || (Number(t.at) || 0) > (Number(map[t.k].at) || 0))) map[t.k] = { k: t.k, at: Number(t.at) || Date.now() };
+      });
+      return pruneTxTombstones(Object.values(map).sort((x, y) => x.at - y.at));
+    }
+    function reverseTxBalanceEffect(doc, tx) {
+      if (!doc.currentBalances) return;
+      let amt = Number(tx.amount) || 0;
+      if (tx.dariAcc && tx.dariAcc !== '- not applicable -' && doc.currentBalances.hasOwnProperty(tx.dariAcc)) doc.currentBalances[tx.dariAcc] += amt;
+      if (tx.keAcc && tx.keAcc !== '- not applicable -' && doc.currentBalances.hasOwnProperty(tx.keAcc)) doc.currentBalances[tx.keAcc] -= amt;
+    }
+    // Buang transaksi yang tercatat sudah dihapus + kembalikan saldonya. Mengembalikan jumlah yang dibuang.
+    function applyTxTombstones(doc) {
+      if (!doc || !Array.isArray(doc.recentHistory) || !Array.isArray(doc.deletedTxKeys) || doc.deletedTxKeys.length === 0) return 0;
+      materializeTxIds(doc);
+      let dead = new Set(doc.deletedTxKeys.map(t => t.k));
+      let removed = 0;
+      doc.recentHistory = doc.recentHistory.filter(tx => {
+        if (tx && tx.id && dead.has(tx.id)) { reverseTxBalanceEffect(doc, tx); removed++; return false; }
+        return true;
+      });
+      return removed;
+    }
+    function recordTxDeletion(tx) {
+      if (!tx || !tx.id) return;
+      if (!Array.isArray(globalData.deletedTxKeys)) globalData.deletedTxKeys = [];
+      globalData.deletedTxKeys.push({ k: tx.id, at: Date.now() });
+      globalData.deletedTxKeys = pruneTxTombstones(globalData.deletedTxKeys);
+    }
+
     async function syncWithCloud(isManualClick = false) {
       // 1. CEK MODE PERCONTOHAN IKLAN: Jika aktif, jeda auto-sync agar data percontohan tetap tampil dan tidak mengotori / tertimpa Cloud
       let isDemo = localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true';
@@ -7134,6 +7209,22 @@ function hideSplashScreenAndTriggerAlerts() {
         }
 
         if (cloudData && cloudData.accounts && Array.isArray(cloudData.accounts)) {
+          // Gabungkan catatan penghapusan dari kedua sisi, lalu buang transaksi yang sudah dihapus
+          // di perangkat mana pun SEBELUM memutuskan data mana yang menang.
+          materializeTxIds(globalData);
+          materializeTxIds(cloudData);
+          let cloudTombCount = (cloudData.deletedTxKeys || []).length;
+          let localTombCount = (globalData.deletedTxKeys || []).length;
+          let mergedTombs = mergeTxTombstones(globalData.deletedTxKeys, cloudData.deletedTxKeys);
+          globalData.deletedTxKeys = mergedTombs;
+          cloudData.deletedTxKeys = mergedTombs.slice();
+          let removedLocal = applyTxTombstones(globalData);
+          let removedCloud = applyTxTombstones(cloudData);
+          let cloudNeedsTombUpdate = removedCloud > 0 || mergedTombs.length !== cloudTombCount;
+          if (removedLocal > 0 || mergedTombs.length !== localTombCount) {
+            localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData));
+          }
+
           let localUpdated = Number(globalData.lastUpdated) || 0;
           let cloudUpdated = Number(cloudData.lastUpdated) || 0;
 
@@ -7192,14 +7283,31 @@ function hideSplashScreenAndTriggerAlerts() {
               globalData.ownerPassword = String(currentOwnerPass).trim();
             }
 
+            // Jika data cloud masih berisi transaksi yang sudah dihapus, kirim versi yang sudah bersih
+            if (cloudNeedsTombUpdate) globalData.lastUpdated = Date.now();
             localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData));
-            
+            if (cloudNeedsTombUpdate) {
+              try {
+                await fetch(globalData.cloudUrl, {
+                  method: "POST",
+                  mode: "no-cors",
+                  headers: { "Content-Type": "text/plain;charset=utf-8" },
+                  body: JSON.stringify(globalData)
+                });
+              } catch(e) {}
+            }
+
             // Re-render seluruh data di aplikasi secara otomatis & hening
             initApp();
             showSyncToast("✓ Data transaksi otomatis disinkronkan!");
             setSyncStatus('synced', 'Tersinkron');
-          } else if (!isCloudNewer && (localTxCount > cloudTxCount || localUpdated > cloudUpdated)) {
+          } else if (!isCloudNewer && (localTxCount > cloudTxCount || localUpdated > cloudUpdated || cloudNeedsTombUpdate)) {
             // Data lokal lebih baru atau lebih lengkap dari cloud, upload data lokal ke cloud!
+            if (cloudNeedsTombUpdate) {
+              globalData.lastUpdated = Date.now();
+              localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData));
+            }
+            if (removedLocal > 0) initApp();
             try {
               await fetch(globalData.cloudUrl, {
                 method: "POST",
@@ -8254,7 +8362,7 @@ function formatReadableSheets(ss, parsed) {
       modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); card.classList.add('scale-100'); }, 10);
     }
 
-    function resetTransactionHistory() { if (confirm("Apakah Anda yakin ingin mereset seluruh riwayat transaksi? Data rekam transaksi akan dikosongkan.")) { globalData.recentHistory = []; saveStorageData(); renderDashboard(); renderHistoryTable(); alert("Riwayat transaksi berhasil direset kosong!"); } }
+    function resetTransactionHistory() { if (confirm("Apakah Anda yakin ingin mereset seluruh riwayat transaksi? Data rekam transaksi akan dikosongkan.")) { materializeTxIds(globalData); (globalData.recentHistory || []).forEach(t => recordTxDeletion(t)); globalData.recentHistory = []; saveStorageData(); renderDashboard(); renderHistoryTable(); alert("Riwayat transaksi berhasil direset kosong!"); } }
 
     // ==============================================================================
     // FITUR MODE PERCONTOHAN / IKLAN (SHOWCASE DEMO DATA)
@@ -12619,7 +12727,7 @@ function formatReadableSheets(ss, parsed) {
       playSuccessSound(); 
       alert("Riwayat transaksi berhasil diperbarui & saldo akun disesuaikan!"); 
     }
-    function deleteTransaction(idx) { let tx = globalData.recentHistory[idx]; if (!tx) return; if (confirm(`Hapus transaksi "${tx.name}" (${formatRp(tx.amount)})? Saldo akun akan dikembalikan secara otomatis.`)) { let amt = tx.amount; if (tx.dariAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.dariAcc)) globalData.currentBalances[tx.dariAcc] += amt; if (tx.keAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.keAcc)) globalData.currentBalances[tx.keAcc] -= amt; globalData.recentHistory.splice(idx, 1); saveStorageData(); renderDashboard(); renderHistoryTable(); alert("Transaksi berhasil dihapus!"); } }
+    function deleteTransaction(idx) { let tx = globalData.recentHistory[idx]; if (!tx) return; if (confirm(`Hapus transaksi "${tx.name}" (${formatRp(tx.amount)})? Saldo akun akan dikembalikan secara otomatis.`)) { materializeTxIds(globalData); recordTxDeletion(tx); let amt = tx.amount; if (tx.dariAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.dariAcc)) globalData.currentBalances[tx.dariAcc] += amt; if (tx.keAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.keAcc)) globalData.currentBalances[tx.keAcc] -= amt; globalData.recentHistory.splice(idx, 1); saveStorageData(); renderDashboard(); renderHistoryTable(); alert("Transaksi berhasil dihapus!"); } }
     function formatFullDateTime(dateStr) { let days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"]; let months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"]; let now = new Date(); let hours = String(now.getHours()).padStart(2, '0'), mins = String(now.getMinutes()).padStart(2, '0'); if (!dateStr) return `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()} (${hours}:${mins})`; let p = dateStr.split('-'); let dObj = new Date(p[0], parseInt(p[1], 10) - 1, p[2]); return `${days[dObj.getDay()]}, ${p[2]} ${months[dObj.getMonth()]} ${p[0]} (${hours}:${mins})`; }
     function showSuccessModal(data, hasAdmin, adminFee) { let modal = document.getElementById('success-modal'), card = document.getElementById('success-card'), msg = document.getElementById('success-msg-text'); var adminInfo = hasAdmin ? `<br/><span class="text-xs text-primary dark:text-blue-400 font-bold">+ Biaya Admin (${formatRp(adminFee)}) dicatat terpisah.</span>` : ""; msg.innerHTML = `Transaksi berhasil dicatat ke sistem!${adminInfo}<br/><br/><b>Detail:</b> ${data.name} (${formatRp(data.amount)})<br/><b>Category:</b> ${data.category}<br/><b>Dari:</b> ${data.dariAcc} ➔ <b>Ke:</b> ${data.keAcc}`; modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); card.classList.add('scale-100'); }, 10); }
     function closeSuccessModal() { let modal = document.getElementById('success-modal'), card = document.getElementById('success-card'); modal.classList.add('opacity-0'); card.classList.remove('scale-100'); card.classList.add('scale-95'); setTimeout(() => modal.classList.add('hidden'), 300); }
@@ -13709,9 +13817,9 @@ async function fetchGoogleUserProfile(accessToken) {
 
   // Lapis 1: Google UserInfo API (v3)
   try {
-    let res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+    let res = await fetchWithTimeout('https://www.googleapis.com/oauth2/v3/userinfo', {
       headers: { 'Authorization': 'Bearer ' + accessToken, 'Accept': 'application/json' }
-    });
+    }, 12000);
     if (res.ok) {
       let data = await res.json();
       if (data && (data.email || data.name)) {
@@ -13725,9 +13833,9 @@ async function fetchGoogleUserProfile(accessToken) {
 
   // Lapis 2: Google Drive About API (Sangat kompatibel & kebal di Safari iPad/iPhone)
   try {
-    let res = await fetch('https://www.googleapis.com/drive/v3/about?fields=user(displayName,emailAddress,photoLink)', {
+    let res = await fetchWithTimeout('https://www.googleapis.com/drive/v3/about?fields=user(displayName,emailAddress,photoLink)', {
       headers: { 'Authorization': 'Bearer ' + accessToken, 'Accept': 'application/json' }
-    });
+    }, 12000);
     if (res.ok) {
       let data = await res.json();
       if (data && data.user) {
@@ -13741,7 +13849,7 @@ async function fetchGoogleUserProfile(accessToken) {
 
   // Lapis 3: Query Parameter (Bypass Safari Authorization Header Restrictions)
   try {
-    let res = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${encodeURIComponent(accessToken)}`);
+    let res = await fetchWithTimeout(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${encodeURIComponent(accessToken)}`, {}, 12000);
     if (res.ok) {
       let data = await res.json();
       if (data && (data.email || data.name)) {
@@ -14004,12 +14112,18 @@ async function processGoogleLoginToken(accessToken) {
 
     // Skenario C: Kuota perangkat habis atau lisensi diblokir
     if (res && !res.success) {
+      if (btnText) btnText.textContent = 'Masuk dengan Akun Google';
       alert("Pemberitahuan Sistem:\n\n" + (res.message || "Gagal memverifikasi akun Google Anda."));
       return;
     }
 
+    // Skenario D: server lisensi tidak menjawab (internet lambat / browser memblokir) -> jangan diam saja
+    if (btnText) btnText.textContent = 'Masuk dengan Akun Google';
+    alert("Server lisensi tidak merespons.\n\nPeriksa koneksi internet lalu coba 'Masuk dengan Akun Google' sekali lagi.\n\nJika tetap gagal, gunakan 'Tautkan via Barcode (QR)' dari HP utama Anda.");
+
   } catch(err) {
     console.error("Error processGoogleLoginToken:", err);
+    if (btnText) btnText.textContent = 'Masuk dengan Akun Google';
     alert("Terjadi kendala saat verifikasi: " + (err.message || err));
   }
 }
