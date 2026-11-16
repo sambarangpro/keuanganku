@@ -153,17 +153,47 @@ function findTokenRow_(data, colMap, tokenInput) {
 }
 /**
  * Boleh mengganti URL Cloud tersimpan? Hanya alamat Google Apps Script resmi yang diterima,
- * dan URL yang sudah berkunci (?k=...) tidak boleh ditimpa oleh URL lama tanpa kunci.
+ * Kunci (?k=...) tidak pernah ikut disimpan (lihat stripCloudKey_).
  */
 function shouldReplaceCloudUrl_(currentUrl, newUrl) {
-  var cur = String(currentUrl || "").trim();
-  var nu = String(newUrl || "").trim();
+  var cur = stripCloudKey_(currentUrl);
+  var nu = stripCloudKey_(newUrl);
   if (!nu || nu === cur) return false;
   if (nu.indexOf("https://script.google.com/") !== 0) return false;
-  var curHasKey = /[?&]k=/.test(cur);
-  var newHasKey = /[?&]k=/.test(nu);
-  if (curHasKey && !newHasKey) return false;
   return true;
+}
+
+/**
+ * PRIVASI: server lisensi TIDAK menyimpan kunci sinkronisasi Cloud Script pengguna (?k=...).
+ * Hanya alamat dasarnya yang disimpan, sehingga pengelola server tidak bisa membuka data keuangan pengguna.
+ * Kunci berpindah antar-perangkat lewat Scan QR (transit sementara) atau Google Drive milik pengguna.
+ */
+function stripCloudKey_(url) {
+  var u = String(url == null ? "" : url).trim();
+  if (!u) return "";
+  return u.replace(/([?&])k=[^&#]*&?/g, "$1").replace(/[?&]$/, "");
+}
+
+/** Sekali jalan: hapus kunci yang dulu sempat tersimpan di kolom Cloud URL sheet Tokens. */
+function purgeStoredCloudKeys_() {
+  try {
+    var props = PropertiesService.getScriptProperties();
+    if (props.getProperty("CLOUD_KEYS_PURGED") === "1") return;
+    var ss = getSpreadsheet();
+    var sheet = ss ? ss.getSheetByName(SHEET_TOKENS) : null;
+    if (!sheet) return;
+    var data = sheet.getDataRange().getValues();
+    if (data && data.length > 1) {
+      var colMap = getTokenColumnIndexes(data[0]);
+      for (var i = 1; i < data.length; i++) {
+        var raw = String(data[i][colMap.cloudUrl] || "");
+        if (/[?&]k=/.test(raw)) {
+          sheet.getRange(i + 1, colMap.cloudUrl + 1).setValue(stripCloudKey_(raw));
+        }
+      }
+    }
+    props.setProperty("CLOUD_KEYS_PURGED", "1");
+  } catch(e) {}
 }
 
 /** Bandingkan PIN. Google Sheets kadang membuang angka 0 di depan PIN, jadi itu ditoleransi. */
@@ -623,6 +653,7 @@ function handleRequest(params) {
     // Aksi pairing barcode sesi TIDAK memerlukan spreadsheet (hanya butuh CacheService)
     if (action !== "create_pair_session" && action !== "check_pair_session") {
       initSheets();
+      purgeStoredCloudKeys_();
     }
 
     switch(action) {
@@ -956,9 +987,9 @@ function validateClientToken(params) {
         }
       }
 
-      var currentCloudUrl = (colMap.cloudUrl !== undefined && data[i][colMap.cloudUrl]) ? String(data[i][colMap.cloudUrl]).trim() : "";
+      var currentCloudUrl = (colMap.cloudUrl !== undefined && data[i][colMap.cloudUrl]) ? stripCloudKey_(data[i][colMap.cloudUrl]) : "";
       if (params.cloudUrl && colMap.cloudUrl !== undefined && shouldReplaceCloudUrl_(currentCloudUrl, params.cloudUrl)) {
-        currentCloudUrl = String(params.cloudUrl).trim();
+        currentCloudUrl = stripCloudKey_(params.cloudUrl);
         sheet.getRange(i + 1, colMap.cloudUrl + 1).setValue(currentCloudUrl);
       }
 
@@ -1339,11 +1370,16 @@ function authorizePairSession(params) {
 
   logEvent("PAIR_SESSION_AUTHORIZED", tokenInput, buyerName, targetDeviceId, targetDeviceName, "Perangkat berhasil ditautkan via Scan HP WhatsApp Style");
 
-  var currentCloudUrl = (colMap.cloudUrl !== undefined && data[foundRow - 1][colMap.cloudUrl]) ? String(data[foundRow - 1][colMap.cloudUrl]).trim() : "";
+  var currentCloudUrl = (colMap.cloudUrl !== undefined && data[foundRow - 1][colMap.cloudUrl]) ? stripCloudKey_(data[foundRow - 1][colMap.cloudUrl]) : "";
   if (params.cloudUrl && colMap.cloudUrl !== undefined && shouldReplaceCloudUrl_(currentCloudUrl, params.cloudUrl)) {
-    currentCloudUrl = String(params.cloudUrl).trim();
+    currentCloudUrl = stripCloudKey_(params.cloudUrl);
     sheet.getRange(foundRow, colMap.cloudUrl + 1).setValue(currentCloudUrl);
   }
+
+  // URL Cloud BERKUNCI dari HP utama hanya dititipkan SEMENTARA di sesi barcode (maks. 5 menit,
+  // dihapus setelah dibaca perangkat baru) dan TIDAK disimpan di sheet Tokens.
+  var keyedCloudForPairing = String(params.cloudUrl || "").trim();
+  if (keyedCloudForPairing.indexOf("https://script.google.com/") !== 0) keyedCloudForPairing = currentCloudUrl;
 
   // Update session di cache Google Apps Script agar PC/iPad langsung otomatis login
   sessionObj.status = "AUTHORIZED";
@@ -1356,12 +1392,12 @@ function authorizePairSession(params) {
     isPasswordChanged: (pinStatus === "PIN_CHANGED"),
     maxDevices: maxDevices,
     deviceCount: devices.length,
-    cloudUrl: currentCloudUrl
+    cloudUrl: keyedCloudForPairing
   };
   sessionObj.pin = storedPersonalPin || "";
   var masterUrlParam = String(params.masterUrl || "").trim();
   sessionObj.masterUrl = (masterUrlParam.indexOf("https://script.google.com/") === 0) ? masterUrlParam : "";
-  sessionObj.cloudUrl = currentCloudUrl;
+  sessionObj.cloudUrl = keyedCloudForPairing;
 
   cache.put(sessionId, JSON.stringify(sessionObj), 300);
 
@@ -1482,9 +1518,9 @@ function verifyClientStatus(params) {
         return { success: true, active: false, reason: "DEVICE_REMOVED", message: "Perangkat ini belum/tidak lagi terdaftar di lisensi. Silakan masuk ulang dengan Token + PIN." };
       }
 
-      var currentCloudUrl = (colMap.cloudUrl !== undefined && data[i][colMap.cloudUrl]) ? String(data[i][colMap.cloudUrl]).trim() : "";
+      var currentCloudUrl = (colMap.cloudUrl !== undefined && data[i][colMap.cloudUrl]) ? stripCloudKey_(data[i][colMap.cloudUrl]) : "";
       if (params.cloudUrl && colMap.cloudUrl !== undefined && shouldReplaceCloudUrl_(currentCloudUrl, params.cloudUrl)) {
-        currentCloudUrl = String(params.cloudUrl).trim();
+        currentCloudUrl = stripCloudKey_(params.cloudUrl);
         sheet.getRange(i + 1, colMap.cloudUrl + 1).setValue(currentCloudUrl);
       }
 
@@ -1737,7 +1773,7 @@ function adminGetData(params) {
       buyerContact: String(data[i][colMap.buyerContact] || ''),
       buyerEmail: (colMap.buyerEmail !== undefined && data[i][colMap.buyerEmail]) ? String(data[i][colMap.buyerEmail]).trim() : '',
       spreadsheetId: (colMap.spreadsheetId !== undefined && data[i][colMap.spreadsheetId]) ? String(data[i][colMap.spreadsheetId]).trim() : '',
-      cloudUrl: (colMap.cloudUrl !== undefined && data[i][colMap.cloudUrl]) ? String(data[i][colMap.cloudUrl]).trim() : '',
+      cloudUrl: (colMap.cloudUrl !== undefined && data[i][colMap.cloudUrl]) ? stripCloudKey_(data[i][colMap.cloudUrl]) : '',
       maxDevices: parseInt(data[i][colMap.maxDevices]) || 3,
       deviceCount: parsedDev.length,
       usedDevices: parsedDev,
@@ -1853,7 +1889,7 @@ function adminGenerateToken(params) {
     "", // personal pin belum ada
     nowStr,
     notes,
-    params.cloudUrl || "",
+    stripCloudKey_(params.cloudUrl),
     params.buyerEmail || "",
     params.spreadsheetId || ""
   ]);
@@ -3088,7 +3124,7 @@ function verifyGoogleAccount(params) {
       }
 
       var currentSpreadsheetId = (colMap.spreadsheetId !== undefined && data[i][colMap.spreadsheetId]) ? String(data[i][colMap.spreadsheetId]).trim() : "";
-      var currentCloudUrl = (colMap.cloudUrl !== undefined && data[i][colMap.cloudUrl]) ? String(data[i][colMap.cloudUrl]).trim() : "";
+      var currentCloudUrl = (colMap.cloudUrl !== undefined && data[i][colMap.cloudUrl]) ? stripCloudKey_(data[i][colMap.cloudUrl]) : "";
 
       logEvent("GOOGLE_AUTH_SUCCESS", rowToken, buyerName, deviceId, deviceName, "Berhasil masuk dengan akun Google: " + emailInput);
 

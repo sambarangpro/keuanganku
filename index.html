@@ -1041,7 +1041,7 @@
             <li>Kembali ke sini, pastikan Link Web App di bawah sudah benar, lalu klik <b class="text-emerald-600 dark:text-emerald-400">"AKTIFKAN KUNCI"</b>.</li>
           </ol>
           <p class="text-[10px] text-gray-500 italic pt-1">
-            *Catatan: Kode di bawah berisi <b>kunci rahasia</b> khusus untuk Anda. Jangan bagikan kode ini ke siapa pun. Lakukan langkah ini di <b>satu perangkat saja</b>; perangkat lain akan ikut memakai kunci yang sama secara otomatis.
+            *Catatan: Kode di bawah berisi <b>kunci rahasia</b> khusus untuk Anda. Jangan bagikan kode ini ke siapa pun. Lakukan langkah ini di <b>satu perangkat saja</b>. Perangkat lain mendapat kunci yang sama lewat <b>Scan QR</b> dari perangkat ini atau <b>Masuk dengan Google</b>. Kunci ini <b>tidak disimpan</b> di server kami.
           </p>
         </div>
 
@@ -4133,7 +4133,7 @@
 
       try {
         let activeCloud = (globalData.cloudUrl && globalData.cloudUrl.startsWith("http")) ? globalData.cloudUrl : (localStorage.getItem("KEUANGANKU_CLOUD_URL") || "");
-        let cloudQuery = activeCloud ? `&cloudUrl=${encodeURIComponent(activeCloud)}` : "";
+        let cloudQuery = activeCloud ? `&cloudUrl=${encodeURIComponent(stripKeyFromCloudUrl(activeCloud))}` : "";
         let resp = await fetch(`${apiUrl}?action=verify_status&token=${encodeURIComponent(token)}&deviceId=${encodeURIComponent(devId)}${cloudQuery}&_t=${Date.now()}`);
         let res = await resp.json();
 
@@ -4175,11 +4175,11 @@
               saveStorageData();
               showSyncToast('🔒 Kunci Cloud diperbarui otomatis');
             } else if (!hasLocalCloud || localTxCount === 0) {
-              globalData.cloudUrl = res.cloudUrl;
-              localStorage.setItem("KEUANGANKU_CLOUD_URL", res.cloudUrl);
+              globalData.cloudUrl = resolveCloudUrlFromServer(res.cloudUrl);
+              localStorage.setItem("KEUANGANKU_CLOUD_URL", globalData.cloudUrl);
               saveStorageData();
               if (typeof autoPullDatabaseFromCloud === 'function') {
-                autoPullDatabaseFromCloud(res.cloudUrl);
+                autoPullDatabaseFromCloud(globalData.cloudUrl);
               }
             }
           }
@@ -4239,6 +4239,11 @@
 
       if (!apiUrl || !apiUrl.startsWith("http") || apiUrl.includes("YOUR_SCRIPT_ID")) {
         throw new Error("Server lisensi developer belum dikonfigurasi.");
+      }
+
+      // Kunci Cloud Script (?k=) TIDAK pernah dikirim ke server lisensi, kecuali saat menautkan perangkat via QR
+      if (payload && payload.cloudUrl && payload.action !== 'authorize_pair_session') {
+        payload = Object.assign({}, payload, { cloudUrl: stripKeyFromCloudUrl(payload.cloudUrl) });
       }
 
       // 0. Data rahasia (PIN, token akses Google) dikirim lewat POST agar tidak tercatat di alamat URL
@@ -5625,8 +5630,8 @@
           // Sinkronisasi cloudUrl dari server jika lokal belum memilikinya
           if (res.data.cloudUrl && res.data.cloudUrl.startsWith("http")) {
             if (!globalData.cloudUrl || !globalData.cloudUrl.startsWith("http")) {
-              globalData.cloudUrl = res.data.cloudUrl;
-              localStorage.setItem("KEUANGANKU_CLOUD_URL", res.data.cloudUrl);
+              globalData.cloudUrl = resolveCloudUrlFromServer(res.data.cloudUrl);
+              localStorage.setItem("KEUANGANKU_CLOUD_URL", globalData.cloudUrl);
               saveStorageData();
             }
           }
@@ -6810,10 +6815,10 @@ function hideSplashScreenAndTriggerAlerts() {
             }
 
             if (res.data.cloudUrl && res.data.cloudUrl.startsWith("http")) {
-              globalData.cloudUrl = res.data.cloudUrl;
-              localStorage.setItem("KEUANGANKU_CLOUD_URL", res.data.cloudUrl);
+              globalData.cloudUrl = resolveCloudUrlFromServer(res.data.cloudUrl);
+              localStorage.setItem("KEUANGANKU_CLOUD_URL", globalData.cloudUrl);
               if (typeof autoPullDatabaseFromCloud === 'function') {
-                autoPullDatabaseFromCloud(res.data.cloudUrl);
+                autoPullDatabaseFromCloud(globalData.cloudUrl);
               }
             }
             saveStorageData();
@@ -6894,10 +6899,10 @@ function hideSplashScreenAndTriggerAlerts() {
             globalData.ownerPassword = pinInput;
 
             if (res.data.cloudUrl && res.data.cloudUrl.startsWith("http")) {
-              globalData.cloudUrl = res.data.cloudUrl;
-              localStorage.setItem("KEUANGANKU_CLOUD_URL", res.data.cloudUrl);
+              globalData.cloudUrl = resolveCloudUrlFromServer(res.data.cloudUrl);
+              localStorage.setItem("KEUANGANKU_CLOUD_URL", globalData.cloudUrl);
               if (typeof autoPullDatabaseFromCloud === 'function') {
-                autoPullDatabaseFromCloud(res.data.cloudUrl);
+                autoPullDatabaseFromCloud(globalData.cloudUrl);
               }
             }
             saveStorageData();
@@ -7264,9 +7269,9 @@ function hideSplashScreenAndTriggerAlerts() {
 
         // Cloud Script berkunci menolak akses: jangan timpa/unggah apa pun, beri tahu pengguna
         if (cloudData && cloudData.status === 'unauthorized') {
-          setSyncStatus('error', 'Kunci Cloud Salah');
+          setSyncStatus('error', 'Perlu Kunci Cloud');
           if (isManualClick) {
-            alert("Cloud Script menolak akses karena kunci sinkronisasi tidak cocok.\n\nBuka Setup > Sinkronisasi > 'Amankan Cloud Script' lalu klik 'AKTIFKAN KUNCI' di perangkat yang sudah memasang kode terbaru.");
+            alert("Perangkat ini belum memiliki kunci sinkronisasi Cloud.\n\nCara termudah:\n1. Di HP utama Anda, buka menu tautkan perangkat lalu Scan QR yang tampil di perangkat ini, ATAU\n2. Masuk dengan Akun Google yang sama.\n\nKunci tidak disimpan di server kami demi privasi Anda.");
           }
           return;
         }
@@ -8028,6 +8033,14 @@ function formatReadableSheets(ss, parsed) {
       if (!base) return '';
       return base + (base.includes('?') ? '&' : '?') + 'k=' + key;
     }
+    // Server lisensi hanya menyimpan alamat Cloud TANPA kunci. Jika perangkat ini sudah punya
+    // kunci untuk alamat yang sama, pertahankan kunci lokal (jangan ditimpa versi tanpa kunci).
+    function resolveCloudUrlFromServer(serverUrl) {
+      let local = (globalData && globalData.cloudUrl) || localStorage.getItem('KEUANGANKU_CLOUD_URL') || '';
+      if (!serverUrl || !String(serverUrl).startsWith('http')) return local;
+      if (getKeyFromCloudUrl(local) && stripKeyFromCloudUrl(local) === stripKeyFromCloudUrl(serverUrl)) return local;
+      return serverUrl;
+    }
 
     async function activateCloudSyncKey() {
       let currentUrl = (globalData && globalData.cloudUrl) || localStorage.getItem('KEUANGANKU_CLOUD_URL') || '';
@@ -8068,15 +8081,31 @@ function formatReadableSheets(ss, parsed) {
       globalData.lastUpdated = Date.now();
       localStorage.setItem('KEUANGANKU_DB_V21', JSON.stringify(globalData));
 
-      // Bagikan URL berkunci ke server lisensi agar perangkat lain ikut memakainya otomatis
+      // Alamat Cloud (TANPA kunci) dicatat di server lisensi. Kunci TIDAK dikirim ke server.
       let lic = getSavedLicense();
       if (lic && lic.token && typeof callClientLicenseApi === 'function') {
         try {
-          await callClientLicenseApi({ action: 'verify_status', token: lic.token, deviceId: getOrCreateDeviceId(), cloudUrl: keyedUrl });
+          await callClientLicenseApi({ action: 'verify_status', token: lic.token, deviceId: getOrCreateDeviceId(), cloudUrl: stripKeyFromCloudUrl(keyedUrl) });
         } catch(e) {}
       }
 
-      if (statusEl) { statusEl.textContent = '✓ Kunci aktif! Data Cloud kini hanya bisa diakses aplikasi Anda.'; statusEl.className = 'text-[11px] text-emerald-600 dark:text-emerald-400 font-bold'; }
+      // Simpan juga ke Google Drive milik pengguna (jika terhubung), agar perangkat baru yang
+      // "Masuk dengan Google" langsung mendapatkan kunci yang sama dari Drive-nya sendiri.
+      let driveSaved = false;
+      try {
+        let gUser = (typeof getGoogleSession === 'function') ? getGoogleSession() : null;
+        let sheetId = localStorage.getItem('KEUANGANKU_BYODB_SHEET_ID');
+        if (gUser && gUser.accessToken && sheetId && typeof writeGlobalDataToByodbSheet === 'function') {
+          let w = await writeGlobalDataToByodbSheet(gUser.accessToken, sheetId);
+          driveSaved = !!(w && (w.success !== false));
+        }
+      } catch(e) { console.warn('Simpan kunci ke Drive gagal (tidak masalah, bisa lewat Scan QR):', e); }
+
+      if (statusEl) {
+        statusEl.textContent = '✓ Kunci aktif! Data Cloud kini hanya bisa diakses perangkat Anda. ' +
+          (driveSaved ? 'Perangkat baru cukup "Masuk dengan Google" atau Scan QR.' : 'Untuk perangkat lain, tautkan lewat Scan QR dari perangkat ini.');
+        statusEl.className = 'text-[11px] text-emerald-600 dark:text-emerald-400 font-bold';
+      }
       showSyncToast('🔒 Kunci Cloud aktif');
       await forceUploadToCloud();
     }
@@ -14118,8 +14147,8 @@ async function processGoogleLoginToken(accessToken) {
       localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(res.data));
       sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
 
-      // URL Cloud diambil dari server lisensi (sudah berkunci), bukan ditanam di kode
-      let activeCloud = res.data.cloudUrl;
+      // Alamat Cloud dari server lisensi TANPA kunci; kunci lokal / dari Google Drive pengguna tetap dipertahankan
+      let activeCloud = resolveCloudUrlFromServer(res.data.cloudUrl);
       if (activeCloud && activeCloud.startsWith("http")) {
         globalData.cloudUrl = activeCloud;
         localStorage.setItem("KEUANGANKU_CLOUD_URL", activeCloud);

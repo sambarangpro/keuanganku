@@ -40,6 +40,7 @@
     <ul>
       <li><b>Data keuangan Anda tidak disimpan di server kami.</b> Data itu tersimpan di perangkat Anda dan di akun Google Anda sendiri (Google Drive / Google Sheets / Apps Script milik Anda).</li>
       <li>Kami hanya menyimpan data yang diperlukan untuk <b>pemesanan dan lisensi</b>, seperti nama, nomor WhatsApp, email, dan daftar perangkat.</li>
+      <li>Kami <b>tidak dapat membuka</b> data keuangan Anda. Kunci sinkronisasinya hanya ada di perangkat dan akun Google Anda.</li>
       <li>Kami <b>tidak menjual</b> data Anda dan tidak memakainya untuk iklan.</li>
     </ul>
   </div>
@@ -64,7 +65,7 @@
     <li><b>PIN pribadi</b> lisensi Anda, untuk menautkan perangkat baru.</li>
     <li>Alamat email akun Google yang Anda tautkan ke lisensi (jika memakai "Masuk dengan Google").</li>
     <li>ID file Google Sheets database Anda di Google Drive (bukan isinya).</li>
-    <li>Alamat Cloud Script beserta <b>kunci sinkronisasinya</b> (jika Anda memakai fitur Cloud Script). Lihat catatan penting di bagian 3.</li>
+    <li>Alamat Cloud Script Anda <b>tanpa kunci sinkronisasinya</b> (jika Anda memakai fitur Cloud Script). Lihat bagian 3.</li>
     <li>Catatan aktivitas (log), misalnya waktu login, perangkat yang ditambah atau dilepas, dan percobaan PIN yang salah. Log ini dipakai untuk keamanan dan bantuan teknis.</li>
   </ul>
 
@@ -76,11 +77,14 @@
     <li><b>Google Apps Script milik Anda sendiri</b> ("Cloud Script"), jika Anda memasangnya untuk sinkronisasi antar-perangkat.</li>
   </ul>
 
-  <h2>3. Catatan penting tentang Cloud Script</h2>
+  <h2>3. Kami tidak dapat membuka data keuangan Anda</h2>
   <div class="card">
-    <p>Supaya perangkat Anda yang lain bisa ikut sinkron secara otomatis, alamat Cloud Script Anda <b>beserta kunci sinkronisasinya</b> disimpan di server lisensi kami. Artinya, secara teknis pengelola server lisensi dapat membuka data di Cloud Script Anda.</p>
-    <p>Kami berkomitmen <b>tidak membuka data keuangan Anda</b>, kecuali atas permintaan Anda sendiri untuk bantuan teknis. Jika tidak ingin data ini tersimpan, gunakan sinkronisasi lewat Google Drive saja dan jangan aktifkan Cloud Script.</p>
-    <p class="muted"><mark class="isi">[PERLU DIPUTUSKAN: pertahankan pernyataan ini, atau minta developer mengubah aplikasi agar kunci tidak disimpan di server]</mark></p>
+    <p>Cloud Script Anda dikunci dengan <b>kunci sinkronisasi rahasia</b> yang dibuat di perangkat Anda. Kunci ini <b>tidak disimpan di server kami</b>. Server lisensi hanya mencatat alamat Cloud Script Anda <b>tanpa kunci</b>, jadi kami tidak dapat membuka data keuangan Anda.</p>
+    <p>Kunci berpindah ke perangkat Anda yang lain hanya lewat dua cara:</p>
+    <ul>
+      <li><b>Scan QR</b> dari perangkat utama. Kunci dititipkan sementara di server lisensi paling lama 5 menit, lalu langsung dihapus setelah diterima perangkat baru.</li>
+      <li><b>Masuk dengan Google</b>. Kunci diambil dari file database di Google Drive milik Anda sendiri.</li>
+    </ul>
   </div>
 
   <h2>4. Penggunaan data akun Google</h2>
@@ -131,7 +135,7 @@
   <h2>8. Keamanan</h2>
   <ul>
     <li>Semua komunikasi memakai HTTPS.</li>
-    <li>Cloud Script versi 3.0 hanya bisa diakses dengan kunci sinkronisasi milik Anda.</li>
+    <li>Cloud Script versi 3.0 hanya bisa diakses dengan kunci sinkronisasi milik Anda, dan kunci itu tidak disimpan di server kami.</li>
     <li>Perangkat baru hanya bisa ditambahkan dengan PIN yang benar, lewat Scan QR dari perangkat yang sudah terdaftar, atau dengan akun Google yang terverifikasi. Percobaan PIN yang salah berulang kali akan dikunci sementara.</li>
     <li>PIN pribadi disimpan di Google Sheet milik pengelola yang tidak dibagikan ke publik.</li>
     <li>Foto bukti transfer disimpan di Google Drive pengelola dan bisa dibuka oleh siapa pun yang memegang tautannya. Tautan ini tidak dipublikasikan.</li>
