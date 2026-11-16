@@ -2079,6 +2079,20 @@
             </div>
           </div>
 
+          <!-- 6. Utang & Cicilan -->
+          <div onclick="openRecapModal('debt')" class="bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-4 shadow-sm hover:border-rose-500 hover:shadow-md transition-all text-left flex flex-col justify-between group cursor-pointer active:scale-95">
+            <div class="flex justify-between items-start">
+              <div class="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <span class="material-symbols-outlined text-2xl">receipt_long</span>
+              </div>
+              <span class="material-symbols-outlined text-gray-300 dark:text-slate-600 group-hover:text-rose-500 group-hover:translate-x-0.5 transition-all text-lg">arrow_forward</span>
+            </div>
+            <div class="mt-3">
+              <h4 class="font-bold text-xs sm:text-sm text-on-surface group-hover:text-rose-600 transition-colors leading-tight">Utang & Cicilan</h4>
+              <p class="text-[10px] text-gray-400 mt-0.5">Sisa utang & cicilan berjalan</p>
+            </div>
+          </div>
+
           <!-- 6. Aset Selain Uang -->
           <div onclick="openRecapModal('nonmoney')" class="bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-4 shadow-sm hover:border-amber-500 hover:shadow-md transition-all text-left flex flex-col justify-between group cursor-pointer active:scale-95">
             <div class="flex justify-between items-start">
@@ -2121,19 +2135,6 @@
             </div>
           </div>
 
-          <!-- 9. Kunci Keamanan & Cadangan -->
-          <div onclick="navTo('setup')" class="bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-4 shadow-sm hover:border-primary hover:shadow-md transition-all text-left flex flex-col justify-between group cursor-pointer active:scale-95">
-            <div class="flex justify-between items-start">
-              <div class="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <span class="material-symbols-outlined text-2xl">settings_suggest</span>
-              </div>
-              <span class="material-symbols-outlined text-gray-300 dark:text-slate-600 group-hover:text-primary group-hover:translate-x-0.5 transition-all text-lg">arrow_forward</span>
-            </div>
-            <div class="mt-3">
-              <h4 class="font-bold text-xs sm:text-sm text-on-surface group-hover:text-primary transition-colors leading-tight">Pengaturan & Backup</h4>
-              <p class="text-[10px] text-gray-400 mt-0.5">Kelola cloud & keamanan</p>
-            </div>
-          </div>
         </div>
     </div>
 
@@ -8999,6 +9000,11 @@ function formatReadableSheets(ss, parsed) {
       iconEl.textContent = cfg.icon;
       let iconBox = document.getElementById('recap-modal-icon-container');
       iconBox.className = `w-10 h-10 rounded-xl flex items-center justify-center ${cfg.colorClass}`;
+
+      // Pastikan isi rekap utang selalu memakai data terbaru saat dibuka
+      if (key === 'debt' && typeof renderDebtRecap === 'function') {
+        try { renderDebtRecap(); } catch(e) { console.warn('renderDebtRecap:', e); }
+      }
 
       document.querySelectorAll('.recap-content-section').forEach(el => el.classList.add('hidden'));
       let targetSection = document.getElementById(cfg.sectionId);
