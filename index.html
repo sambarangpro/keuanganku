@@ -13933,7 +13933,10 @@ async function handleGoogleSignIn() {
   try {
     gisTokenClient = google.accounts.oauth2.initTokenClient({
       client_id: clientId,
-      scope: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file email profile',
+      // Izin MINIMAL (non-sensitif): drive.file = hanya file yang dibuat/dibuka oleh aplikasi ini
+      // (file "Database Keuanganku PRO"). Google Sheets API tetap bisa dipakai untuk file tersebut.
+      // Tidak memakai izin "spreadsheets" penuh agar tidak perlu verifikasi izin sensitif dari Google.
+      scope: 'https://www.googleapis.com/auth/drive.file openid email profile',
       callback: async (tokenResponse) => {
         console.log("GIS Token Response:", tokenResponse);
         if (btnText) btnText.textContent = oldText;
@@ -14573,7 +14576,7 @@ async function writeGlobalDataToByodbSheet(accessToken, sheetId) {
     if (sheetId) {
       localStorage.setItem("KEUANGANKU_BYODB_SHEET_ID", sheetId);
     } else {
-      throw new Error("AUTH_REQUIRED: Gagal membuat Spreadsheet baru di Google Drive. Pastikan izin Google Sheets telah diizinkan.");
+      throw new Error("AUTH_REQUIRED: Gagal membuat Spreadsheet baru di Google Drive. Pastikan izin Google Drive (file aplikasi ini) telah diizinkan.");
     }
   }
 
@@ -14760,7 +14763,7 @@ async function syncByodbNow(isManualClick = true) {
     console.error("syncByodbNow error:", err);
     if (isManualClick) {
       if (String(err.message || err).includes("AUTH_REQUIRED")) {
-        alert("⚠️ Izin Google Spreadsheet Diperlukan:\n\nSesi Google Anda memerlukan izin Spreadsheet atau telah berakhir.\n\nKlik OK untuk masuk kembali dan pastikan memilih 'Lanjutkan' / centang izin Google Sheets.");
+        alert("⚠️ Izin Google Drive Diperlukan:\n\nSesi Google Anda memerlukan izin Spreadsheet atau telah berakhir.\n\nKlik OK untuk masuk kembali dan pastikan memilih 'Lanjutkan' / centang izin Google Drive.");
         handleGoogleSignIn();
       } else {
         alert("Gagal sinkronisasi ke Google Drive:\n\n" + (err.message || err));
@@ -14872,7 +14875,7 @@ async function migrateOldCloudToByodb() {
   } catch(e) {
     console.error("Migrate error:", e);
     if (String(e.message || e).includes("AUTH_REQUIRED")) {
-      alert("⚠️ Izin Google Spreadsheet Diperlukan:\n\nGoogle membutuhkan izin untuk menyimpan database ke Google Drive Anda.\n\nKlik OK untuk masuk kembali dan pastikan menyetujui izin Google Sheets.");
+      alert("⚠️ Izin Google Drive Diperlukan:\n\nGoogle membutuhkan izin untuk menyimpan database ke Google Drive Anda.\n\nKlik OK untuk masuk kembali dan pastikan menyetujui izin Google Drive.");
       handleGoogleSignIn();
     } else {
       alert("Kendala saat menyimpan ke Google Drive:\n\n" + (e.message || e));
