@@ -7142,6 +7142,64 @@ function hideSplashScreenAndTriggerAlerts() {
       });
       return removed;
     }
+    function newTxId() {
+      let b = new Uint8Array(8);
+      try { (window.crypto || window.msCrypto).getRandomValues(b); } catch(e) { for (let i = 0; i < b.length; i++) b[i] = Math.floor(Math.random() * 256); }
+      return 'tx-' + Date.now().toString(36) + '-' + Array.from(b, x => x.toString(16).padStart(2, '0')).join('');
+    }
+    // sign = +1: terapkan efek transaksi ke saldo (seperti saat dicatat); -1: batalkan efeknya
+    function applyTxBalanceEffect(doc, tx, sign) {
+      if (!doc || !tx) return;
+      if (!doc.currentBalances) doc.currentBalances = {};
+      let amt = (Number(tx.amount) || 0) * sign;
+      if (tx.dariAcc && tx.dariAcc !== '- not applicable -' && doc.currentBalances.hasOwnProperty(tx.dariAcc)) doc.currentBalances[tx.dariAcc] -= amt;
+      if (tx.keAcc && tx.keAcc !== '- not applicable -' && doc.currentBalances.hasOwnProperty(tx.keAcc)) doc.currentBalances[tx.keAcc] += amt;
+    }
+    /**
+     * Gabungkan transaksi dari dokumen "loser" ke dokumen "winner":
+     * - transaksi baru (punya createdAt) yang belum ada di winner -> ditambahkan + saldo disesuaikan
+     * - transaksi yang diedit lebih akhir di loser (updatedAt lebih besar) -> versi loser dipakai
+     * Transaksi lama tanpa createdAt mengikuti aturan lama (tidak ditambahkan), agar transaksi
+     * yang dulu sudah dihapus (sebelum ada catatan penghapusan) tidak hidup kembali.
+     */
+    function mergeTxLists(winner, loser) {
+      let result = { added: 0, updated: 0 };
+      if (!winner || !loser || !Array.isArray(loser.recentHistory)) return result;
+      if (!Array.isArray(winner.recentHistory)) winner.recentHistory = [];
+      materializeTxIds(winner);
+      materializeTxIds(loser);
+      let dead = new Set((winner.deletedTxKeys || []).map(t => t.k));
+      let byId = new Map();
+      winner.recentHistory.forEach(t => { if (t && t.id) byId.set(t.id, t); });
+      loser.recentHistory.forEach(t => {
+        if (!t || !t.id || dead.has(t.id)) return;
+        let w = byId.get(t.id);
+        if (!w) {
+          if (!t.createdAt) return;
+          let copy = JSON.parse(JSON.stringify(t));
+          winner.recentHistory.push(copy);
+          byId.set(copy.id, copy);
+          applyTxBalanceEffect(winner, copy, +1);
+          result.added++;
+        } else if ((Number(t.updatedAt) || 0) > (Number(w.updatedAt) || 0)) {
+          applyTxBalanceEffect(winner, w, -1);
+          let fresh = JSON.parse(JSON.stringify(t));
+          Object.keys(w).forEach(k => delete w[k]);
+          Object.assign(w, fresh);
+          applyTxBalanceEffect(winner, w, +1);
+          result.updated++;
+        }
+      });
+      if (result.added > 0) {
+        // Transaksi ber-createdAt (dibuat setelah pembaruan ini) selalu lebih baru dari transaksi lama:
+        // urutkan yang baru dari terbaru, lalu sisanya tetap di urutan semula.
+        let fresh = winner.recentHistory.filter(t => t && t.createdAt).sort((a, b) => (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0));
+        let legacy = winner.recentHistory.filter(t => !(t && t.createdAt));
+        winner.recentHistory = fresh.concat(legacy);
+      }
+      return result;
+    }
+
     function recordTxDeletion(tx) {
       if (!tx || !tx.id) return;
       if (!Array.isArray(globalData.deletedTxKeys)) globalData.deletedTxKeys = [];
@@ -7272,6 +7330,23 @@ function hideSplashScreenAndTriggerAlerts() {
             try { localStorage.removeItem("KEUANGANKU_RESTORE_PENDING"); } catch(e) {}
           }
 
+          // GABUNG PER TRANSAKSI: transaksi baru/editan dari sisi yang "kalah" tidak lagi hilang,
+          // melainkan ditambahkan ke sisi yang menang (saldo ikut disesuaikan).
+          let mergedFromCloud = false;
+          if (!restorePending) {
+            if (isCloudNewer) {
+              let m = mergeTxLists(cloudData, globalData);
+              if (m.added || m.updated) cloudNeedsTombUpdate = true; // cloud perlu menerima transaksi dari perangkat ini
+            } else {
+              let m = mergeTxLists(globalData, cloudData);
+              if (m.added || m.updated) {
+                mergedFromCloud = true;
+                globalData.lastUpdated = Date.now();
+                localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData));
+              }
+            }
+          }
+
           if (isCloudNewer) {
             let activeCloudUrl = globalData.cloudUrl;
             let currentPin = globalData.appPin;
@@ -7310,13 +7385,14 @@ function hideSplashScreenAndTriggerAlerts() {
             initApp();
             showSyncToast("✓ Data transaksi otomatis disinkronkan!");
             setSyncStatus('synced', 'Tersinkron');
-          } else if (!isCloudNewer && (localTxCount > cloudTxCount || localUpdated > cloudUpdated || cloudNeedsTombUpdate)) {
+          } else if (!isCloudNewer && (localTxCount > cloudTxCount || localUpdated > cloudUpdated || cloudNeedsTombUpdate || mergedFromCloud)) {
             // Data lokal lebih baru atau lebih lengkap dari cloud, upload data lokal ke cloud!
             if (cloudNeedsTombUpdate) {
               globalData.lastUpdated = Date.now();
               localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData));
             }
-            if (removedLocal > 0) initApp();
+            if (removedLocal > 0 || mergedFromCloud) initApp();
+            if (mergedFromCloud) showSyncToast("✓ Transaksi dari perangkat lain digabungkan");
             try {
               await fetch(globalData.cloudUrl, {
                 method: "POST",
@@ -12617,9 +12693,13 @@ function formatReadableSheets(ss, parsed) {
       if (dDari !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(dDari)) globalData.currentBalances[dDari] -= dAmount; 
       if (dKe !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(dKe)) globalData.currentBalances[dKe] += dAmount; 
       
-      let mainTx = { 
-        dateTime: timeFormatted, 
-        rawDate: dDate, 
+      // ID unik + waktu dibuat: memungkinkan transaksi dari beberapa perangkat digabung saat sinkron
+      let createdNow = Date.now();
+      let mainTx = {
+        id: newTxId(),
+        createdAt: createdNow,
+        dateTime: timeFormatted,
+        rawDate: dDate,
         name: dName, 
         amount: dAmount, 
         cashflow: dCashflow, 
@@ -12634,7 +12714,7 @@ function formatReadableSheets(ss, parsed) {
       if (dAdminFee > 0 && dAdminAcc !== '- not applicable -') { 
         adminAdded = true; 
         if (globalData.currentBalances.hasOwnProperty(dAdminAcc)) globalData.currentBalances[dAdminAcc] -= dAdminFee; 
-        let adminTx = { dateTime: timeFormatted, rawDate: dDate, name: "Biaya Admin - " + dName, amount: dAdminFee, cashflow: "Spending", category: "Biaya Transaksi / Admin", dariAcc: dAdminAcc, keAcc: "- not applicable -" }; 
+        let adminTx = { id: newTxId(), createdAt: createdNow + 1, dateTime: timeFormatted, rawDate: dDate, name: "Biaya Admin - " + dName, amount: dAdminFee, cashflow: "Spending", category: "Biaya Transaksi / Admin", dariAcc: dAdminAcc, keAcc: "- not applicable -" }; 
         globalData.recentHistory.unshift(mainTx); 
         globalData.recentHistory.unshift(adminTx); 
       } else { 
@@ -12756,9 +12836,12 @@ function formatReadableSheets(ss, parsed) {
     function closeEditModal() { let modal = document.getElementById('edit-tx-modal'), card = document.getElementById('edit-tx-card'); modal.classList.add('opacity-0'); card.classList.remove('scale-100'); card.classList.add('scale-95'); setTimeout(() => modal.classList.add('hidden'), 300); }
     function saveEditedTransaction() { 
       let idx = parseInt(document.getElementById('edit-tx-index').value, 10); 
-      let tx = globalData.recentHistory[idx]; 
-      if (!tx) return; 
-      let newName = document.getElementById('edit-tx-name').value; 
+      let tx = globalData.recentHistory[idx];
+      if (!tx) return;
+      // Kunci ID transaksi sebelum isinya berubah, lalu tandai waktu edit (untuk sinkron antar perangkat)
+      materializeTxIds(globalData);
+      tx.updatedAt = Date.now();
+      let newName = document.getElementById('edit-tx-name').value;
       let newAmount = parseFloat(document.getElementById('edit-tx-amount').value.replace(/\./g, '')) || 0; 
       let newCat = document.getElementById('edit-tx-category').value; 
       let oldAmt = tx.amount; 
