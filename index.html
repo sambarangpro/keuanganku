@@ -7221,6 +7221,14 @@ function hideSplashScreenAndTriggerAlerts() {
           let removedLocal = applyTxTombstones(globalData);
           let removedCloud = applyTxTombstones(cloudData);
           let cloudNeedsTombUpdate = removedCloud > 0 || mergedTombs.length !== cloudTombCount;
+
+          // Gabungkan juga catatan "pengingat sudah ditutup (✕)" dari semua perangkat
+          let localDis = (globalData.dismissedAlerts && typeof globalData.dismissedAlerts === 'object') ? globalData.dismissedAlerts : {};
+          let cloudDis = (cloudData.dismissedAlerts && typeof cloudData.dismissedAlerts === 'object') ? cloudData.dismissedAlerts : {};
+          let mergedDis = Object.assign({}, cloudDis, localDis);
+          if (Object.keys(mergedDis).length !== Object.keys(cloudDis).length) cloudNeedsTombUpdate = true;
+          globalData.dismissedAlerts = mergedDis;
+          cloudData.dismissedAlerts = Object.assign({}, mergedDis);
           if (removedLocal > 0 || mergedTombs.length !== localTombCount) {
             localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData));
           }
@@ -9626,6 +9634,7 @@ function formatReadableSheets(ss, parsed) {
       let todayStr = getLocalDateStr();
       localStorage.setItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey + '_' + todayStr, 'true');
       sessionStorage.setItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey, 'true');
+      markAlertDismissedForPeriod(alertKey);
       activeDueModalItems = activeDueModalItems.filter(it => it.alertKey !== alertKey);
       if (activeDueModalItems.length === 0) {
         closeDueDateModalPopup();
@@ -9722,10 +9731,43 @@ function formatReadableSheets(ss, parsed) {
       openDueDateModalPopup(demoItems);
     }
 
+    // Periode sebuah pengingat: tagihan/cicilan bulanan = bulan berjalan (YYYY-MM),
+    // piutang = tanggal tenggatnya. Menutup (✕) pengingat berlaku sampai periode berikutnya.
+    function getAlertPeriodKey(alertKey) {
+      alertKey = String(alertKey || '');
+      if (alertKey.indexOf('rec_') === 0) {
+        let k = alertKey.slice(4);
+        let it = (globalData && globalData.receivablesData) ? globalData.receivablesData[k] : null;
+        return 'D' + ((it && it.deadline) || '');
+      }
+      let d = new Date();
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    }
+    function isAlertDismissedForPeriod(alertKey) {
+      let p = getAlertPeriodKey(alertKey);
+      let synced = globalData && globalData.dismissedAlerts && globalData.dismissedAlerts[alertKey + '|' + p];
+      let local = false;
+      try { local = localStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey + '_P_' + p) === 'true'; } catch(e) {}
+      return Boolean(synced || local);
+    }
+    function markAlertDismissedForPeriod(alertKey) {
+      if (!alertKey) return;
+      let p = getAlertPeriodKey(alertKey);
+      try { localStorage.setItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey + '_P_' + p, 'true'); } catch(e) {}
+      // Simpan juga di data (ikut sinkron) agar perangkat lain tidak menampilkannya lagi
+      if (!globalData.dismissedAlerts || typeof globalData.dismissedAlerts !== 'object') globalData.dismissedAlerts = {};
+      globalData.dismissedAlerts[alertKey + '|' + p] = Date.now();
+      // Bersihkan catatan yang sudah lebih dari 400 hari
+      let cutoff = Date.now() - 400 * 24 * 3600 * 1000;
+      Object.keys(globalData.dismissedAlerts).forEach(k => { if ((Number(globalData.dismissedAlerts[k]) || 0) < cutoff) delete globalData.dismissedAlerts[k]; });
+      saveStorageData();
+    }
+
     function dismissDueAlert(alertKey) {
       let todayStr = getLocalDateStr();
       localStorage.setItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey + '_' + todayStr, 'true');
       sessionStorage.setItem('KEUANGANKU_DISMISSED_ALERT_' + alertKey, 'true');
+      markAlertDismissedForPeriod(alertKey);
       checkDueDateAlerts();
       checkReceivableAlerts();
     }
@@ -9747,7 +9789,8 @@ function formatReadableSheets(ss, parsed) {
 
       const isAlertDismissed = (key) => {
         return sessionStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + key) === 'true' ||
-               localStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + key + '_' + todayStr) === 'true';
+               localStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + key + '_' + todayStr) === 'true' ||
+               isAlertDismissedForPeriod(key);
       };
       activeDueModalItems = [];
 
@@ -10191,7 +10234,8 @@ function formatReadableSheets(ss, parsed) {
 
       const isAlertDismissed = (key) => {
         return sessionStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + key) === 'true' ||
-               localStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + key + '_' + todayStr) === 'true';
+               localStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + key + '_' + todayStr) === 'true' ||
+               isAlertDismissedForPeriod(key);
       };
 
       Object.keys(globalData.receivablesData).forEach(k => {
