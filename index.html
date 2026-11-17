@@ -4231,6 +4231,11 @@
       }
     }
 
+    // Permintaan ke Google Drive/Sheets: batas waktu lebih longgar (unggah data bisa besar), tapi tidak menggantung selamanya
+    function driveFetch(url, options = {}) {
+      return fetchWithTimeout(url, options, 45000);
+    }
+
     // Helper komunikasi API lisensi klien yang kebal CORS
     async function callClientLicenseApi(payload) {
       let apiUrl = (DEFAULT_MASTER_LICENSE_URL && !DEFAULT_MASTER_LICENSE_URL.includes("YOUR_SCRIPT_ID"))
@@ -14040,7 +14045,7 @@ async function findExistingByodbSpreadsheet(accessToken) {
   if (!accessToken) return null;
   try {
     let q = encodeURIComponent("name contains 'Database Keuanganku PRO' and mimeType = 'application/vnd.google-apps.spreadsheet' and trashed = false");
-    let res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name,createdTime)&orderBy=createdTime desc`, {
+    let res = await driveFetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name,createdTime)&orderBy=createdTime desc`, {
       headers: { 'Authorization': 'Bearer ' + accessToken }
     });
     if (res.ok) {
@@ -14068,10 +14073,32 @@ async function processGoogleLoginToken(accessToken) {
     let profile = await fetchGoogleUserProfile(accessToken);
 
     let detectedEmail = String((profile && profile.email) || "").trim().toLowerCase();
+
+    // CADANGAN: sebagian browser (mis. Safari iPad) gagal/menggantung saat menghubungi googleapis.com
+    // langsung. Minta server lisensi yang memeriksa token ke Google dan mengembalikan emailnya.
+    if (!detectedEmail) {
+      if (btnText) btnText.textContent = 'Memeriksa akun Google...';
+      try {
+        let sv = await callClientLicenseApi({
+          action: 'verify_google_account',
+          googleAccessToken: accessToken,
+          deviceId: getOrCreateDeviceId(),
+          deviceName: detectDeviceName()
+        });
+        let svEmail = sv && ((sv.data && sv.data.email) || sv.email);
+        if (svEmail) {
+          detectedEmail = String(svEmail).trim().toLowerCase();
+          if (profile && !profile.name) profile.name = detectedEmail;
+        }
+      } catch(eSv) {
+        console.warn('Cadangan baca email via server gagal:', eSv);
+      }
+    }
+
     if (!detectedEmail) {
       // Jangan pernah mengisi email "pemilik" secara otomatis. Minta pengguna login ulang.
       if (btnText) btnText.textContent = 'Masuk dengan Akun Google';
-      alert("Email akun Google tidak dapat dibaca.\n\nSilakan coba masuk lagi dan pastikan Anda mencentang izin untuk melihat alamat email.");
+      alert("Email akun Google tidak dapat dibaca.\n\nCoba langkah berikut:\n1. Pastikan internet stabil, lalu masuk lagi.\n2. Di jendela izin Google, pilih 'Lanjutkan' / 'Izinkan semua'.\n3. Jika memakai Safari di iPad/iPhone: Pengaturan > Safari > matikan sementara 'Cegah Pelacakan Lintas Situs', lalu coba lagi.\n\nAtau gunakan 'Tautkan via Barcode (QR)' dari HP utama Anda.");
       return;
     }
 
@@ -14481,7 +14508,7 @@ async function provisionNewByodbSpreadsheet(accessToken, userInfo) {
       ]
     };
 
-    let createRes = await fetch('https://sheets.googleapis.com/v4/spreadsheets', {
+    let createRes = await driveFetch('https://sheets.googleapis.com/v4/spreadsheets', {
       method: 'POST',
       headers: {
         'Authorization': 'Bearer ' + accessToken,
@@ -14514,7 +14541,7 @@ async function provisionNewByodbSpreadsheet(accessToken, userInfo) {
         ]
       };
       try {
-        await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Transaksi!A1:G1?valueInputOption=USER_ENTERED`, {
+        await driveFetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Transaksi!A1:G1?valueInputOption=USER_ENTERED`, {
           method: 'PUT',
           headers: {
             'Authorization': 'Bearer ' + accessToken,
@@ -14594,7 +14621,7 @@ async function writeGlobalDataToByodbSheet(accessToken, sheetId) {
   };
 
   // Percobaan 1: Tulis ke tab Database_Keuangan
-  let res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Database_Keuangan!A1?valueInputOption=USER_ENTERED`, {
+  let res = await driveFetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Database_Keuangan!A1?valueInputOption=USER_ENTERED`, {
     method: 'PUT',
     headers: {
       'Authorization': 'Bearer ' + accessToken,
@@ -14611,7 +14638,7 @@ async function writeGlobalDataToByodbSheet(accessToken, sheetId) {
     }
 
     // Fallback: Tulis ke tab pertama spreadsheet langsung jika Database_Keuangan belum ada (Error 400)
-    let fallbackRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/A1?valueInputOption=USER_ENTERED`, {
+    let fallbackRes = await driveFetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/A1?valueInputOption=USER_ENTERED`, {
       method: 'PUT',
       headers: {
         'Authorization': 'Bearer ' + accessToken,
@@ -14634,7 +14661,7 @@ async function writeGlobalDataToByodbSheet(accessToken, sheetId) {
       txList.slice(0, 500).forEach(t => {
         rows.push([t.date || "", t.type || "", t.category || "", t.amount || 0, t.account || "", t.notes || "", t.id || ""]);
       });
-      await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Transaksi!A1:G${rows.length}?valueInputOption=USER_ENTERED`, {
+      await driveFetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Transaksi!A1:G${rows.length}?valueInputOption=USER_ENTERED`, {
         method: 'PUT',
         headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
         body: JSON.stringify({ values: rows })
@@ -14656,12 +14683,12 @@ async function pullDataFromByodbSpreadsheet(accessToken, sheetId) {
   if (!sheetId || !accessToken) return false;
   try {
     let url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Database_Keuangan!A1:Z1`;
-    let res = await fetch(url, {
+    let res = await driveFetch(url, {
       headers: { 'Authorization': 'Bearer ' + accessToken }
     });
     if (!res.ok) {
       // Fallback: coba tab pertama langsung
-      res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/A1:Z1`, {
+      res = await driveFetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/A1:Z1`, {
         headers: { 'Authorization': 'Bearer ' + accessToken }
       });
     }
