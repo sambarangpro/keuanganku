@@ -1799,6 +1799,7 @@ function adminGetData(params) {
 
     tokensList.push({
       token: String(data[i][colMap.token] || ''),
+      isOwner: isOwnerToken_(data[i][colMap.token]),
       buyerName: String(data[i][colMap.buyerName] || ''),
       buyerContact: String(data[i][colMap.buyerContact] || ''),
       buyerEmail: (colMap.buyerEmail !== undefined && data[i][colMap.buyerEmail]) ? String(data[i][colMap.buyerEmail]).trim() : '',
@@ -1886,7 +1887,7 @@ function adminGetData(params) {
     tokens: tokensList,
     orders: ordersList,
     recentLogs: recentLogs,
-    salesSettings: getStoredSalesSettings()
+    salesSettings: (function() { var s = getStoredSalesSettings(); s.fonnteToken = ""; s.fonnteAutoSend = false; return s; })()
   };
 }
 
@@ -1901,11 +1902,25 @@ function adminGenerateToken(params) {
   if (!buyerName) return { success: false, message: "Nama pembeli wajib diisi." };
 
   var newToken = (params.customToken || "").trim().toUpperCase();
+  if (newToken && !/^[A-Z0-9-]{6,40}$/.test(newToken)) {
+    return { success: false, message: "Format token khusus tidak valid (hanya huruf besar, angka, dan tanda -)." };
+  }
   if (!newToken) newToken = generateRandomToken();
 
   var ss = getSpreadsheet();
   var sheet = ss.getSheetByName(SHEET_TOKENS);
   var nowStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
+
+  // Cegah token ganda (token khusus yang sudah ada tidak boleh dibuat lagi)
+  var existingTok = sheet.getDataRange().getValues();
+  if (existingTok && existingTok.length > 1) {
+    var tCol = getTokenColumnIndexes(existingTok[0]).token;
+    for (var et = 1; et < existingTok.length; et++) {
+      if (tokensMatch_(existingTok[et][tCol], newToken)) {
+        return { success: false, message: "Token " + newToken + " sudah ada di database." };
+      }
+    }
+  }
 
   sheet.appendRow([
     newToken,
@@ -2116,7 +2131,9 @@ function logEvent(event, token, buyerName, deviceId, deviceName, details) {
     var sheet = ss.getSheetByName(SHEET_LOGS);
     if (!sheet) return;
     var nowStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
-    sheet.appendRow(safeRow_([nowStr, event, String(token == null ? "" : token), String(buyerName == null ? "" : buyerName), String(deviceId == null ? "" : deviceId), String(deviceName == null ? "" : deviceName), String(details == null ? "" : details)]));
+    // Isi log bisa berasal dari siapa saja (mis. token palsu): batasi panjang & buang tanda < > (cegah kode tersusup)
+    var clean = function(v, max) { return String(v == null ? "" : v).replace(/[<>]/g, "").substring(0, max); };
+    sheet.appendRow(safeRow_([nowStr, clean(event, 60), clean(token, 40), clean(buyerName, 100), clean(deviceId, 80), clean(deviceName, 80), clean(details, 300)]));
   } catch(e) {}
 }
 
@@ -2159,11 +2176,9 @@ function adminAddOrder(params) {
   var uniqueCode = parseInt(params.uniqueCode, 10) || computedUniqueCode;
   var uCodePadded = (uniqueCode < 10 ? "0" : "") + uniqueCode;
 
-  var orderId = (params.orderId || "").trim();
-  if (!orderId) {
-    var dateCompact = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyyMMdd");
-    orderId = "ORD-" + dateCompact + "-" + uCodePadded;
-  }
+  // Order ID selalu dibuat server (dengan akhiran acak agar tidak bentrok)
+  var dateCompact = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyyMMdd");
+  var orderId = "ORD-" + dateCompact + "-" + uCodePadded + "-" + Utilities.getUuid().substring(0, 4).toUpperCase();
 
   var fullNotes = notes;
   var modeTag = (orderMode === "TESTING") ? "[UJI COBA] " : "";
@@ -2894,15 +2909,26 @@ function adminSaveSalesSettings(params) {
     if (params.packages) current.packages = typeof params.packages === 'string' ? JSON.parse(params.packages) : params.packages;
   } catch(e) {}
   try {
-    if (params.vouchers) current.vouchers = typeof params.vouchers === 'string' ? JSON.parse(params.vouchers) : params.vouchers;
+    if (params.vouchers) {
+      var incoming = typeof params.vouchers === 'string' ? JSON.parse(params.vouchers) : params.vouchers;
+      // Jangan biarkan data dashboard yang sudah lama MENGURANGI hitungan pemakaian voucher
+      var usedByCode = {};
+      (current.vouchers || []).forEach(function(v) { usedByCode[String(v.code || "").toUpperCase()] = Number(v.usedCount) || 0; });
+      (incoming || []).forEach(function(v) {
+        var stored = usedByCode[String(v.code || "").toUpperCase()] || 0;
+        v.usedCount = Math.max(Number(v.usedCount) || 0, stored);
+      });
+      current.vouchers = incoming;
+    }
   } catch(e) {}
   try {
     if (params.paymentAccounts) current.paymentAccounts = typeof params.paymentAccounts === 'string' ? JSON.parse(params.paymentAccounts) : params.paymentAccounts;
   } catch(e) {}
   if (params.sellerWhatsApp !== undefined) current.sellerWhatsApp = String(params.sellerWhatsApp).trim();
   if (params.orderFormUrl !== undefined) current.orderFormUrl = String(params.orderFormUrl).trim();
-  if (params.fonnteToken !== undefined) current.fonnteToken = String(params.fonnteToken).trim();
-  if (params.fonnteAutoSend !== undefined) current.fonnteAutoSend = !!params.fonnteAutoSend;
+  // Fonnte dinonaktifkan pemilik demi keamanan: token tidak disimpan lagi
+  current.fonnteToken = "";
+  current.fonnteAutoSend = false;
   if (params.orderMode !== undefined) current.orderMode = String(params.orderMode).trim().toUpperCase();
   if (params.launchSeqOffset !== undefined) current.launchSeqOffset = parseInt(params.launchSeqOffset, 10) || 0;
 
@@ -3335,6 +3361,10 @@ function saveSpreadsheetId(params) {
 // ============================================================
 
 function adminSendFonnte(params) {
+  return { success: false, status: false, message: "Fitur Fonnte dinonaktifkan oleh pemilik demi keamanan. Kirim pesan WhatsApp secara manual." };
+}
+
+function adminSendFonnte_legacyDisabled_(params) {
   var token = params.fonnteToken;
   if (!token) {
     try {
@@ -3374,6 +3404,10 @@ function adminSendFonnte(params) {
 }
 
 function adminCheckFonnteDevice(params) {
+  return { success: false, status: false, message: "Fitur Fonnte dinonaktifkan oleh pemilik demi keamanan." };
+}
+
+function adminCheckFonnteDevice_legacyDisabled_(params) {
   var token = params.fonnteToken;
   if (!token) {
     try {

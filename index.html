@@ -1474,7 +1474,7 @@
 
       <!-- Input Token -->
       <div class="text-left space-y-1">
-        <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Kode Token Lisensi (16 Digit)</label>
+        <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Kode Token Lisensi (PRO-XXXX-XXXX-XXXX)</label>
         <input type="text" id="bind-token-input" placeholder="PRO-XXXX-XXXX-XXXX" maxlength="25" class="w-full p-2.5 border border-outline-variant rounded-xl text-xs font-mono-data text-center uppercase tracking-widest bg-surface text-on-surface outline-none focus:border-primary">
       </div>
 
@@ -2750,13 +2750,13 @@
                     <span class="material-symbols-outlined text-sm">security</span> Kunci Keamanan Anti-Sharing
                   </p>
                   <p id="setup-pass-info-text">
-                    Saat ini Anda masih masuk menggunakan Token Bawaan (akses terkunci hanya 1 perangkat). Tentukan <b>6 Digit Angka PIN Pribadi</b> Anda di bawah ini (contoh: 190412). Setelah PIN disimpan, Token bawaan akan otomatis <b>HANGUS</b> dan Anda dapat masuk dengan mudah menggunakan Keypad Angka Modern!
+                    Saat ini Anda masih masuk menggunakan Token Bawaan (akses terkunci hanya 1 perangkat). Tentukan <b>6 Digit Angka PIN Pribadi</b> Anda di bawah ini (contoh: 482916). Setelah PIN disimpan, Token bawaan akan otomatis <b>HANGUS</b> dan Anda dapat masuk dengan mudah menggunakan Keypad Angka Modern!
                   </p>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 max-w-lg">
                   <div class="sm:col-span-2 relative flex items-center">
-                    <input type="password" id="new-pass-input" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="Masukkan 6 Digit Angka PIN Baru (Contoh: 190412)" class="w-full p-2.5 pr-10 border rounded-xl text-xs font-mono-data bg-surface text-on-surface tracking-wider outline-none focus:border-primary">
+                    <input type="password" id="new-pass-input" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="Masukkan 6 Digit Angka PIN Baru (Contoh: 482916)" class="w-full p-2.5 pr-10 border rounded-xl text-xs font-mono-data bg-surface text-on-surface tracking-wider outline-none focus:border-primary">
                     <button type="button" onclick="toggleNewPassVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface flex items-center justify-center p-1 cursor-pointer focus:outline-none" title="Lihat / Sembunyikan PIN">
                       <span class="material-symbols-outlined text-lg" id="new-pass-eye-icon">visibility</span>
                     </button>
@@ -4649,7 +4649,7 @@
       if (!pinInput) return;
       let newPin = pinInput.value.trim();
       if (!newPin || !/^[0-9]{4,6}$/.test(newPin)) {
-        alert("PIN Pribadi Baru harus berupa 4 hingga 6 digit angka (contoh: 190412)!");
+        alert("PIN Pribadi Baru harus berupa 4 hingga 6 digit angka (contoh: 482916)!");
         return;
       }
 
@@ -13907,7 +13907,7 @@ function formatReadableSheets(ss, parsed) {
       if (np && np.trim() !== "") { 
         let cleanPass = np.trim();
         if (!/^[0-9]{4,6}$/.test(cleanPass)) {
-          alert("PIN Akses Baru harus berupa 4 hingga 6 digit angka (contoh: 190412)!");
+          alert("PIN Akses Baru harus berupa 4 hingga 6 digit angka (contoh: 482916)!");
           return;
         }
         globalData.ownerPassword = cleanPass; 
@@ -15524,7 +15524,7 @@ function loginDemoByodb() {
     spreadsheetId: "1Demo_Spreadsheet_Keuanganku_PRO_2026",
     cloudUrl: "",
     pinStatus: "PIN_CHANGED",
-    personalPin: "190412",
+    personalPin: "246810",
     maxDevices: 12,
     deviceCount: 1
   };
