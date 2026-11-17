@@ -13993,7 +13993,7 @@ async function fetchGoogleUserProfile(accessToken) {
   try {
     let res = await fetchWithTimeout('https://www.googleapis.com/oauth2/v3/userinfo', {
       headers: { 'Authorization': 'Bearer ' + accessToken, 'Accept': 'application/json' }
-    }, 12000);
+    }, 5000);
     if (res.ok) {
       let data = await res.json();
       if (data && (data.email || data.name)) {
@@ -14009,7 +14009,7 @@ async function fetchGoogleUserProfile(accessToken) {
   try {
     let res = await fetchWithTimeout('https://www.googleapis.com/drive/v3/about?fields=user(displayName,emailAddress,photoLink)', {
       headers: { 'Authorization': 'Bearer ' + accessToken, 'Accept': 'application/json' }
-    }, 12000);
+    }, 5000);
     if (res.ok) {
       let data = await res.json();
       if (data && data.user) {
@@ -14023,7 +14023,7 @@ async function fetchGoogleUserProfile(accessToken) {
 
   // Lapis 3: Query Parameter (Bypass Safari Authorization Header Restrictions)
   try {
-    let res = await fetchWithTimeout(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${encodeURIComponent(accessToken)}`, {}, 12000);
+    let res = await fetchWithTimeout(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${encodeURIComponent(accessToken)}`, {}, 5000);
     if (res.ok) {
       let data = await res.json();
       if (data && (data.email || data.name)) {
