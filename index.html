@@ -2007,6 +2007,44 @@
         </div>
       </section>
 
+      <!-- KALENDER TRANSAKSI: lihat kapan arus kas tertentu terjadi dari bulan ke bulan -->
+      <section id="tx-calendar-section" class="w-full bg-white dark:bg-slate-800 border border-outline-variant rounded-3xl p-5 sm:p-7 shadow-sm space-y-4">
+        <div class="flex items-center justify-between gap-3 flex-wrap">
+          <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20">
+              <span class="material-symbols-outlined text-xl">calendar_month</span>
+            </div>
+            <div>
+              <h3 class="font-headline-md text-base sm:text-lg font-bold text-on-surface leading-tight">Kalender Transaksi</h3>
+              <p class="text-[10px] text-gray-500 dark:text-gray-400">Pilih jenis arus kas, lalu lihat tanggal terjadinya</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-1">
+            <button type="button" onclick="shiftTxCalendarMonth(-1)" class="w-8 h-8 rounded-xl hover:bg-surface-container dark:hover:bg-slate-700 flex items-center justify-center cursor-pointer" aria-label="Bulan sebelumnya"><span class="material-symbols-outlined text-lg">chevron_left</span></button>
+            <span id="tx-cal-month-label" class="min-w-[120px] text-center text-sm font-bold text-on-surface">-</span>
+            <button type="button" onclick="shiftTxCalendarMonth(1)" class="w-8 h-8 rounded-xl hover:bg-surface-container dark:hover:bg-slate-700 flex items-center justify-center cursor-pointer" aria-label="Bulan berikutnya"><span class="material-symbols-outlined text-lg">chevron_right</span></button>
+            <button type="button" onclick="goTxCalendarToday()" class="ml-1 px-2.5 py-1.5 rounded-xl text-[11px] font-bold border border-outline-variant hover:bg-surface-container dark:hover:bg-slate-700 cursor-pointer">Hari ini</button>
+          </div>
+        </div>
+
+        <!-- Filter jenis arus kas -->
+        <div id="tx-cal-filters" class="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1" style="scrollbar-width: thin;"></div>
+
+        <!-- Ringkasan bulan untuk filter terpilih -->
+        <div id="tx-cal-summary" class="text-xs text-gray-600 dark:text-gray-300"></div>
+
+        <!-- Grid kalender -->
+        <div>
+          <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold uppercase text-gray-400 mb-1">
+            <div>Sen</div><div>Sel</div><div>Rab</div><div>Kam</div><div>Jum</div><div>Sab</div><div>Min</div>
+          </div>
+          <div id="tx-cal-grid" class="grid grid-cols-7 gap-1"></div>
+        </div>
+
+        <!-- Daftar transaksi pada tanggal terpilih -->
+        <div id="tx-cal-daylist" class="space-y-2"></div>
+      </section>
+
       <footer class="pt-6 pb-2 text-center border-t border-outline-variant/50"><p class="text-[10px] text-gray-400 font-medium tracking-widest uppercase">Copyright © 2026 Sambarang Production</p></footer>
     </div>
 
@@ -11850,8 +11888,173 @@ function formatReadableSheets(ss, parsed) {
       `;
     }
 
-    function renderDashboard() { 
-      let sumInvest = 0, sumSinking = 0, sumGoals = 0; 
+    // ==============================================================================
+    // KALENDER TRANSAKSI (Beranda)
+    // ==============================================================================
+    const TX_CAL_FLOWS = [
+      { key: 'ALL', label: 'Semua', color: 'primary' },
+      { key: 'Income', label: 'Pemasukan', color: 'green' },
+      { key: 'Spending', label: 'Pengeluaran', color: 'red' },
+      { key: 'Invest / Savings', label: 'Tabungan / Investasi', color: 'blue' },
+      { key: 'Financial Goals', label: 'Financial Goals', color: 'sky' },
+      { key: 'Bayar Cicilan / Utang', label: 'Bayar Cicilan', color: 'rose' },
+      { key: 'Cicilan / Utang Baru', label: 'Utang Baru', color: 'orange' },
+      { key: 'Piutang Baru', label: 'Piutang Baru', color: 'amber' },
+      { key: 'Pelunasan Piutang', label: 'Pelunasan Piutang', color: 'emerald' },
+      { key: 'Transfer', label: 'Transfer', color: 'slate' },
+      { key: 'Dari Asset / Saving', label: 'Dari Aset', color: 'violet' }
+    ];
+    const TX_CAL_COLOR_RGB = { primary: '37,99,235', green: '22,163,74', red: '220,38,38', blue: '59,130,246', sky: '14,165,233', rose: '225,29,72', orange: '234,88,12', amber: '217,119,6', emerald: '5,150,105', slate: '100,116,139', violet: '124,58,237' };
+    let txCalState = { year: null, month: null, flow: 'ALL', selected: null };
+    try { let f = localStorage.getItem('KEUANGANKU_TXCAL_FLOW'); if (f && TX_CAL_FLOWS.some(x => x.key === f)) txCalState.flow = f; } catch(e) {}
+
+    function txCalDateKey(tx) {
+      if (!tx) return '';
+      let r = String(tx.rawDate || '');
+      if (/^\d{4}-\d{2}-\d{2}/.test(r)) return r.substring(0, 10);
+      let d = new Date(tx.dateTime || tx.date || '');
+      if (isNaN(d.getTime())) return '';
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+    function txCalCompact(n) {
+      if (typeof isBalanceMasked !== 'undefined' && isBalanceMasked) return '•••';
+      n = Math.abs(Number(n) || 0);
+      if (n >= 1e9) return (n / 1e9).toFixed(n >= 1e10 ? 0 : 1).replace('.', ',').replace(/,0$/, '') + 'M';
+      if (n >= 1e6) return (n / 1e6).toFixed(n >= 1e7 ? 0 : 1).replace('.', ',').replace(/,0$/, '') + 'jt';
+      if (n >= 1e3) return Math.round(n / 1e3) + 'rb';
+      return String(Math.round(n));
+    }
+    function shiftTxCalendarMonth(delta) {
+      let m = txCalState.month + delta, y = txCalState.year;
+      if (m < 0) { m = 11; y--; } else if (m > 11) { m = 0; y++; }
+      txCalState.month = m; txCalState.year = y; txCalState.selected = null;
+      renderTxCalendar();
+    }
+    function goTxCalendarToday() {
+      let now = new Date();
+      txCalState.year = now.getFullYear(); txCalState.month = now.getMonth(); txCalState.selected = getLocalDateStr();
+      renderTxCalendar();
+    }
+    function setTxCalendarFlow(key) {
+      txCalState.flow = key;
+      try { localStorage.setItem('KEUANGANKU_TXCAL_FLOW', key); } catch(e) {}
+      renderTxCalendar();
+    }
+    function selectTxCalendarDay(dateKey) {
+      txCalState.selected = (txCalState.selected === dateKey) ? null : dateKey;
+      renderTxCalendar();
+    }
+
+    function renderTxCalendar() {
+      let grid = document.getElementById('tx-cal-grid');
+      if (!grid) return;
+      let now = new Date();
+      if (txCalState.year === null) { txCalState.year = now.getFullYear(); txCalState.month = now.getMonth(); }
+      let y = txCalState.year, m = txCalState.month;
+      let flowDef = TX_CAL_FLOWS.find(f => f.key === txCalState.flow) || TX_CAL_FLOWS[0];
+      let rgb = TX_CAL_COLOR_RGB[flowDef.color] || TX_CAL_COLOR_RGB.primary;
+      let monthPrefix = y + '-' + String(m + 1).padStart(2, '0') + '-';
+      let monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+      let labelEl = document.getElementById('tx-cal-month-label');
+      if (labelEl) labelEl.textContent = monthNames[m] + ' ' + y;
+
+      // Tombol filter
+      let fBox = document.getElementById('tx-cal-filters');
+      if (fBox) {
+        fBox.innerHTML = TX_CAL_FLOWS.map(f => {
+          let active = f.key === txCalState.flow;
+          let c = TX_CAL_COLOR_RGB[f.color];
+          let style = active ? `background: rgb(${c}); color: #fff; border-color: rgb(${c});` : `border-color: rgba(${c},0.35); color: rgb(${c});`;
+          return `<button type="button" onclick="setTxCalendarFlow('${escapeForAttr(f.key)}')" class="shrink-0 px-3 py-1.5 rounded-full border text-[11px] font-bold whitespace-nowrap cursor-pointer transition-all active:scale-95" style="${style}">${escapeHtml(f.label)}</button>`;
+        }).join('');
+      }
+
+      // Kelompokkan transaksi bulan ini per tanggal
+      let byDay = {};
+      let monthTotal = 0, monthCount = 0, monthIn = 0, monthOut = 0;
+      (globalData.recentHistory || []).forEach(tx => {
+        let k = txCalDateKey(tx);
+        if (!k || k.indexOf(monthPrefix) !== 0) return;
+        if (flowDef.key !== 'ALL' && tx.cashflow !== flowDef.key) return;
+        let amt = Number(tx.amount) || 0;
+        if (!byDay[k]) byDay[k] = { total: 0, count: 0, inc: 0, out: 0, txs: [] };
+        byDay[k].total += amt; byDay[k].count++; byDay[k].txs.push(tx);
+        if (tx.cashflow === 'Income' || tx.cashflow === 'Pelunasan Piutang') { byDay[k].inc += amt; monthIn += amt; }
+        if (tx.cashflow === 'Spending' || tx.cashflow === 'Bayar Cicilan / Utang') { byDay[k].out += amt; monthOut += amt; }
+        monthTotal += amt; monthCount++;
+      });
+      let maxDay = Math.max(1, ...Object.values(byDay).map(d => flowDef.key === 'ALL' ? d.count : d.total));
+
+      // Ringkasan
+      let sumEl = document.getElementById('tx-cal-summary');
+      if (sumEl) {
+        if (monthCount === 0) {
+          sumEl.innerHTML = `<span class="text-gray-400">Tidak ada transaksi <b>${escapeHtml(flowDef.label)}</b> di ${monthNames[m]} ${y}.</span>`;
+        } else if (flowDef.key === 'ALL') {
+          sumEl.innerHTML = `<b>${monthCount}</b> transaksi · Masuk <b class="text-green-600 dark:text-green-400">${formatRp(monthIn)}</b> · Keluar <b class="text-red-600 dark:text-red-400">${formatRp(monthOut)}</b> · <b>${Object.keys(byDay).length}</b> hari aktif`;
+        } else {
+          sumEl.innerHTML = `<b>${escapeHtml(flowDef.label)}</b>: <b style="color: rgb(${rgb})">${formatRp(monthTotal)}</b> · ${monthCount} transaksi di ${Object.keys(byDay).length} hari`;
+        }
+      }
+
+      // Grid tanggal (minggu dimulai Senin)
+      let firstDow = (new Date(y, m, 1).getDay() + 6) % 7;
+      let daysInMonth = new Date(y, m + 1, 0).getDate();
+      let todayKey = getLocalDateStr();
+      let cells = [];
+      for (let i = 0; i < firstDow; i++) cells.push('<div></div>');
+      for (let d = 1; d <= daysInMonth; d++) {
+        let key = monthPrefix + String(d).padStart(2, '0');
+        let info = byDay[key];
+        let isToday = key === todayKey, isSel = key === txCalState.selected;
+        let bg = '', amountHtml = '';
+        if (info) {
+          let ratio = (flowDef.key === 'ALL' ? info.count : info.total) / maxDay;
+          bg = `background: rgba(${rgb}, ${(0.12 + ratio * 0.45).toFixed(2)});`;
+          amountHtml = flowDef.key === 'ALL'
+            ? `<span class="block text-[9px] font-bold leading-none mt-0.5">${info.count}×</span>`
+            : `<span class="block text-[9px] font-bold leading-none mt-0.5 truncate">${txCalCompact(info.total)}</span>`;
+        }
+        let ring = isSel ? 'ring-2 ring-offset-1 ring-primary dark:ring-offset-slate-800' : (isToday ? 'ring-1 ring-primary/60' : '');
+        cells.push(`<button type="button" onclick="selectTxCalendarDay('${key}')" class="aspect-square sm:aspect-auto sm:h-14 min-h-[42px] rounded-xl flex flex-col items-center justify-center text-xs ${info ? 'font-bold text-on-surface' : 'text-gray-400 hover:bg-surface-container dark:hover:bg-slate-700'} ${ring} cursor-pointer transition-all active:scale-95" style="${bg}" aria-label="${d} ${monthNames[m]}${info ? ', ' + info.count + ' transaksi' : ''}"><span>${d}</span>${amountHtml}</button>`);
+      }
+      grid.innerHTML = cells.join('');
+
+      // Daftar transaksi pada tanggal terpilih
+      let listEl = document.getElementById('tx-cal-daylist');
+      if (!listEl) return;
+      if (!txCalState.selected || txCalState.selected.indexOf(monthPrefix) !== 0) {
+        listEl.innerHTML = monthCount ? '<p class="text-[11px] text-gray-400 text-center">Ketuk tanggal berwarna untuk melihat rincian transaksinya.</p>' : '';
+        return;
+      }
+      let sel = byDay[txCalState.selected];
+      let selDate = new Date(txCalState.selected + 'T00:00:00');
+      let selLabel = selDate.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+      if (!sel) {
+        listEl.innerHTML = `<div class="p-3 rounded-2xl bg-surface-container-low dark:bg-slate-900/60 text-xs text-gray-500 text-center">${escapeHtml(selLabel)}: tidak ada transaksi ${flowDef.key === 'ALL' ? '' : '<b>' + escapeHtml(flowDef.label) + '</b>'}</div>`;
+        return;
+      }
+      let incomeLike = ['Income', 'Pelunasan Piutang', 'Dari Asset / Saving', 'Cicilan / Utang Baru'];
+      let rows = sel.txs.map(tx => {
+        let isIn = incomeLike.includes(tx.cashflow);
+        let isOut = tx.cashflow === 'Spending' || tx.cashflow === 'Bayar Cicilan / Utang';
+        let amtCls = isIn ? 'text-green-600 dark:text-green-400' : (isOut ? 'text-red-600 dark:text-red-400' : 'text-primary dark:text-blue-400');
+        let accounts = [tx.dariAcc, tx.keAcc].filter(a => a && a !== '- not applicable -').map(escapeHtml).join(' → ');
+        return `<div class="flex items-center justify-between gap-3 p-3 rounded-xl bg-surface-container-low dark:bg-slate-900/60 border border-outline-variant/50">
+          <div class="min-w-0">
+            <p class="text-xs font-bold text-on-surface truncate">${escapeHtml(tx.name || '-')}</p>
+            <p class="text-[10px] text-gray-500 truncate">${escapeHtml(tx.cashflow || '')} · ${escapeHtml(tx.category || '-')}${accounts ? ' · ' + accounts : ''}</p>
+          </div>
+          <span class="shrink-0 text-xs font-extrabold font-mono-data ${amtCls}">${formatRp(tx.amount)}</span>
+        </div>`;
+      }).join('');
+      listEl.innerHTML = `<div class="flex items-center justify-between text-xs font-bold text-on-surface pt-1"><span>${escapeHtml(selLabel)}</span><span class="text-gray-500 font-medium">${sel.count} transaksi</span></div>${rows}`;
+    }
+
+    function renderDashboard() {
+      // Kalender transaksi ikut diperbarui setiap kali Beranda digambar ulang
+      setTimeout(() => { try { renderTxCalendar(); } catch(eCal) { console.warn('renderTxCalendar:', eCal); } }, 0);
+      let sumInvest = 0, sumSinking = 0, sumGoals = 0;
       const calcNet = (obj) => { let total = 0; if(obj) Object.keys(obj).forEach(k => { let flow = getCategoryCashflowNet(k); let net = (obj[k].initial || 0) + flow.net - (obj[k].used || 0) - flow.used; if(net > 0) total += net; }); return total; }; 
       sumInvest = calcNet(globalData.investData); sumSinking = calcNet(globalData.sinkingData); sumGoals = calcNet(globalData.goalsData); 
       let elAsset = document.getElementById('dash-total-asset'); if (elAsset) elAsset.textContent = formatRp(sumInvest + sumSinking + sumGoals); 
