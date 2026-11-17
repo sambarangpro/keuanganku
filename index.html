@@ -2030,6 +2030,9 @@
         <!-- Filter jenis arus kas -->
         <div id="tx-cal-filters" class="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1" style="scrollbar-width: thin;"></div>
 
+        <!-- Kategori dari jenis arus kas terpilih (muncul setelah memilih jenis) -->
+        <div id="tx-cal-categories" class="hidden flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 -mt-2" style="scrollbar-width: thin;"></div>
+
         <!-- Ringkasan bulan untuk filter terpilih -->
         <div id="tx-cal-summary" class="text-xs text-gray-600 dark:text-gray-300"></div>
 
@@ -11905,7 +11908,33 @@ function formatReadableSheets(ss, parsed) {
       { key: 'Dari Asset / Saving', label: 'Dari Aset', color: 'violet' }
     ];
     const TX_CAL_COLOR_RGB = { primary: '37,99,235', green: '22,163,74', red: '220,38,38', blue: '59,130,246', sky: '14,165,233', rose: '225,29,72', orange: '234,88,12', amber: '217,119,6', emerald: '5,150,105', slate: '100,116,139', violet: '124,58,237' };
-    let txCalState = { year: null, month: null, flow: 'ALL', selected: null };
+    let txCalState = { year: null, month: null, flow: 'ALL', category: 'ALL', selected: null };
+
+    // Kategori untuk tiap jenis arus kas (sama dengan pilihan kategori di formulir transaksi)
+    function txCalCategoriesFor(flowKey) {
+      let g = globalData || {};
+      let keys = o => Object.keys(o || {});
+      let base = [];
+      switch (flowKey) {
+        case 'Income': base = (g.incomes || []).slice(); break;
+        case 'Spending': base = (g.spendings || []).slice(); break;
+        case 'Invest / Savings': base = keys(g.investData); break;
+        case 'Financial Goals': base = keys(g.goalsData); break;
+        case 'Bayar Cicilan / Utang': base = keys(g.debtData).concat(g.bills || []); break;
+        case 'Cicilan / Utang Baru': base = keys(g.receivablesData).concat(keys(g.debtData)); break;
+        case 'Piutang Baru':
+        case 'Pelunasan Piutang': base = keys(g.receivablesData); break;
+        case 'Dari Asset / Saving': base = keys(g.sinkingData).concat(keys(g.investData)); break;
+        default: return [];
+      }
+      // Tambahkan kategori lama yang masih dipakai di transaksi jenis ini
+      (g.recentHistory || []).forEach(tx => { if (tx && tx.cashflow === flowKey && tx.category) base.push(tx.category); });
+      return [...new Set(base.map(c => String(c).trim()).filter(c => c && c !== '- not applicable -'))];
+    }
+    function setTxCalendarCategory(cat) {
+      txCalState.category = cat;
+      renderTxCalendar();
+    }
     try { let f = localStorage.getItem('KEUANGANKU_TXCAL_FLOW'); if (f && TX_CAL_FLOWS.some(x => x.key === f)) txCalState.flow = f; } catch(e) {}
 
     function txCalDateKey(tx) {
@@ -11936,6 +11965,7 @@ function formatReadableSheets(ss, parsed) {
       renderTxCalendar();
     }
     function setTxCalendarFlow(key) {
+      if (txCalState.flow !== key) txCalState.category = 'ALL';
       txCalState.flow = key;
       try { localStorage.setItem('KEUANGANKU_TXCAL_FLOW', key); } catch(e) {}
       renderTxCalendar();
@@ -11969,6 +11999,34 @@ function formatReadableSheets(ss, parsed) {
         }).join('');
       }
 
+      // Baris kategori untuk jenis arus kas terpilih (+ jumlah transaksi per kategori bulan ini)
+      let catList = flowDef.key === 'ALL' ? [] : txCalCategoriesFor(flowDef.key);
+      if (txCalState.category !== 'ALL' && !catList.includes(txCalState.category)) txCalState.category = 'ALL';
+      let catBox = document.getElementById('tx-cal-categories');
+      if (catBox) {
+        if (!catList.length) {
+          catBox.classList.add('hidden');
+          catBox.innerHTML = '';
+        } else {
+          let catCount = {};
+          (globalData.recentHistory || []).forEach(tx => {
+            let k = txCalDateKey(tx);
+            if (k && k.indexOf(monthPrefix) === 0 && tx.cashflow === flowDef.key) catCount[tx.category] = (catCount[tx.category] || 0) + 1;
+          });
+          let chip = (val, label, count) => {
+            let active = txCalState.category === val;
+            let dim = (val !== 'ALL' && !count) ? 'opacity-50' : '';
+            let style = active ? `background: rgba(${rgb},0.15); border-color: rgb(${rgb}); color: rgb(${rgb});` : `border-color: rgba(${rgb},0.25);`;
+            let badge = count ? ` <span class="ml-0.5 px-1.5 rounded-full text-[9px]" style="background: rgba(${rgb},0.15); color: rgb(${rgb});">${count}</span>` : '';
+            return `<button type="button" onclick="setTxCalendarCategory('${escapeForAttr(val)}')" class="shrink-0 px-2.5 py-1 rounded-lg border text-[10px] font-semibold whitespace-nowrap cursor-pointer transition-all active:scale-95 text-gray-600 dark:text-gray-300 ${dim}" style="${style}">${escapeHtml(label)}${badge}</button>`;
+          };
+          let totalCount = Object.values(catCount).reduce((a, b) => a + b, 0);
+          catBox.innerHTML = chip('ALL', 'Semua kategori', totalCount) + catList.map(c => chip(c, c, catCount[c] || 0)).join('');
+          catBox.classList.remove('hidden');
+        }
+      }
+      let catActive = txCalState.category !== 'ALL';
+
       // Kelompokkan transaksi bulan ini per tanggal
       let byDay = {};
       let monthTotal = 0, monthCount = 0, monthIn = 0, monthOut = 0;
@@ -11976,6 +12034,7 @@ function formatReadableSheets(ss, parsed) {
         let k = txCalDateKey(tx);
         if (!k || k.indexOf(monthPrefix) !== 0) return;
         if (flowDef.key !== 'ALL' && tx.cashflow !== flowDef.key) return;
+        if (catActive && tx.category !== txCalState.category) return;
         let amt = Number(tx.amount) || 0;
         if (!byDay[k]) byDay[k] = { total: 0, count: 0, inc: 0, out: 0, txs: [] };
         byDay[k].total += amt; byDay[k].count++; byDay[k].txs.push(tx);
@@ -11987,13 +12046,14 @@ function formatReadableSheets(ss, parsed) {
 
       // Ringkasan
       let sumEl = document.getElementById('tx-cal-summary');
+      let filterLabel = escapeHtml(flowDef.label) + (catActive ? ' › ' + escapeHtml(txCalState.category) : '');
       if (sumEl) {
         if (monthCount === 0) {
-          sumEl.innerHTML = `<span class="text-gray-400">Tidak ada transaksi <b>${escapeHtml(flowDef.label)}</b> di ${monthNames[m]} ${y}.</span>`;
+          sumEl.innerHTML = `<span class="text-gray-400">Tidak ada transaksi <b>${filterLabel}</b> di ${monthNames[m]} ${y}.</span>`;
         } else if (flowDef.key === 'ALL') {
           sumEl.innerHTML = `<b>${monthCount}</b> transaksi · Masuk <b class="text-green-600 dark:text-green-400">${formatRp(monthIn)}</b> · Keluar <b class="text-red-600 dark:text-red-400">${formatRp(monthOut)}</b> · <b>${Object.keys(byDay).length}</b> hari aktif`;
         } else {
-          sumEl.innerHTML = `<b>${escapeHtml(flowDef.label)}</b>: <b style="color: rgb(${rgb})">${formatRp(monthTotal)}</b> · ${monthCount} transaksi di ${Object.keys(byDay).length} hari`;
+          sumEl.innerHTML = `<b>${filterLabel}</b>: <b style="color: rgb(${rgb})">${formatRp(monthTotal)}</b> · ${monthCount} transaksi di ${Object.keys(byDay).length} hari`;
         }
       }
 
