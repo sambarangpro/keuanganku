@@ -14095,7 +14095,7 @@ async function processGoogleLoginToken(accessToken) {
           deviceName: detectDeviceName()
         });
         window.__gLoginDiag = window.__gLoginDiag || [];
-        window.__gLoginDiag.push('S:' + (sv ? (sv.success ? (sv.isLicensed ? 'lic' : 'nolic') : (sv.needsReauth ? 'reauth' : 'fail')) : 'noresp'));
+        window.__gLoginDiag.push('S:' + (sv ? (sv.success ? (sv.isLicensed ? 'lic' : 'nolic') : (sv.needsReauth ? ('reauth(' + (sv.diag || '') + ')') : 'fail')) : 'noresp'));
         let svEmail = sv && ((sv.data && sv.data.email) || sv.email);
         if (svEmail) {
           detectedEmail = String(svEmail).trim().toLowerCase();
@@ -14322,7 +14322,8 @@ async function processGoogleLoginToken(accessToken) {
     // Skenario C: Kuota perangkat habis atau lisensi diblokir
     if (res && !res.success) {
       if (btnText) btnText.textContent = 'Masuk dengan Akun Google';
-      alert("Pemberitahuan Sistem:\n\n" + (res.message || "Gagal memverifikasi akun Google Anda."));
+      let diagLine = (res.diag ? ('server ' + res.diag + ' ') : '') + ((window.__gLoginDiag || []).join(' '));
+      alert("Pemberitahuan Sistem:\n\n" + (res.message || "Gagal memverifikasi akun Google Anda.") + (diagLine.trim() ? ("\n\nKode diagnosa: " + diagLine.trim() + ' | izin: ' + (window.__gGrantedScope || '-')) : ''));
       return;
     }
 

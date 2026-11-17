@@ -106,9 +106,14 @@ function clearFailures_(kind, id) {
  * menggunakan access token milik pengguna, BUKAN dari email yang dikirim aplikasi.
  * Mengembalikan email (huruf kecil) atau "" jika gagal.
  */
+// Alasan singkat kegagalan verifikasi Google terakhir (dikirim ke aplikasi untuk diagnosa; tanpa data rahasia)
+var LAST_GOOGLE_VERIFY_DIAG = "";
+
 function getVerifiedGoogleEmail_(accessToken) {
+  var diag = [];
   var tok = String(accessToken || "").trim();
-  if (!tok || tok.length > 4096) return "";
+  if (!tok) { LAST_GOOGLE_VERIFY_DIAG = "notoken"; return ""; }
+  if (tok.length > 4096) { LAST_GOOGLE_VERIFY_DIAG = "toolong"; return ""; }
   // Opsional: isi Script Property GOOGLE_CLIENT_ID agar hanya token dari aplikasi ini yang diterima
   var expectedClientId = "";
   try { expectedClientId = PropertiesService.getScriptProperties().getProperty("GOOGLE_CLIENT_ID") || ""; } catch(e) {}
@@ -117,31 +122,56 @@ function getVerifiedGoogleEmail_(accessToken) {
     var resp = UrlFetchApp.fetch("https://oauth2.googleapis.com/tokeninfo?access_token=" + encodeURIComponent(tok), {
       muteHttpExceptions: true
     });
-    if (resp.getResponseCode() === 200) {
+    var code = resp.getResponseCode();
+    diag.push("TI:" + code);
+    if (code === 200) {
       var info = JSON.parse(resp.getContentText());
       var verified = (info.email_verified === true || info.email_verified === "true");
       var audOk = !expectedClientId || info.aud === expectedClientId || info.azp === expectedClientId;
       if (info && info.email && verified && audOk) {
+        LAST_GOOGLE_VERIFY_DIAG = diag.join(" ");
         return String(info.email).trim().toLowerCase();
       }
-      if (!audOk) return "";
+      diag.push(!info.email ? "TI:noemail" : (!verified ? "TI:unverified" : "TI:aud"));
+      if (!audOk) { LAST_GOOGLE_VERIFY_DIAG = diag.join(" "); return ""; }
     }
-  } catch(e) {}
+  } catch(e) {
+    diag.push("TI:ex:" + String(e && e.message || e).substring(0, 80));
+  }
 
   // Cadangan: endpoint userinfo (jika tokeninfo sedang bermasalah)
-  if (expectedClientId) return ""; // jika client ID dikunci, hanya tokeninfo yang bisa memeriksa audiens
+  if (expectedClientId) { LAST_GOOGLE_VERIFY_DIAG = diag.join(" "); return ""; }
   try {
     var resp2 = UrlFetchApp.fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
       headers: { "Authorization": "Bearer " + tok },
       muteHttpExceptions: true
     });
-    if (resp2.getResponseCode() !== 200) return "";
-    var info2 = JSON.parse(resp2.getContentText());
-    if (info2 && info2.email && (info2.email_verified === true || info2.email_verified === "true")) {
-      return String(info2.email).trim().toLowerCase();
+    var code2 = resp2.getResponseCode();
+    diag.push("UI:" + code2);
+    if (code2 === 200) {
+      var info2 = JSON.parse(resp2.getContentText());
+      if (info2 && info2.email && (info2.email_verified === true || info2.email_verified === "true")) {
+        LAST_GOOGLE_VERIFY_DIAG = diag.join(" ");
+        return String(info2.email).trim().toLowerCase();
+      }
+      diag.push(!info2.email ? "UI:noemail" : "UI:unverified");
     }
-  } catch(e2) {}
+  } catch(e2) {
+    diag.push("UI:ex:" + String(e2 && e2.message || e2).substring(0, 80));
+  }
+  LAST_GOOGLE_VERIFY_DIAG = diag.join(" ");
   return "";
+}
+
+/**
+ * JALANKAN SEKALI DI EDITOR APPS SCRIPT (pilih fungsi ini di menu atas lalu klik "Jalankan").
+ * Memicu jendela izin Google agar server boleh menghubungi Google untuk memeriksa akun pengguna
+ * (diperlukan untuk "Masuk dengan Google"). Aman dijalankan berulang kali.
+ */
+function izinkanAksesInternet() {
+  var resp = UrlFetchApp.fetch("https://oauth2.googleapis.com/tokeninfo?access_token=cek-izin", { muteHttpExceptions: true });
+  Logger.log("✅ Server sudah boleh menghubungi Google (kode uji: " + resp.getResponseCode() + ", 400 = normal).");
+  return "BERHASIL: izin akses internet aktif. Sekarang Terapkan > Kelola penerapan > Versi baru.";
 }
 
 /** Cari baris token & cek apakah deviceId sudah terdaftar di lisensi tersebut. */
@@ -3009,7 +3039,7 @@ function verifyGoogleAccount(params) {
   // Email WAJIB diverifikasi langsung ke Google. Email kiriman aplikasi tidak dipercaya.
   var emailInput = getVerifiedGoogleEmail_(params.googleAccessToken);
   if (!emailInput) {
-    return { success: false, needsReauth: true, message: "Akun Google tidak dapat diverifikasi. Silakan masuk ulang dengan Google (pastikan izin email dicentang)." };
+    return { success: false, needsReauth: true, message: "Akun Google tidak dapat diverifikasi. Silakan masuk ulang dengan Google (pastikan izin email dicentang).", diag: LAST_GOOGLE_VERIFY_DIAG };
   }
   if (!deviceId) {
     return { success: false, message: "Device ID tidak terdeteksi oleh sistem." };
@@ -3169,7 +3199,7 @@ function bindGoogleAccount(params) {
   // Email diambil dari Google langsung, bukan dari kiriman aplikasi
   var emailInput = getVerifiedGoogleEmail_(params.googleAccessToken);
   if (!emailInput) {
-    return { success: false, needsReauth: true, message: "Akun Google tidak dapat diverifikasi. Silakan masuk ulang dengan Google." };
+    return { success: false, needsReauth: true, message: "Akun Google tidak dapat diverifikasi. Silakan masuk ulang dengan Google.", diag: LAST_GOOGLE_VERIFY_DIAG };
   }
 
   var ss = getSpreadsheet();
