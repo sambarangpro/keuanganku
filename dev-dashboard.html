@@ -5318,6 +5318,11 @@ Copyright © 2026 Sambarang Production`;
         ? urlInput.value.trim() 
         : ((cachedSalesSettings && cachedSalesSettings.orderFormUrl) || 'https://sambarangpro.github.io/keuanganku/pesan.html');
       if (!base) base = 'https://sambarangpro.github.io/keuanganku/pesan.html';
+      // Alamat server Apps Script bukan halaman form (dulu sering tersimpan keliru di pengaturan)
+      if (/script\.google(usercontent)?\.com/i.test(base)) {
+        base = 'https://sambarangpro.github.io/keuanganku/pesan.html';
+        if (urlInput) urlInput.value = base;
+      }
 
       // Pastikan menyertakan apiUrl aktif sebagai query parameter agar di HP/publik langsung terhubung ke backend master
       if (currentApiUrl && currentApiUrl.startsWith('https://')) {
