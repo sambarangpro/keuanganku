@@ -13955,6 +13955,7 @@ async function handleGoogleSignIn() {
         }
 
         if (tokenResponse.access_token) {
+          window.__gGrantedScope = String(tokenResponse.scope || '').replace(/https:\/\/www\.googleapis\.com\/auth\//g, '');
           await processGoogleLoginToken(tokenResponse.access_token);
         }
       },
@@ -13989,11 +13990,16 @@ async function fetchGoogleUserProfile(accessToken) {
   let profile = { email: "", name: "", picture: "icon-96.png" };
   if (!accessToken) return profile;
 
+  // Catatan diagnosa singkat (ditampilkan jika gagal), mis. "U1:401 D2:timeout U3:err"
+  window.__gLoginDiag = window.__gLoginDiag || [];
+  const diagCode = (e) => (e && e.name === 'AbortError') ? 'timeout' : 'err';
+
   // Lapis 1: Google UserInfo API (v3)
   try {
     let res = await fetchWithTimeout('https://www.googleapis.com/oauth2/v3/userinfo', {
       headers: { 'Authorization': 'Bearer ' + accessToken, 'Accept': 'application/json' }
     }, 5000);
+    window.__gLoginDiag.push('U1:' + res.status);
     if (res.ok) {
       let data = await res.json();
       if (data && (data.email || data.name)) {
@@ -14001,15 +14007,17 @@ async function fetchGoogleUserProfile(accessToken) {
         profile.name = data.name || profile.email;
         profile.picture = data.picture || profile.picture;
         if (profile.email) return profile;
+        window.__gLoginDiag.push('U1:noemail');
       }
     }
-  } catch(e) {}
+  } catch(e) { window.__gLoginDiag.push('U1:' + diagCode(e)); }
 
-  // Lapis 2: Google Drive About API (Sangat kompatibel & kebal di Safari iPad/iPhone)
+  // Lapis 2: Google Drive About API
   try {
     let res = await fetchWithTimeout('https://www.googleapis.com/drive/v3/about?fields=user(displayName,emailAddress,photoLink)', {
       headers: { 'Authorization': 'Bearer ' + accessToken, 'Accept': 'application/json' }
     }, 5000);
+    window.__gLoginDiag.push('D2:' + res.status);
     if (res.ok) {
       let data = await res.json();
       if (data && data.user) {
@@ -14019,11 +14027,12 @@ async function fetchGoogleUserProfile(accessToken) {
         if (profile.email) return profile;
       }
     }
-  } catch(e) {}
+  } catch(e) { window.__gLoginDiag.push('D2:' + diagCode(e)); }
 
   // Lapis 3: Query Parameter (Bypass Safari Authorization Header Restrictions)
   try {
     let res = await fetchWithTimeout(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${encodeURIComponent(accessToken)}`, {}, 5000);
+    window.__gLoginDiag.push('U3:' + res.status);
     if (res.ok) {
       let data = await res.json();
       if (data && (data.email || data.name)) {
@@ -14033,8 +14042,7 @@ async function fetchGoogleUserProfile(accessToken) {
         if (profile.email) return profile;
       }
     }
-  } catch(e) {}
-
+  } catch(e) { window.__gLoginDiag.push('U3:' + diagCode(e)); }
   return profile;
 }
 
@@ -14067,6 +14075,7 @@ async function findExistingByodbSpreadsheet(accessToken) {
 async function processGoogleLoginToken(accessToken) {
   let btnText = document.getElementById('btn-google-sign-in-text');
   if (btnText) btnText.textContent = 'Memverifikasi Lisensi...';
+  window.__gLoginDiag = [];
 
   try {
     // 1. Ambil profil pengguna dari Google (dengan 3 lapis fallback)
@@ -14085,12 +14094,16 @@ async function processGoogleLoginToken(accessToken) {
           deviceId: getOrCreateDeviceId(),
           deviceName: detectDeviceName()
         });
+        window.__gLoginDiag = window.__gLoginDiag || [];
+        window.__gLoginDiag.push('S:' + (sv ? (sv.success ? (sv.isLicensed ? 'lic' : 'nolic') : (sv.needsReauth ? 'reauth' : 'fail')) : 'noresp'));
         let svEmail = sv && ((sv.data && sv.data.email) || sv.email);
         if (svEmail) {
           detectedEmail = String(svEmail).trim().toLowerCase();
           if (profile && !profile.name) profile.name = detectedEmail;
         }
       } catch(eSv) {
+        window.__gLoginDiag = window.__gLoginDiag || [];
+        window.__gLoginDiag.push('S:' + ((eSv && eSv.name === 'AbortError') ? 'timeout' : 'err'));
         console.warn('Cadangan baca email via server gagal:', eSv);
       }
     }
@@ -14098,7 +14111,7 @@ async function processGoogleLoginToken(accessToken) {
     if (!detectedEmail) {
       // Jangan pernah mengisi email "pemilik" secara otomatis. Minta pengguna login ulang.
       if (btnText) btnText.textContent = 'Masuk dengan Akun Google';
-      alert("Email akun Google tidak dapat dibaca.\n\nCoba langkah berikut:\n1. Pastikan internet stabil, lalu masuk lagi.\n2. Di jendela izin Google, pilih 'Lanjutkan' / 'Izinkan semua'.\n3. Jika memakai Safari di iPad/iPhone: Pengaturan > Safari > matikan sementara 'Cegah Pelacakan Lintas Situs', lalu coba lagi.\n\nAtau gunakan 'Tautkan via Barcode (QR)' dari HP utama Anda.");
+      alert("Email akun Google tidak dapat dibaca.\n\nCoba langkah berikut:\n1. Pastikan internet stabil, lalu masuk lagi.\n2. Di jendela izin Google, pilih 'Lanjutkan' / 'Izinkan semua'.\n3. Jika memakai Safari di iPad/iPhone: Pengaturan > Safari > matikan sementara 'Cegah Pelacakan Lintas Situs', lalu coba lagi.\n\nAtau gunakan 'Tautkan via Barcode (QR)' dari HP utama Anda.\n\nKode diagnosa: " + (window.__gLoginDiag || []).join(' ') + ' | izin: ' + (window.__gGrantedScope || '-'));
       return;
     }
 
