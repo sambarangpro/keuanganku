@@ -532,6 +532,14 @@
     #menu-wallet-history-range {
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
     }
+
+    /* Kartu layar masuk (PIN / Google / Barcode) diperbesar di tablet, iPad & laptop */
+    @media (min-width: 700px) and (min-height: 760px) {
+      .splash-card-zoom { zoom: 1.3; }
+    }
+    @media (min-width: 1000px) and (min-height: 900px) {
+      .splash-card-zoom { zoom: 1.45; }
+    }
   </style>
 </head>
 <body class="bg-background text-on-surface font-body-md min-h-screen pb-32">
@@ -550,7 +558,7 @@
       <div class="dither-overlay"></div>
     </div>
 
-    <div class="relative z-10 text-center space-y-4 p-5 sm:p-6 max-w-xs sm:max-w-sm w-full bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl my-auto">
+    <div class="splash-card-zoom relative z-10 text-center space-y-4 p-5 sm:p-6 max-w-xs sm:max-w-sm w-full bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl my-auto">
       <!-- Minimalist Wallet Logo Box -->
       <div class="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center mx-auto shadow-xl p-2.5 animate-pulse-gentle">
         <svg class="w-full h-full text-white" viewBox="110 115 295 282" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -568,7 +576,7 @@
       <!-- 1. VIEW WHATSAPP WEB STYLE (PC/iPad TAMPILKAN QR, HP UTAMA SCAN) -->
       <div id="splash-qr-pair-section" class="pt-1 space-y-3 hidden">
         <!-- Kotak QR Code -->
-        <div class="relative w-[190px] h-[190px] mx-auto bg-white p-2 rounded-2xl shadow-xl border-2 border-white/40 flex items-center justify-center">
+        <div class="relative w-[226px] h-[226px] mx-auto bg-white p-2 rounded-2xl shadow-xl border-2 border-white/40 flex items-center justify-center">
           <div id="splash-qrcode-container" class="w-full h-full flex items-center justify-center"></div>
           <div id="splash-qr-reload-overlay" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center p-3 text-center space-y-2">
             <span class="material-symbols-outlined text-amber-400 text-3xl">refresh</span>
@@ -4986,30 +4994,33 @@
 
       // 2. Buat URL / Payload QR Code WhatsApp Style
       let baseUrl = getAppPairBaseUrl();
-      let qrPayloadUrl = `${baseUrl}?pairSessionId=${encodeURIComponent(sessionId)}&devId=${encodeURIComponent(devId)}&devName=${encodeURIComponent(devName)}`;
+      // Isi barcode dibuat SINGKAT agar kotak-kotaknya renggang & mudah dibaca kamera:
+      // cukup ID sesi + nama perangkat (server sudah tahu ID perangkat dari sesi ini).
+      // Alamat server hanya disertakan jika berbeda dari server resmi bawaan.
+      let qrPayloadUrl = `${baseUrl}?pairSessionId=${encodeURIComponent(sessionId)}&devName=${encodeURIComponent(String(devName).substring(0, 24))}`;
       let masterUrl = getMasterLicenseServerUrl();
-      if (masterUrl && !masterUrl.includes("YOUR_SCRIPT_ID")) {
+      if (masterUrl && !masterUrl.includes("YOUR_SCRIPT_ID") && masterUrl !== DEFAULT_MASTER_LICENSE_URL) {
         qrPayloadUrl += `&masterUrl=${encodeURIComponent(masterUrl)}`;
       }
 
-      // 3. Render QR Code
+      // 3. Render QR Code (lebih besar)
       if (qrContainer) {
         qrContainer.innerHTML = '';
         try {
           if (typeof QRCode !== 'undefined') {
             new QRCode(qrContainer, {
               text: qrPayloadUrl,
-              width: 175,
-              height: 175,
-              colorDark: "#020617",
+              width: 208,
+              height: 208,
+              colorDark: "#000000",
               colorLight: "#ffffff",
               correctLevel: QRCode.CorrectLevel.M
             });
           } else {
-            qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=175x175&data=${encodeURIComponent(qrPayloadUrl)}" class="w-[175px] h-[175px] mx-auto rounded-lg shadow-sm" alt="QR Code WhatsApp Style">`;
+            qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=208x208&data=${encodeURIComponent(qrPayloadUrl)}" class="w-[208px] h-[208px] mx-auto rounded-lg shadow-sm" alt="QR Code WhatsApp Style">`;
           }
         } catch(err) {
-          qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=175x175&data=${encodeURIComponent(qrPayloadUrl)}" class="w-[175px] h-[175px] mx-auto rounded-lg shadow-sm" alt="QR Code WhatsApp Style">`;
+          qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=208x208&data=${encodeURIComponent(qrPayloadUrl)}" class="w-[208px] h-[208px] mx-auto rounded-lg shadow-sm" alt="QR Code WhatsApp Style">`;
         }
       }
 
@@ -5362,7 +5373,8 @@
         }
 
         if (!activeQrScannerInstance) {
-          activeQrScannerInstance = new Html5Qrcode("qr-camera-reader");
+          // Pakai pembaca barcode bawaan perangkat jika tersedia (lebih cepat & lebih tahan cahaya/layar)
+          activeQrScannerInstance = new Html5Qrcode("qr-camera-reader", { experimentalFeatures: { useBarCodeDetectorIfSupported: true } });
         }
 
         const config = {
