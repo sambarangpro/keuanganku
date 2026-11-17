@@ -8157,6 +8157,25 @@ function formatReadableSheets(ss, parsed) {
       }
     }
 
+    // Salinan otomatis ke Google Drive milik pengguna (jika masuk dengan Google & sesi masih berlaku).
+    // Menjaga salinan Drive tetap baru (termasuk kunci Cloud), sehingga "Masuk dengan Google"
+    // di perangkat baru langsung mendapat data terbaru.
+    let driveBackupTimer = null;
+    function scheduleDriveBackup() {
+      try {
+        if (localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true') return;
+        let gUser = (typeof getGoogleSession === 'function') ? getGoogleSession() : null;
+        let sheetId = localStorage.getItem('KEUANGANKU_BYODB_SHEET_ID');
+        if (!gUser || !gUser.accessToken || !sheetId || typeof writeGlobalDataToByodbSheet !== 'function') return;
+        if (String(gUser.accessToken).indexOf('demo_') === 0) return;
+        if (gUser.tokenExpiresAt && Date.now() > Number(gUser.tokenExpiresAt) - 60000) return; // sesi Google habis: lewati diam-diam
+        clearTimeout(driveBackupTimer);
+        driveBackupTimer = setTimeout(() => {
+          writeGlobalDataToByodbSheet(gUser.accessToken, sheetId).catch(e => console.warn('Salinan Drive otomatis dilewati:', e));
+        }, 8000);
+      } catch(e) {}
+    }
+
     async function saveStorageData() {
       globalData.lastUpdated = Date.now();
       lastSyncTimestamp = Date.now();
@@ -8170,7 +8189,10 @@ function formatReadableSheets(ss, parsed) {
         setSyncStatus('synced', 'Mode Demo (Cloud Dijeda)');
         return;
       }
-      
+
+      // Perbarui juga salinan di Google Drive pengguna (otomatis, beberapa detik setelah perubahan terakhir)
+      scheduleDriveBackup();
+
       if (globalData.cloudUrl && globalData.cloudUrl.startsWith("http")) {
         let lic = getSavedLicense();
         if (lic && lic.pinStatus === 'USING_TOKEN') {
@@ -14239,6 +14261,19 @@ async function processGoogleLoginToken(accessToken) {
         }
       }
 
+      // Jika salinan Drive membawa kunci Cloud Script, langsung ambil data TERBARU dari Cloud Script
+      // (salinan Drive bisa lebih lama dari data di perangkat lain), lalu perbarui salinan Drive.
+      let keyedCloudNow = Boolean(globalData && globalData.cloudUrl && getKeyFromCloudUrl(globalData.cloudUrl));
+      if (keyedCloudNow) {
+        if (btnText) btnText.textContent = 'Menyinkronkan data terbaru...';
+        try { lastSyncTimestamp = 0; await syncWithCloud(false); } catch(eSync) { console.warn('Sinkron setelah login Google:', eSync); }
+        if (currentSheetId) {
+          try { await writeGlobalDataToByodbSheet(accessToken, currentSheetId); } catch(eW) {}
+        }
+      }
+      // Akun ini memakai Cloud Script, tapi kuncinya belum ada di perangkat ini
+      let needsQrForCloud = !keyedCloudNow && Boolean(res.data.cloudUrl && String(res.data.cloudUrl).startsWith('http'));
+
       playSuccessSound();
       showSyncToast("✓ Masuk Akun Google: " + googleUser.email);
       hideSplashScreenAndTriggerAlerts();
@@ -14249,7 +14284,11 @@ async function processGoogleLoginToken(accessToken) {
       updateCloudSyncLockUI(res.data);
       renderSetupPasswordCard(res.data);
 
-      alert(`Selamat datang kembali, ${res.data.buyerName}!\n\nAplikasi Keuanganku PRO terbuka menggunakan database pribadi di Google Drive Anda (${googleUser.email}).\n\nBiaya Server: $0 (100% Milik Anda).`);
+      if (needsQrForCloud) {
+        alert(`Selamat datang kembali, ${res.data.buyerName}!\n\nAnda sudah masuk dengan ${googleUser.email}.\n\nPENTING: data terbaru Anda tersimpan di Cloud Script dan perangkat ini belum memiliki kuncinya. Agar data dari perangkat lain ikut muncul:\n\nDi HP utama, buka menu tautkan perangkat lalu Scan QR dari perangkat ini (cukup sekali).`);
+      } else {
+        alert(`Selamat datang kembali, ${res.data.buyerName}!\n\nAplikasi Keuanganku PRO terbuka menggunakan database pribadi Anda (${googleUser.email}).`);
+      }
       return;
     }
 
@@ -14723,7 +14762,10 @@ async function pullDataFromByodbSpreadsheet(accessToken, sheetId) {
             let accCount = (parsed.accounts || []).length;
             if (txCount > 0 || accCount > 1 || (parsed.accounts && parsed.accounts.some(a => a.balance > 0))) {
               globalData = parsed;
-              saveStorageData();
+              // Simpan di perangkat saja (JANGAN langsung diunggah dengan tanda waktu baru):
+              // salinan Drive bisa lebih lama dari Cloud; sinkron berikutnya akan menggabungkannya dengan aman.
+              localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData));
+              try { populateFormDropdowns(); populateReportFilterCategories(); } catch(eP) {}
               updateTotalBalance();
               if (typeof renderTransactionHistory === 'function') renderTransactionHistory();
               if (typeof renderBudgetSection === 'function') renderBudgetSection();
