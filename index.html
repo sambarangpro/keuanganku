@@ -4285,6 +4285,105 @@
       return fetchWithTimeout(url, options, 45000);
     }
 
+    // ==============================================================================
+    // SINKRON LEWAT GOOGLE DRIVE PENGGUNA ("drive://ID_SPREADSHEET")
+    // Pengganti Cloud Script untuk pembeli baru: cukup "Masuk dengan Google".
+    // Mesin sinkron yang sama dipakai; hanya tempat penyimpanannya yang berbeda.
+    // ==============================================================================
+    function isDriveCloudUrl(u) { return typeof u === 'string' && u.indexOf('drive://') === 0; }
+    function isCloudSyncUrl(u) { return typeof u === 'string' && (u.indexOf('http') === 0 || isDriveCloudUrl(u)); }
+    function driveSheetIdFromUrl(u) { return String(u || '').replace('drive://', '').split(/[?&#]/)[0]; }
+
+    // Aktifkan sinkron lewat Google Drive jika pengguna BELUM memakai Cloud Script (pembeli lama tidak berubah)
+    function enableDriveSyncIfNoCloud(sheetId) {
+      if (!sheetId || !globalData) return false;
+      if (globalData.cloudUrl && String(globalData.cloudUrl).indexOf('http') === 0) return false;
+      let target = 'drive://' + sheetId;
+      if (globalData.cloudUrl === target) return true;
+      globalData.cloudUrl = target;
+      try { localStorage.setItem('KEUANGANKU_CLOUD_URL', target); localStorage.setItem('KEUANGANKU_DB_V21', JSON.stringify(globalData)); } catch(e) {}
+      return true;
+    }
+
+    // Token akses Google yang masih berlaku (izin Google dari browser berlaku ±1 jam)
+    function getValidGoogleToken() {
+      let s = (typeof getGoogleSession === 'function') ? getGoogleSession() : null;
+      if (!s || !s.accessToken || String(s.accessToken).indexOf('demo_') === 0) return null;
+      if (s.tokenExpiresAt && Date.now() > Number(s.tokenExpiresAt) - 60000) return null;
+      return s.accessToken;
+    }
+
+    // Perpanjang izin Google dengan 1 ketukan (biasanya tanpa login ulang). HARUS dipanggil langsung dari ketukan pengguna.
+    function requestGoogleTokenRefresh(onDone) {
+      try {
+        if (!window.google || !google.accounts || !google.accounts.oauth2) { if (onDone) onDone(false); return; }
+        let s = getGoogleSession() || {};
+        let client = google.accounts.oauth2.initTokenClient({
+          client_id: getGoogleClientId(),
+          scope: 'https://www.googleapis.com/auth/drive.file openid email profile',
+          prompt: '',
+          hint: s.email || undefined,
+          callback: (resp) => {
+            if (resp && resp.access_token) {
+              s.accessToken = resp.access_token;
+              s.tokenExpiresAt = Date.now() + ((Number(resp.expires_in) || 3600) * 1000) - 60000;
+              saveGoogleSession(s);
+              if (onDone) onDone(true);
+            } else if (onDone) onDone(false);
+          },
+          error_callback: () => { if (onDone) onDone(false); }
+        });
+        client.requestAccessToken({ prompt: '' });
+      } catch(e) { console.warn('Perpanjang izin Google gagal:', e); if (onDone) onDone(false); }
+    }
+
+    // Baca dokumen database dari Google Sheet pengguna TANPA langsung menerapkannya
+    async function readByodbDoc(token, sheetId) {
+      let res = await driveFetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Database_Keuangan!A1:Z1`, { headers: { 'Authorization': 'Bearer ' + token } });
+      if (res.status === 401 || res.status === 403) return { __needsGoogle: true };
+      if (!res.ok) {
+        res = await driveFetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/A1:Z1`, { headers: { 'Authorization': 'Bearer ' + token } });
+        if (res.status === 401 || res.status === 403) return { __needsGoogle: true };
+        if (!res.ok) throw new Error('Google Sheets ' + res.status);
+      }
+      let json = await res.json();
+      let row = (json && json.values && json.values[0]) ? json.values[0] : [];
+      let fullStr = row.length >= 2 ? row.slice(1).join('') : (row[0] && String(row[0]).trim().charAt(0) === '{' ? row[0] : '');
+      if (!fullStr) return null;
+      return JSON.parse(fullStr);
+    }
+
+    function jsonResponse(obj) {
+      return new Response(JSON.stringify(obj), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    // Pengganti fetch() untuk alamat sinkron: http(s) -> Cloud Script, drive:// -> Google Drive pengguna
+    async function cloudFetch(url, options = {}) {
+      if (!isDriveCloudUrl(url)) return fetch(url, options);
+      let sheetId = driveSheetIdFromUrl(url);
+      let token = getValidGoogleToken();
+      if (!token) return jsonResponse({ status: 'needs_google' });
+      if (String(options.method || 'GET').toUpperCase() === 'POST') {
+        // Yang ditulis selalu data aplikasi saat ini (globalData), sama seperti isi body pemanggil
+        try {
+          await writeGlobalDataToByodbSheet(token, sheetId);
+        } catch(e) {
+          if (String(e && e.message || e).indexOf('AUTH_REQUIRED') !== -1) {
+            let s = getGoogleSession(); if (s) { s.tokenExpiresAt = 1; saveGoogleSession(s); }
+            return jsonResponse({ status: 'needs_google' });
+          }
+          throw e;
+        }
+        return jsonResponse({ status: 'success' });
+      }
+      let doc = await readByodbDoc(token, sheetId);
+      if (doc && doc.__needsGoogle) {
+        let s = getGoogleSession(); if (s) { s.tokenExpiresAt = 1; saveGoogleSession(s); }
+        return jsonResponse({ status: 'needs_google' });
+      }
+      return jsonResponse(doc || { status: 'empty', accounts: [], recentHistory: [] });
+    }
+
     // Helper komunikasi API lisensi klien yang kebal CORS
     async function callClientLicenseApi(payload) {
       let apiUrl = (DEFAULT_MASTER_LICENSE_URL && !DEFAULT_MASTER_LICENSE_URL.includes("YOUR_SCRIPT_ID"))
@@ -5125,7 +5224,7 @@
           showSyncToast("🎉 Berhasil Ditautkan dari HP Utama!");
 
           // Otomatis tarik database dari Cloud ke perangkat baru
-          if (globalData.cloudUrl && globalData.cloudUrl.startsWith("http")) {
+          if (isCloudSyncUrl(globalData.cloudUrl)) {
             showSyncToast("⚡ Mengunduh database transaksi dari Cloud...");
             if (typeof autoPullDatabaseFromCloud === 'function') {
               autoPullDatabaseFromCloud(globalData.cloudUrl);
@@ -5687,7 +5786,7 @@
 
           // Sinkronisasi cloudUrl dari server jika lokal belum memilikinya
           if (res.data.cloudUrl && res.data.cloudUrl.startsWith("http")) {
-            if (!globalData.cloudUrl || !globalData.cloudUrl.startsWith("http")) {
+            if (!isCloudSyncUrl(globalData.cloudUrl)) {
               globalData.cloudUrl = resolveCloudUrlFromServer(res.data.cloudUrl);
               localStorage.setItem("KEUANGANKU_CLOUD_URL", globalData.cloudUrl);
               saveStorageData();
@@ -5705,7 +5804,7 @@
           showSyncToast("🎉 Perangkat Berhasil Terhubung Otomatis!");
 
           // Otomatis tarik database dari Cloud ke perangkat baru jika ada cloudUrl
-          if (globalData.cloudUrl && globalData.cloudUrl.startsWith("http")) {
+          if (isCloudSyncUrl(globalData.cloudUrl)) {
             showSyncToast("⚡ Mengunduh database transaksi dari Cloud...");
             if (typeof autoPullDatabaseFromCloud === 'function') {
               autoPullDatabaseFromCloud(globalData.cloudUrl);
@@ -7292,11 +7391,29 @@ function hideSplashScreenAndTriggerAlerts() {
 
       let lic = getSavedLicense();
 
-      if (!globalData.cloudUrl || !globalData.cloudUrl.startsWith("http")) {
+      if (!isCloudSyncUrl(globalData.cloudUrl)) {
         setSyncStatus('offline', 'Cloud Nonaktif');
         if (isManualClick) {
           alert("Kunci Cloud belum diatur.\nSilakan masukkan Link Web App Google Sheets Anda di menu Setup.");
           navTo('setup');
+        }
+        return;
+      }
+
+      // Sinkron lewat Google Drive: izin Google dari browser hanya ±1 jam.
+      // Saat pengguna MENGETUK tombol sinkron, perpanjang izinnya dulu (harus langsung dari ketukan, tanpa menunggu).
+      if (isDriveCloudUrl(globalData.cloudUrl) && !getValidGoogleToken()) {
+        if (isManualClick) {
+          setSyncStatus('syncing', 'Menyambungkan Google...');
+          requestGoogleTokenRefresh((ok) => {
+            if (ok) { lastSyncTimestamp = 0; syncWithCloud(false); }
+            else {
+              setSyncStatus('error', 'Ketuk ☁ untuk sinkron');
+              alert("Izin Google belum diperpanjang.\n\nKetuk ikon awan ☁ sekali lagi lalu pilih akun Google Anda. Data Anda tetap aman tersimpan di perangkat ini.");
+            }
+          });
+        } else {
+          setSyncStatus('error', 'Ketuk ☁ untuk sinkron');
         }
         return;
       }
@@ -7320,10 +7437,16 @@ function hideSplashScreenAndTriggerAlerts() {
         let sep = fetchUrl.includes('?') ? '&' : '?';
         fetchUrl += `${sep}_t=${Date.now()}`;
 
-        let response = await fetch(fetchUrl, { signal: controller.signal });
+        let response = await cloudFetch(fetchUrl, { signal: controller.signal });
         clearTimeout(timeoutId);
         
         let cloudData = await response.json();
+
+        // Google Drive: izin Google habis di tengah jalan -> tunggu ketukan pengguna
+        if (cloudData && cloudData.status === 'needs_google') {
+          setSyncStatus('error', 'Ketuk ☁ untuk sinkron');
+          return;
+        }
 
         // Cloud Script berkunci menolak akses: jangan timpa/unggah apa pun, beri tahu pengguna
         if (cloudData && cloudData.status === 'unauthorized') {
@@ -7439,7 +7562,7 @@ function hideSplashScreenAndTriggerAlerts() {
             localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData));
             if (cloudNeedsTombUpdate) {
               try {
-                await fetch(globalData.cloudUrl, {
+                await cloudFetch(globalData.cloudUrl, {
                   method: "POST",
                   mode: "no-cors",
                   headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -7461,7 +7584,7 @@ function hideSplashScreenAndTriggerAlerts() {
             if (removedLocal > 0 || mergedFromCloud) initApp();
             if (mergedFromCloud) showSyncToast("✓ Transaksi dari perangkat lain digabungkan");
             try {
-              await fetch(globalData.cloudUrl, {
+              await cloudFetch(globalData.cloudUrl, {
                 method: "POST",
                 mode: "no-cors",
                 headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -7532,7 +7655,7 @@ function hideSplashScreenAndTriggerAlerts() {
       initApp();
 
       // Pemicu Auto-Sync Otomatis saat aplikasi pertama kali dimuat
-      if (globalData.cloudUrl && globalData.cloudUrl.startsWith("http")) {
+      if (isCloudSyncUrl(globalData.cloudUrl)) {
         setSyncStatus('syncing', 'Menghubungkan...');
         setTimeout(() => { syncWithCloud(false); }, 600);
       } else {
@@ -8217,6 +8340,8 @@ function formatReadableSheets(ss, parsed) {
     function scheduleDriveBackup() {
       try {
         if (localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true') return;
+        // Jika sinkron utama sudah lewat Google Drive, salinan terpisah tidak diperlukan
+        if (globalData && isDriveCloudUrl(globalData.cloudUrl)) return;
         let gUser = (typeof getGoogleSession === 'function') ? getGoogleSession() : null;
         let sheetId = localStorage.getItem('KEUANGANKU_BYODB_SHEET_ID');
         if (!gUser || !gUser.accessToken || !sheetId || typeof writeGlobalDataToByodbSheet !== 'function') return;
@@ -8246,7 +8371,7 @@ function formatReadableSheets(ss, parsed) {
       // Perbarui juga salinan di Google Drive pengguna (otomatis, beberapa detik setelah perubahan terakhir)
       scheduleDriveBackup();
 
-      if (globalData.cloudUrl && globalData.cloudUrl.startsWith("http")) {
+      if (isCloudSyncUrl(globalData.cloudUrl)) {
         let lic = getSavedLicense();
         if (lic && lic.pinStatus === 'USING_TOKEN') {
           setSyncStatus('offline', 'Cloud Terkunci');
@@ -8254,14 +8379,19 @@ function formatReadableSheets(ss, parsed) {
         }
 
         setSyncStatus('syncing', 'Menyimpan...');
-        try { 
-          await fetch(globalData.cloudUrl, { 
-            method: "POST", 
-            mode: "no-cors", 
-            headers: { "Content-Type": "text/plain;charset=utf-8" }, 
-            body: JSON.stringify(globalData) 
-          }); 
-          setSyncStatus('synced', 'Tersinkron');
+        try {
+          let saveResp = await cloudFetch(globalData.cloudUrl, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(globalData)
+          });
+          let needsGoogle = false;
+          if (isDriveCloudUrl(globalData.cloudUrl)) {
+            try { needsGoogle = (await saveResp.json()).status === 'needs_google'; } catch(eJ) {}
+          }
+          if (needsGoogle) setSyncStatus('error', 'Ketuk ☁ untuk sinkron');
+          else setSyncStatus('synced', 'Tersinkron');
         } catch(e) {
           console.warn("Gagal auto-upload ke Cloud:", e);
           setSyncStatus('error', 'Gagal Simpan Cloud');
@@ -8275,7 +8405,7 @@ function formatReadableSheets(ss, parsed) {
         alert("PERINGATAN MODE DEMO IKLAN:\n\nUpload ke Google Sheets dinonaktifkan sementara untuk menjaga database asli Anda di Cloud agar tidak tertimpa data demo.\n\nSilakan klik 'Kembalikan Data Asli' terlebih dahulu sebelum upload ke Cloud.");
         return;
       }
-      if (!globalData.cloudUrl || !globalData.cloudUrl.startsWith("http")) {
+      if (!isCloudSyncUrl(globalData.cloudUrl)) {
         alert("GAGAL: Kunci Cloud kosong atau tidak valid!\nSilakan isi link Web App Google Sheets Anda di kolom yang tersedia terlebih dahulu.");
         return;
       }
@@ -8285,7 +8415,7 @@ function formatReadableSheets(ss, parsed) {
       try {
         globalData.lastUpdated = Date.now();
         localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData));
-        await fetch(globalData.cloudUrl, { 
+        await cloudFetch(globalData.cloudUrl, { 
           method: "POST", 
           mode: "no-cors", 
           headers: { "Content-Type": "text/plain;charset=utf-8" }, 
@@ -8297,7 +8427,7 @@ function formatReadableSheets(ss, parsed) {
         try {
           await new Promise(r => setTimeout(r, 1200));
           let verifyUrl = globalData.cloudUrl + (globalData.cloudUrl.includes('?') ? '&' : '?') + `_t=${Date.now()}`;
-          let checkRes = await fetch(verifyUrl);
+          let checkRes = await cloudFetch(verifyUrl);
           let checkJson = await checkRes.json();
           if (checkJson && checkJson.recentHistory && checkJson.recentHistory.length >= (globalData.recentHistory || []).length) {
             isVerified = true;
@@ -8331,11 +8461,11 @@ function formatReadableSheets(ss, parsed) {
       if (isDemo) return false;
 
       let url = targetCloudUrl || globalData.cloudUrl || localStorage.getItem("KEUANGANKU_CLOUD_URL");
-      if (!url || !url.startsWith("http")) return false;
+      if (!url || !isCloudSyncUrl(url)) return false;
 
       try {
         let fetchUrl = url + (url.includes('?') ? '&' : '?') + `_t=${Date.now()}`;
-        let response = await fetch(fetchUrl); 
+        let response = await cloudFetch(fetchUrl); 
         let data = await response.json();
         if (data && (data.accounts || data.recentHistory)) { 
           let activePin = globalData.appPin;
@@ -8381,7 +8511,7 @@ function formatReadableSheets(ss, parsed) {
         localStorage.removeItem('KEUANGANKU_USER_REAL_BACKUP');
         updateDemoModeUI();
       }
-      if (!globalData.cloudUrl || !globalData.cloudUrl.startsWith("http")) {
+      if (!isCloudSyncUrl(globalData.cloudUrl)) {
         alert("GAGAL: Kunci Cloud kosong!\nSilakan isi link Web App Google Sheets Anda terlebih dahulu agar sistem tahu data mana yang harus ditarik.");
         return;
       }
@@ -8391,7 +8521,7 @@ function formatReadableSheets(ss, parsed) {
       if (btn) btn.innerHTML = `<span class="material-symbols-outlined text-base animate-spin">sync</span> MENDOWNLOAD...`;
       try {
         let fetchUrl = globalData.cloudUrl + (globalData.cloudUrl.includes('?') ? '&' : '?') + `_t=${Date.now()}`;
-        let response = await fetch(fetchUrl); 
+        let response = await cloudFetch(fetchUrl); 
         let data = await response.json();
         if (data && data.accounts) { 
           globalData = data;
@@ -8843,7 +8973,7 @@ function formatReadableSheets(ss, parsed) {
       let backupStr = localStorage.getItem('KEUANGANKU_USER_REAL_BACKUP');
       if (!backupStr) {
         // Fallback cerdas: Jika backup lokal hilang, tawarkan unduh data asli langsung dari Cloud
-        if (globalData.cloudUrl && globalData.cloudUrl.startsWith("http")) {
+        if (isCloudSyncUrl(globalData.cloudUrl)) {
           if (confirm("PULIHKAN DARI CLOUD?\n\nCadangan lokal tidak ditemukan. Apakah Anda ingin mengunduh data keuangan asli Anda langsung dari Google Sheets Cloud?")) {
             localStorage.removeItem('KEUANGANKU_IS_DEMO_MODE');
             updateDemoModeUI();
@@ -14538,11 +14668,12 @@ async function processGoogleLoginToken(accessToken) {
 
       // Jika salinan Drive membawa kunci Cloud Script, langsung ambil data TERBARU dari Cloud Script
       // (salinan Drive bisa lebih lama dari data di perangkat lain), lalu perbarui salinan Drive.
-      let keyedCloudNow = Boolean(globalData && globalData.cloudUrl && getKeyFromCloudUrl(globalData.cloudUrl));
+      enableDriveSyncIfNoCloud(currentSheetId);
+      let keyedCloudNow = Boolean(globalData && globalData.cloudUrl && (getKeyFromCloudUrl(globalData.cloudUrl) || isDriveCloudUrl(globalData.cloudUrl)));
       if (keyedCloudNow) {
         if (btnText) btnText.textContent = 'Menyinkronkan data terbaru...';
         try { lastSyncTimestamp = 0; await syncWithCloud(false); } catch(eSync) { console.warn('Sinkron setelah login Google:', eSync); }
-        if (currentSheetId) {
+        if (currentSheetId && !isDriveCloudUrl(globalData.cloudUrl)) {
           try { await writeGlobalDataToByodbSheet(accessToken, currentSheetId); } catch(eW) {}
         }
       }
@@ -14598,6 +14729,7 @@ async function processGoogleLoginToken(accessToken) {
         try {
           await writeGlobalDataToByodbSheet(accessToken, currentSheetId);
         } catch(e) {}
+        enableDriveSyncIfNoCloud(currentSheetId);
         try {
           await callClientLicenseApi({
             action: 'save_spreadsheet_id',
@@ -14741,6 +14873,7 @@ async function submitBindGoogleToken() {
       let newSheetId = await provisionNewByodbSpreadsheet(pendingGoogleAuth.accessToken, googleUser);
       if (newSheetId) {
         localStorage.setItem("KEUANGANKU_BYODB_SHEET_ID", newSheetId);
+        enableDriveSyncIfNoCloud(newSheetId);
         await callClientLicenseApi({
           action: 'save_spreadsheet_id',
           token: res.data.token,
@@ -14942,6 +15075,11 @@ async function writeGlobalDataToByodbSheet(accessToken, sheetId) {
   for (let i = 0; i < fullJson.length; i += chunkSize) {
     rowValues.push(fullJson.substring(i, i + chunkSize));
   }
+  if (rowValues.length > 26) {
+    throw new Error("Database terlalu besar untuk Google Drive (lebih dari 1 MB). Kurangi foto bukti transaksi lama, lalu coba lagi.");
+  }
+  // Isi kolom sisa (sampai Z) dengan kosong agar potongan data LAMA yang lebih panjang ikut terhapus
+  while (rowValues.length < 26) rowValues.push("");
 
   let snapshotData = {
     majorDimension: "ROWS",
@@ -14949,7 +15087,8 @@ async function writeGlobalDataToByodbSheet(accessToken, sheetId) {
   };
 
   // Percobaan 1: Tulis ke tab Database_Keuangan
-  let res = await driveFetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Database_Keuangan!A1?valueInputOption=USER_ENTERED`, {
+  // RAW = disimpan sebagai teks apa adanya (USER_ENTERED bisa mengubah potongan JSON menjadi rumus/angka)
+  let res = await driveFetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Database_Keuangan!A1:Z1?valueInputOption=RAW`, {
     method: 'PUT',
     headers: {
       'Authorization': 'Bearer ' + accessToken,
@@ -14966,7 +15105,7 @@ async function writeGlobalDataToByodbSheet(accessToken, sheetId) {
     }
 
     // Fallback: Tulis ke tab pertama spreadsheet langsung jika Database_Keuangan belum ada (Error 400)
-    let fallbackRes = await driveFetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/A1?valueInputOption=USER_ENTERED`, {
+    let fallbackRes = await driveFetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/A1:Z1?valueInputOption=RAW`, {
       method: 'PUT',
       headers: {
         'Authorization': 'Bearer ' + accessToken,
