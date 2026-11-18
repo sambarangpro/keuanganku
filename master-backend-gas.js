@@ -22,10 +22,12 @@
  * ==============================================================================
  */
 
-// Kata sandi admin awal. PENTING: file ini publik di GitHub, jadi segera ganti kata sandi
-// lewat menu "Ganti Password" di Developer Dashboard setelah deploy. Kata sandi baru
-// disimpan di Script Properties (DEV_PORTAL_PASSWORD) dan TIDAK ikut tersimpan di GitHub.
-var MASTER_ADMIN_PASSWORD = "adminKeuanganku2026!";
+// Kata sandi admin HANYA dibaca dari Script Properties (DEV_PORTAL_PASSWORD), tidak ada lagi
+// kata sandi bawaan di file publik ini. Jika belum diatur, semua aksi admin DITOLAK.
+// Cara mengatur: Apps Script > Setelan Project (ikon roda gigi) > Properti skrip >
+// Tambahkan properti "DEV_PORTAL_PASSWORD" berisi kata sandi panjang & unik.
+// Kata sandi bawaan lama ini hanya disimpan untuk ditolak bila dipakai lagi.
+var LEGACY_DEFAULT_ADMIN_PASSWORD = "adminKeuanganku2026!";
 
 // Token & email pemilik (developer). Bisa ditimpa lewat Script Properties:
 //   OWNER_TOKENS = "PRO-XXXX-XXXX-XXXX,PRO-YYYY-YYYY-YYYY"
@@ -1120,7 +1122,8 @@ function validateClientToken(params) {
       var currentSpreadsheetId = (colMap.spreadsheetId !== undefined && data[i][colMap.spreadsheetId]) ? String(data[i][colMap.spreadsheetId]).trim() : "";
       if (params.spreadsheetId && colMap.spreadsheetId !== undefined) {
         var newSheetId = String(params.spreadsheetId).trim();
-        if (newSheetId && newSheetId !== currentSpreadsheetId) {
+        // Hanya ID Google Sheet yang sah (cegah rumus/teks asing masuk ke sheet Tokens)
+        if (newSheetId && /^[A-Za-z0-9_-]{20,100}$/.test(newSheetId) && newSheetId !== currentSpreadsheetId) {
           currentSpreadsheetId = newSheetId;
           sheet.getRange(i + 1, colMap.spreadsheetId + 1).setValue(currentSpreadsheetId);
         }
@@ -1222,7 +1225,7 @@ function validateClientToken(params) {
       activatedAt: nowStr,
       lastActive: nowStr
     }];
-    sheet.appendRow([
+    sheet.appendRow(safeRow_([
       "PRO-DEMO-IKLAN-2026",
       "Akun Demo Iklan (Official Showcase)",
       "087788197916 | demo@keuanganku.id",
@@ -1234,7 +1237,7 @@ function validateClientToken(params) {
       "",
       nowStr,
       "Akun Resmi Percontohan Khusus Iklan & Promosi (Showcase)"
-    ]);
+    ]));
     logEvent("DEVICE_ACTIVATED", "PRO-DEMO-IKLAN-2026", "Akun Demo Iklan (Official Showcase)", deviceId, deviceName, "Perangkat resmi terdaftar di Akun Demo Iklan");
     return {
       success: true,
@@ -1534,6 +1537,10 @@ function clientChangePersonalPin(params) {
   if (!tokenInput || !newPin) {
     return { success: false, message: "Token dan PIN baru tidak boleh kosong." };
   }
+  // Akun demo dipakai bersama: PIN-nya tidak boleh diganti (agar tidak bisa "dibajak")
+  if (tokensMatch_(tokenInput, DEMO_TOKEN)) {
+    return { success: false, message: "PIN akun demo tidak bisa diganti." };
+  }
 
   var ss = getSpreadsheet();
   var sheet = ss.getSheetByName(SHEET_TOKENS);
@@ -1720,6 +1727,11 @@ function deactivateClientDevice(params) {
   var targetDeviceId = (params.targetDeviceId || params.deviceId || "").trim();
   var currentDeviceId = (params.currentDeviceId || params.requesterDeviceId || "").trim();
 
+  // Akun demo dipakai bersama: satu pengguna tidak boleh mengeluarkan semua perangkat demo lain
+  if (targetDeviceId === "ALL_OTHERS" && tokensMatch_(tokenInput, DEMO_TOKEN)) {
+    return { success: false, message: "Akun demo tidak bisa mengeluarkan perangkat lain." };
+  }
+
   var ss = getSpreadsheet();
   var sheet = ss.getSheetByName(SHEET_TOKENS);
   var data = sheet.getDataRange().getValues();
@@ -1781,13 +1793,14 @@ function getActiveAdminPassword() {
       return String(storedPass).trim();
     }
   } catch(e) {}
-  return MASTER_ADMIN_PASSWORD;
+  return ""; // belum diatur -> semua aksi admin ditolak
 }
 
 function checkAdminAuth(password) {
   // Kunci sementara setelah terlalu banyak percobaan salah (anti tebak password)
   if (isRateLimited_("ADMIN", "GLOBAL", 10)) return false;
   var effectivePass = getActiveAdminPassword();
+  if (!effectivePass || effectivePass === LEGACY_DEFAULT_ADMIN_PASSWORD) return false;
   var ok = !!(password && String(password).trim() === effectivePass);
   // "TEST_VERSION_CHECK" = cek versi dari Dashboard, bukan tebakan password
   if (!ok && password && password !== "TEST_VERSION_CHECK") registerFailure_("ADMIN", "GLOBAL", 900);
@@ -1802,7 +1815,7 @@ function adminChangePassword(params) {
   if (!newPass || newPass.length < 10) {
     return { success: false, message: "Kata sandi baru minimal 10 karakter." };
   }
-  if (newPass === MASTER_ADMIN_PASSWORD) {
+  if (newPass === LEGACY_DEFAULT_ADMIN_PASSWORD) {
     return { success: false, message: "Jangan memakai kata sandi bawaan yang tercantum di kode publik." };
   }
   PropertiesService.getScriptProperties().setProperty("DEV_PORTAL_PASSWORD", newPass);
@@ -2004,7 +2017,7 @@ function adminGenerateToken(params) {
     }
   }
 
-  sheet.appendRow([
+  sheet.appendRow(safeRow_([
     newToken,
     buyerName,
     buyerContact,
@@ -2019,7 +2032,7 @@ function adminGenerateToken(params) {
     stripCloudKey_(params.cloudUrl),
     params.buyerEmail || "",
     params.spreadsheetId || ""
-  ]);
+  ]));
 
   logEvent("TOKEN_ORDER_CREATED", newToken, buyerName, "-", "-", "Token order baru diterbitkan. Kuota: " + maxDevices + " devices.");
 
@@ -2272,7 +2285,7 @@ function adminAddOrder(params) {
   if (params.autoGenerateToken && (status === "PAID" || status === "COMPLETED")) {
     tokenGenerated = generateRandomToken();
     var tokSheet = ss.getSheetByName(SHEET_TOKENS);
-    tokSheet.appendRow([
+    tokSheet.appendRow(safeRow_([
       tokenGenerated,
       buyerName,
       whatsapp,
@@ -2284,7 +2297,7 @@ function adminAddOrder(params) {
       "",
       nowStr,
       "Pemesanan " + orderId + " (" + pkg + ")"
-    ]);
+    ]));
     status = "COMPLETED";
     logEvent("TOKEN_ORDER_CREATED", tokenGenerated, buyerName, "-", "-", "Lisensi terbit via pemesanan " + orderId);
   }
@@ -2296,7 +2309,7 @@ function adminAddOrder(params) {
 
   // Jika kolom Payment Proof tersedia di sheet Orders
   if (ordHeaders.length >= 14 || (ordColMap.paymentProof !== undefined && ordColMap.paymentProof === 9)) {
-    sheet.appendRow([
+    sheet.appendRow(safeRow_([
       orderId,
       nowStr,
       buyerName,
@@ -2311,10 +2324,10 @@ function adminAddOrder(params) {
       tokenGenerated,
       fullNotes,
       nowStr
-    ]);
+    ]));
   } else {
     // Fallback sheet lama 13 kolom
-    sheet.appendRow([
+    sheet.appendRow(safeRow_([
       orderId,
       nowStr,
       buyerName,
@@ -2328,7 +2341,7 @@ function adminAddOrder(params) {
       tokenGenerated,
       fullNotes + (paymentProof ? " [Bukti: " + paymentProof + "]" : ""),
       nowStr
-    ]);
+    ]));
   }
 
   logEvent("ORDER_CREATED", tokenGenerated || "-", buyerName, "-", "-", "Pemesanan baru dicatat: " + orderId + " (" + pkg + " - " + price + ")");
@@ -2459,7 +2472,7 @@ function adminProcessOrderLicense(params) {
   if (!tokenToUse) {
     tokenToUse = generateRandomToken();
     var tokSheet = ss.getSheetByName(SHEET_TOKENS);
-    tokSheet.appendRow([
+    tokSheet.appendRow(safeRow_([
       tokenToUse,
       buyerName,
       whatsapp + (email ? " | " + email : ""),
@@ -2474,7 +2487,7 @@ function adminProcessOrderLicense(params) {
       "", // Cloud URL
       email || "", // Email Google (BYODb)
       "" // Spreadsheet ID (BYODb)
-    ]);
+    ]));
   }
 
   // Update Orders sheet
@@ -2867,7 +2880,7 @@ function submitPublicOrder(params) {
         initSheets();
         tokSheet = ss.getSheetByName(SHEET_TOKENS);
       }
-      tokSheet.appendRow([
+      tokSheet.appendRow(safeRow_([
         tokenGenerated,
         buyerName,
         whatsapp + (email ? " | " + email : ""),
@@ -2879,7 +2892,7 @@ function submitPublicOrder(params) {
         "",
         nowStr,
         "Pengguna Perdana (Early Adopter - Akses Lifetime) via " + orderId + " (" + pkg + ")"
-      ]);
+      ]));
 
       fullNotes = (fullNotes ? fullNotes + " | " : "") + "[Pengguna Perdana Resmi - Akses Seumur Hidup]";
       logEvent("EARLY_ADOPTER_ISSUED", tokenGenerated, buyerName, "-", "-", "Lisensi resmi seumur hidup terbit untuk pengguna perdana via order " + orderId);
@@ -2930,7 +2943,7 @@ function submitPublicOrder(params) {
   var ordColMap = getOrderColumnIndexes(ordHeaders);
 
   if (ordHeaders.length >= 14 || (ordColMap.paymentProof !== undefined && ordColMap.paymentProof === 9)) {
-    sheet.appendRow([
+    sheet.appendRow(safeRow_([
       orderId,
       nowStr,
       buyerName,
@@ -2945,9 +2958,9 @@ function submitPublicOrder(params) {
       tokenGenerated,
       fullNotes,
       nowStr
-    ]);
+    ]));
   } else {
-    sheet.appendRow([
+    sheet.appendRow(safeRow_([
       orderId,
       nowStr,
       buyerName,
@@ -2961,7 +2974,7 @@ function submitPublicOrder(params) {
       tokenGenerated,
       fullNotes + (paymentProof ? " [Bukti: " + paymentProof + "]" : ""),
       nowStr
-    ]);
+    ]));
   }
 
   logEvent("PUBLIC_ORDER_SUBMITTED", tokenGenerated || "-", buyerName, "-", "-", "Pesanan online masuk: " + orderId + " (" + pkg + " - " + price + ")");
@@ -3344,6 +3357,10 @@ function bindGoogleAccount(params) {
       var bindPinStatus = String(data[i][colMap.pinStatus] || "").trim().toUpperCase();
       var bindStoredPin = String(data[i][colMap.personalPin] || "").trim();
       if (!boundEmail && bindDevices.length > 0 && deviceIndex_(bindDevices, deviceId) === -1) {
+        // Anti tebak PIN: dulu jalur ini tidak dibatasi sehingga PIN bisa dicoba berulang-ulang
+        if (isRateLimited_("PIN", rowToken, 6)) {
+          return { success: false, needsPin: true, message: "Terlalu banyak percobaan PIN yang salah. Tunggu 15 menit lalu coba lagi." };
+        }
         var pinOk = bindStoredPin && pinEquals_(params.pin, bindStoredPin);
         if (!pinOk) {
           if (params.pin) registerFailure_("PIN", rowToken, 900);
@@ -3362,7 +3379,7 @@ function bindGoogleAccount(params) {
         sheet.getRange(i + 1, colMap.buyerEmail + 1).setValue(emailInput);
       }
 
-      if (params.spreadsheetId && colMap.spreadsheetId !== undefined) {
+      if (params.spreadsheetId && colMap.spreadsheetId !== undefined && /^[A-Za-z0-9_-]{20,100}$/.test(String(params.spreadsheetId).trim())) {
         sheet.getRange(i + 1, colMap.spreadsheetId + 1).setValue(String(params.spreadsheetId).trim());
       }
 
