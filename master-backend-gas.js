@@ -226,21 +226,87 @@ function purgeStoredCloudKeys_() {
   } catch(e) {}
 }
 
-/** Bandingkan PIN. Google Sheets kadang membuang angka 0 di depan PIN, jadi itu ditoleransi. */
+// ------------------------------------------------------------------------------
+// PIN PRIBADI DISIMPAN TERACAK (HASH), BUKAN TEKS POLOS
+// Format kolom PIN di sheet Tokens: "h1$<garam>$<sidik>". PIN lama yang masih polos
+// tetap bisa dipakai login dan otomatis diacak sekali jalan (hashStoredPins_).
+// ------------------------------------------------------------------------------
+var PIN_HASH_PREFIX = "h1$";
+var PIN_HASH_ROUNDS = 50;
+
+function normalizePinForHash_(pin) {
+  var p = String(pin == null ? "" : pin).trim();
+  // Google Sheets dulu kadang membuang angka 0 di depan PIN angka, jadi 0 di depan diabaikan
+  if (/^\d+$/.test(p)) p = p.replace(/^0+/, "");
+  return p;
+}
+function isPinHash_(s) {
+  return String(s == null ? "" : s).trim().indexOf(PIN_HASH_PREFIX) === 0;
+}
+function pinDigest_(salt, pin) {
+  var v = salt + ":" + normalizePinForHash_(pin);
+  var bytes = null;
+  for (var r = 0; r < PIN_HASH_ROUNDS; r++) {
+    bytes = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, r === 0 ? v : Utilities.base64Encode(bytes) + v, Utilities.Charset.UTF_8);
+  }
+  return Utilities.base64EncodeWebSafe(bytes).replace(/=+$/, "");
+}
+function hashPin_(pin) {
+  var salt = Utilities.getUuid().replace(/-/g, "").slice(0, 16);
+  return PIN_HASH_PREFIX + salt + "$" + pinDigest_(salt, pin);
+}
+/** Apakah kolom PIN berisi PIN pribadi yang sah (teracak, atau PIN polos lama). */
+function hasStoredPin_(s) {
+  s = String(s == null ? "" : s).trim();
+  if (!s) return false;
+  if (isPinHash_(s)) return true;
+  return s.length <= 20 && s.indexOf("GMT") === -1;
+}
+
+/** Bandingkan PIN ketikan (a) dengan PIN tersimpan (b; teracak atau polos lama). */
 function pinEquals_(a, b) {
   a = String(a == null ? "" : a).trim();
   b = String(b == null ? "" : b).trim();
   if (!a || !b) return false;
+  if (isPinHash_(b)) {
+    var parts = b.split("$");
+    if (parts.length !== 3) return false;
+    return pinDigest_(parts[1], a) === parts[2];
+  }
   if (a === b) return true;
   if (/^\d+$/.test(a) && /^\d+$/.test(b)) return a.replace(/^0+/, "") === b.replace(/^0+/, "");
   return false;
 }
 
-/** Simpan PIN sebagai TEKS agar angka 0 di depan tidak hilang. */
+/** Simpan PIN dalam bentuk teracak (tidak bisa dibaca siapa pun yang membuka sheet). */
 function writePin_(sheet, rowNum, colIdx, pin) {
   var cell = sheet.getRange(rowNum, colIdx + 1);
   try { cell.setNumberFormat("@"); } catch(e) {}
-  cell.setValue(String(pin || ""));
+  var p = String(pin == null ? "" : pin).trim();
+  cell.setValue(p ? hashPin_(p) : "");
+}
+
+/** Sekali jalan: acak semua PIN polos lama di sheet Tokens. */
+function hashStoredPins_() {
+  try {
+    var props = PropertiesService.getScriptProperties();
+    if (props.getProperty("PINS_HASHED_V1") === "1") return;
+    var ss = getSpreadsheet();
+    var sheet = ss ? ss.getSheetByName(SHEET_TOKENS) : null;
+    if (!sheet) return;
+    var data = sheet.getDataRange().getValues();
+    if (data && data.length > 1) {
+      var colMap = getTokenColumnIndexes(data[0]);
+      if (colMap.personalPin === undefined) return;
+      for (var i = 1; i < data.length; i++) {
+        var raw = String(data[i][colMap.personalPin] == null ? "" : data[i][colMap.personalPin]).trim();
+        if (raw && !isPinHash_(raw) && hasStoredPin_(raw)) {
+          writePin_(sheet, i + 1, colMap.personalPin, raw);
+        }
+      }
+    }
+    props.setProperty("PINS_HASHED_V1", "1");
+  } catch(e) {}
 }
 
 function parseDevices_(raw) {
@@ -684,6 +750,7 @@ function handleRequest(params) {
     if (action !== "create_pair_session" && action !== "check_pair_session") {
       initSheets();
       purgeStoredCloudKeys_();
+      if (lock) hashStoredPins_();
     }
 
     switch(action) {
@@ -928,7 +995,7 @@ function validateClientToken(params) {
         }
       } else {
         // Normalisasi hanya jika perangkat sudah pernah login (>0 devices)
-        if (pinStatus !== "PIN_CHANGED" && storedPersonalPin && storedPersonalPin.length <= 20 && !storedPersonalPin.includes("GMT")) {
+        if (pinStatus !== "PIN_CHANGED" && hasStoredPin_(storedPersonalPin)) {
           pinStatus = "PIN_CHANGED";
         } else if (pinStatus !== "PIN_CHANGED") {
           // Jika perangkat sudah >= 2, pasti akun sudah dipersonalisasi.
@@ -1060,6 +1127,19 @@ function validateClientToken(params) {
       }
 
       // 3. Cek apakah perangkat sudah ada (Re-login)
+      // PIN yang dikirim perangkat terdaftar WAJIB benar (dulu PIN apa pun diterima bila
+      // lisensi masih memakai token bawaan / PIN belum tercatat, sehingga layar kunci bisa dilewati).
+      if (existingDevice && inputPin) {
+        var existingPinOk = storedPersonalPin
+          ? pinEquals_(inputPin, storedPersonalPin)
+          : (normalizeToken_(inputPin) === normalizeToken_(tokenInput));
+        if (!existingPinOk) {
+          registerFailure_("PIN", tokenInput, 900);
+          logEvent("WRONG_PIN_EXISTING_DEVICE", tokenInput, buyerName, deviceId, deviceName, "Perangkat terdaftar memasukkan PIN yang tidak cocok");
+          return { success: false, message: "PIN salah! Masukkan PIN pribadi yang benar (atau Token Lisensi bila belum membuat PIN pribadi)." };
+        }
+        clearFailures_("PIN", tokenInput);
+      }
       if (existingDevice) {
         existingDevice.lastActive = new Date().toISOString();
         existingDevice.deviceName = deviceName;
@@ -1075,7 +1155,8 @@ function validateClientToken(params) {
             email: boundEmail || inputEmail,
             spreadsheetId: currentSpreadsheetId,
             pinStatus: pinStatus,
-            personalPin: storedPersonalPin,
+            // PIN hanya dikembalikan bila baru saja diketik & terbukti benar (server tidak menyimpan PIN polos)
+            personalPin: inputPin || "",
             isPasswordChanged: (pinStatus === "PIN_CHANGED"),
             maxDevices: (pinStatus === "PIN_CHANGED" ? maxDevices : 1),
             deviceCount: devices.length,
@@ -1121,7 +1202,7 @@ function validateClientToken(params) {
           email: boundEmail || inputEmail,
           spreadsheetId: currentSpreadsheetId,
           pinStatus: newPinStatus,
-          personalPin: storedPersonalPin || inputPin,
+          personalPin: inputPin || "",
           isPasswordChanged: (newPinStatus === "PIN_CHANGED"),
           maxDevices: (newPinStatus === "PIN_CHANGED" ? maxDevices : 1),
           deviceCount: devices.length,
@@ -1389,9 +1470,11 @@ function authorizePairSession(params) {
   // Pastikan status pinStatus adalah PIN_CHANGED dan personalPin tersimpan di database token.
   // PIN lama yang sudah tersimpan TIDAK pernah ditimpa dari sini.
   if (!storedPersonalPin && inputPin && inputPin.length >= 3) {
-    storedPersonalPin = inputPin;
     writePin_(sheet, foundRow, colMap.personalPin, inputPin);
+    storedPersonalPin = "set";
   }
+  // PIN polos untuk perangkat baru = PIN yang barusan diketik & terbukti benar di HP utama
+  var pinForNewDevice = storedPersonalPin ? inputPin : "";
   if (storedPersonalPin) {
     pinStatus = "PIN_CHANGED";
     sheet.getRange(foundRow, colMap.pinStatus + 1).setValue("PIN_CHANGED");
@@ -1418,13 +1501,13 @@ function authorizePairSession(params) {
     token: tokenInput,
     buyerName: buyerName,
     pinStatus: pinStatus,
-    personalPin: storedPersonalPin || "",
+    personalPin: pinForNewDevice,
     isPasswordChanged: (pinStatus === "PIN_CHANGED"),
     maxDevices: maxDevices,
     deviceCount: devices.length,
     cloudUrl: keyedCloudForPairing
   };
-  sessionObj.pin = storedPersonalPin || "";
+  sessionObj.pin = pinForNewDevice;
   var masterUrlParam = String(params.masterUrl || "").trim();
   sessionObj.masterUrl = (masterUrlParam.indexOf("https://script.google.com/") === 0) ? masterUrlParam : "";
   sessionObj.cloudUrl = keyedCloudForPairing;
@@ -1527,7 +1610,7 @@ function verifyClientStatus(params) {
       try { devices = rawDevices ? JSON.parse(rawDevices) : []; } catch(e) {}
 
       var storedPersonalPin = String(data[i][colMap.personalPin] || "").trim();
-      if (pinStatus !== "PIN_CHANGED" && storedPersonalPin && storedPersonalPin.length <= 20 && !storedPersonalPin.includes("GMT")) pinStatus = "PIN_CHANGED";
+      if (pinStatus !== "PIN_CHANGED" && hasStoredPin_(storedPersonalPin)) pinStatus = "PIN_CHANGED";
       else if (pinStatus !== "PIN_CHANGED" && devices.length > 0) pinStatus = "USING_TOKEN";
 
       var isFound = false;
@@ -1559,7 +1642,6 @@ function verifyClientStatus(params) {
         active: true, 
         buyerName: data[i][colMap.buyerName],
         pinStatus: pinStatus,
-        personalPin: storedPersonalPin,
         isPasswordChanged: (pinStatus === "PIN_CHANGED"),
         deviceCount: devices.length,
         maxDevices: (isOwner ? maxDevLimit : Math.max(parseInt(data[i][colMap.maxDevices]) || 3, 3)),
@@ -1605,7 +1687,7 @@ function clientGetDevices(params) {
       var pinStatus = String(data[i][colMap.pinStatus] || "UNCLAIMED").trim().toUpperCase();
       var storedPersonalPin = String(data[i][colMap.personalPin] || "").trim();
 
-      if (pinStatus !== "PIN_CHANGED" && storedPersonalPin && storedPersonalPin.length <= 20 && !storedPersonalPin.includes("GMT")) pinStatus = "PIN_CHANGED";
+      if (pinStatus !== "PIN_CHANGED" && hasStoredPin_(storedPersonalPin)) pinStatus = "PIN_CHANGED";
       else if (pinStatus !== "PIN_CHANGED" && devices.length > 0) pinStatus = "USING_TOKEN";
 
       var mapped = devices.map(function(d) {
@@ -1778,7 +1860,7 @@ function adminGetData(params) {
     if (parsedDev.length === 0) {
       effectivePinStatus = (pinSt === "USING_TOKEN" ? "USING_TOKEN" : "UNCLAIMED");
     } else {
-      var isPinChanged = (pinSt === "PIN_CHANGED") || (storedPersonalPin !== "" && storedPersonalPin.length <= 20 && !storedPersonalPin.includes("GMT"));
+      var isPinChanged = (pinSt === "PIN_CHANGED") || hasStoredPin_(storedPersonalPin);
       effectivePinStatus = isPinChanged ? "PIN_CHANGED" : "USING_TOKEN";
     }
 
@@ -3194,7 +3276,6 @@ function verifyGoogleAccount(params) {
           spreadsheetId: currentSpreadsheetId,
           cloudUrl: currentCloudUrl,
           pinStatus: pinStatus,
-          personalPin: storedPersonalPin,
           maxDevices: maxDevices,
           deviceCount: devices.length
         }
