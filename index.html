@@ -3880,12 +3880,12 @@
             
             <div id="mur-input-margin" class="p-3 bg-surface-container rounded-xl border border-outline-variant space-y-2 mt-2">
               <label class="font-bold text-primary">Pengaturan Profit / Margin</label>
-              <select id="mur-margin-type" onchange="formatMurMarginInput(document.getElementById('mur-margin-val'))" class="w-full p-2 border rounded-lg bg-white text-on-surface font-semibold text-[11px] outline-none cursor-pointer">
+              <select id="mur-margin-type" class="w-full p-2 border rounded-lg bg-white text-on-surface font-semibold text-[11px] outline-none cursor-pointer">
                 <option value="fix_nominal">Margin Fix (Nominal Rp) di Awal</option>
                 <option value="fix_pct">Margin Fix (%) dari Pokok di Awal</option>
                 <option value="annual_pct" selected>Margin Dinamis (% per Tahun)</option>
               </select>
-              <input type="text" id="mur-margin-val" inputmode="decimal" placeholder="Masukkan Angka / Persentase (mis. 12,5)..." oninput="formatMurMarginInput(this)" class="w-full p-2 border rounded-lg font-mono-data bg-white text-on-surface mt-1 outline-none font-bold">
+              <input type="text" id="mur-margin-val" placeholder="Masukkan Angka / Persentase..." oninput="formatInputNominal(this)" class="w-full p-2 border rounded-lg font-mono-data bg-white text-on-surface mt-1 outline-none font-bold">
             </div>
 
             <div id="mur-input-angsuran" class="p-3 bg-surface-container rounded-xl border border-outline-variant space-y-2 mt-2 hidden">
@@ -3980,18 +3980,12 @@
     // ==============================================================================
     const DEFAULT_MASTER_LICENSE_URL = "https://script.google.com/macros/s/AKfycbwYagi0dQnACZPh4bBnvexVx7JB81_r2X4DwrOnyw5Sen9HYz2XUsEjm5ipuNA84w4/exec";
 
-    // Alamat server yang datang dari tautan / QR hanya diterima bila alamat Google Apps Script resmi,
-    // agar tautan jebakan tidak bisa mengalihkan PIN atau data keuangan ke server orang lain.
-    function isTrustedScriptUrl(u) {
-      return typeof u === 'string' && /^https:\/\/script\.google(usercontent)?\.com\//.test(u.trim());
-    }
-
     function getMasterLicenseServerUrl() {
       // 1. Cek parameter URL (?masterUrl=... atau ?server=... atau ?api=...) jika dibuka langsung dari Dev Portal / Link Khusus
       try {
         let params = new URLSearchParams(window.location.search);
         let urlParam = params.get("masterUrl") || params.get("server") || params.get("api");
-        if (urlParam && isTrustedScriptUrl(urlParam) && !urlParam.includes("YOUR_SCRIPT_ID")) {
+        if (urlParam && urlParam.startsWith("http") && !urlParam.includes("YOUR_SCRIPT_ID")) {
           localStorage.setItem("KEUANGANKU_MASTER_SERVER_URL", urlParam);
           return urlParam;
         }
@@ -4065,13 +4059,13 @@
         let masterParam = params.get("masterUrl");
         let cloudParam = params.get("cloudUrl");
 
-        if (masterParam && isTrustedScriptUrl(masterParam) && !masterParam.includes("YOUR_SCRIPT_ID")) {
+        if (masterParam && masterParam.startsWith("http") && !masterParam.includes("YOUR_SCRIPT_ID")) {
           localStorage.setItem("KEUANGANKU_MASTER_SERVER_URL", masterParam);
           localStorage.setItem("KEUANGANKU_DEV_API_URL", masterParam);
           localStorage.setItem("KEUANGANKU_CUSTOM_LICENSE_URL", masterParam);
         }
 
-        if (cloudParam && isTrustedScriptUrl(cloudParam)) {
+        if (cloudParam && cloudParam.startsWith("http")) {
           globalData.cloudUrl = cloudParam.trim();
           localStorage.setItem("KEUANGANKU_CLOUD_URL", cloudParam.trim());
         }
@@ -4232,8 +4226,7 @@
             } else if (!hasLocalCloud || localTxCount === 0) {
               globalData.cloudUrl = resolveCloudUrlFromServer(res.cloudUrl);
               localStorage.setItem("KEUANGANKU_CLOUD_URL", globalData.cloudUrl);
-              // Jangan kirim data lokal (masih kosong) ke Cloud sebelum menarik: bisa menimpa data Cloud
-              saveLocalOnly();
+              saveStorageData();
               if (typeof autoPullDatabaseFromCloud === 'function') {
                 autoPullDatabaseFromCloud(globalData.cloudUrl);
               }
@@ -5734,13 +5727,13 @@
       let devId = getOrCreateDeviceId();
       let devName = detectDeviceName();
 
-      if (masterUrl && isTrustedScriptUrl(masterUrl) && !masterUrl.includes("YOUR_SCRIPT_ID")) {
+      if (masterUrl && masterUrl.startsWith("http") && !masterUrl.includes("YOUR_SCRIPT_ID")) {
         localStorage.setItem("KEUANGANKU_MASTER_SERVER_URL", masterUrl);
         localStorage.setItem("KEUANGANKU_DEV_API_URL", masterUrl);
         localStorage.setItem("KEUANGANKU_CUSTOM_LICENSE_URL", masterUrl);
       }
 
-      if (cloudUrl && isTrustedScriptUrl(cloudUrl)) {
+      if (cloudUrl && cloudUrl.startsWith("http")) {
         globalData.cloudUrl = cloudUrl.trim();
         localStorage.setItem("KEUANGANKU_CLOUD_URL", cloudUrl.trim());
       }
@@ -6716,10 +6709,8 @@ function hideSplashScreenAndTriggerAlerts() {
         let data = await resp.json();
 
         if (data && data.accounts && Array.isArray(data.accounts)) {
-          let keptLocalTxConn = mergeLocalTxIntoPulled(data);
           globalData = data;
           globalData.cloudUrl = url;
-          if (keptLocalTxConn > 0) setTimeout(() => { saveStorageData(); }, 800);
           localStorage.setItem("KEUANGANKU_CLOUD_URL", url);
           localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData));
           
@@ -6980,17 +6971,14 @@ function hideSplashScreenAndTriggerAlerts() {
               globalData.ownerPassword = finalPin;
             }
 
-            let pullStarted = false;
             if (res.data.cloudUrl && res.data.cloudUrl.startsWith("http")) {
               globalData.cloudUrl = resolveCloudUrlFromServer(res.data.cloudUrl);
               localStorage.setItem("KEUANGANKU_CLOUD_URL", globalData.cloudUrl);
               if (typeof autoPullDatabaseFromCloud === 'function') {
-                pullStarted = true;
                 autoPullDatabaseFromCloud(globalData.cloudUrl);
               }
             }
-            // Saat data Cloud sedang ditarik, simpan di perangkat saja (kiriman lebih awal bisa menimpa Cloud)
-            if (pullStarted) saveLocalOnly(); else saveStorageData();
+            saveStorageData();
             sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
 
             let remCheck = document.getElementById('bumper-remember-pin');
@@ -7067,17 +7055,14 @@ function hideSplashScreenAndTriggerAlerts() {
             globalData.appPin = pinInput;
             globalData.ownerPassword = pinInput;
 
-            let pullStarted = false;
             if (res.data.cloudUrl && res.data.cloudUrl.startsWith("http")) {
               globalData.cloudUrl = resolveCloudUrlFromServer(res.data.cloudUrl);
               localStorage.setItem("KEUANGANKU_CLOUD_URL", globalData.cloudUrl);
               if (typeof autoPullDatabaseFromCloud === 'function') {
-                pullStarted = true;
                 autoPullDatabaseFromCloud(globalData.cloudUrl);
               }
             }
-            // Saat data Cloud sedang ditarik, simpan di perangkat saja (kiriman lebih awal bisa menimpa Cloud)
-            if (pullStarted) saveLocalOnly(); else saveStorageData();
+            saveStorageData();
             sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
 
             let remCheck = document.getElementById('bumper-remember-pin');
@@ -7111,9 +7096,7 @@ function hideSplashScreenAndTriggerAlerts() {
             let cloudJson = await cloudFetch.json();
             if (cloudJson && (cloudJson.appPin === pinInput || cloudJson.ownerPassword === pinInput)) {
               // PIN COCOK DENGAN DATABASE GOOGLE SHEETS PENGGUNA!
-              let keptLocalTxPin = mergeLocalTxIntoPulled(cloudJson);
               globalData = cloudJson;
-              if (keptLocalTxPin > 0) setTimeout(() => { saveStorageData(); }, 800);
               localStorage.removeItem('KEUANGANKU_IS_DEMO_MODE');
               globalData.appPin = pinInput;
               globalData.ownerPassword = pinInput;
@@ -7388,36 +7371,6 @@ function hideSplashScreenAndTriggerAlerts() {
       if (!Array.isArray(globalData.deletedTxKeys)) globalData.deletedTxKeys = [];
       globalData.deletedTxKeys.push({ k: tx.id, at: Date.now() });
       globalData.deletedTxKeys = pruneTxTombstones(globalData.deletedTxKeys);
-    }
-
-    /**
-     * Dipakai saat data Cloud DITARIK ke perangkat ini (login PIN, login lisensi, hubungkan Cloud).
-     * Transaksi baru di perangkat ini yang belum sempat terkirim (mis. dicatat saat offline) digabungkan
-     * dulu ke data Cloud, agar tidak hilang tertimpa. Hanya dilakukan bila kedua data jelas milik
-     * pengguna yang sama (punya minimal satu transaksi yang sama).
-     * Mengembalikan jumlah transaksi lokal yang ditambahkan/diperbarui ke cloudData.
-     */
-    function mergeLocalTxIntoPulled(cloudData) {
-      try {
-        if (!cloudData || typeof cloudData !== 'object' || !globalData || cloudData === globalData) return 0;
-        if (!Array.isArray(globalData.recentHistory) || globalData.recentHistory.length === 0) return 0;
-        if (!Array.isArray(cloudData.recentHistory) || cloudData.recentHistory.length === 0) return 0;
-        if (localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true') return 0;
-        materializeTxIds(globalData);
-        materializeTxIds(cloudData);
-        let cloudIds = new Set(cloudData.recentHistory.map(t => t && t.id).filter(Boolean));
-        let sameOwner = globalData.recentHistory.some(t => t && t.id && cloudIds.has(t.id));
-        if (!sameOwner) return 0;
-        cloudData.deletedTxKeys = mergeTxTombstones(globalData.deletedTxKeys, cloudData.deletedTxKeys);
-        applyTxTombstones(cloudData);
-        let m = mergeTxLists(cloudData, globalData);
-        let n = (m.added || 0) + (m.updated || 0);
-        if (n > 0) cloudData.lastUpdated = Date.now();
-        return n;
-      } catch(e) {
-        console.warn("mergeLocalTxIntoPulled:", e);
-        return 0;
-      }
     }
 
     async function syncWithCloud(isManualClick = false) {
@@ -8401,12 +8354,6 @@ function formatReadableSheets(ss, parsed) {
       } catch(e) {}
     }
 
-    // Simpan HANYA di perangkat ini (tanpa kirim ke Cloud). Dipakai tepat sebelum menarik data Cloud,
-    // agar data lokal yang belum lengkap tidak menimpa data Cloud.
-    function saveLocalOnly() {
-      try { localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(globalData)); } catch(e) { console.warn("saveLocalOnly:", e); }
-    }
-
     async function saveStorageData() {
       globalData.lastUpdated = Date.now();
       lastSyncTimestamp = Date.now();
@@ -8520,10 +8467,9 @@ function formatReadableSheets(ss, parsed) {
         let fetchUrl = url + (url.includes('?') ? '&' : '?') + `_t=${Date.now()}`;
         let response = await cloudFetch(fetchUrl); 
         let data = await response.json();
-        if (data && (data.accounts || data.recentHistory)) {
+        if (data && (data.accounts || data.recentHistory)) { 
           let activePin = globalData.appPin;
           let activePass = globalData.ownerPassword;
-          let keptLocalTx = mergeLocalTxIntoPulled(data);
           globalData = data;
           globalData.cloudUrl = url;
 
@@ -8544,17 +8490,11 @@ function formatReadableSheets(ss, parsed) {
             globalData.ownerPassword = String(data.ownerPassword).trim();
           }
 
-          localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(data));
+          localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(data)); 
           localStorage.setItem("KEUANGANKU_CLOUD_URL", url);
           initApp();
           setSyncStatus('synced', 'Tersinkron');
-          if (keptLocalTx > 0) {
-            // Kirim transaksi perangkat ini yang tadi belum sampai ke Cloud
-            saveStorageData();
-            showSyncToast("✓ Database disinkronkan & " + keptLocalTx + " transaksi perangkat ini ikut digabungkan");
-          } else {
-            showSyncToast("✓ Database berhasil disinkronkan ke perangkat ini!");
-          }
+          showSyncToast("✓ Database berhasil disinkronkan ke perangkat ini!");
           return true;
         }
       } catch(e) {
@@ -9142,6 +9082,48 @@ function formatReadableSheets(ss, parsed) {
 
     
     // === REKAPITULASI & 5-MENU NAVIGASI KHUSUS AKUN PEMILIK ===
+    function renderRekapitulasiPage() {
+      let curMonth = new Date().getMonth();
+      let curYear = new Date().getFullYear();
+      let mSel = document.getElementById('rekap-month-select');
+      let ySel = document.getElementById('rekap-year-select');
+      if (mSel && mSel.value !== "") curMonth = parseInt(mSel.value, 10);
+      else if (mSel) mSel.value = curMonth;
+
+      if (ySel && ySel.value !== "") curYear = parseInt(ySel.value, 10);
+      else if (ySel) ySel.value = curYear;
+
+      let totalIncome = 0;
+      let totalExpense = 0;
+
+      if (globalData && Array.isArray(globalData.recentHistory)) {
+        globalData.recentHistory.forEach(tx => {
+          let d = new Date(tx.date);
+          if (!isNaN(d.getTime()) && d.getMonth() === curMonth && d.getFullYear() === curYear) {
+            let amt = Number(tx.amount) || 0;
+            if (tx.type === 'Pemasukan') totalIncome += amt;
+            else if (tx.type === 'Pengeluaran') totalExpense += amt;
+          }
+        });
+      }
+
+      let netCashflow = totalIncome - totalExpense;
+      let savingsRate = totalIncome > 0 ? ((netCashflow > 0 ? netCashflow : 0) / totalIncome * 100) : 0;
+
+      let elInc = document.getElementById('rekap-sum-income');
+      let elExp = document.getElementById('rekap-sum-expense');
+      let elNet = document.getElementById('rekap-sum-net');
+      let elSav = document.getElementById('rekap-sum-savings-rate');
+
+      if (elInc) elInc.textContent = 'Rp ' + totalIncome.toLocaleString('id-ID');
+      if (elExp) elExp.textContent = 'Rp ' + totalExpense.toLocaleString('id-ID');
+      if (elNet) {
+        elNet.textContent = (netCashflow >= 0 ? '+Rp ' : '-Rp ') + Math.abs(netCashflow).toLocaleString('id-ID');
+        elNet.className = 'font-mono-data font-bold text-base sm:text-lg ' + (netCashflow >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400');
+      }
+      if (elSav) elSav.textContent = savingsRate.toFixed(1) + '%';
+    }
+
     function applyNavigationConfig() {
       let isOwner = (typeof isOwnerDevice === 'function') ? isOwnerDevice() : true;
       let navRekap = document.getElementById('nav-rekap');
@@ -9203,6 +9185,7 @@ function formatReadableSheets(ss, parsed) {
         document.getElementById('page-rekapitulasi').classList.remove('hidden');
         let nr = document.getElementById('nav-rekap'); if(nr) nr.className = "flex-1 flex flex-col items-center py-1 text-primary font-bold cursor-pointer transition-all";
         let dnr = document.getElementById('dnav-rekap'); if(dnr) dnr.className = "px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-primary text-white shadow-sm transition-all flex items-center gap-1.5 cursor-pointer";
+        renderRekapitulasiPage();
       } 
       else if (page === 'transaksi') { 
         document.getElementById('page-transaksi').classList.remove('hidden'); 
@@ -9881,23 +9864,6 @@ function formatReadableSheets(ss, parsed) {
       document.getElementById('mur-input-angsuran').classList.toggle('hidden', mode !== 'cari_margin');
     }
 
-    // Kolom margin: nominal Rp diberi titik ribuan, tetapi persen boleh desimal (12,5 / 12.5)
-    // (dulu titik/koma persen ikut dibuang sehingga 12,5% terbaca 125% = 10x lipat).
-    function formatMurMarginInput(input) {
-      if (!input) return;
-      let typeEl = document.getElementById('mur-margin-type');
-      if (!typeEl || typeEl.value === 'fix_nominal') { formatInputNominal(input); return; }
-      let v = String(input.value || '').replace(/[^0-9.,]/g, '');
-      let sep = v.search(/[.,]/);
-      if (sep !== -1) v = v.slice(0, sep) + ',' + v.slice(sep + 1).replace(/[.,]/g, '');
-      input.value = v;
-    }
-    function parseMurMarginValue(raw, type) {
-      let s = String(raw || '').trim();
-      if (type === 'fix_nominal') return parseFloat(s.replace(/\./g, '').replace(',', '.')) || 0;
-      return parseFloat(s.replace(',', '.')) || 0;
-    }
-
     function calculateMurabahah() {
       let hargaBarang = parseFloat(document.getElementById('mur-harga').value.replace(/\./g, '')) || 0;
       let dp = parseFloat(document.getElementById('mur-dp').value.replace(/\./g, '')) || 0;
@@ -9915,7 +9881,7 @@ function formatReadableSheets(ss, parsed) {
 
       if (calcMode === 'cari_angsuran') {
         let marginType = document.getElementById('mur-margin-type').value;
-        let marginVal = parseMurMarginValue(document.getElementById('mur-margin-val').value, marginType);
+        let marginVal = parseFloat(document.getElementById('mur-margin-val').value.replace(/\./g, '')) || 0;
         let totalMargin = 0;
         if (marginType === 'fix_nominal') totalMargin = marginVal; 
         else if (marginType === 'fix_pct') totalMargin = pokokPembiayaan * (marginVal / 100);
@@ -9930,7 +9896,7 @@ function formatReadableSheets(ss, parsed) {
         let isRugi = totalMargin < 0; let marginColor = isRugi ? 'text-red-500' : 'text-green-600';
         resultBox.innerHTML = `<div class="flex justify-between text-[11px] text-gray-600 mt-1"><span>Sisa Pokok (Setelah DP):</span> <b class="font-mono-data">${formatRpKebalSensor(pokokPembiayaan)}</b></div><div class="flex justify-between text-[11px] text-gray-600 mt-1"><span>Angsuran Patokan:</span> <b class="font-mono-data text-purple-600">${formatRpKebalSensor(targetAngsuran)} / Bln</b></div>${isInflasi ? `<div class="flex justify-between text-[11px] text-gray-600 mt-1 border-b border-purple-200 pb-2"><span>Sisa Inflasi (${inflasiRate}%/thn):</span> <b class="text-orange-500 font-mono-data">- ${formatRpKebalSensor(nilaiInflasi)}</b></div>` : '<div class="border-b border-purple-200 pt-2"></div>'}<div class="flex justify-between text-[12px] font-bold text-purple-700 mt-2 uppercase tracking-wider"><span>Total Harga Akad:</span> <b class="font-mono-data">${formatRpKebalSensor(totalHargaAkad)}</b></div><div class="mt-4 bg-white p-4 rounded-xl border border-purple-100 shadow-sm text-center"><p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Margin Profit Bersih</p><p class="text-3xl font-mono-data font-extrabold ${marginColor} mt-1">${isRugi ? 'RUGI' : formatRpKebalSensor(totalMargin)}</p><p class="text-[10px] text-gray-400 mt-2 font-medium">Setara Margin: <b>${isRugi ? '0' : equivMargin.toFixed(2)}% per Tahun</b></p></div>`;
       }
-      resultBox.classList.remove('hidden');
+      resBox.classList.remove('hidden');
     }
 
     // FUNGSI LAINNYA
@@ -10142,9 +10108,6 @@ function formatReadableSheets(ss, parsed) {
       let currentDay = today.getDate();
       let currentMonth = today.getMonth();
       let currentYear = today.getFullYear();
-      // Tagihan tgl 29-31 jatuh tempo di hari terakhir bulan pendek (mis. Februari)
-      let lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-      const clampDueDay = (d) => Math.min(Math.max(parseInt(d, 10) || 1, 1), lastDayOfMonth);
       let todayStr = getLocalDateStr();
       let alertsHtml = [];
       activeDueModalItems = [];
@@ -10200,7 +10163,6 @@ function formatReadableSheets(ss, parsed) {
           } else if (period === 'Bulanan') {
             dueDay = 25; // Default jatuh tempo bulanan tanggal 25
           }
-          dueDay = clampDueDay(dueDay);
 
           let payAmount = parseFloat(item.monthlyPay) > 0 ? parseFloat(item.monthlyPay) : unpaid;
           if (payAmount > unpaid) payAmount = unpaid;
@@ -10379,7 +10341,7 @@ function formatReadableSheets(ss, parsed) {
       if (globalData.routinePayments && Object.keys(globalData.routinePayments).length > 0) {
         Object.keys(globalData.routinePayments).forEach(itemKey => {
           let item = globalData.routinePayments[itemKey];
-          let dueDay = clampDueDay(item.dueDay);
+          let dueDay = parseInt(item.dueDay, 10) || 1;
           let amt = parseFloat(item.amount) || 0;
           let alertKey = 'routine_' + itemKey;
 
