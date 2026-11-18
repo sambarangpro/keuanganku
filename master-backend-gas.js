@@ -22,10 +22,12 @@
  * ==============================================================================
  */
 
-// Kata sandi admin awal. PENTING: file ini publik di GitHub, jadi segera ganti kata sandi
-// lewat menu "Ganti Password" di Developer Dashboard setelah deploy. Kata sandi baru
-// disimpan di Script Properties (DEV_PORTAL_PASSWORD) dan TIDAK ikut tersimpan di GitHub.
-var MASTER_ADMIN_PASSWORD = "adminKeuanganku2026!";
+// Kata sandi admin HANYA dibaca dari Script Properties (DEV_PORTAL_PASSWORD), tidak ada lagi
+// kata sandi bawaan di file publik ini. Jika belum diatur, semua aksi admin DITOLAK.
+// Cara mengatur: Apps Script > Setelan Project (ikon roda gigi) > Properti skrip >
+// Tambahkan properti "DEV_PORTAL_PASSWORD" berisi kata sandi panjang & unik.
+// Kata sandi bawaan lama ini hanya disimpan untuk ditolak bila dipakai lagi.
+var LEGACY_DEFAULT_ADMIN_PASSWORD = "adminKeuanganku2026!";
 
 // Token & email pemilik (developer). Bisa ditimpa lewat Script Properties:
 //   OWNER_TOKENS = "PRO-XXXX-XXXX-XXXX,PRO-YYYY-YYYY-YYYY"
@@ -226,21 +228,87 @@ function purgeStoredCloudKeys_() {
   } catch(e) {}
 }
 
-/** Bandingkan PIN. Google Sheets kadang membuang angka 0 di depan PIN, jadi itu ditoleransi. */
+// ------------------------------------------------------------------------------
+// PIN PRIBADI DISIMPAN TERACAK (HASH), BUKAN TEKS POLOS
+// Format kolom PIN di sheet Tokens: "h1$<garam>$<sidik>". PIN lama yang masih polos
+// tetap bisa dipakai login dan otomatis diacak sekali jalan (hashStoredPins_).
+// ------------------------------------------------------------------------------
+var PIN_HASH_PREFIX = "h1$";
+var PIN_HASH_ROUNDS = 50;
+
+function normalizePinForHash_(pin) {
+  var p = String(pin == null ? "" : pin).trim();
+  // Google Sheets dulu kadang membuang angka 0 di depan PIN angka, jadi 0 di depan diabaikan
+  if (/^\d+$/.test(p)) p = p.replace(/^0+/, "");
+  return p;
+}
+function isPinHash_(s) {
+  return String(s == null ? "" : s).trim().indexOf(PIN_HASH_PREFIX) === 0;
+}
+function pinDigest_(salt, pin) {
+  var v = salt + ":" + normalizePinForHash_(pin);
+  var bytes = null;
+  for (var r = 0; r < PIN_HASH_ROUNDS; r++) {
+    bytes = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, r === 0 ? v : Utilities.base64Encode(bytes) + v, Utilities.Charset.UTF_8);
+  }
+  return Utilities.base64EncodeWebSafe(bytes).replace(/=+$/, "");
+}
+function hashPin_(pin) {
+  var salt = Utilities.getUuid().replace(/-/g, "").slice(0, 16);
+  return PIN_HASH_PREFIX + salt + "$" + pinDigest_(salt, pin);
+}
+/** Apakah kolom PIN berisi PIN pribadi yang sah (teracak, atau PIN polos lama). */
+function hasStoredPin_(s) {
+  s = String(s == null ? "" : s).trim();
+  if (!s) return false;
+  if (isPinHash_(s)) return true;
+  return s.length <= 20 && s.indexOf("GMT") === -1;
+}
+
+/** Bandingkan PIN ketikan (a) dengan PIN tersimpan (b; teracak atau polos lama). */
 function pinEquals_(a, b) {
   a = String(a == null ? "" : a).trim();
   b = String(b == null ? "" : b).trim();
   if (!a || !b) return false;
+  if (isPinHash_(b)) {
+    var parts = b.split("$");
+    if (parts.length !== 3) return false;
+    return pinDigest_(parts[1], a) === parts[2];
+  }
   if (a === b) return true;
   if (/^\d+$/.test(a) && /^\d+$/.test(b)) return a.replace(/^0+/, "") === b.replace(/^0+/, "");
   return false;
 }
 
-/** Simpan PIN sebagai TEKS agar angka 0 di depan tidak hilang. */
+/** Simpan PIN dalam bentuk teracak (tidak bisa dibaca siapa pun yang membuka sheet). */
 function writePin_(sheet, rowNum, colIdx, pin) {
   var cell = sheet.getRange(rowNum, colIdx + 1);
   try { cell.setNumberFormat("@"); } catch(e) {}
-  cell.setValue(String(pin || ""));
+  var p = String(pin == null ? "" : pin).trim();
+  cell.setValue(p ? hashPin_(p) : "");
+}
+
+/** Sekali jalan: acak semua PIN polos lama di sheet Tokens. */
+function hashStoredPins_() {
+  try {
+    var props = PropertiesService.getScriptProperties();
+    if (props.getProperty("PINS_HASHED_V1") === "1") return;
+    var ss = getSpreadsheet();
+    var sheet = ss ? ss.getSheetByName(SHEET_TOKENS) : null;
+    if (!sheet) return;
+    var data = sheet.getDataRange().getValues();
+    if (data && data.length > 1) {
+      var colMap = getTokenColumnIndexes(data[0]);
+      if (colMap.personalPin === undefined) return;
+      for (var i = 1; i < data.length; i++) {
+        var raw = String(data[i][colMap.personalPin] == null ? "" : data[i][colMap.personalPin]).trim();
+        if (raw && !isPinHash_(raw) && hasStoredPin_(raw)) {
+          writePin_(sheet, i + 1, colMap.personalPin, raw);
+        }
+      }
+    }
+    props.setProperty("PINS_HASHED_V1", "1");
+  } catch(e) {}
 }
 
 function parseDevices_(raw) {
@@ -656,6 +724,7 @@ var READ_ONLY_ACTIONS = {
   "create_pair_session": true,
   "check_pair_session": true,
   "get_public_catalog": true,
+  "check_voucher": true,
   "admin_login": true,
   "admin_get_data": true,
   "admin_check_fonnte_device": true
@@ -684,6 +753,7 @@ function handleRequest(params) {
     if (action !== "create_pair_session" && action !== "check_pair_session") {
       initSheets();
       purgeStoredCloudKeys_();
+      if (lock) hashStoredPins_();
     }
 
     switch(action) {
@@ -799,6 +869,10 @@ function handleRequest(params) {
       // -------------------------------------------------------------
       case "get_public_catalog":
         result = getPublicCatalog(params);
+        break;
+
+      case "check_voucher":
+        result = checkVoucher(params);
         break;
 
       case "submit_public_order":
@@ -928,7 +1002,7 @@ function validateClientToken(params) {
         }
       } else {
         // Normalisasi hanya jika perangkat sudah pernah login (>0 devices)
-        if (pinStatus !== "PIN_CHANGED" && storedPersonalPin && storedPersonalPin.length <= 20 && !storedPersonalPin.includes("GMT")) {
+        if (pinStatus !== "PIN_CHANGED" && hasStoredPin_(storedPersonalPin)) {
           pinStatus = "PIN_CHANGED";
         } else if (pinStatus !== "PIN_CHANGED") {
           // Jika perangkat sudah >= 2, pasti akun sudah dipersonalisasi.
@@ -1053,13 +1127,27 @@ function validateClientToken(params) {
       var currentSpreadsheetId = (colMap.spreadsheetId !== undefined && data[i][colMap.spreadsheetId]) ? String(data[i][colMap.spreadsheetId]).trim() : "";
       if (params.spreadsheetId && colMap.spreadsheetId !== undefined) {
         var newSheetId = String(params.spreadsheetId).trim();
-        if (newSheetId && newSheetId !== currentSpreadsheetId) {
+        // Hanya ID Google Sheet yang sah (cegah rumus/teks asing masuk ke sheet Tokens)
+        if (newSheetId && /^[A-Za-z0-9_-]{20,100}$/.test(newSheetId) && newSheetId !== currentSpreadsheetId) {
           currentSpreadsheetId = newSheetId;
           sheet.getRange(i + 1, colMap.spreadsheetId + 1).setValue(currentSpreadsheetId);
         }
       }
 
       // 3. Cek apakah perangkat sudah ada (Re-login)
+      // PIN yang dikirim perangkat terdaftar WAJIB benar (dulu PIN apa pun diterima bila
+      // lisensi masih memakai token bawaan / PIN belum tercatat, sehingga layar kunci bisa dilewati).
+      if (existingDevice && inputPin) {
+        var existingPinOk = storedPersonalPin
+          ? pinEquals_(inputPin, storedPersonalPin)
+          : (normalizeToken_(inputPin) === normalizeToken_(tokenInput));
+        if (!existingPinOk) {
+          registerFailure_("PIN", tokenInput, 900);
+          logEvent("WRONG_PIN_EXISTING_DEVICE", tokenInput, buyerName, deviceId, deviceName, "Perangkat terdaftar memasukkan PIN yang tidak cocok");
+          return { success: false, message: "PIN salah! Masukkan PIN pribadi yang benar (atau Token Lisensi bila belum membuat PIN pribadi)." };
+        }
+        clearFailures_("PIN", tokenInput);
+      }
       if (existingDevice) {
         existingDevice.lastActive = new Date().toISOString();
         existingDevice.deviceName = deviceName;
@@ -1075,7 +1163,8 @@ function validateClientToken(params) {
             email: boundEmail || inputEmail,
             spreadsheetId: currentSpreadsheetId,
             pinStatus: pinStatus,
-            personalPin: storedPersonalPin,
+            // PIN hanya dikembalikan bila baru saja diketik & terbukti benar (server tidak menyimpan PIN polos)
+            personalPin: inputPin || "",
             isPasswordChanged: (pinStatus === "PIN_CHANGED"),
             maxDevices: (pinStatus === "PIN_CHANGED" ? maxDevices : 1),
             deviceCount: devices.length,
@@ -1121,7 +1210,7 @@ function validateClientToken(params) {
           email: boundEmail || inputEmail,
           spreadsheetId: currentSpreadsheetId,
           pinStatus: newPinStatus,
-          personalPin: storedPersonalPin || inputPin,
+          personalPin: inputPin || "",
           isPasswordChanged: (newPinStatus === "PIN_CHANGED"),
           maxDevices: (newPinStatus === "PIN_CHANGED" ? maxDevices : 1),
           deviceCount: devices.length,
@@ -1141,7 +1230,7 @@ function validateClientToken(params) {
       activatedAt: nowStr,
       lastActive: nowStr
     }];
-    sheet.appendRow([
+    sheet.appendRow(safeRow_([
       "PRO-DEMO-IKLAN-2026",
       "Akun Demo Iklan (Official Showcase)",
       "087788197916 | demo@keuanganku.id",
@@ -1153,7 +1242,7 @@ function validateClientToken(params) {
       "",
       nowStr,
       "Akun Resmi Percontohan Khusus Iklan & Promosi (Showcase)"
-    ]);
+    ]));
     logEvent("DEVICE_ACTIVATED", "PRO-DEMO-IKLAN-2026", "Akun Demo Iklan (Official Showcase)", deviceId, deviceName, "Perangkat resmi terdaftar di Akun Demo Iklan");
     return {
       success: true,
@@ -1389,9 +1478,11 @@ function authorizePairSession(params) {
   // Pastikan status pinStatus adalah PIN_CHANGED dan personalPin tersimpan di database token.
   // PIN lama yang sudah tersimpan TIDAK pernah ditimpa dari sini.
   if (!storedPersonalPin && inputPin && inputPin.length >= 3) {
-    storedPersonalPin = inputPin;
     writePin_(sheet, foundRow, colMap.personalPin, inputPin);
+    storedPersonalPin = "set";
   }
+  // PIN polos untuk perangkat baru = PIN yang barusan diketik & terbukti benar di HP utama
+  var pinForNewDevice = storedPersonalPin ? inputPin : "";
   if (storedPersonalPin) {
     pinStatus = "PIN_CHANGED";
     sheet.getRange(foundRow, colMap.pinStatus + 1).setValue("PIN_CHANGED");
@@ -1418,13 +1509,13 @@ function authorizePairSession(params) {
     token: tokenInput,
     buyerName: buyerName,
     pinStatus: pinStatus,
-    personalPin: storedPersonalPin || "",
+    personalPin: pinForNewDevice,
     isPasswordChanged: (pinStatus === "PIN_CHANGED"),
     maxDevices: maxDevices,
     deviceCount: devices.length,
     cloudUrl: keyedCloudForPairing
   };
-  sessionObj.pin = storedPersonalPin || "";
+  sessionObj.pin = pinForNewDevice;
   var masterUrlParam = String(params.masterUrl || "").trim();
   sessionObj.masterUrl = (masterUrlParam.indexOf("https://script.google.com/") === 0) ? masterUrlParam : "";
   sessionObj.cloudUrl = keyedCloudForPairing;
@@ -1450,6 +1541,10 @@ function clientChangePersonalPin(params) {
 
   if (!tokenInput || !newPin) {
     return { success: false, message: "Token dan PIN baru tidak boleh kosong." };
+  }
+  // Akun demo dipakai bersama: PIN-nya tidak boleh diganti (agar tidak bisa "dibajak")
+  if (tokensMatch_(tokenInput, DEMO_TOKEN)) {
+    return { success: false, message: "PIN akun demo tidak bisa diganti." };
   }
 
   var ss = getSpreadsheet();
@@ -1527,7 +1622,7 @@ function verifyClientStatus(params) {
       try { devices = rawDevices ? JSON.parse(rawDevices) : []; } catch(e) {}
 
       var storedPersonalPin = String(data[i][colMap.personalPin] || "").trim();
-      if (pinStatus !== "PIN_CHANGED" && storedPersonalPin && storedPersonalPin.length <= 20 && !storedPersonalPin.includes("GMT")) pinStatus = "PIN_CHANGED";
+      if (pinStatus !== "PIN_CHANGED" && hasStoredPin_(storedPersonalPin)) pinStatus = "PIN_CHANGED";
       else if (pinStatus !== "PIN_CHANGED" && devices.length > 0) pinStatus = "USING_TOKEN";
 
       var isFound = false;
@@ -1559,10 +1654,10 @@ function verifyClientStatus(params) {
         active: true, 
         buyerName: data[i][colMap.buyerName],
         pinStatus: pinStatus,
-        personalPin: storedPersonalPin,
         isPasswordChanged: (pinStatus === "PIN_CHANGED"),
         deviceCount: devices.length,
         maxDevices: (isOwner ? maxDevLimit : Math.max(parseInt(data[i][colMap.maxDevices]) || 3, 3)),
+        isOwner: isOwnerToken_(tokenInput),
         cloudUrl: currentCloudUrl
       };
     }
@@ -1605,7 +1700,7 @@ function clientGetDevices(params) {
       var pinStatus = String(data[i][colMap.pinStatus] || "UNCLAIMED").trim().toUpperCase();
       var storedPersonalPin = String(data[i][colMap.personalPin] || "").trim();
 
-      if (pinStatus !== "PIN_CHANGED" && storedPersonalPin && storedPersonalPin.length <= 20 && !storedPersonalPin.includes("GMT")) pinStatus = "PIN_CHANGED";
+      if (pinStatus !== "PIN_CHANGED" && hasStoredPin_(storedPersonalPin)) pinStatus = "PIN_CHANGED";
       else if (pinStatus !== "PIN_CHANGED" && devices.length > 0) pinStatus = "USING_TOKEN";
 
       var mapped = devices.map(function(d) {
@@ -1637,6 +1732,11 @@ function deactivateClientDevice(params) {
   var tokenInput = (params.token || "").trim().toUpperCase();
   var targetDeviceId = (params.targetDeviceId || params.deviceId || "").trim();
   var currentDeviceId = (params.currentDeviceId || params.requesterDeviceId || "").trim();
+
+  // Akun demo dipakai bersama: satu pengguna tidak boleh mengeluarkan semua perangkat demo lain
+  if (targetDeviceId === "ALL_OTHERS" && tokensMatch_(tokenInput, DEMO_TOKEN)) {
+    return { success: false, message: "Akun demo tidak bisa mengeluarkan perangkat lain." };
+  }
 
   var ss = getSpreadsheet();
   var sheet = ss.getSheetByName(SHEET_TOKENS);
@@ -1699,13 +1799,14 @@ function getActiveAdminPassword() {
       return String(storedPass).trim();
     }
   } catch(e) {}
-  return MASTER_ADMIN_PASSWORD;
+  return ""; // belum diatur -> semua aksi admin ditolak
 }
 
 function checkAdminAuth(password) {
   // Kunci sementara setelah terlalu banyak percobaan salah (anti tebak password)
   if (isRateLimited_("ADMIN", "GLOBAL", 10)) return false;
   var effectivePass = getActiveAdminPassword();
+  if (!effectivePass || effectivePass === LEGACY_DEFAULT_ADMIN_PASSWORD) return false;
   var ok = !!(password && String(password).trim() === effectivePass);
   // "TEST_VERSION_CHECK" = cek versi dari Dashboard, bukan tebakan password
   if (!ok && password && password !== "TEST_VERSION_CHECK") registerFailure_("ADMIN", "GLOBAL", 900);
@@ -1720,7 +1821,7 @@ function adminChangePassword(params) {
   if (!newPass || newPass.length < 10) {
     return { success: false, message: "Kata sandi baru minimal 10 karakter." };
   }
-  if (newPass === MASTER_ADMIN_PASSWORD) {
+  if (newPass === LEGACY_DEFAULT_ADMIN_PASSWORD) {
     return { success: false, message: "Jangan memakai kata sandi bawaan yang tercantum di kode publik." };
   }
   PropertiesService.getScriptProperties().setProperty("DEV_PORTAL_PASSWORD", newPass);
@@ -1778,7 +1879,7 @@ function adminGetData(params) {
     if (parsedDev.length === 0) {
       effectivePinStatus = (pinSt === "USING_TOKEN" ? "USING_TOKEN" : "UNCLAIMED");
     } else {
-      var isPinChanged = (pinSt === "PIN_CHANGED") || (storedPersonalPin !== "" && storedPersonalPin.length <= 20 && !storedPersonalPin.includes("GMT"));
+      var isPinChanged = (pinSt === "PIN_CHANGED") || hasStoredPin_(storedPersonalPin);
       effectivePinStatus = isPinChanged ? "PIN_CHANGED" : "USING_TOKEN";
     }
 
@@ -1922,7 +2023,7 @@ function adminGenerateToken(params) {
     }
   }
 
-  sheet.appendRow([
+  sheet.appendRow(safeRow_([
     newToken,
     buyerName,
     buyerContact,
@@ -1937,7 +2038,7 @@ function adminGenerateToken(params) {
     stripCloudKey_(params.cloudUrl),
     params.buyerEmail || "",
     params.spreadsheetId || ""
-  ]);
+  ]));
 
   logEvent("TOKEN_ORDER_CREATED", newToken, buyerName, "-", "-", "Token order baru diterbitkan. Kuota: " + maxDevices + " devices.");
 
@@ -2190,7 +2291,7 @@ function adminAddOrder(params) {
   if (params.autoGenerateToken && (status === "PAID" || status === "COMPLETED")) {
     tokenGenerated = generateRandomToken();
     var tokSheet = ss.getSheetByName(SHEET_TOKENS);
-    tokSheet.appendRow([
+    tokSheet.appendRow(safeRow_([
       tokenGenerated,
       buyerName,
       whatsapp,
@@ -2202,7 +2303,7 @@ function adminAddOrder(params) {
       "",
       nowStr,
       "Pemesanan " + orderId + " (" + pkg + ")"
-    ]);
+    ]));
     status = "COMPLETED";
     logEvent("TOKEN_ORDER_CREATED", tokenGenerated, buyerName, "-", "-", "Lisensi terbit via pemesanan " + orderId);
   }
@@ -2214,7 +2315,7 @@ function adminAddOrder(params) {
 
   // Jika kolom Payment Proof tersedia di sheet Orders
   if (ordHeaders.length >= 14 || (ordColMap.paymentProof !== undefined && ordColMap.paymentProof === 9)) {
-    sheet.appendRow([
+    sheet.appendRow(safeRow_([
       orderId,
       nowStr,
       buyerName,
@@ -2229,10 +2330,10 @@ function adminAddOrder(params) {
       tokenGenerated,
       fullNotes,
       nowStr
-    ]);
+    ]));
   } else {
     // Fallback sheet lama 13 kolom
-    sheet.appendRow([
+    sheet.appendRow(safeRow_([
       orderId,
       nowStr,
       buyerName,
@@ -2246,7 +2347,7 @@ function adminAddOrder(params) {
       tokenGenerated,
       fullNotes + (paymentProof ? " [Bukti: " + paymentProof + "]" : ""),
       nowStr
-    ]);
+    ]));
   }
 
   logEvent("ORDER_CREATED", tokenGenerated || "-", buyerName, "-", "-", "Pemesanan baru dicatat: " + orderId + " (" + pkg + " - " + price + ")");
@@ -2377,7 +2478,7 @@ function adminProcessOrderLicense(params) {
   if (!tokenToUse) {
     tokenToUse = generateRandomToken();
     var tokSheet = ss.getSheetByName(SHEET_TOKENS);
-    tokSheet.appendRow([
+    tokSheet.appendRow(safeRow_([
       tokenToUse,
       buyerName,
       whatsapp + (email ? " | " + email : ""),
@@ -2392,7 +2493,7 @@ function adminProcessOrderLicense(params) {
       "", // Cloud URL
       email || "", // Email Google (BYODb)
       "" // Spreadsheet ID (BYODb)
-    ]);
+    ]));
   }
 
   // Update Orders sheet
@@ -2545,20 +2646,10 @@ function getPublicCatalog(params) {
   var orderMode = settings.orderMode || "TESTING";
   var launchSeqOffset = parseInt(settings.launchSeqOffset, 10) || 0;
 
-  var publicVouchers = (settings.vouchers || []).filter(function(v) {
+  // Kode voucher TIDAK lagi dikirim ke halaman publik (dulu siapa pun bisa melihat semua kode,
+  // termasuk voucher gratis). Pembeli mengetik kodenya, lalu server memeriksa lewat "check_voucher".
+  var hasVouchers = (settings.vouchers || []).some(function(v) {
     return String(v.status || "ACTIVE").toUpperCase() === "ACTIVE";
-  }).map(function(v) {
-    return {
-      code: String(v.code || "").toUpperCase(),
-      type: v.type || "fixed",
-      value: Number(v.value) || 0,
-      minPrice: Number(v.minPrice) || 0,
-      targetPackage: v.targetPackage || "ALL",
-      maxUses: Number(v.maxUses) || 0,
-      usedCount: Number(v.usedCount) || 0,
-      status: v.status || "ACTIVE",
-      description: v.description || ""
-    };
   });
 
   // Hitung nomor urut antrean orderan berikutnya & kode unik 2 digit
@@ -2586,13 +2677,128 @@ function getPublicCatalog(params) {
     launchSeqOffset: launchSeqOffset,
     appVersion: (orderMode === "LIVE") ? "v1.0" : "v0.1",
     packages: settings.packages || [],
-    vouchers: publicVouchers,
+    vouchers: [],
+    hasVouchers: hasVouchers,
     paymentAccounts: settings.paymentAccounts || [],
     sellerWhatsApp: settings.sellerWhatsApp || "",
     orderFormUrl: settings.orderFormUrl || "",
     nextOrderSeq: nextOrderSeq,
     nextUniqueCode: nextUniqueCode
   };
+}
+
+/**
+ * JALANKAN SEKALI DARI EDITOR: jadikan semua foto bukti transfer lama PRIVAT
+ * (dulu dibagikan "siapa saja yang memiliki link").
+ */
+function privatkanBuktiTransfer() {
+  var n = 0;
+  var folders = DriveApp.getFoldersByName("Bukti_Transfer_Keuanganku");
+  while (folders.hasNext()) {
+    var files = folders.next().getFiles();
+    while (files.hasNext()) {
+      var f = files.next();
+      try { f.setSharing(DriveApp.Access.PRIVATE, DriveApp.Permission.NONE); n++; } catch(e) {}
+    }
+  }
+  Logger.log("Selesai: " + n + " foto bukti transfer kini privat.");
+}
+
+/** Cari voucher yang berlaku untuk paket tertentu. Mengembalikan {voucher} atau {reason}. */
+function findApplicableVoucher_(settings, code, pkgObj, basePrice) {
+  code = String(code || "").trim().toUpperCase().replace(/\s+/g, "");
+  if (!code) return { reason: "EMPTY" };
+  var found = null;
+  (settings.vouchers || []).forEach(function(v) {
+    if (!found && String(v.code || "").trim().toUpperCase() === code) found = v;
+  });
+  if (!found) return { reason: "NOT_FOUND" };
+  if (String(found.status || "ACTIVE").toUpperCase() !== "ACTIVE") return { reason: "INACTIVE" };
+  var vMax = Number(found.maxUses) || 0;
+  if (vMax > 0 && (Number(found.usedCount) || 0) >= vMax) return { reason: "QUOTA" };
+  if (pkgObj) {
+    if ((Number(found.minPrice) || 0) > basePrice) return { reason: "MIN_PRICE", voucher: found };
+    var tgt = found.targetPackage || "ALL";
+    if (tgt !== "ALL" && tgt !== pkgObj.id && tgt !== pkgObj.name) return { reason: "PACKAGE", voucher: found };
+  }
+  return { voucher: found };
+}
+
+/** Form publik: periksa SATU kode voucher (dibatasi agar kode tidak bisa ditebak beruntun). */
+function checkVoucher(params) {
+  var code = String(params.code || "").trim().toUpperCase().replace(/\s+/g, "").substring(0, 40);
+  if (!code) return { success: false, message: "Silakan ketikkan kode voucher." };
+  if (isRateLimited_("VOUCHER", "GLOBAL", 40)) {
+    return { success: false, message: "Terlalu banyak percobaan kode. Silakan coba lagi 15 menit lagi." };
+  }
+  var settings = getStoredSalesSettings();
+  var pkgObj = null;
+  (settings.packages || []).forEach(function(p) {
+    if (!pkgObj && (p.id === params.packageId || p.name === params.package)) pkgObj = p;
+  });
+  if (!pkgObj) return { success: false, message: "Silakan pilih paket lisensi terlebih dahulu." };
+  var basePrice = Number(pkgObj.priceNum) || parseInt(String(pkgObj.price || "").replace(/[^0-9]/g, ""), 10) || 0;
+  var r = findApplicableVoucher_(settings, code, pkgObj, basePrice);
+  if (!r.voucher || r.reason === "INACTIVE" || r.reason === "QUOTA" || r.reason === "NOT_FOUND") {
+    registerFailure_("VOUCHER", "GLOBAL", 900);
+    var msg = (r.reason === "QUOTA") ? "Maaf, kuota voucher \"" + code + "\" sudah habis."
+      : (r.reason === "INACTIVE") ? "Voucher \"" + code + "\" sedang tidak aktif."
+      : "Kode voucher \"" + code + "\" tidak ditemukan. Pastikan kode sesuai.";
+    return { success: false, message: msg };
+  }
+  var v = r.voucher;
+  if (r.reason === "MIN_PRICE") {
+    return { success: false, message: "Voucher ini hanya berlaku untuk pembelian minimal Rp " + String(Number(v.minPrice) || 0).replace(/\B(?=(\d{3})+(?!\d))/g, ".") + "." };
+  }
+  if (r.reason === "PACKAGE") {
+    var reqPkg = null;
+    (settings.packages || []).forEach(function(p) { if (!reqPkg && (p.id === v.targetPackage || p.name === v.targetPackage)) reqPkg = p; });
+    return { success: false, message: "Voucher ini hanya berlaku untuk paket \"" + (reqPkg ? reqPkg.name : v.targetPackage) + "\"." };
+  }
+  var maxUses = Number(v.maxUses) || 0;
+  return {
+    success: true,
+    voucher: {
+      code: String(v.code || "").toUpperCase(),
+      type: v.type || "fixed",
+      value: Number(v.value) || 0,
+      minPrice: Number(v.minPrice) || 0,
+      targetPackage: v.targetPackage || "ALL",
+      description: v.description || "",
+      remaining: maxUses > 0 ? Math.max(0, maxUses - (Number(v.usedCount) || 0)) : -1
+    }
+  };
+}
+
+/**
+ * Kode unik 2 digit untuk nominal transfer. Dimulai dari nomor urut pesanan, lalu digeser
+ * bila sudah dipakai pesanan lain yang MASIH MENUNGGU pembayaran dengan nominal yang sama,
+ * agar dua pembeli tidak pernah diminta transfer dengan angka persis sama.
+ */
+function pickUniqueCode_(sheet, priceAfterDiscount, startCode) {
+  if (priceAfterDiscount <= 0) return startCode;
+  var taken = {};
+  try {
+    var lastRow = sheet.getLastRow();
+    if (lastRow > 1) {
+      var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      var cm = getOrderColumnIndexes(headers);
+      var from = Math.max(2, lastRow - 400);
+      var rows = sheet.getRange(from, 1, lastRow - from + 1, sheet.getLastColumn()).getValues();
+      rows.forEach(function(r) {
+        var st = String(r[cm.status] || "").trim().toUpperCase();
+        if (st !== "PENDING" && st !== "MENUNGGU") return;
+        var total = parseInt(String(r[cm.price] || "").replace(/[^0-9]/g, ""), 10) || 0;
+        var diff = total - priceAfterDiscount;
+        if (diff >= 1 && diff <= 99) taken[diff] = true;
+      });
+    }
+  } catch(e) {}
+  for (var k = 0; k < 99; k++) {
+    var c = ((startCode - 1 + k) % 99) + 1;
+    if (!taken[c]) return c;
+  }
+  return startCode;
 }
 
 function saveProofImageToDrive(base64Data, orderId) {
@@ -2610,7 +2816,8 @@ function saveProofImageToDrive(base64Data, orderId) {
     var folder = folders.hasNext() ? folders.next() : DriveApp.createFolder(folderName);
     
     var file = folder.createFile(blob);
-    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    // Foto bukti transfer PRIVAT: hanya pemilik Google Drive (admin) yang bisa membukanya.
+    // (Dulu siapa pun yang memegang tautannya bisa melihat foto struk & data rekening pembeli.)
     return file.getUrl();
   } catch(e) {
     return "[Foto Bukti: " + orderId + "]";
@@ -2629,6 +2836,19 @@ function submitPublicOrder(params) {
 
   if (!buyerName) return { success: false, message: "Nama pemesan wajib diisi." };
   if (!whatsapp) return { success: false, message: "Nomor WhatsApp aktif wajib diisi." };
+
+  // ---- Anti-spam form publik ----
+  // (a) Kolom jebakan tersembunyi: manusia tidak mengisinya, robot pengisi form biasanya mengisi.
+  if (String(params.website || "").trim()) {
+    return { success: false, message: "Pesanan tidak dapat diproses." };
+  }
+  // (b) Batas jumlah pesanan: per nomor WhatsApp (5/jam) dan seluruh form (30/10 menit).
+  var waKey = whatsapp.replace(/[^0-9]/g, "").slice(-12) || "NA";
+  if (isRateLimited_("ORDER_WA", waKey, 5) || isRateLimited_("ORDER", "GLOBAL", 30)) {
+    return { success: false, message: "Terlalu banyak pesanan dalam waktu singkat. Silakan coba lagi nanti atau hubungi admin via WhatsApp." };
+  }
+  registerFailure_("ORDER_WA", waKey, 3600);
+  registerFailure_("ORDER", "GLOBAL", 600);
   if (email && !/^[^\s@|,;]+@[^\s@|,;]+\.[^\s@|,;]+$/.test(email)) {
     return { success: false, message: "Format email tidak valid." };
   }
@@ -2650,20 +2870,10 @@ function submitPublicOrder(params) {
   var basePrice = Number(pkgObj.priceNum) || parseInt(String(pkgObj.price || "").replace(/[^0-9]/g, ""), 10) || 0;
 
   var appliedVoucher = null;
-  var voucherLookup = voucherCode;
-  if (voucherLookup === "ORANGDALAM" || voucherLookup === "UJICOBA" || voucherLookup === "TESTING" || voucherLookup === "BETA") voucherLookup = "UJICOBA-PRO";
-  if (voucherLookup) {
-    (catalogSettings.vouchers || []).forEach(function(v) {
-      if (appliedVoucher) return;
-      if (String(v.code || "").trim().toUpperCase() !== voucherLookup) return;
-      if (String(v.status || "ACTIVE").toUpperCase() !== "ACTIVE") return;
-      var vMax = Number(v.maxUses) || 0;
-      if (vMax > 0 && (Number(v.usedCount) || 0) >= vMax) return;
-      if ((Number(v.minPrice) || 0) > basePrice) return;
-      var tgt = v.targetPackage || "ALL";
-      if (tgt !== "ALL" && tgt !== pkgObj.id && tgt !== pkgObj.name) return;
-      appliedVoucher = v;
-    });
+  if (voucherCode && !(voucherCode.indexOf("PRO-") === 0 || voucherCode.indexOf("KEU-") === 0)) {
+    var vr = findApplicableVoucher_(catalogSettings, voucherCode, pkgObj, basePrice);
+    if (vr.voucher && !vr.reason) appliedVoucher = vr.voucher;
+    else registerFailure_("VOUCHER", "GLOBAL", 900);
   }
   var discount = 0;
   if (appliedVoucher) {
@@ -2672,9 +2882,6 @@ function submitPublicOrder(params) {
       : (Number(appliedVoucher.value) || 0);
   }
   var priceAfterDiscount = Math.max(0, basePrice - discount);
-  var clientUniqueCode = parseInt(params.uniqueCode, 10);
-  var uniqueForPrice = (priceAfterDiscount > 0 && clientUniqueCode >= 1 && clientUniqueCode <= 99) ? clientUniqueCode : 0;
-  var price = "Rp " + String(priceAfterDiscount + uniqueForPrice).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   if (voucherCode && !appliedVoucher && !(voucherCode.indexOf("PRO-") === 0 || voucherCode.indexOf("KEU-") === 0)) {
     notes = (notes ? notes + " | " : "") + "[Voucher " + voucherCode + " tidak berlaku/kuota habis]";
   }
@@ -2708,7 +2915,11 @@ function submitPublicOrder(params) {
   var rawSeq = Math.max(1, lastRow);
   var orderSeq = (launchSeqOffset > 0 && rawSeq >= launchSeqOffset) ? Math.max(1, rawSeq - launchSeqOffset + 1) : rawSeq;
   var computedUniqueCode = ((orderSeq - 1) % 99) + 1;
-  var uniqueCode = uniqueForPrice || computedUniqueCode;
+  // Kode unik SELALU ditentukan server (tidak memakai angka kiriman form) dan tidak bentrok
+  // dengan pesanan lain yang masih menunggu pembayaran dengan nominal sama.
+  var uniqueCode = pickUniqueCode_(sheet, priceAfterDiscount, computedUniqueCode);
+  var uniqueForPrice = (priceAfterDiscount > 0) ? uniqueCode : 0;
+  var price = "Rp " + String(priceAfterDiscount + uniqueForPrice).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   var uCodePadded = (uniqueCode < 10 ? "0" : "") + uniqueCode;
   // Order ID selalu dibuat server (unik), tidak memakai kiriman form
   var orderId = "ORD-" + dateCompact + "-" + uCodePadded + "-" + Utilities.getUuid().substring(0, 4).toUpperCase();
@@ -2735,9 +2946,9 @@ function submitPublicOrder(params) {
       }
     } catch(errVoucher) {}
   }
-  if (!fullNotes.includes("Kode Unik")) {
-    fullNotes = (fullNotes ? fullNotes + " | " : "") + modeTag + "Kode Unik: " + uCodePadded + " (Urutan #" + orderSeq + ")";
-  }
+  // Kode unik di catatan SELALU dari server (abaikan tulisan "Kode Unik" kiriman form lama)
+  fullNotes = String(fullNotes || "").replace(/\s*\|?\s*Kode Unik:[^|]*/g, "").replace(/^\s*\|\s*/, "").trim();
+  fullNotes = (fullNotes ? fullNotes + " | " : "") + modeTag + "Kode Unik: " + uCodePadded + " (Urutan #" + orderSeq + ")";
 
   // Lisensi gratis HANYA jika harga hasil hitungan server = 0 karena voucher yang sah
   var isPioneerVoucher = !!(appliedVoucher && String(appliedVoucher.code).toUpperCase() === "UJICOBA-PRO");
@@ -2785,7 +2996,7 @@ function submitPublicOrder(params) {
         initSheets();
         tokSheet = ss.getSheetByName(SHEET_TOKENS);
       }
-      tokSheet.appendRow([
+      tokSheet.appendRow(safeRow_([
         tokenGenerated,
         buyerName,
         whatsapp + (email ? " | " + email : ""),
@@ -2797,7 +3008,7 @@ function submitPublicOrder(params) {
         "",
         nowStr,
         "Pengguna Perdana (Early Adopter - Akses Lifetime) via " + orderId + " (" + pkg + ")"
-      ]);
+      ]));
 
       fullNotes = (fullNotes ? fullNotes + " | " : "") + "[Pengguna Perdana Resmi - Akses Seumur Hidup]";
       logEvent("EARLY_ADOPTER_ISSUED", tokenGenerated, buyerName, "-", "-", "Lisensi resmi seumur hidup terbit untuk pengguna perdana via order " + orderId);
@@ -2848,7 +3059,7 @@ function submitPublicOrder(params) {
   var ordColMap = getOrderColumnIndexes(ordHeaders);
 
   if (ordHeaders.length >= 14 || (ordColMap.paymentProof !== undefined && ordColMap.paymentProof === 9)) {
-    sheet.appendRow([
+    sheet.appendRow(safeRow_([
       orderId,
       nowStr,
       buyerName,
@@ -2863,9 +3074,9 @@ function submitPublicOrder(params) {
       tokenGenerated,
       fullNotes,
       nowStr
-    ]);
+    ]));
   } else {
-    sheet.appendRow([
+    sheet.appendRow(safeRow_([
       orderId,
       nowStr,
       buyerName,
@@ -2879,7 +3090,7 @@ function submitPublicOrder(params) {
       tokenGenerated,
       fullNotes + (paymentProof ? " [Bukti: " + paymentProof + "]" : ""),
       nowStr
-    ]);
+    ]));
   }
 
   logEvent("PUBLIC_ORDER_SUBMITTED", tokenGenerated || "-", buyerName, "-", "-", "Pesanan online masuk: " + orderId + " (" + pkg + " - " + price + ")");
@@ -3194,7 +3405,6 @@ function verifyGoogleAccount(params) {
           spreadsheetId: currentSpreadsheetId,
           cloudUrl: currentCloudUrl,
           pinStatus: pinStatus,
-          personalPin: storedPersonalPin,
           maxDevices: maxDevices,
           deviceCount: devices.length
         }
@@ -3263,6 +3473,10 @@ function bindGoogleAccount(params) {
       var bindPinStatus = String(data[i][colMap.pinStatus] || "").trim().toUpperCase();
       var bindStoredPin = String(data[i][colMap.personalPin] || "").trim();
       if (!boundEmail && bindDevices.length > 0 && deviceIndex_(bindDevices, deviceId) === -1) {
+        // Anti tebak PIN: dulu jalur ini tidak dibatasi sehingga PIN bisa dicoba berulang-ulang
+        if (isRateLimited_("PIN", rowToken, 6)) {
+          return { success: false, needsPin: true, message: "Terlalu banyak percobaan PIN yang salah. Tunggu 15 menit lalu coba lagi." };
+        }
         var pinOk = bindStoredPin && pinEquals_(params.pin, bindStoredPin);
         if (!pinOk) {
           if (params.pin) registerFailure_("PIN", rowToken, 900);
@@ -3281,7 +3495,7 @@ function bindGoogleAccount(params) {
         sheet.getRange(i + 1, colMap.buyerEmail + 1).setValue(emailInput);
       }
 
-      if (params.spreadsheetId && colMap.spreadsheetId !== undefined) {
+      if (params.spreadsheetId && colMap.spreadsheetId !== undefined && /^[A-Za-z0-9_-]{20,100}$/.test(String(params.spreadsheetId).trim())) {
         sheet.getRange(i + 1, colMap.spreadsheetId + 1).setValue(String(params.spreadsheetId).trim());
       }
 

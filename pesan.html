@@ -530,6 +530,11 @@
     </div>
 
     <form id="public-order-form" onsubmit="handlePublicOrderSubmit(event)" class="space-y-6">
+      <!-- Kolom jebakan anti-robot: disembunyikan dari manusia, jangan diisi -->
+      <div aria-hidden="true" style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;">
+        <label for="order-website-hp">Website</label>
+        <input type="text" id="order-website-hp" name="website" tabindex="-1" autocomplete="off">
+      </div>
 
       <!-- ========================================== -->
       <!-- LANGKAH 1: PILIH PAKET LISENSI             -->
@@ -783,7 +788,7 @@
           <div class="flex items-center justify-between pt-3 border-t-2 border-slate-800">
             <div>
               <span class="text-sm font-black text-white block">TOTAL TRANSFER:</span>
-              <span class="text-[10px] text-amber-400 font-medium">Wajib tepat hingga 2 digit terakhir</span>
+              <span class="text-[10px] text-amber-400 font-medium">Wajib tepat hingga 2 digit terakhir. Nominal final dikonfirmasi setelah pesanan dikirim.</span>
             </div>
             <div class="flex items-center gap-2">
               <div id="summary-total-price" class="text-xl sm:text-2xl font-black text-emerald-400 font-mono-data tracking-tight">
@@ -1341,13 +1346,7 @@
       updateOrderSummary();
     }
 
-    function quickFillTestVoucher() {
-      let inp = document.getElementById('voucher-input');
-      if (inp) {
-        inp.value = 'UJICOBA-PRO';
-        applyVoucher();
-      }
-    }
+    function quickFillTestVoucher() { /* dihapus: kode voucher tidak lagi ditulis di halaman publik */ }
 
     async function applyVoucher() {
       let codeInput = document.getElementById('voucher-input');
@@ -1368,11 +1367,6 @@
         return;
       }
 
-      // Normalisasi alias kode uji coba: ORANGDALAM / UJICOBA / TESTING -> UJICOBA-PRO
-      if (code === 'ORANGDALAM' || code === 'UJICOBA' || code === 'TESTING' || code === 'BETA') {
-        code = 'UJICOBA-PRO';
-      }
-
       pendingServerCode = '';
 
       // Token lisensi (PRO-/KEU-) tidak memberi potongan di sisi klien; server memeriksanya saat pesanan dikirim.
@@ -1384,7 +1378,44 @@
         return;
       }
 
-      let v = (catalog.vouchers || []).find(item => item && item.code && String(item.code).toUpperCase().replace(/\s+/g, '') === code);
+      // Kode voucher diperiksa langsung ke server (daftar voucher tidak lagi dikirim ke halaman ini)
+      let v = null;
+      if (catalogFromServer) {
+        showVoucherMsg('info', 'Memeriksa kode voucher...');
+        try {
+          const ctl = new AbortController();
+          const tId = setTimeout(() => ctl.abort(), 8000);
+          let resp = await fetch(`${apiUrl}?action=check_voucher&code=${encodeURIComponent(code)}&packageId=${encodeURIComponent(selectedPackage.id || '')}&_t=${Date.now()}`, { signal: ctl.signal });
+          clearTimeout(tId);
+          let r = await resp.json();
+          if (r && r.success && r.voucher) {
+            v = r.voucher;
+            // "remaining" = sisa kuota (-1 = tanpa batas); ditampilkan sebagai maxUses/usedCount
+            v.status = 'ACTIVE';
+            v.usedCount = 0;
+            v.maxUses = (Number(r.voucher.remaining) >= 0) ? Number(r.voucher.remaining) : 0;
+            catalog.vouchers = [v];
+          } else if (r && r.success === false && r.message && !/action tidak (dikenal|valid)/i.test(r.message)) {
+            showVoucherMsg('error', r.message);
+            appliedVoucher = null;
+            updateOrderSummary();
+            return;
+          } else {
+            // Server lama belum mengenal check_voucher: periksa saat pesanan dikirim
+            appliedVoucher = null;
+            pendingServerCode = code;
+            showVoucherMsg('info', 'Kode akan diperiksa saat pesanan dikirim. Harga akan dikonfirmasi saat pesanan dikirim.');
+            updateOrderSummary();
+            return;
+          }
+        } catch (eV) {
+          appliedVoucher = null;
+          pendingServerCode = code;
+          showVoucherMsg('info', 'Koneksi lambat. Kode akan diperiksa saat pesanan dikirim.');
+          updateOrderSummary();
+          return;
+        }
+      }
 
       // Katalog server belum termuat: kode diteruskan ke server untuk diperiksa saat pesanan dikirim
       if (!v && !catalogFromServer) {
@@ -1927,7 +1958,10 @@
         paymentMethod: selectedPaymentMethod,
         paymentProof: paymentProof,
         voucherCode: appliedVoucher ? appliedVoucher.code : (pendingServerCode || ''),
-        notes: (notes ? notes + " | " : "") + "Kode Unik: " + uCodePadded + " (Urutan #" + currentOrderSeq + ")"
+        // Kode unik & nomor urut ditentukan server
+        notes: notes || '',
+        // Kolom jebakan anti-robot (selalu kosong untuk manusia)
+        website: (document.getElementById('order-website-hp') || {}).value || ''
       };
 
       // Nomor WhatsApp admin (format internasional)

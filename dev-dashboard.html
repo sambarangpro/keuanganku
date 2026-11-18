@@ -3976,6 +3976,7 @@
           token: newToken,
           notes: newNotes
         });
+        if (!res || !res.success) throw new Error((res && res.message) || 'Server menolak perubahan.');
 
         o.status = newStatus;
         o.paymentProof = newPaymentProof;
@@ -4000,11 +4001,12 @@
       if (!confirm("Hapus catatan pemesanan #" + orderId + "?\n\nCatatan ini akan dihapus dari sistem.")) return;
 
       try {
-        await callDevApi({
+        let res = await callDevApi({
           action: 'admin_delete_order',
           adminPassword: currentAdminPassword,
           orderId: orderId
         });
+        if (!res || !res.success) throw new Error((res && res.message) || 'Server menolak penghapusan.');
 
         cachedOrders = cachedOrders.filter(item => item.orderId !== orderId);
         localStorage.setItem('KEUANGANKU_DEV_ORDERS_CACHE', JSON.stringify(cachedOrders));
@@ -4033,8 +4035,14 @@
 
         let tokenGenerated = (res && res.token) ? res.token : '';
 
+        // Server menolak (pesanan tidak ada, sandi salah, dll.): tampilkan alasannya, JANGAN terbitkan token lain
+        let isOldBackend = res && res.success === false && /tidak dikenal/i.test(String(res.message || ''));
+        if (!tokenGenerated && res && res.success === false && !isOldBackend) {
+          throw new Error(res.message || 'Server menolak penerbitan lisensi.');
+        }
+
         // Jika backend belum versi baru, gunakan fallback admin_generate_token
-        if (!tokenGenerated) {
+        if (!tokenGenerated && isOldBackend) {
           let genRes = await callDevApi({
             action: 'admin_generate_token',
             adminPassword: currentAdminPassword,
@@ -4338,6 +4346,13 @@
         }
       } catch(e) {
         console.warn("Metode POST terkendala CORS, mengalihkan ke GET fallback...", e);
+      }
+
+      // Aksi admin yang MENGUBAH data tidak diulang lewat GET: bisa terjadi dua kali (order/token ganda),
+      // nilai "false" berubah jadi teks, dan kata sandi admin ikut tercatat di alamat URL.
+      let act = String(payload.action || '');
+      if (act.indexOf('admin_') === 0 && act.indexOf('admin_get') !== 0) {
+        throw new Error('Gagal menghubungi server (coba lagi atau periksa koneksi).');
       }
 
       // 2. Fallback GET otomatis jika browser memblokir POST (kebal CORS 100%)
@@ -6028,7 +6043,7 @@ Copyright © 2026 Sambarang Production`;
     }
 
     function escapeHtml(text) {
-      if (!text) return '';
+      if (text === null || text === undefined) return '';
       return String(text)
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
