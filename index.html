@@ -4241,7 +4241,8 @@
           }
 
           // Update status PIN & Device Count jika diubah di perangkat lain
-          // lic already declared at top of verifyBumperPin
+          // (dulu variabel lic tidak dideklarasikan di sini -> error senyap, sehingga pembaruan ini tidak pernah tersimpan)
+          let lic = getSavedLicense();
           let needsUpdate = false;
           if (lic) {
             if (res.pinStatus && lic.pinStatus !== res.pinStatus) {
@@ -4256,7 +4257,6 @@
             if (typeof res.isOwner === 'boolean' && lic.isOwner !== res.isOwner) {
               lic.isOwner = res.isOwner;
               needsUpdate = true;
-              if (typeof applyNavigationConfig === 'function') { try { applyNavigationConfig(); } catch(e) {} }
             }
             if (needsUpdate) {
               localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(lic));
@@ -4264,6 +4264,8 @@
               updateTokenSecurityBanner(lic);
               updateCloudSyncLockUI(lic);
               renderSetupPasswordCard(lic);
+              // Menu khusus pemilik (Rekapitulasi, Kalkulator) langsung muncul/hilang sesuai status dari server
+              if (typeof applyNavigationConfig === 'function') { try { applyNavigationConfig(); } catch(e) {} }
             }
           }
         }
