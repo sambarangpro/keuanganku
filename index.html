@@ -4195,6 +4195,8 @@
         if (res && res.success && res.active === false) {
           // Perangkat ini sudah DIKELUARKAN dari lisensi (mis. HP hilang): keluar & lepaskan kunci Cloud
           if (res.reason === "DEVICE_KICKED") {
+            // Hapus data keuangan dari perangkat yang dikeluarkan (tanpa mengirim apa pun ke Cloud)
+            try { await wipeLocalFinancialDataAfterSync(false); } catch(eW) {}
             try {
               let cu = String(globalData.cloudUrl || '');
               if (cu && typeof getKeyFromCloudUrl === 'function' && getKeyFromCloudUrl(cu)) {
@@ -4954,7 +4956,7 @@
         actionBadge.textContent = 'KELUAR DARI PERANGKAT INI';
         descEl.innerHTML = `
           <p class="font-bold">Aplikasi di perangkat ini akan terkunci kembali.</p>
-          <p>Slot kuota lisensi Anda di server akan dibebaskan sehingga dapat digunakan untuk login di perangkat lain.</p>
+          <p>Data terakhir dikirim ke Cloud lalu <b>dihapus dari perangkat ini</b>. Slot kuota lisensi dibebaskan. Untuk masuk lagi perlu <b>Token + PIN</b>, akun Google, atau Scan QR.</p>
         `;
         btnText.textContent = 'Ya, Yakin Keluar';
       }
@@ -4968,6 +4970,27 @@
       pendingDeviceAction = null;
     }
 
+    /**
+     * Saat keluar / dikeluarkan dari lisensi: kirim dulu data terakhir ke Cloud, lalu hapus data keuangan
+     * dari perangkat ini (agar tidak bisa dibuka lagi di perangkat itu). Data hanya dihapus bila perangkat
+     * ini memang tersambung ke Cloud / Drive (ada salinannya); tanpa Cloud, data dibiarkan agar tidak hilang.
+     */
+    async function wipeLocalFinancialDataAfterSync(trySyncFirst = true) {
+      let cu = String((globalData && globalData.cloudUrl) || localStorage.getItem("KEUANGANKU_CLOUD_URL") || '');
+      if (!isCloudSyncUrl(cu)) return false;
+      if (trySyncFirst && navigator.onLine) {
+        try {
+          lastSyncTimestamp = 0;
+          await Promise.race([syncWithCloud(false), new Promise(r => setTimeout(r, 8000))]);
+        } catch(e) {}
+      }
+      ['KEUANGANKU_DB_V21', 'KEUANGANKU_CLOUD_URL', 'KEUANGANKU_SAVED_PIN', 'KEUANGANKU_REMEMBER_PIN',
+       'KEUANGANKU_USER_REAL_BACKUP', 'KEUANGANKU_BIOMETRIC_ENABLED', 'KEUANGANKU_BIOMETRIC_CRED_ID'
+      ].forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
+      try { globalData = { accounts: [], recentHistory: [], currentBalances: {} }; } catch(e) {}
+      return true;
+    }
+
     async function executeDeviceConfirmAction() {
       if (!pendingDeviceAction) return;
       let { type, targetDeviceId, targetDeviceName } = pendingDeviceAction;
@@ -4975,6 +4998,7 @@
       if (!lic || !lic.token) {
         // Tidak ada lisensi tersimpan di perangkat ini. Dulu tombol diam saja (pop-up tidak hilang).
         if (type === 'current') {
+          await wipeLocalFinancialDataAfterSync(true);
           localStorage.removeItem("KEUANGANKU_LICENSE_DATA");
           try { localStorage.removeItem("KEUANGANKU_GOOGLE_USER"); } catch(e) {}
           if (typeof clearGoogleSession === 'function') { try { clearGoogleSession(); } catch(e) {} }
@@ -5045,8 +5069,10 @@
             });
           } catch(e) {}
 
+          let wiped = await wipeLocalFinancialDataAfterSync(true);
           localStorage.removeItem("KEUANGANKU_LICENSE_DATA");
           if (typeof clearGoogleSession === 'function') { try { clearGoogleSession(); } catch(e) {} }
+          if (wiped) { try { alert("Data keuangan sudah aman di Cloud dan dihapus dari perangkat ini."); } catch(e) {} }
           clearUserSessionAuthentication();
           closeDeviceConfirmModal();
           alert("Lisensi berhasil dilepas dari perangkat ini.");
@@ -6302,8 +6328,9 @@
       if (isAuto && (!pinView || pinView.classList.contains('hidden'))) {
         return false;
       }
-      // Perangkat yang sudah dikeluarkan dari lisensi tidak bisa dibuka dengan sidik jari / Face ID
-      if (localStorage.getItem("KEUANGANKU_DEVICE_KICKED") === "1") {
+      // Perangkat yang sudah dikeluarkan / tidak punya lisensi tidak bisa dibuka dengan sidik jari / Face ID
+      if (localStorage.getItem("KEUANGANKU_DEVICE_KICKED") === "1" ||
+          (!getSavedLicense() && localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') !== 'true')) {
         let errK = document.getElementById('bumper-error-msg');
         if (errK) {
           errK.textContent = "Perangkat ini telah dikeluarkan dari lisensi. Tautkan ulang lewat Scan QR dari perangkat yang masih terdaftar.";
@@ -6932,6 +6959,17 @@ function hideSplashScreenAndTriggerAlerts() {
       // Catatan keamanan: PIN "cadangan" yang ditanam di kode (123, 1234, 123456, dst.) dan
       // "PIN apa saja diterima di perangkat pemilik" sudah DIHAPUS. Hanya PIN milik Anda yang berlaku.
       candidates.delete("");
+
+      // 0. Perangkat TANPA lisensi (mis. sudah "Keluar dari perangkat ini") tidak boleh dibuka hanya
+      //    dengan PIN yang tersimpan di perangkat. Wajib lewat server: Token + PIN, akun Google, atau Scan QR.
+      let isDemoNow = localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true';
+      if (!lic && !isDemoNow && !isTokenFormat) {
+        if (err) {
+          err.innerHTML = "Perangkat ini belum terdaftar di lisensi.<br>Masukkan <b>Token + PIN</b> (contoh: <b>PRO-XXXX-XXXX-XXXX 123456</b>), masuk dengan <b>akun Google</b>, atau <b>Tautkan via Barcode (QR)</b> dari HP utama.";
+          err.classList.remove('hidden');
+        }
+        return;
+      }
 
       // 1. Jika input cocok dengan salah satu PIN / Password yang valid
       let isPinMatch = candidates.has(pinInput);
