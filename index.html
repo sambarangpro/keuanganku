@@ -14879,7 +14879,16 @@ async function processGoogleLoginToken(accessToken) {
       let keyedCloudNow = Boolean(globalData && globalData.cloudUrl && (getKeyFromCloudUrl(globalData.cloudUrl) || isDriveCloudUrl(globalData.cloudUrl)));
       if (keyedCloudNow) {
         if (btnText) btnText.textContent = 'Menyinkronkan data terbaru...';
-        try { lastSyncTimestamp = 0; await syncWithCloud(false); } catch(eSync) { console.warn('Sinkron setelah login Google:', eSync); }
+        // Cloud Script berkunci = sumber data yang sama dengan perangkat lain: TARIK langsung dari sana
+        // (transaksi perangkat ini yang belum terkirim tetap digabung). Dulu hanya "sinkron" biasa,
+        // sehingga data lama di perangkat ini bisa tetap dipakai.
+        let pulledFromCloud = false;
+        if (!isDriveCloudUrl(globalData.cloudUrl)) {
+          try { pulledFromCloud = await autoPullDatabaseFromCloud(globalData.cloudUrl); } catch(eP) { console.warn('Tarik Cloud setelah login Google:', eP); }
+        }
+        if (!pulledFromCloud) {
+          try { lastSyncTimestamp = 0; await syncWithCloud(false); } catch(eSync) { console.warn('Sinkron setelah login Google:', eSync); }
+        }
         if (currentSheetId && !isDriveCloudUrl(globalData.cloudUrl)) {
           try { await writeGlobalDataToByodbSheet(accessToken, currentSheetId); } catch(eW) {}
         }
@@ -15403,6 +15412,13 @@ async function pullDataFromByodbSpreadsheet(accessToken, sheetId) {
               // Data di perangkat ini LEBIH BARU dari salinan Drive: jangan ditimpa (dulu pengaturan &
               // alamat sinkron ikut kembali ke versi lama). Sinkron Cloud berikutnya menggabungkan sisanya.
               if (localHasData && (Number(localDoc.lastUpdated) || 0) >= (Number(parsed.lastUpdated) || 0)) {
+                // Tetap ambil KUNCI Cloud dari salinan Drive bila perangkat ini belum punya,
+                // agar perangkat ini bisa langsung sinkron dengan perangkat lain.
+                let pc = String(parsed.cloudUrl || '');
+                if (getKeyFromCloudUrl(pc) && !getKeyFromCloudUrl(String(localDoc.cloudUrl || ''))) {
+                  localDoc.cloudUrl = pc;
+                  try { localStorage.setItem("KEUANGANKU_CLOUD_URL", pc); localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(localDoc)); } catch(eK) {}
+                }
                 return true;
               }
               // Salinan Drive lebih baru: pakai, tetapi transaksi perangkat ini yang belum terkirim ikut digabung
