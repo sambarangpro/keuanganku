@@ -15526,6 +15526,16 @@ async function syncByodbNow(isManualClick = true) {
     return;
   }
 
+  // Izin Google hanya berlaku ±1 jam: perpanjang dulu (1 ketuk), lalu lanjutkan otomatis
+  if (!getValidGoogleToken()) {
+    requestGoogleTokenRefresh((ok) => {
+      if (ok) syncByodbNow(isManualClick);
+      else if (isManualClick) alert("Izin Google Drive sudah berakhir. Tekan 'Masuk dengan Akun Google' lagi, lalu coba Upload ke Drive.");
+    });
+    return;
+  }
+  gUser = getGoogleSession() || gUser;
+
   let statusText = document.getElementById('byodb-status-text');
   let origText = statusText ? statusText.textContent : 'GOOGLE DRIVE TERHUBUNG';
   if (statusText) statusText.textContent = 'MENYINKRONKAN...';
@@ -15592,19 +15602,49 @@ async function pullByodbNow(isManualClick = true) {
     return;
   }
 
+  // Izin Google hanya berlaku ±1 jam: perpanjang dulu (1 ketuk), lalu lanjutkan otomatis
+  if (!getValidGoogleToken()) {
+    requestGoogleTokenRefresh((ok) => {
+      if (ok) pullByodbNow(isManualClick);
+      else if (isManualClick) alert("Izin Google Drive sudah berakhir. Tekan 'Masuk dengan Akun Google' lagi, lalu coba Tarik dari Drive.");
+    });
+    return;
+  }
+
   let statusText = document.getElementById('byodb-status-text');
   let origText = statusText ? statusText.textContent : 'GOOGLE DRIVE TERHUBUNG';
   if (statusText) statusText.textContent = 'MENGUNDUH DARI DRIVE...';
 
   try {
-    let success = await pullDataFromByodbSpreadsheet(gUser.accessToken, sheetId);
-    if (success) {
+    let tokenNow =(typeof getValidGoogleToken === 'function' && getValidGoogleToken()) || gUser.accessToken;
+    // Pilih file Drive yang benar-benar berisi data (bisa berbeda dari ID yang tersimpan)
+    let bestId = await findBestByodbSpreadsheet(tokenNow, [sheetId]);
+    if (bestId && bestId !== sheetId) {
+      sheetId = bestId;
+      localStorage.setItem("KEUANGANKU_BYODB_SHEET_ID", bestId);
+      let licB = getSavedLicense();
+      if (licB && licB.token) {
+        try { await callClientLicenseApi({ action: 'save_spreadsheet_id', token: licB.token, email: gUser.email, googleAccessToken: tokenNow, deviceId: getOrCreateDeviceId(), spreadsheetId: bestId }); } catch(eS) {}
+      }
+    }
+    let success = await pullDataFromByodbSpreadsheet(tokenNow, sheetId);
+    // Salinan Drive membawa kunci Cloud Script: ambil data TERBARU langsung dari Cloud (sama dengan perangkat lain)
+    let fromCloud = false;
+    if (globalData && globalData.cloudUrl && getKeyFromCloudUrl(globalData.cloudUrl) && !isDriveCloudUrl(globalData.cloudUrl)) {
+      try { fromCloud = await autoPullDatabaseFromCloud(globalData.cloudUrl); } catch(eC) {}
+    }
+    let d = window.__driveDiag;
+    let diagTxt = d ? ('\n\nKode diagnosa Drive: file ' + d.files + ' | ' + d.read.join(', ') + ' | pilih ' + d.pick) : '';
+    if (success || fromCloud) {
       if (statusText) statusText.textContent = 'TERSIMPAN DI GOOGLE DRIVE';
-      showSyncToast("✓ Data berhasil diperbarui dari Google Drive!");
-      if (isManualClick) alert("✓ Data keuangan berhasil dimuat dari Google Drive!");
+      try { initApp(); } catch(eI) {}
+      showSyncToast(fromCloud ? "✓ Data terbaru dimuat dari Cloud" : "✓ Data berhasil diperbarui dari Google Drive!");
+      if (isManualClick) alert(fromCloud
+        ? "✓ Data terbaru berhasil dimuat (kunci Cloud didapat dari Google Drive). Perangkat ini kini sinkron dengan perangkat lain."
+        : ("✓ Data dimuat dari Google Drive, tetapi salinan ini belum membawa kunci Cloud, jadi belum sinkron otomatis dengan perangkat lain.\n\nDi perangkat utama: Setup > Database & Cadangan > Upload ke Drive, lalu tekan Tarik dari Drive lagi di sini." + diagTxt));
     } else {
       if (statusText) statusText.textContent = origText;
-      if (isManualClick) alert("Database Google Drive masih kosong atau belum pernah di-upload.");
+      if (isManualClick) alert("Database Google Drive masih kosong atau belum pernah di-upload.\n\nDi perangkat utama: Setup > Database & Cadangan > Upload ke Drive, lalu tekan Tarik dari Drive lagi di sini." + diagTxt);
     }
   } catch(e) {
     if (statusText) statusText.textContent = origText;
