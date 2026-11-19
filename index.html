@@ -4285,8 +4285,13 @@
     }
 
     // Perpanjang izin Google dengan 1 ketukan (biasanya tanpa login ulang). HARUS dipanggil langsung dari ketukan pengguna.
-    function requestGoogleTokenRefresh(onDone) {
+    function requestGoogleTokenRefresh(onDone, thenAction) {
       try {
+        // Aplikasi di Layar Utama iPhone / iPad: pindah ke halaman Google, lalu lanjut otomatis saat kembali
+        if (typeof isIosStandaloneApp === 'function' && isIosStandaloneApp()) {
+          startGoogleRedirectAuth('refresh' + (thenAction ? ':' + thenAction : ''));
+          return;
+        }
         if (!window.google || !google.accounts || !google.accounts.oauth2) { if (onDone) onDone(false); return; }
         let s = getGoogleSession() || {};
         let client = google.accounts.oauth2.initTokenClient({
@@ -14411,6 +14416,85 @@ function saveGoogleClientId(id) {
   }
 }
 
+// ==============================================================================
+// LOGIN GOOGLE CARA "PINDAH HALAMAN" (khusus aplikasi di Layar Utama iPhone / iPad)
+// Di mode itu, jendela pop-up Google membuat koneksi aplikasi terputus setelah kembali,
+// sehingga email tidak terbaca. Solusinya: pindah ke halaman Google, lalu Google
+// mengembalikan ke aplikasi dengan izin di alamat (#access_token=...).
+// Syarat: alamat aplikasi terdaftar sebagai "Authorized redirect URI" di Google Cloud Console.
+// ==============================================================================
+function isIosStandaloneApp() {
+  try {
+    let ua = navigator.userAgent || '';
+    let ios = /iPhone|iPad|iPod/.test(ua) || (ua.indexOf('Macintosh') !== -1 && (navigator.maxTouchPoints || 0) > 1);
+    let standalone = navigator.standalone === true || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+    return !!(ios && standalone);
+  } catch(e) { return false; }
+}
+function googleRedirectUri() {
+  return window.location.origin + window.location.pathname.replace(/index\.html$/, '');
+}
+function startGoogleRedirectAuth(purpose) {
+  let rnd = new Uint8Array(16);
+  (window.crypto || window.msCrypto).getRandomValues(rnd);
+  let state = Array.from(rnd, b => b.toString(16).padStart(2, '0')).join('');
+  localStorage.setItem('KEUANGANKU_OAUTH_STATE', JSON.stringify({ state: state, purpose: purpose || 'signin', at: Date.now() }));
+  let s = getGoogleSession() || {};
+  let p = new URLSearchParams({
+    client_id: getGoogleClientId(),
+    redirect_uri: googleRedirectUri(),
+    response_type: 'token',
+    scope: 'https://www.googleapis.com/auth/drive.file openid email profile',
+    include_granted_scopes: 'true',
+    state: state
+  });
+  if (purpose === 'signin') p.set('prompt', 'select_account');
+  else if (s.email) p.set('login_hint', s.email);
+  window.location.href = 'https://accounts.google.com/o/oauth2/v2/auth?' + p.toString();
+}
+async function handleGoogleRedirectReturn() {
+  let h = String(window.location.hash || '');
+  if (h.indexOf('access_token=') === -1 && h.indexOf('error=') === -1) return;
+  let params = new URLSearchParams(h.replace(/^#/, ''));
+  if (!params.get('state')) return;
+  // Bersihkan izin dari alamat agar tidak tersimpan di riwayat
+  try { history.replaceState(null, '', window.location.pathname + window.location.search); } catch(e) {}
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem('KEUANGANKU_OAUTH_STATE') || 'null'); } catch(e) {}
+  localStorage.removeItem('KEUANGANKU_OAUTH_STATE');
+  if (!saved || saved.state !== params.get('state') || Date.now() - (Number(saved.at) || 0) > 15 * 60 * 1000) {
+    alert("Sesi masuk Google sudah kedaluwarsa atau tidak cocok. Silakan coba lagi.");
+    return;
+  }
+  if (params.get('error')) {
+    if (params.get('error') !== 'access_denied') alert("Gagal masuk dengan Google: " + params.get('error'));
+    return;
+  }
+  let token = params.get('access_token');
+  let expiresIn = Number(params.get('expires_in')) || 3600;
+  window.__gGrantedScope = String(params.get('scope') || '').replace(/https:\/\/www\.googleapis\.com\/auth\//g, '');
+  if (String(saved.purpose).indexOf('refresh') === 0) {
+    let s = getGoogleSession();
+    if (s) {
+      s.accessToken = token;
+      s.tokenExpiresAt = Date.now() + expiresIn * 1000 - 60000;
+      saveGoogleSession(s);
+    }
+    showSyncToast("✓ Izin Google diperpanjang");
+    let then = String(saved.purpose).split(':')[1] || '';
+    setTimeout(() => {
+      try {
+        if (then === 'upload' && typeof syncByodbNow === 'function') syncByodbNow(true);
+        else if (then === 'pull' && typeof pullByodbNow === 'function') pullByodbNow(true);
+        else if (typeof syncWithCloud === 'function') { lastSyncTimestamp = 0; syncWithCloud(true); }
+      } catch(e) {}
+    }, 800);
+    return;
+  }
+  await processGoogleLoginToken(token);
+}
+window.addEventListener('load', () => { setTimeout(() => { handleGoogleRedirectReturn(); }, 1200); });
+
 function getGoogleSession() {
   try {
     let s = localStorage.getItem('KEUANGANKU_GOOGLE_USER');
@@ -14464,6 +14548,12 @@ async function handleGoogleSignIn() {
   // Jika Client ID masih placeholder bawaan dan GIS belum dikonfigurasi, beri pilihan praktis: Masukkan Client ID atau Uji Coba Mode Simulasi
   if (!clientId || clientId.includes("xxxxxxxxxxxxxxxx") || clientId.includes("YOUR_CLIENT_ID")) {
     openGoogleConfigModal(true);
+    return;
+  }
+
+  // Aplikasi di Layar Utama iPhone / iPad: pakai login "pindah halaman" (pop-up Google tidak bekerja di sana)
+  if (isIosStandaloneApp()) {
+    startGoogleRedirectAuth('signin');
     return;
   }
 
@@ -15485,7 +15575,7 @@ async function syncByodbNow(isManualClick = true) {
     requestGoogleTokenRefresh((ok) => {
       if (ok) syncByodbNow(isManualClick);
       else if (isManualClick) alert("Izin Google Drive sudah berakhir. Tekan 'Masuk dengan Akun Google' lagi, lalu coba Upload ke Drive.");
-    });
+    }, 'upload');
     return;
   }
   gUser = getGoogleSession() || gUser;
@@ -15561,7 +15651,7 @@ async function pullByodbNow(isManualClick = true) {
     requestGoogleTokenRefresh((ok) => {
       if (ok) pullByodbNow(isManualClick);
       else if (isManualClick) alert("Izin Google Drive sudah berakhir. Tekan 'Masuk dengan Akun Google' lagi, lalu coba Tarik dari Drive.");
-    });
+    }, 'pull');
     return;
   }
 
