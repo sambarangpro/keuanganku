@@ -14689,17 +14689,22 @@ async function findBestByodbSpreadsheet(accessToken, preferredIds) {
       (data.files || []).forEach(f => { if (f && f.id && ids.indexOf(f.id) === -1) ids.push(f.id); });
     }
   } catch(e) { console.warn('Daftar file Drive:', e); }
+  // Catatan diagnosa (ditampilkan bila perangkat tidak mendapat kunci Cloud)
+  window.__driveDiag = { files: ids.length, read: [], pick: '' };
   if (ids.length === 0) return null;
   let best = null;
   for (let id of ids.slice(0, 12)) {
     try {
       let doc = await readByodbDoc(accessToken, id);
-      if (!doc || doc.__needsGoogle) continue;
+      if (!doc || doc.__needsGoogle) { window.__driveDiag.read.push(doc && doc.__needsGoogle ? 'izin' : 'kosong'); continue; }
       let tx = Array.isArray(doc.recentHistory) ? doc.recentHistory.length : 0;
       let upd = Number(doc.lastUpdated) || 0;
+      let hasKey = !!getKeyFromCloudUrl(String(doc.cloudUrl || ''));
+      window.__driveDiag.read.push(tx + 'tx' + (hasKey ? '+kunci' : '') + (upd ? '@' + new Date(upd).toISOString().slice(0, 10) : ''));
       if (!best || tx > best.tx || (tx === best.tx && upd > best.upd)) best = { id, tx, upd };
-    } catch(e) {}
+    } catch(e) { window.__driveDiag.read.push('gagal'); }
   }
+  window.__driveDiag.pick = best ? (best.tx + 'tx') : 'tidak ada';
   // Tidak ada yang berisi data: pakai ID pilihan pertama (atau file pertama yang ditemukan)
   return best ? best.id : ids[0];
 }
@@ -14944,7 +14949,7 @@ async function processGoogleLoginToken(accessToken) {
       renderSetupPasswordCard(res.data);
 
       if (needsQrForCloud) {
-        alert(`Selamat datang kembali, ${res.data.buyerName}!\n\nAnda sudah masuk dengan ${googleUser.email}.\n\nPENTING: data terbaru Anda tersimpan di Cloud Script dan perangkat ini belum memiliki kuncinya. Agar data dari perangkat lain ikut muncul:\n\nDi HP utama, buka menu tautkan perangkat lalu Scan QR dari perangkat ini (cukup sekali).`);
+        alert(`Selamat datang kembali, ${res.data.buyerName}!\n\nAnda sudah masuk dengan ${googleUser.email}.\n\nPENTING: data terbaru Anda tersimpan di Cloud Script dan perangkat ini belum memiliki kuncinya. Agar data dari perangkat lain ikut muncul:\n\nDi HP utama, buka menu tautkan perangkat lalu Scan QR dari perangkat ini (cukup sekali).\n\nKode diagnosa Drive: ${(function(){ let d = window.__driveDiag; return d ? ('file ' + d.files + ' | ' + d.read.join(', ') + ' | pilih ' + d.pick) : 'tidak diperiksa'; })()}`);
       } else {
         alert(`Selamat datang kembali, ${res.data.buyerName}!\n\nAplikasi Keuanganku PRO terbuka menggunakan database pribadi Anda (${googleUser.email}).`);
       }
