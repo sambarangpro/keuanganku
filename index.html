@@ -5220,7 +5220,7 @@
           if (activePinToSave) {
             globalData.appPin = activePinToSave;
             globalData.ownerPassword = activePinToSave;
-            saveStorageData();
+            saveLocalOnly();
           }
           if (s.masterUrl && s.masterUrl.startsWith("http")) {
             localStorage.setItem("KEUANGANKU_MASTER_SERVER_URL", s.masterUrl);
@@ -5230,7 +5230,9 @@
           if (s.cloudUrl && s.cloudUrl.startsWith("http")) {
             globalData.cloudUrl = s.cloudUrl;
             localStorage.setItem("KEUANGANKU_CLOUD_URL", s.cloudUrl);
-            saveStorageData();
+            // Simpan di perangkat saja: data Cloud ditarik sesudah ini. (Dulu data lama perangkat ini
+            // dikirim lebih dulu ke Cloud sehingga bisa menimpa pengaturan perangkat lain.)
+            saveLocalOnly();
           }
 
           sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
@@ -15236,6 +15238,22 @@ async function pullDataFromByodbSpreadsheet(accessToken, sheetId) {
             let txCount = (parsed.recentHistory || []).length;
             let accCount = (parsed.accounts || []).length;
             if (txCount > 0 || accCount > 1 || (parsed.accounts && parsed.accounts.some(a => a.balance > 0))) {
+              let localDoc = globalData;
+              let localHasData = !!(localDoc && Array.isArray(localDoc.recentHistory) && localDoc.recentHistory.length > 0);
+              // Data di perangkat ini LEBIH BARU dari salinan Drive: jangan ditimpa (dulu pengaturan &
+              // alamat sinkron ikut kembali ke versi lama). Sinkron Cloud berikutnya menggabungkan sisanya.
+              if (localHasData && (Number(localDoc.lastUpdated) || 0) >= (Number(parsed.lastUpdated) || 0)) {
+                return true;
+              }
+              // Salinan Drive lebih baru: pakai, tetapi transaksi perangkat ini yang belum terkirim ikut digabung
+              if (localHasData && typeof mergeLocalTxIntoPulled === 'function') {
+                try { mergeLocalTxIntoPulled(parsed); } catch(eM) {}
+              }
+              // Alamat sinkron berkunci milik perangkat ini tetap dipakai bila salinan Drive tidak membawa kuncinya
+              let localCloud = localDoc && localDoc.cloudUrl ? String(localDoc.cloudUrl) : '';
+              if (localCloud && getKeyFromCloudUrl(localCloud) && !getKeyFromCloudUrl(parsed.cloudUrl || '')) {
+                parsed.cloudUrl = localCloud;
+              }
               globalData = parsed;
               // Simpan di perangkat saja (JANGAN langsung diunggah dengan tanda waktu baru):
               // salinan Drive bisa lebih lama dari Cloud; sinkron berikutnya akan menggabungkannya dengan aman.
