@@ -725,6 +725,8 @@ var READ_ONLY_ACTIONS = {
   "check_pair_session": true,
   "get_public_catalog": true,
   "check_voucher": true,
+  "list_join_requests": true,
+  "check_join_request": true,
   "admin_login": true,
   "admin_get_data": true,
   "admin_check_fonnte_device": true
@@ -750,7 +752,7 @@ function handleRequest(params) {
     }
 
     // Aksi pairing barcode sesi TIDAK memerlukan spreadsheet (hanya butuh CacheService)
-    if (action !== "create_pair_session" && action !== "check_pair_session") {
+    if (action !== "create_pair_session" && action !== "check_pair_session" && action !== "list_join_requests" && action !== "check_join_request") {
       initSheets();
       purgeStoredCloudKeys_();
       if (lock) hashStoredPins_();
@@ -873,6 +875,18 @@ function handleRequest(params) {
 
       case "check_voucher":
         result = checkVoucher(params);
+        break;
+
+      case "list_join_requests":
+        result = listJoinRequests(params);
+        break;
+
+      case "check_join_request":
+        result = checkJoinRequest(params);
+        break;
+
+      case "answer_join_request":
+        result = answerJoinRequest(params);
         break;
 
       case "submit_public_order":
@@ -1774,7 +1788,84 @@ function unmarkDeviceRemoved_(token, deviceId) {
     PropertiesService.getScriptProperties().setProperty(removedDevKey_(token), JSON.stringify(list));
   } catch(e) {}
 }
-var REMOVED_DEVICE_MESSAGE = "Perangkat ini sudah DIKELUARKAN dari lisensi, jadi tidak bisa masuk lagi dengan PIN. Untuk memakainya kembali, tautkan lewat Scan QR dari perangkat yang masih terdaftar (Setup > Akun & Lisensi).";
+// ------------------------------------------------------------------------------
+// PERMINTAAN MASUK KEMBALI (perangkat yang dikeluarkan, lewat akun Google yang benar)
+// Disimpan sementara di CacheService (maks. 30 menit). Disetujui / ditolak oleh perangkat terdaftar.
+// ------------------------------------------------------------------------------
+function joinKey_(token) { return "JOIN_" + normalizeToken_(token); }
+function getJoinRequests_(token) {
+  try {
+    var raw = CacheService.getScriptCache().get(joinKey_(token));
+    var arr = raw ? JSON.parse(raw) : [];
+    var now = Date.now();
+    return (Array.isArray(arr) ? arr : []).filter(function(r) { return r && (now - (Number(r.at) || 0)) < 30 * 60 * 1000; });
+  } catch(e) { return []; }
+}
+function saveJoinRequests_(token, arr) {
+  try { CacheService.getScriptCache().put(joinKey_(token), JSON.stringify((arr || []).slice(-10)), 1800); } catch(e) {}
+}
+function createJoinRequest_(token, deviceId, deviceName, email) {
+  var list = getJoinRequests_(token);
+  var existing = null;
+  list.forEach(function(r) { if (r.deviceId === deviceId && r.status === "PENDING") existing = r; });
+  if (existing) { existing.at = Date.now(); saveJoinRequests_(token, list); return existing; }
+  var req = { id: Utilities.getUuid().replace(/-/g, "").slice(0, 20), deviceId: String(deviceId), deviceName: String(deviceName || "Perangkat").slice(0, 60), email: maskEmail(email || ""), at: Date.now(), status: "PENDING" };
+  list.push(req);
+  saveJoinRequests_(token, list);
+  return req;
+}
+function isRegisteredDevice_(token, deviceId) {
+  var ss = getSpreadsheet();
+  var sheet = ss.getSheetByName(SHEET_TOKENS);
+  var data = sheet.getDataRange().getValues();
+  if (!data || data.length < 2) return false;
+  var colMap = getTokenColumnIndexes(data[0]);
+  for (var i = 1; i < data.length; i++) {
+    if (tokensMatch_(data[i][colMap.token], token)) {
+      return deviceIndex_(parseDevices_(data[i][colMap.usedDevices]), deviceId) !== -1;
+    }
+  }
+  return false;
+}
+/** Perangkat terdaftar: daftar permintaan yang menunggu (hanya dari cache, ringan). */
+function listJoinRequests(params) {
+  var token = String(params.token || "").trim().toUpperCase();
+  var me = String(params.deviceId || "").trim();
+  if (!token) return { success: false, message: "Token kosong." };
+  var pending = getJoinRequests_(token).filter(function(r) { return r.status === "PENDING" && r.deviceId !== me; })
+    .map(function(r) { return { id: r.id, deviceName: r.deviceName, email: r.email, at: r.at }; });
+  return { success: true, requests: pending };
+}
+/** Perangkat yang meminta: cek status permintaannya. */
+function checkJoinRequest(params) {
+  var token = String(params.token || "").trim().toUpperCase();
+  var id = String(params.requestId || "").trim();
+  var dev = String(params.deviceId || "").trim();
+  var found = null;
+  getJoinRequests_(token).forEach(function(r) { if (r.id === id && r.deviceId === dev) found = r; });
+  if (!found) return { success: true, status: "EXPIRED" };
+  return { success: true, status: found.status };
+}
+/** Perangkat terdaftar menyetujui / menolak. */
+function answerJoinRequest(params) {
+  var token = String(params.token || "").trim().toUpperCase();
+  var id = String(params.requestId || "").trim();
+  var approver = String(params.deviceId || "").trim();
+  var approve = (params.approve === true || params.approve === "true");
+  if (!token || !id || !approver) return { success: false, message: "Data tidak lengkap." };
+  if (!isRegisteredDevice_(token, approver)) return { success: false, message: "Perangkat ini tidak terdaftar di lisensi." };
+  var list = getJoinRequests_(token);
+  var req = null;
+  list.forEach(function(r) { if (r.id === id) req = r; });
+  if (!req || req.status !== "PENDING") return { success: false, message: "Permintaan sudah tidak berlaku." };
+  req.status = approve ? "APPROVED" : "DENIED";
+  saveJoinRequests_(token, list);
+  if (approve) unmarkDeviceRemoved_(token, req.deviceId);
+  logEvent(approve ? "REJOIN_APPROVED" : "REJOIN_DENIED", token, "-", req.deviceId, req.deviceName, "Dijawab oleh perangkat " + approver);
+  return { success: true, status: req.status, deviceId: req.deviceId };
+}
+
+var REMOVED_DEVICE_MESSAGE ="Perangkat ini sudah DIKELUARKAN dari lisensi, jadi tidak bisa masuk lagi dengan PIN. Untuk masuk kembali: Masuk dengan Akun Google lalu setujui dari perangkat lain yang masih terhubung, atau tautkan lewat Scan QR.";
 
 function deactivateClientDevice(params) {
   var tokenInput = (params.token || "").trim().toUpperCase();
@@ -3418,8 +3509,15 @@ function verifyGoogleAccount(params) {
         sheet.getRange(i + 1, colMap.usedDevices + 1).setValue(JSON.stringify(devices));
       } else {
         if (isDeviceRemoved_(rowToken, deviceId)) {
-          logEvent("REMOVED_DEVICE_BLOCKED", rowToken, buyerName, deviceId, deviceName, "Ditolak: perangkat yang sudah dikeluarkan mencoba masuk lagi lewat akun Google");
-          return { success: false, isLicensed: true, deviceRemoved: true, message: REMOVED_DEVICE_MESSAGE };
+          // Akun Google-nya benar (sudah diverifikasi ke Google), tetapi perangkat ini pernah dikeluarkan:
+          // buat PERMINTAAN MASUK KEMBALI yang harus disetujui salah satu perangkat yang masih terhubung.
+          var joinReq = createJoinRequest_(rowToken, deviceId, deviceName, emailInput);
+          logEvent("REJOIN_REQUESTED", rowToken, buyerName, deviceId, deviceName, "Perangkat yang dikeluarkan minta masuk kembali lewat akun Google (menunggu persetujuan)");
+          return {
+            success: false, isLicensed: true, deviceRemoved: true, needsApproval: true,
+            requestId: joinReq.id, token: rowToken,
+            message: "Perangkat ini pernah dikeluarkan dari lisensi. Permintaan masuk kembali sudah dikirim — setujui dari salah satu perangkat Anda yang masih terhubung."
+          };
         }
         if (devices.length >= maxDevices) {
           logEvent("GOOGLE_MAX_DEVICES", rowToken, buyerName, deviceId, deviceName, "Kuota perangkat penuh (" + maxDevices + ")");

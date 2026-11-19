@@ -4144,7 +4144,7 @@
             }
             let errR = document.getElementById('bumper-error-msg');
             if (errR) {
-              errR.textContent = "Perangkat ini telah dikeluarkan dari lisensi. Untuk memakainya kembali, tautkan lewat Scan QR dari perangkat yang masih terdaftar.";
+              errR.textContent = "Perangkat ini telah dikeluarkan dari lisensi. Untuk masuk kembali: ketuk Masuk dengan Akun Google lalu setujui dari perangkat lain, atau tautkan lewat Scan QR.";
               errR.classList.remove('hidden');
             }
             return;
@@ -6287,7 +6287,7 @@
           (!getSavedLicense() && localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') !== 'true')) {
         let errK = document.getElementById('bumper-error-msg');
         if (errK) {
-          errK.textContent = "Perangkat ini telah dikeluarkan dari lisensi. Tautkan ulang lewat Scan QR dari perangkat yang masih terdaftar.";
+          errK.textContent = "Perangkat ini telah dikeluarkan dari lisensi. Untuk masuk kembali: ketuk Masuk dengan Akun Google lalu setujui dari perangkat lain, atau tautkan lewat Scan QR.";
           errK.classList.remove('hidden');
         }
         return false;
@@ -6859,7 +6859,7 @@ function hideSplashScreenAndTriggerAlerts() {
       // Perangkat ini sudah dikeluarkan pemilik lisensi: PIN lokal tidak diterima lagi
       if (localStorage.getItem("KEUANGANKU_DEVICE_KICKED") === "1") {
         if (err) {
-          err.textContent = "Perangkat ini telah dikeluarkan dari lisensi. Tautkan ulang lewat Scan QR dari perangkat yang masih terdaftar.";
+          err.textContent = "Perangkat ini telah dikeluarkan dari lisensi. Untuk masuk kembali: ketuk Masuk dengan Akun Google lalu setujui dari perangkat lain, atau tautkan lewat Scan QR.";
           err.classList.remove('hidden');
         }
         return;
@@ -14786,6 +14786,98 @@ async function findExistingByodbSpreadsheet(accessToken) {
   return null;
 }
 
+// ==============================================================================
+// MASUK KEMBALI SETELAH DIKELUARKAN: perlu persetujuan salah satu perangkat yang masih terhubung
+// ==============================================================================
+let rejoinPollTimer = null;
+function closeRejoinOverlay() {
+  if (rejoinPollTimer) { clearInterval(rejoinPollTimer); rejoinPollTimer = null; }
+  let ov = document.getElementById('rejoin-wait-overlay');
+  if (ov) ov.remove();
+}
+/** Perangkat yang meminta: tampilkan layar tunggu & cek status tiap 4 detik (maks. 15 menit). */
+function waitForRejoinApproval(token, requestId, accessToken) {
+  closeRejoinOverlay();
+  let ov = document.createElement('div');
+  ov.id = 'rejoin-wait-overlay';
+  ov.style.cssText = 'position:fixed;inset:0;z-index:100010;background:rgba(2,6,23,.85);display:flex;align-items:center;justify-content:center;padding:16px;';
+  ov.innerHTML = `
+    <div style="max-width:380px;width:100%;background:#0f172a;border:1px solid #334155;border-radius:24px;padding:22px;color:#e2e8f0;text-align:center;font-family:inherit">
+      <div style="font-size:34px;line-height:1">📲</div>
+      <h3 style="font-weight:800;font-size:16px;margin:10px 0 6px">Menunggu persetujuan</h3>
+      <p style="font-size:12px;color:#94a3b8;line-height:1.55;margin:0 0 14px">Perangkat ini pernah dikeluarkan dari lisensi. Buka Keuanganku di <b style="color:#e2e8f0">HP atau laptop Anda yang masih terhubung</b>, lalu ketuk <b style="color:#e2e8f0">Izinkan</b> pada pertanyaan yang muncul.</p>
+      <p id="rejoin-wait-status" style="font-size:11px;color:#38bdf8;margin:0 0 14px">Menunggu jawaban...</p>
+      <button type="button" id="rejoin-wait-cancel" style="padding:8px 16px;border-radius:12px;border:1px solid #475569;background:transparent;color:#cbd5e1;font-size:12px;font-weight:700;cursor:pointer">Batal</button>
+    </div>`;
+  document.body.appendChild(ov);
+  document.getElementById('rejoin-wait-cancel').onclick = closeRejoinOverlay;
+  let started = Date.now();
+  let busy = false;
+  rejoinPollTimer = setInterval(async () => {
+    if (busy) return;
+    if (Date.now() - started > 15 * 60 * 1000) {
+      closeRejoinOverlay();
+      alert("Permintaan masuk kembali sudah kedaluwarsa. Silakan coba 'Masuk dengan Akun Google' lagi.");
+      return;
+    }
+    busy = true;
+    try {
+      let r = await callClientLicenseApi({ action: 'check_join_request', token: token, requestId: requestId, deviceId: getOrCreateDeviceId() });
+      let st = r && r.status;
+      if (st === 'APPROVED') {
+        closeRejoinOverlay();
+        localStorage.removeItem("KEUANGANKU_DEVICE_KICKED");
+        localStorage.setItem("KEUANGANKU_UNREVOKE_ME", "1");
+        showSyncToast("✓ Disetujui! Menghubungkan kembali...");
+        await processGoogleLoginToken(accessToken);
+      } else if (st === 'DENIED') {
+        closeRejoinOverlay();
+        alert("Permintaan masuk kembali DITOLAK oleh perangkat yang terhubung.");
+      } else if (st === 'EXPIRED') {
+        closeRejoinOverlay();
+        alert("Permintaan masuk kembali sudah tidak berlaku. Silakan coba 'Masuk dengan Akun Google' lagi.");
+      }
+    } catch(e) {
+      let s = document.getElementById('rejoin-wait-status');
+      if (s) s.textContent = 'Koneksi terputus, mencoba lagi...';
+    } finally { busy = false; }
+  }, 4000);
+}
+
+/** Perangkat yang terhubung: cek tiap 20 detik apakah ada perangkat yang minta masuk kembali. */
+let answeredJoinIds = {};
+let joinCheckBusy = false;
+async function pollJoinRequests() {
+  if (joinCheckBusy || document.visibilityState !== 'visible' || !navigator.onLine) return;
+  let lic = (typeof getSavedLicense === 'function') ? getSavedLicense() : null;
+  if (!lic || !lic.token || localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true') return;
+  if (sessionStorage.getItem('KEUANGANKU_PIN_PASSED') !== 'true') return;
+  joinCheckBusy = true;
+  try {
+    let r = await callClientLicenseApi({ action: 'list_join_requests', token: lic.token, deviceId: getOrCreateDeviceId() });
+    let reqs = (r && r.success && Array.isArray(r.requests)) ? r.requests : [];
+    for (let q of reqs) {
+      if (answeredJoinIds[q.id]) continue;
+      answeredJoinIds[q.id] = true;
+      let ok = confirm(`🔐 Permintaan masuk kembali\n\nPerangkat "${q.deviceName}"${q.email ? ' (' + q.email + ')' : ''} yang pernah dikeluarkan ingin masuk kembali ke lisensi Anda.\n\nIzinkan? (OK = Izinkan, Batal = Tolak)`);
+      let a = await callClientLicenseApi({ action: 'answer_join_request', token: lic.token, requestId: q.id, approve: ok, deviceId: getOrCreateDeviceId() });
+      if (a && a.success && ok && a.deviceId) {
+        // Tandai di data bahwa perangkat itu aktif kembali (agar tidak langsung terkunci lagi setelah sinkron)
+        if (!globalData.revokedDevices || typeof globalData.revokedDevices !== 'object') globalData.revokedDevices = {};
+        globalData.revokedDevices[a.deviceId] = -Date.now();
+        saveStorageData();
+        showSyncToast("✓ Perangkat \"" + q.deviceName + "\" diizinkan masuk kembali");
+        if (typeof loadConnectedDevices === 'function') setTimeout(() => loadConnectedDevices(false), 4000);
+      } else if (a && !a.success) {
+        alert(a.message || "Gagal menjawab permintaan.");
+      }
+    }
+  } catch(e) {
+  } finally { joinCheckBusy = false; }
+}
+setInterval(pollJoinRequests, 20000);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') setTimeout(pollJoinRequests, 1500); });
+
 /**
  * Pilih file database Drive yang BENAR-BENAR berisi data. Dulu ID yang tersimpan di server bisa menunjuk
  * file kosong (dibuat oleh versi lama saat menautkan akun), sehingga perangkat baru menampilkan saldo 0.
@@ -15136,6 +15228,13 @@ async function processGoogleLoginToken(accessToken) {
         accessToken: accessToken
       };
       openBindGoogleModal(googleUser);
+      return;
+    }
+
+    // Skenario C0: Perangkat ini pernah dikeluarkan -> tunggu persetujuan dari perangkat lain yang terhubung
+    if (res && !res.success && res.needsApproval && res.requestId) {
+      if (btnText) btnText.textContent = 'Masuk dengan Akun Google';
+      waitForRejoinApproval(res.token, res.requestId, accessToken);
       return;
     }
 
