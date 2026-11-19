@@ -4382,17 +4382,34 @@
     }
 
     // Baca dokumen database dari Google Sheet pengguna TANPA langsung menerapkannya
+    // Jumlah baris maksimum salinan data di Google Drive (25 potongan x 45.000 karakter per baris)
+    const BYODB_MAX_ROWS = 40;
+
+    /** Gabungkan potongan JSON dari baris-baris sheet (format lama 1 baris & format baru banyak baris). */
+    function joinByodbRows(values) {
+      if (!Array.isArray(values) || !values[0]) return '';
+      let row0 = values[0];
+      if (row0.length === 1 && String(row0[0] || '').trim().charAt(0) === '{') return String(row0[0]);
+      if (row0.length < 2) return '';
+      let s = row0.slice(1).join('');
+      for (let r = 1; r < values.length; r++) {
+        let row = values[r] || [];
+        if (String(row[0] || '') !== 'KEUANGANKU_DATA_CONT') break;
+        s += row.slice(1).join('');
+      }
+      return s;
+    }
+
     async function readByodbDoc(token, sheetId) {
-      let res = await driveFetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Database_Keuangan!A1:Z1`, { headers: { 'Authorization': 'Bearer ' + token } });
+      let res = await driveFetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Database_Keuangan!A1:Z${BYODB_MAX_ROWS}`, { headers: { 'Authorization': 'Bearer ' + token } });
       if (res.status === 401 || res.status === 403) return { __needsGoogle: true };
       if (!res.ok) {
-        res = await driveFetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/A1:Z1`, { headers: { 'Authorization': 'Bearer ' + token } });
+        res = await driveFetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/A1:Z${BYODB_MAX_ROWS}`, { headers: { 'Authorization': 'Bearer ' + token } });
         if (res.status === 401 || res.status === 403) return { __needsGoogle: true };
         if (!res.ok) throw new Error('Google Sheets ' + res.status);
       }
       let json = await res.json();
-      let row = (json && json.values && json.values[0]) ? json.values[0] : [];
-      let fullStr = row.length >= 2 ? row.slice(1).join('') : (row[0] && String(row[0]).trim().charAt(0) === '{' ? row[0] : '');
+      let fullStr = joinByodbRows(json && json.values);
       if (!fullStr) return null;
       return JSON.parse(fullStr);
     }
@@ -15342,27 +15359,35 @@ async function writeGlobalDataToByodbSheet(accessToken, sheetId) {
     }
   }
 
-  // Pecah string JSON dalam ukuran 45.000 karakter per sel (kebal batas 50.000 karakter Google Sheets)
+  // Pecah string JSON dalam ukuran 45.000 karakter per sel (kebal batas 50.000 karakter Google Sheets).
+  // Baris 1: "KEUANGANKU_DATA" + 25 potongan (format lama). Bila lebih besar dari ±1 MB, potongan berikutnya
+  // ditaruh di baris 2..40 berlabel "KEUANGANKU_DATA_CONT" (total ±45 MB, cukup untuk foto bukti transaksi).
   let fullJson = JSON.stringify(globalData || {});
   let chunkSize = 45000;
-  let rowValues = ["KEUANGANKU_DATA"];
-  for (let i = 0; i < fullJson.length; i += chunkSize) {
-    rowValues.push(fullJson.substring(i, i + chunkSize));
+  let chunks = [];
+  for (let i = 0; i < fullJson.length; i += chunkSize) chunks.push(fullJson.substring(i, i + chunkSize));
+  let rowsNeeded = Math.max(1, Math.ceil(chunks.length / 25));
+  if (rowsNeeded > BYODB_MAX_ROWS) {
+    throw new Error("Database terlalu besar untuk Google Drive (lebih dari " + Math.round(BYODB_MAX_ROWS * 25 * chunkSize / 1000000) + " MB). Kurangi foto bukti transaksi lama, lalu coba lagi.");
   }
-  if (rowValues.length > 26) {
-    throw new Error("Database terlalu besar untuk Google Drive (lebih dari 1 MB). Kurangi foto bukti transaksi lama, lalu coba lagi.");
+  let allRows = [];
+  for (let r = 0; r < BYODB_MAX_ROWS; r++) {
+    let part = chunks.slice(r * 25, r * 25 + 25);
+    let label = (r === 0) ? "KEUANGANKU_DATA" : (part.length ? "KEUANGANKU_DATA_CONT" : "");
+    let row = [label].concat(part);
+    // Isi sisa kolom/baris dengan kosong agar potongan data LAMA yang lebih panjang ikut terhapus
+    while (row.length < 26) row.push("");
+    allRows.push(row);
   }
-  // Isi kolom sisa (sampai Z) dengan kosong agar potongan data LAMA yang lebih panjang ikut terhapus
-  while (rowValues.length < 26) rowValues.push("");
 
   let snapshotData = {
     majorDimension: "ROWS",
-    values: [rowValues]
+    values: allRows
   };
 
   // Percobaan 1: Tulis ke tab Database_Keuangan
   // RAW = disimpan sebagai teks apa adanya (USER_ENTERED bisa mengubah potongan JSON menjadi rumus/angka)
-  let res = await driveFetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Database_Keuangan!A1:Z1?valueInputOption=RAW`, {
+  let res = await driveFetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Database_Keuangan!A1:Z${BYODB_MAX_ROWS}?valueInputOption=RAW`, {
     method: 'PUT',
     headers: {
       'Authorization': 'Bearer ' + accessToken,
@@ -15379,7 +15404,7 @@ async function writeGlobalDataToByodbSheet(accessToken, sheetId) {
     }
 
     // Fallback: Tulis ke tab pertama spreadsheet langsung jika Database_Keuangan belum ada (Error 400)
-    let fallbackRes = await driveFetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/A1:Z1?valueInputOption=RAW`, {
+    let fallbackRes = await driveFetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/A1:Z${BYODB_MAX_ROWS}?valueInputOption=RAW`, {
       method: 'PUT',
       headers: {
         'Authorization': 'Bearer ' + accessToken,
@@ -15423,26 +15448,21 @@ async function pullDataFromByodbSpreadsheet(accessToken, sheetId) {
   }
   if (!sheetId || !accessToken) return false;
   try {
-    let url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Database_Keuangan!A1:Z1`;
+    let url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Database_Keuangan!A1:Z${BYODB_MAX_ROWS}`;
     let res = await driveFetch(url, {
       headers: { 'Authorization': 'Bearer ' + accessToken }
     });
     if (!res.ok) {
       // Fallback: coba tab pertama langsung
-      res = await driveFetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/A1:Z1`, {
+      res = await driveFetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/A1:Z${BYODB_MAX_ROWS}`, {
         headers: { 'Authorization': 'Bearer ' + accessToken }
       });
     }
     if (res.ok) {
       let json = await res.json();
       if (json && json.values && json.values[0]) {
-        let row = json.values[0];
-        let fullStr = "";
-        if (row.length >= 2) {
-          fullStr = row.slice(1).join('');
-        } else if (row.length === 1 && String(row[0]).trim().startsWith('{')) {
-          fullStr = row[0];
-        }
+        // Gabungkan potongan dari semua baris (format baru) atau baris 1 saja (format lama)
+        let fullStr = joinByodbRows(json.values);
         if (fullStr) {
           let parsed = JSON.parse(fullStr);
           if (parsed && (parsed.accounts || parsed.recentHistory)) {
