@@ -14671,6 +14671,40 @@ async function findExistingByodbSpreadsheet(accessToken) {
 }
 
 /**
+ * Pilih file database Drive yang BENAR-BENAR berisi data. Dulu ID yang tersimpan di server bisa menunjuk
+ * file kosong (dibuat oleh versi lama saat menautkan akun), sehingga perangkat baru menampilkan saldo 0.
+ * Semua kandidat dibaca; dipilih yang transaksinya terbanyak, lalu yang paling baru.
+ */
+async function findBestByodbSpreadsheet(accessToken, preferredIds) {
+  if (!accessToken) return null;
+  let ids = [];
+  (preferredIds || []).forEach(id => { id = String(id || '').trim(); if (id && id !== 'null' && id !== 'undefined' && ids.indexOf(id) === -1) ids.push(id); });
+  try {
+    let q = encodeURIComponent("name contains 'Database Keuanganku PRO' and mimeType = 'application/vnd.google-apps.spreadsheet' and trashed = false");
+    let res = await driveFetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name,modifiedTime)&orderBy=modifiedTime desc&pageSize=20`, {
+      headers: { 'Authorization': 'Bearer ' + accessToken }
+    });
+    if (res.ok) {
+      let data = await res.json();
+      (data.files || []).forEach(f => { if (f && f.id && ids.indexOf(f.id) === -1) ids.push(f.id); });
+    }
+  } catch(e) { console.warn('Daftar file Drive:', e); }
+  if (ids.length === 0) return null;
+  let best = null;
+  for (let id of ids.slice(0, 12)) {
+    try {
+      let doc = await readByodbDoc(accessToken, id);
+      if (!doc || doc.__needsGoogle) continue;
+      let tx = Array.isArray(doc.recentHistory) ? doc.recentHistory.length : 0;
+      let upd = Number(doc.lastUpdated) || 0;
+      if (!best || tx > best.tx || (tx === best.tx && upd > best.upd)) best = { id, tx, upd };
+    } catch(e) {}
+  }
+  // Tidak ada yang berisi data: pakai ID pilihan pertama (atau file pertama yang ditemukan)
+  return best ? best.id : ids[0];
+}
+
+/**
  * Proses setelah mendapatkan access_token dari Google Identity Services
  */
 async function processGoogleLoginToken(accessToken) {
@@ -14831,12 +14865,15 @@ async function processGoogleLoginToken(accessToken) {
         localStorage.setItem("KEUANGANKU_CLOUD_URL", activeCloud);
       }
 
-      let currentSheetId = res.data.spreadsheetId || localStorage.getItem("KEUANGANKU_BYODB_SHEET_ID") || "";
       let byodbDataLoaded = false;
-
-      // Jika pengguna belum punya spreadsheet (pertama kali), cari atau otomatis buat di Google Drive mereka
-      if (!currentSheetId) {
-        currentSheetId = await findExistingByodbSpreadsheet(accessToken);
+      if (btnText) btnText.textContent = 'Mencari database di Drive...';
+      // Pilih file Drive yang benar-benar berisi data (bukan file kosong buatan versi lama)
+      let currentSheetId = await findBestByodbSpreadsheet(accessToken, [res.data.spreadsheetId, localStorage.getItem("KEUANGANKU_BYODB_SHEET_ID")]) || "";
+      if (currentSheetId && currentSheetId !== res.data.spreadsheetId) {
+        // Perbaiki ID file yang tersimpan di server agar perangkat berikutnya langsung memakai file yang benar
+        try {
+          await callClientLicenseApi({ action: 'save_spreadsheet_id', token: res.data.token, email: googleUser.email, googleAccessToken: accessToken, deviceId: devId, spreadsheetId: currentSheetId });
+        } catch(eSid) {}
       }
       if (!currentSheetId) {
         if (btnText) btnText.textContent = 'Membuat Database di Drive...';
@@ -15087,7 +15124,7 @@ async function submitBindGoogleToken() {
 
       // Pakai database Drive yang SUDAH ADA bila ada (dulu selalu membuat file baru yang kosong,
       // sehingga perangkat ini sinkron ke file berbeda dari perangkat lain). Buat baru hanya bila belum ada.
-      let newSheetId = (res.data && res.data.spreadsheetId) || localStorage.getItem("KEUANGANKU_BYODB_SHEET_ID") || await findExistingByodbSpreadsheet(pendingGoogleAuth.accessToken);
+      let newSheetId = await findBestByodbSpreadsheet(pendingGoogleAuth.accessToken, [res.data && res.data.spreadsheetId, localStorage.getItem("KEUANGANKU_BYODB_SHEET_ID")]);
       if (!newSheetId) newSheetId = await provisionNewByodbSpreadsheet(pendingGoogleAuth.accessToken, googleUser);
       if (newSheetId) {
         localStorage.setItem("KEUANGANKU_BYODB_SHEET_ID", newSheetId);
