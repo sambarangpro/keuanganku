@@ -4121,7 +4121,7 @@
 
         if (res && res.success && res.active === false) {
           // Perangkat ini sudah DIKELUARKAN dari lisensi (mis. HP hilang): keluar & lepaskan kunci Cloud
-          if (res.reason === "DEVICE_KICKED") {
+          if (res.reason === "DEVICE_KICKED" || (res.reason === "DEVICE_REMOVED" && typeof isSelfRevokedInData === 'function' && isSelfRevokedInData())) {
             // Hapus data keuangan dari perangkat yang dikeluarkan (tanpa mengirim apa pun ke Cloud)
             try { await wipeLocalFinancialDataAfterSync(false); } catch(eW) {}
             try {
@@ -4231,13 +4231,19 @@
     }
 
     // Auto-check status saat tab/aplikasi dibuka kembali (mendeteksi jika perangkat telah dikeluarkan dari HP/Laptop lain)
-    window.addEventListener('focus', () => {
+    // Periksa status lisensi saat aplikasi kembali dibuka / aktif (iPad & HP jarang memicu 'focus'),
+    // maksimal sekali per menit agar server lisensi tidak terbebani.
+    let lastLicenseHeartbeatAt = 0;
+    function licenseHeartbeat() {
+      if (Date.now() - lastLicenseHeartbeatAt < 60000) return;
       let lic = getSavedLicense();
-      let devId = getOrCreateDeviceId();
       if (lic && lic.token && navigator.onLine) {
-        verifyLicenseStatusSilently(lic.token, devId);
+        lastLicenseHeartbeatAt = Date.now();
+        verifyLicenseStatusSilently(lic.token, getOrCreateDeviceId());
       }
-    });
+    }
+    window.addEventListener('focus', licenseHeartbeat);
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') licenseHeartbeat(); });
 
     // fetch dengan batas waktu: permintaan yang menggantung (sering terjadi di Safari iPad/iPhone)
     // dibatalkan agar aplikasi bisa mencoba cara lain / menampilkan pesan, bukan menunggu selamanya.
@@ -4756,6 +4762,7 @@
 
         if (res && res.success && Array.isArray(res.devices)) {
           let devices = res.devices;
+          window.__lastDeviceIds = devices.map(d => d && d.deviceId).filter(Boolean);
           let otherDevicesCount = devices.filter(d => d.deviceId !== currentDevId).length;
 
           if (badgeEl) {
@@ -4971,6 +4978,8 @@
           });
 
           if (res && res.success) {
+            // Beri tahu perangkat itu lewat sinkron data agar langsung terkunci (±7 detik), tanpa menunggu dibuka ulang
+            markDevicesRevokedInData([targetDeviceId]);
             closeDeviceConfirmModal();
             loadConnectedDevices(false);
             if (lic.deviceCount && lic.deviceCount > 1) {
@@ -4992,6 +5001,8 @@
           });
 
           if (res && res.success) {
+            let myId = getOrCreateDeviceId();
+            markDevicesRevokedInData((window.__lastDeviceIds || []).filter(id => id !== myId));
             closeDeviceConfirmModal();
             loadConnectedDevices(false);
             lic.deviceCount = 1;
@@ -5241,6 +5252,7 @@
           localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(licData));
           // Ditautkan lewat QR yang disetujui perangkat terdaftar: boleh dipakai lagi
           localStorage.removeItem("KEUANGANKU_DEVICE_KICKED");
+          localStorage.setItem("KEUANGANKU_UNREVOKE_ME", "1");
 
           if (s.deviceId) {
             localStorage.setItem("KEUANGANKU_DEVICE_ID", s.deviceId);
@@ -7482,6 +7494,62 @@ function hideSplashScreenAndTriggerAlerts() {
       }
     }
 
+    // ==============================================================================
+    // PERANGKAT DIKELUARKAN -> TERKUNCI DALAM HITUNGAN DETIK
+    // Perangkat yang mengeluarkan mencatat ID perangkat itu di data (revokedDevices). Catatan ini ikut
+    // tersinkron (±7 detik). Perangkat yang dikeluarkan lalu memastikan ke server lisensi, baru mengunci diri.
+    // Nilai positif = waktu dikeluarkan, negatif = waktu ditautkan ulang (yang terbaru menang).
+    // ==============================================================================
+    function mergeRevokedDevices(a, b) {
+      let out = {};
+      [a, b].forEach(m => {
+        if (!m || typeof m !== 'object') return;
+        Object.keys(m).forEach(id => {
+          let v = Number(m[id]) || 0;
+          if (!(id in out) || Math.abs(v) > Math.abs(out[id])) out[id] = v;
+        });
+      });
+      // Simpan paling banyak 60 entri terbaru
+      let ids = Object.keys(out);
+      if (ids.length > 60) ids.sort((x, y) => Math.abs(out[y]) - Math.abs(out[x])).slice(60).forEach(id => delete out[id]);
+      return out;
+    }
+    function markDevicesRevokedInData(ids) {
+      if (!globalData) return;
+      if (!globalData.revokedDevices || typeof globalData.revokedDevices !== 'object') globalData.revokedDevices = {};
+      let now = Date.now();
+      (ids || []).forEach(id => { if (id) globalData.revokedDevices[id] = now; });
+      if (typeof saveStorageData === 'function') saveStorageData();
+    }
+    function isSelfRevokedInData() {
+      try {
+        let id = getOrCreateDeviceId();
+        let v = globalData && globalData.revokedDevices ? Number(globalData.revokedDevices[id]) || 0 : 0;
+        return v > 0;
+      } catch(e) { return false; }
+    }
+    let lastRevokeCheckAt = 0;
+    function checkSelfRevokedAfterSync() {
+      try {
+        let id = getOrCreateDeviceId();
+        // Baru ditautkan ulang lewat QR: catat bahwa perangkat ini aktif kembali
+        if (localStorage.getItem('KEUANGANKU_UNREVOKE_ME') === '1') {
+          localStorage.removeItem('KEUANGANKU_UNREVOKE_ME');
+          if (!globalData.revokedDevices || typeof globalData.revokedDevices !== 'object') globalData.revokedDevices = {};
+          globalData.revokedDevices[id] = -Date.now();
+          saveStorageData();
+          return;
+        }
+        if (!isSelfRevokedInData()) return;
+        let lic = getSavedLicense();
+        if (!lic || !lic.token || !navigator.onLine) return;
+        if (Date.now() - lastRevokeCheckAt < 20000) return;
+        lastRevokeCheckAt = Date.now();
+        // Pastikan ke server (server yang menentukan; catatan data hanya pemicu)
+        verifyLicenseStatusSilently(lic.token, id);
+      } catch(e) { console.warn('checkSelfRevokedAfterSync:', e); }
+    }
+
     /**
      * Salinan data di Google Drive pengguna dipakai perangkat baru yang masuk dengan akun Google.
      * Dulu salinan ini hanya diperbarui saat login, sehingga perangkat baru mendapat data lama.
@@ -7602,8 +7670,14 @@ function hideSplashScreenAndTriggerAlerts() {
           let removedCloud = applyTxTombstones(cloudData);
           let cloudNeedsTombUpdate = removedCloud > 0 || mergedTombs.length !== cloudTombCount;
 
+          // Gabungkan daftar perangkat yang dikeluarkan (positif = dikeluarkan, negatif = ditautkan ulang; yang terbaru menang)
+          let mergedRev = mergeRevokedDevices(globalData.revokedDevices, cloudData.revokedDevices);
+          if (JSON.stringify(mergedRev) !== JSON.stringify(cloudData.revokedDevices || {})) cloudNeedsTombUpdate = true;
+          globalData.revokedDevices = mergedRev;
+          cloudData.revokedDevices = Object.assign({}, mergedRev);
+
           // Gabungkan juga catatan "pengingat sudah ditutup (✕)" dari semua perangkat
-          let localDis = (globalData.dismissedAlerts && typeof globalData.dismissedAlerts === 'object') ? globalData.dismissedAlerts : {};
+          let localDis =(globalData.dismissedAlerts && typeof globalData.dismissedAlerts === 'object') ? globalData.dismissedAlerts : {};
           let cloudDis = (cloudData.dismissedAlerts && typeof cloudData.dismissedAlerts === 'object') ? cloudData.dismissedAlerts : {};
           let mergedDis = Object.assign({}, cloudDis, localDis);
           if (Object.keys(mergedDis).length !== Object.keys(cloudDis).length) cloudNeedsTombUpdate = true;
@@ -7736,6 +7810,7 @@ function hideSplashScreenAndTriggerAlerts() {
             }
           }
           refreshDriveCopyInBackground();
+          checkSelfRevokedAfterSync();
         } else {
           setSyncStatus('error', 'Format Data Cloud Salah');
         }
