@@ -1033,6 +1033,12 @@ function validateClientToken(params) {
         }
       }
 
+      // ATURAN 0: perangkat yang sudah dikeluarkan pengguna tidak bisa masuk lagi dengan PIN
+      if (!existingDevice && isDeviceRemoved_(tokenInput, deviceId)) {
+        logEvent("REMOVED_DEVICE_BLOCKED", tokenInput, buyerName, deviceId, deviceName, "Ditolak: perangkat yang sudah dikeluarkan mencoba masuk lagi dengan PIN");
+        return { success: false, isBurned: true, deviceRemoved: true, message: REMOVED_DEVICE_MESSAGE };
+      }
+
       // ATURAN 1: JIKA TOKEN SUDAH HANGUS (PIN SUDAH DIGANTI KE PRIBADI)
       if (pinStatus === "PIN_CHANGED" && devices.length > 0) {
         // Jika pembeli mencoba aktivasi perangkat baru, mereka HARUS menyertakan PIN Pribadinya!
@@ -1458,11 +1464,13 @@ function authorizePairSession(params) {
 
   if (!existing) {
     if (devices.length >= maxDevices) {
-      return { 
-        success: false, 
-        message: "Batas kuota perangkat telah penuh (Maksimal " + maxDevices + " perangkat). Silakan kelola slot perangkat Anda di Developer Dashboard." 
+      return {
+        success: false,
+        message: "Batas kuota perangkat telah penuh (Maksimal " + maxDevices + " perangkat). Silakan kelola slot perangkat Anda di Developer Dashboard."
       };
     }
+    // Ditautkan lewat QR yang disetujui perangkat terdaftar: perangkat yang dulu dikeluarkan boleh kembali
+    unmarkDeviceRemoved_(tokenInput, targetDeviceId);
     devices.push({
       deviceId: targetDeviceId,
       deviceName: targetDeviceName,
@@ -1640,6 +1648,10 @@ function verifyClientStatus(params) {
       // Perangkat yang belum terdaftar TIDAK lagi didaftarkan otomatis di sini
       // (dulu cukup tahu token saja sudah bisa menambah perangkat tanpa PIN).
       if (!isFound) {
+        // Dikeluarkan secara sengaja oleh pemilik lisensi -> aplikasi di perangkat itu akan mengunci diri
+        if (isDeviceRemoved_(tokenInput, deviceId)) {
+          return { success: true, active: false, reason: "DEVICE_KICKED", message: REMOVED_DEVICE_MESSAGE };
+        }
         return { success: true, active: false, reason: "DEVICE_REMOVED", message: "Perangkat ini belum/tidak lagi terdaftar di lisensi. Silakan masuk ulang dengan Token + PIN." };
       }
 
@@ -1728,6 +1740,42 @@ function clientGetDevices(params) {
   return { success: false, message: "Token lisensi tidak ditemukan." };
 }
 
+// ------------------------------------------------------------------------------
+// PERANGKAT YANG DIKELUARKAN PENGGUNA: tidak boleh masuk lagi hanya dengan PIN / akun Google.
+// Perangkat itu baru bisa kembali bila ditautkan lewat Scan QR yang disetujui perangkat terdaftar.
+// Disimpan di Script Properties per token (maks. 50 ID terakhir).
+// ------------------------------------------------------------------------------
+function removedDevKey_(token) { return "REMOVED_DEV_" + normalizeToken_(token); }
+function getRemovedDevices_(token) {
+  try {
+    var raw = PropertiesService.getScriptProperties().getProperty(removedDevKey_(token));
+    var arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr : [];
+  } catch(e) { return []; }
+}
+function isDeviceRemoved_(token, deviceId) {
+  if (!token || !deviceId) return false;
+  return getRemovedDevices_(token).indexOf(String(deviceId)) !== -1;
+}
+function markDevicesRemoved_(token, ids) {
+  try {
+    var list = getRemovedDevices_(token);
+    (ids || []).forEach(function(id) { id = String(id || ""); if (id && list.indexOf(id) === -1) list.push(id); });
+    if (list.length > 50) list = list.slice(list.length - 50);
+    PropertiesService.getScriptProperties().setProperty(removedDevKey_(token), JSON.stringify(list));
+  } catch(e) {}
+}
+function unmarkDeviceRemoved_(token, deviceId) {
+  try {
+    var list = getRemovedDevices_(token);
+    var idx = list.indexOf(String(deviceId || ""));
+    if (idx === -1) return;
+    list.splice(idx, 1);
+    PropertiesService.getScriptProperties().setProperty(removedDevKey_(token), JSON.stringify(list));
+  } catch(e) {}
+}
+var REMOVED_DEVICE_MESSAGE = "Perangkat ini sudah DIKELUARKAN dari lisensi, jadi tidak bisa masuk lagi dengan PIN. Untuk memakainya kembali, tautkan lewat Scan QR dari perangkat yang masih terdaftar (Setup > Akun & Lisensi).";
+
 function deactivateClientDevice(params) {
   var tokenInput = (params.token || "").trim().toUpperCase();
   var targetDeviceId = (params.targetDeviceId || params.deviceId || "").trim();
@@ -1762,8 +1810,11 @@ function deactivateClientDevice(params) {
 
       if (targetDeviceId === "ALL_OTHERS") {
         updated = devices.filter(function(d) { return d.deviceId === currentDeviceId; });
+        markDevicesRemoved_(tokenInput, devices.filter(function(d) { return d.deviceId !== currentDeviceId; }).map(function(d) { return d.deviceId; }));
         logEvent("ALL_OTHER_DEVICES_DEACTIVATED", tokenInput, buyerName, currentDeviceId, "-", "Pengguna mengeluarkan semua perangkat lain");
       } else {
+        // Perangkat lain yang dikeluarkan tidak boleh masuk lagi dengan PIN (keluar dari perangkat sendiri tetap boleh masuk lagi)
+        if (targetDeviceId !== requesterId) markDevicesRemoved_(tokenInput, [targetDeviceId]);
         for (var k = 0; k < devices.length; k++) {
           if (devices[k].deviceId === targetDeviceId) {
             removedName = devices[k].deviceName || targetDeviceId;
@@ -3366,6 +3417,10 @@ function verifyGoogleAccount(params) {
         existingDevice.deviceName = deviceName;
         sheet.getRange(i + 1, colMap.usedDevices + 1).setValue(JSON.stringify(devices));
       } else {
+        if (isDeviceRemoved_(rowToken, deviceId)) {
+          logEvent("REMOVED_DEVICE_BLOCKED", rowToken, buyerName, deviceId, deviceName, "Ditolak: perangkat yang sudah dikeluarkan mencoba masuk lagi lewat akun Google");
+          return { success: false, isLicensed: true, deviceRemoved: true, message: REMOVED_DEVICE_MESSAGE };
+        }
         if (devices.length >= maxDevices) {
           logEvent("GOOGLE_MAX_DEVICES", rowToken, buyerName, deviceId, deviceName, "Kuota perangkat penuh (" + maxDevices + ")");
           return {
@@ -3472,6 +3527,9 @@ function bindGoogleAccount(params) {
       var bindDevices = parseDevices_(data[i][colMap.usedDevices]);
       var bindPinStatus = String(data[i][colMap.pinStatus] || "").trim().toUpperCase();
       var bindStoredPin = String(data[i][colMap.personalPin] || "").trim();
+      if (deviceIndex_(bindDevices, deviceId) === -1 && isDeviceRemoved_(rowToken, deviceId)) {
+        return { success: false, deviceRemoved: true, message: REMOVED_DEVICE_MESSAGE };
+      }
       if (!boundEmail && bindDevices.length > 0 && deviceIndex_(bindDevices, deviceId) === -1) {
         // Anti tebak PIN: dulu jalur ini tidak dibatasi sehingga PIN bisa dicoba berulang-ulang
         if (isRateLimited_("PIN", rowToken, 6)) {

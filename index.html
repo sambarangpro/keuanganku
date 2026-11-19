@@ -4193,6 +4193,33 @@
         let res = await resp.json();
 
         if (res && res.success && res.active === false) {
+          // Perangkat ini sudah DIKELUARKAN dari lisensi (mis. HP hilang): keluar & lepaskan kunci Cloud
+          if (res.reason === "DEVICE_KICKED") {
+            try {
+              let cu = String(globalData.cloudUrl || '');
+              if (cu && typeof getKeyFromCloudUrl === 'function' && getKeyFromCloudUrl(cu)) {
+                globalData.cloudUrl = '';
+                saveLocalOnly();
+              }
+              localStorage.removeItem("KEUANGANKU_CLOUD_URL");
+              localStorage.removeItem("KEUANGANKU_SAVED_PIN");
+              // Tanda: PIN lokal tidak lagi diterima di perangkat ini sampai ditautkan ulang lewat QR
+              localStorage.setItem("KEUANGANKU_DEVICE_KICKED", "1");
+            } catch(eR) {}
+            localStorage.removeItem("KEUANGANKU_LICENSE_DATA");
+            clearUserSessionAuthentication();
+            let splashScreenR = document.getElementById('splash-screen');
+            if (splashScreenR) {
+              splashScreenR.classList.remove('hidden', 'opacity-0');
+              switchSplashView('pin');
+            }
+            let errR = document.getElementById('bumper-error-msg');
+            if (errR) {
+              errR.textContent = "Perangkat ini telah dikeluarkan dari lisensi. Untuk memakainya kembali, tautkan lewat Scan QR dari perangkat yang masih terdaftar.";
+              errR.classList.remove('hidden');
+            }
+            return;
+          }
           // Lisensi diblokir secara resmi oleh Developer
           if (res.reason === "BLOCKED") {
             localStorage.removeItem("KEUANGANKU_LICENSE_DATA");
@@ -4970,7 +4997,8 @@
               localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(lic));
               updateSetupLicenseDisplay(lic);
             }
-            alert(`Sukses: Perangkat "${targetDeviceName}" berhasil dikeluarkan dari lisensi Anda.`);
+            alert(`Sukses: Perangkat "${targetDeviceName}" berhasil dikeluarkan dari lisensi Anda.\n\nPerangkat itu tidak bisa masuk lagi dengan PIN. Untuk memakainya kembali, tautkan lewat Scan QR dari perangkat ini.`);
+            suggestPinChangeAfterRemoval();
           } else {
             alert((res && res.message) ? res.message : "Gagal mengeluarkan perangkat.");
           }
@@ -4988,7 +5016,8 @@
             lic.deviceCount = 1;
             localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(lic));
             updateSetupLicenseDisplay(lic);
-            alert("Semua perangkat lain berhasil dikeluarkan dari akun lisensi Anda!");
+            alert("Semua perangkat lain berhasil dikeluarkan dari akun lisensi Anda!\n\nPerangkat-perangkat itu tidak bisa masuk lagi dengan PIN. Untuk memakainya kembali, tautkan lewat Scan QR dari perangkat ini.");
+            suggestPinChangeAfterRemoval();
           } else {
             alert((res && res.message) ? res.message : "Gagal memproses permintaan.");
           }
@@ -5013,6 +5042,21 @@
         btn.disabled = false;
         btn.innerHTML = origHtml;
       }
+    }
+
+    // Perangkat yang dikeluarkan bisa saja "dihapus datanya" lalu mendaftar ulang sebagai perangkat baru.
+    // Mengganti PIN menutup celah itu sepenuhnya.
+    function suggestPinChangeAfterRemoval() {
+      setTimeout(() => {
+        if (!confirm("🔐 Saran keamanan:\n\nJika perangkat yang dikeluarkan hilang atau dipegang orang lain, sebaiknya GANTI PIN sekarang agar PIN lama tidak bisa dipakai di perangkat mana pun.\n\nBuka pengaturan ganti PIN sekarang?")) return;
+        let inp = document.getElementById('new-pass-input');
+        if (inp) {
+          inp.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          setTimeout(() => { try { inp.focus(); } catch(e) {} }, 400);
+        } else {
+          alert("Buka Setup > Akun & Lisensi, lalu isi PIN Pribadi Baru dan simpan.");
+        }
+      }, 300);
     }
 
     function handleDeactivateSpecificDevice(targetDeviceId, targetDeviceName) {
@@ -5211,6 +5255,8 @@
           let licData = s.licenseData;
 
           localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(licData));
+          // Ditautkan lewat QR yang disetujui perangkat terdaftar: boleh dipakai lagi
+          localStorage.removeItem("KEUANGANKU_DEVICE_KICKED");
 
           if (s.deviceId) {
             localStorage.setItem("KEUANGANKU_DEVICE_ID", s.deviceId);
@@ -6240,6 +6286,15 @@
       if (isAuto && (!pinView || pinView.classList.contains('hidden'))) {
         return false;
       }
+      // Perangkat yang sudah dikeluarkan dari lisensi tidak bisa dibuka dengan sidik jari / Face ID
+      if (localStorage.getItem("KEUANGANKU_DEVICE_KICKED") === "1") {
+        let errK = document.getElementById('bumper-error-msg');
+        if (errK) {
+          errK.textContent = "Perangkat ini telah dikeluarkan dari lisensi. Tautkan ulang lewat Scan QR dari perangkat yang masih terdaftar.";
+          errK.classList.remove('hidden');
+        }
+        return false;
+      }
 
       let challenge = new Uint8Array(32);
       window.crypto.getRandomValues(challenge);
@@ -6803,6 +6858,15 @@ function hideSplashScreenAndTriggerAlerts() {
       let upperInput = tokenPart.toUpperCase();
       let cleanInput = upperInput.replace(/[^A-Z0-9]/g, '');
       let isTokenFormat = cleanInput.startsWith('PRO') || (tokenPart.includes('-') && cleanInput.length >= 10);
+
+      // Perangkat ini sudah dikeluarkan pemilik lisensi: PIN lokal tidak diterima lagi
+      if (localStorage.getItem("KEUANGANKU_DEVICE_KICKED") === "1") {
+        if (err) {
+          err.textContent = "Perangkat ini telah dikeluarkan dari lisensi. Tautkan ulang lewat Scan QR dari perangkat yang masih terdaftar.";
+          err.classList.remove('hidden');
+        }
+        return;
+      }
 
       // Pastikan globalData dimuat dari localStorage jika saat ini belum terisi
       if (!globalData || !globalData.appPin) {
