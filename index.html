@@ -4972,7 +4972,22 @@
       if (!pendingDeviceAction) return;
       let { type, targetDeviceId, targetDeviceName } = pendingDeviceAction;
       let lic = getSavedLicense();
-      if (!lic || !lic.token) return;
+      if (!lic || !lic.token) {
+        // Tidak ada lisensi tersimpan di perangkat ini. Dulu tombol diam saja (pop-up tidak hilang).
+        if (type === 'current') {
+          localStorage.removeItem("KEUANGANKU_LICENSE_DATA");
+          try { localStorage.removeItem("KEUANGANKU_GOOGLE_USER"); } catch(e) {}
+          if (typeof clearGoogleSession === 'function') { try { clearGoogleSession(); } catch(e) {} }
+          clearUserSessionAuthentication();
+          closeDeviceConfirmModal();
+          alert("Perangkat ini dikeluarkan. Aplikasi akan dimuat ulang.");
+          location.reload();
+        } else {
+          closeDeviceConfirmModal();
+          alert("Lisensi tidak ditemukan di perangkat ini. Masuk ulang dengan PIN atau tautkan lewat Scan QR dari perangkat utama.");
+        }
+        return;
+      }
 
       let btn = document.getElementById('btn-device-confirm-exec');
       let origHtml = btn.innerHTML;
@@ -5031,6 +5046,7 @@
           } catch(e) {}
 
           localStorage.removeItem("KEUANGANKU_LICENSE_DATA");
+          if (typeof clearGoogleSession === 'function') { try { clearGoogleSession(); } catch(e) {} }
           clearUserSessionAuthentication();
           closeDeviceConfirmModal();
           alert("Lisensi berhasil dilepas dari perangkat ini.");
@@ -7486,6 +7502,28 @@ function hideSplashScreenAndTriggerAlerts() {
       }
     }
 
+    /**
+     * Salinan data di Google Drive pengguna dipakai perangkat baru yang masuk dengan akun Google.
+     * Dulu salinan ini hanya diperbarui saat login, sehingga perangkat baru mendapat data lama.
+     * Kini diperbarui diam-diam setelah sinkron Cloud berhasil (maks. tiap 10 menit, tanpa jendela login).
+     */
+    function refreshDriveCopyInBackground() {
+      try {
+        if (localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true') return;
+        let cu = String((globalData && globalData.cloudUrl) || '');
+        if (!cu || cu.indexOf('http') !== 0) return; // mode drive:// sudah menulis langsung ke Drive
+        let sheetId = localStorage.getItem('KEUANGANKU_BYODB_SHEET_ID');
+        let g = (typeof getGoogleSession === 'function') ? getGoogleSession() : null;
+        if (!sheetId || !g || !g.accessToken || !(Number(g.tokenExpiresAt) > Date.now() + 60000)) return;
+        let last = Number(localStorage.getItem('KEUANGANKU_DRIVE_COPY_AT') || 0);
+        if (Date.now() - last < 10 * 60 * 1000) return;
+        localStorage.setItem('KEUANGANKU_DRIVE_COPY_AT', String(Date.now()));
+        if (typeof writeGlobalDataToByodbSheet === 'function') {
+          writeGlobalDataToByodbSheet(g.accessToken, sheetId).catch(e => console.warn('Salinan Drive:', e));
+        }
+      } catch(e) { console.warn('refreshDriveCopyInBackground:', e); }
+    }
+
     async function syncWithCloud(isManualClick = false) {
       // 1. CEK MODE PERCONTOHAN IKLAN: Jika aktif, jeda auto-sync agar data percontohan tetap tampil dan tidak mengotori / tertimpa Cloud
       let isDemo = localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true';
@@ -7717,6 +7755,7 @@ function hideSplashScreenAndTriggerAlerts() {
               showSyncToast("Data Anda sudah paling mutakhir.");
             }
           }
+          refreshDriveCopyInBackground();
         } else {
           setSyncStatus('error', 'Format Data Cloud Salah');
         }
@@ -14720,7 +14759,8 @@ async function processGoogleLoginToken(accessToken) {
       return;
     }
 
-    saveGoogleSession(googleUser);
+    // Catatan: sesi Google baru DISIMPAN setelah server memastikan lisensinya (Skenario A / A2 / penautan).
+    // Dulu disimpan di sini, sehingga perangkat tampak "terhubung" walau belum terdaftar & tidak sinkron.
 
     // 2. Verifikasi ke Backend Master Lisensi via action: verify_google_account
     let devId = getOrCreateDeviceId();
@@ -14741,7 +14781,9 @@ async function processGoogleLoginToken(accessToken) {
 
     // Skenario A: Email sudah terdaftar pada lisensi Keuanganku PRO!
     if (res && res.success && res.isLicensed && res.data) {
+      saveGoogleSession(googleUser);
       localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(res.data));
+      localStorage.removeItem("KEUANGANKU_DEVICE_KICKED");
       sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
 
       // Alamat Cloud dari server lisensi TANPA kunci; kunci lokal / dari Google Drive pengguna tetap dipertahankan
@@ -14996,8 +15038,10 @@ async function submitBindGoogleToken() {
     if (res && res.success && res.data) {
       if (btn) btn.innerHTML = `<span class="material-symbols-outlined text-sm animate-spin">progress_activity</span> MEMBUAT DATABASE DRIVE...`;
 
-      // Otomatis buat Spreadsheet baru di Google Drive pengguna
-      let newSheetId = await provisionNewByodbSpreadsheet(pendingGoogleAuth.accessToken, googleUser);
+      // Pakai database Drive yang SUDAH ADA bila ada (dulu selalu membuat file baru yang kosong,
+      // sehingga perangkat ini sinkron ke file berbeda dari perangkat lain). Buat baru hanya bila belum ada.
+      let newSheetId = (res.data && res.data.spreadsheetId) || localStorage.getItem("KEUANGANKU_BYODB_SHEET_ID") || await findExistingByodbSpreadsheet(pendingGoogleAuth.accessToken);
+      if (!newSheetId) newSheetId = await provisionNewByodbSpreadsheet(pendingGoogleAuth.accessToken, googleUser);
       if (newSheetId) {
         localStorage.setItem("KEUANGANKU_BYODB_SHEET_ID", newSheetId);
         enableDriveSyncIfNoCloud(newSheetId);
@@ -15022,6 +15066,20 @@ async function submitBindGoogleToken() {
 
       if (licRes && licRes.success && licRes.data) {
         localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(licRes.data));
+      } else if (res.data && res.data.token) {
+        localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(res.data));
+      }
+      // Jangan buka aplikasi tanpa lisensi tersimpan (dulu bisa terbuka tanpa terdaftar di server)
+      if (!getSavedLicense()) {
+        if (btn) { btn.innerHTML = origHtml; btn.disabled = false; }
+        alert((licRes && licRes.message) || "Penautan belum selesai: server lisensi tidak merespons. Periksa internet lalu coba lagi, atau tautkan lewat Scan QR dari HP utama.");
+        return;
+      }
+      saveGoogleSession(googleUser);
+      localStorage.removeItem("KEUANGANKU_DEVICE_KICKED");
+      // Data perangkat ini mungkin kosong / lama: tarik data terbaru dari Drive (aman, tidak menimpa data yang lebih baru)
+      if (newSheetId) {
+        try { await pullDataFromByodbSpreadsheet(pendingGoogleAuth.accessToken, newSheetId); } catch(eP) {}
       }
 
       sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
