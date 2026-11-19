@@ -4109,6 +4109,35 @@
       return true;
     }
 
+    /**
+     * Pop-up WAJIB saat perangkat ini dikeluarkan: tidak bisa ditutup, hanya tombol OK,
+     * lalu aplikasi dimuat ulang ke layar masuk (data keuangan sudah dihapus dari perangkat ini).
+     */
+    function showDeviceKickedModal(byName) {
+      if (document.getElementById('device-kicked-modal')) return;
+      let ov = document.createElement('div');
+      ov.id = 'device-kicked-modal';
+      ov.setAttribute('role', 'alertdialog');
+      ov.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:rgba(2,6,23,.92);display:flex;align-items:center;justify-content:center;padding:16px;';
+      let who = byName ? ('perangkat <b style="color:#f8fafc">"' + escapeHtml(byName) + '"</b>') : 'perangkat lain yang terhubung';
+      ov.innerHTML = `
+        <div style="max-width:380px;width:100%;background:#0f172a;border:1px solid #f43f5e66;border-radius:24px;padding:24px;color:#e2e8f0;text-align:center;font-family:inherit">
+          <div style="font-size:36px;line-height:1">🔒</div>
+          <h3 style="font-weight:800;font-size:17px;margin:12px 0 8px">Perangkat Anda dikeluarkan</h3>
+          <p style="font-size:13px;color:#cbd5e1;line-height:1.6;margin:0 0 10px">Perangkat ini telah dikeluarkan dari lisensi oleh ${who}. Data keuangan sudah dihapus dari perangkat ini dan tetap aman di Cloud.</p>
+          <p style="font-size:11px;color:#94a3b8;line-height:1.55;margin:0 0 18px">Untuk masuk kembali: ketuk <b>Masuk dengan Akun Google</b> lalu setujui dari perangkat lain, atau tautkan lewat <b>Scan QR</b>.</p>
+          <button type="button" id="device-kicked-ok" style="width:100%;padding:11px 16px;border-radius:14px;border:0;background:#e11d48;color:#fff;font-size:13px;font-weight:800;cursor:pointer">OK</button>
+        </div>`;
+      // Tidak bisa ditutup dengan klik di luar / tombol Escape
+      ov.addEventListener('click', (e) => { e.stopPropagation(); });
+      document.addEventListener('keydown', (e) => { if (document.getElementById('device-kicked-modal') && e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); } }, true);
+      document.body.appendChild(ov);
+      document.getElementById('device-kicked-ok').onclick = () => {
+        let cleanUrl = window.location.origin + window.location.pathname;
+        window.location.replace(cleanUrl);
+      };
+    }
+
     async function verifyLicenseStatusSilently(token, devId) {
       let apiUrl = getMasterLicenseServerUrl();
       if (!apiUrl || !apiUrl.startsWith("http") || apiUrl.includes("YOUR_SCRIPT_ID")) return;
@@ -4122,6 +4151,9 @@
         if (res && res.success && res.active === false) {
           // Perangkat ini sudah DIKELUARKAN dari lisensi (mis. HP hilang): keluar & lepaskan kunci Cloud
           if (res.reason === "DEVICE_KICKED" || (res.reason === "DEVICE_REMOVED" && typeof isSelfRevokedInData === 'function' && isSelfRevokedInData())) {
+            // Nama perangkat yang mengeluarkan (dibaca sebelum data dihapus)
+            let kickedBy = '';
+            try { kickedBy = (globalData && globalData.revokedByName && globalData.revokedByName[getOrCreateDeviceId()]) || ''; } catch(eN) {}
             // Hapus data keuangan dari perangkat yang dikeluarkan (tanpa mengirim apa pun ke Cloud)
             try { await wipeLocalFinancialDataAfterSync(false); } catch(eW) {}
             try {
@@ -4147,6 +4179,7 @@
               errR.textContent = "Perangkat ini telah dikeluarkan dari lisensi. Untuk masuk kembali: ketuk Masuk dengan Akun Google lalu setujui dari perangkat lain, atau tautkan lewat Scan QR.";
               errR.classList.remove('hidden');
             }
+            showDeviceKickedModal(kickedBy);
             return;
           }
           // Lisensi diblokir secara resmi oleh Developer
@@ -4244,6 +4277,9 @@
     }
     window.addEventListener('focus', licenseHeartbeat);
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') licenseHeartbeat(); });
+    // Pengaman tambahan: selama aplikasi terbuka & tampil, tanyakan status ke server tiap 2 menit
+    // (sinyal utama "dikeluarkan" tetap lewat sinkron data, yang jauh lebih cepat).
+    setInterval(() => { if (document.visibilityState === 'visible') { lastLicenseHeartbeatAt = 0; licenseHeartbeat(); } }, 120000);
 
     // fetch dengan batas waktu: permintaan yang menggantung (sering terjadi di Safari iPad/iPhone)
     // dibatalkan agar aplikasi bisa mencoba cara lain / menampilkan pesan, bukan menunggu selamanya.
@@ -7517,8 +7553,10 @@ function hideSplashScreenAndTriggerAlerts() {
     function markDevicesRevokedInData(ids) {
       if (!globalData) return;
       if (!globalData.revokedDevices || typeof globalData.revokedDevices !== 'object') globalData.revokedDevices = {};
+      if (!globalData.revokedByName || typeof globalData.revokedByName !== 'object') globalData.revokedByName = {};
       let now = Date.now();
-      (ids || []).forEach(id => { if (id) globalData.revokedDevices[id] = now; });
+      let byName = (typeof detectDeviceName === 'function') ? detectDeviceName() : 'perangkat lain';
+      (ids || []).forEach(id => { if (id) { globalData.revokedDevices[id] = now; globalData.revokedByName[id] = byName; } });
       if (typeof saveStorageData === 'function') saveStorageData();
     }
     function isSelfRevokedInData() {
@@ -7675,6 +7713,11 @@ function hideSplashScreenAndTriggerAlerts() {
           if (JSON.stringify(mergedRev) !== JSON.stringify(cloudData.revokedDevices || {})) cloudNeedsTombUpdate = true;
           globalData.revokedDevices = mergedRev;
           cloudData.revokedDevices = Object.assign({}, mergedRev);
+          // Nama perangkat yang mengeluarkan (untuk pesan di perangkat yang dikeluarkan)
+          let mergedBy = Object.assign({}, cloudData.revokedByName || {}, globalData.revokedByName || {});
+          Object.keys(mergedBy).forEach(id => { if (!(id in mergedRev)) delete mergedBy[id]; });
+          globalData.revokedByName = mergedBy;
+          cloudData.revokedByName = Object.assign({}, mergedBy);
 
           // Gabungkan juga catatan "pengingat sudah ditutup (✕)" dari semua perangkat
           let localDis =(globalData.dismissedAlerts && typeof globalData.dismissedAlerts === 'object') ? globalData.dismissedAlerts : {};
@@ -14350,6 +14393,21 @@ function formatReadableSheets(ss, parsed) {
         forceHardRefreshApp();
       }
     }
+
+    // Versi baru dipasang OTOMATIS saat aplikasi dibuka kembali dari latar belakang (bukan saat sedang dipakai),
+    // agar perbaikan langsung sampai ke semua perangkat tanpa harus menekan "Perbarui".
+    let lastBackgroundAt = 0;
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') { lastBackgroundAt = Date.now(); return; }
+      if (!swRegistration) return;
+      try { swRegistration.update().catch(() => {}); } catch(e) {}
+      // Hanya bila aplikasi tadi benar-benar ditinggal (>= 30 detik) dan ada versi baru yang menunggu
+      setTimeout(() => {
+        if (swRegistration && swRegistration.waiting && lastBackgroundAt && (Date.now() - lastBackgroundAt) >= 30000) {
+          swRegistration.waiting.postMessage({ action: 'skipWaiting' });
+        }
+      }, 1500);
+    });
 
     async function checkAppUpdatesManual() {
       let btn = document.getElementById('btn-check-app-update');
