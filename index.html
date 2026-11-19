@@ -14566,6 +14566,36 @@ async function processGoogleLoginToken(accessToken) {
       }
     }
 
+    // iPad/iPhone (terutama aplikasi dari Layar Utama): sesaat setelah kembali dari jendela login Google,
+    // jaringan kadang belum aktif sehingga SEMUA permintaan gagal ("err"). Tunggu sebentar lalu coba sekali lagi.
+    let allNetErr = (window.__gLoginDiag || []).length > 0 && (window.__gLoginDiag || []).every(d => /:(err|timeout|noresp)$/.test(d));
+    if (!detectedEmail && allNetErr) {
+      if (btnText) btnText.textContent = 'Mencoba lagi...';
+      if (document.visibilityState !== 'visible') {
+        await new Promise(r => {
+          const onVis = () => { if (document.visibilityState === 'visible') { document.removeEventListener('visibilitychange', onVis); r(); } };
+          document.addEventListener('visibilitychange', onVis);
+          setTimeout(r, 15000);
+        });
+      }
+      await new Promise(r => setTimeout(r, 2500));
+      let firstDiag = (window.__gLoginDiag || []).join(' ');
+      window.__gLoginDiag = [];
+      let profile2 = await fetchGoogleUserProfile(accessToken);
+      if (profile2 && profile2.email) {
+        profile = profile2;
+        detectedEmail = profile2.email;
+      } else {
+        try {
+          let sv2 = await callClientLicenseApi({ action: 'verify_google_account', googleAccessToken: accessToken, deviceId: getOrCreateDeviceId(), deviceName: detectDeviceName() });
+          window.__gLoginDiag.push('S:' + (sv2 ? (sv2.success ? (sv2.isLicensed ? 'lic' : 'nolic') : 'fail') : 'noresp'));
+          let svEmail2 = sv2 && ((sv2.data && sv2.data.email) || sv2.email);
+          if (svEmail2) { detectedEmail = String(svEmail2).trim().toLowerCase(); if (profile && !profile.name) profile.name = detectedEmail; }
+        } catch(eSv2) { window.__gLoginDiag.push('S:err'); }
+      }
+      window.__gLoginDiag.unshift('[1] ' + firstDiag + ' [2]');
+    }
+
     if (!detectedEmail) {
       // Jangan pernah mengisi email "pemilik" secara otomatis. Minta pengguna login ulang.
       if (btnText) btnText.textContent = 'Masuk dengan Akun Google';
