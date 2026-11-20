@@ -2884,8 +2884,8 @@
 
                 <!-- 1. Fitur Eksklusif Pemilik -->
                 <!-- 3. FITUR EKSKLUSIF PEMILIK (DIPINDAHKAN KE SINI AGAR SEIMBANG & ELEGAN) -->
-              <!-- Menu Kalkulator: untuk SEMUA pengguna (termasuk dalam paket), bisa ditampilkan / disembunyikan -->
-              <section class="bg-white dark:bg-slate-800/95 border border-outline-variant/60 rounded-3xl p-5 sm:p-6 shadow-sm transition-all">
+              <!-- Menu Kalkulator: KHUSUS PEMILIK (kartu ini disembunyikan untuk pembeli) -->
+              <section id="setup-calc-card" class="hidden bg-white dark:bg-slate-800/95 border border-outline-variant/60 rounded-3xl p-5 sm:p-6 shadow-sm transition-all">
                 <div class="flex items-start gap-3">
                   <input type="checkbox" id="setup-enable-calc" onchange="toggleCalculatorFeature(this.checked)" class="w-5 h-5 rounded text-indigo-600 border-outline-variant cursor-pointer focus:ring-indigo-500 shrink-0 mt-0.5">
                   <label for="setup-enable-calc" class="text-xs cursor-pointer select-none">
@@ -3914,27 +3914,22 @@
     }
 
     function getMasterLicenseServerUrl() {
-      // 1. Cek parameter URL (?masterUrl=... atau ?server=... atau ?api=...) jika dibuka langsung dari Dev Portal / Link Khusus
-      try {
-        let params = new URLSearchParams(window.location.search);
-        let urlParam = params.get("masterUrl") || params.get("server") || params.get("api");
-        if (urlParam && isTrustedScriptUrl(urlParam) && !urlParam.includes("YOUR_SCRIPT_ID")) {
-          localStorage.setItem("KEUANGANKU_MASTER_SERVER_URL", urlParam);
-          return urlParam;
-        }
-      } catch(e) {}
-
-      // 2. Cek localStorage jika ada URL server backend dev/master tersimpan
-      let saved = localStorage.getItem("KEUANGANKU_MASTER_SERVER_URL") ||
-                  localStorage.getItem("KEUANGANKU_DEV_API_URL") || 
-                  localStorage.getItem("KEUANGANKU_CUSTOM_LICENSE_URL");
-      if (saved && saved.startsWith("http") && !saved.includes("YOUR_SCRIPT_ID")) {
-        return saved;
+      // Selalu memakai server lisensi RESMI. (Dulu alamat server dari tautan dev portal ikut tersimpan,
+      // sehingga sebagian perangkat terus bertanya ke versi server lama dan kehilangan fitur baru,
+      // mis. tanda "pemilik" untuk menu Rekapitulasi.)
+      if (DEFAULT_MASTER_LICENSE_URL && !DEFAULT_MASTER_LICENSE_URL.includes("YOUR_SCRIPT_ID")) {
+        return DEFAULT_MASTER_LICENSE_URL;
       }
-
-      // 3. Fallback ke DEFAULT_MASTER_LICENSE_URL resmi
-      return DEFAULT_MASTER_LICENSE_URL;
+      let saved = localStorage.getItem("KEUANGANKU_MASTER_SERVER_URL");
+      return (saved && isTrustedScriptUrl(saved)) ? saved : DEFAULT_MASTER_LICENSE_URL;
     }
+    // Bersihkan alamat server lama yang dulu tersimpan dari tautan
+    try {
+      ['KEUANGANKU_MASTER_SERVER_URL', 'KEUANGANKU_DEV_API_URL', 'KEUANGANKU_CUSTOM_LICENSE_URL'].forEach(k => {
+        let v = localStorage.getItem(k);
+        if (v && v !== DEFAULT_MASTER_LICENSE_URL) localStorage.removeItem(k);
+      });
+    } catch(e) {}
 
     function getOrCreateDeviceId() {
       let devId = localStorage.getItem("KEUANGANKU_DEVICE_ID");
@@ -7903,7 +7898,7 @@ function hideSplashScreenAndTriggerAlerts() {
 
       if (globalData.appPin === undefined) globalData.appPin = globalData.ownerPassword || "123";
       if (!globalData.cloudUrl) globalData.cloudUrl = "";
-      if (globalData.enableCalculator === undefined) globalData.enableCalculator = true; // termasuk dalam paket
+      if (globalData.enableCalculator === undefined) globalData.enableCalculator = true; // tetap khusus pemilik (lihat applyNavigationConfig)
       if (globalData.enableRunwayMeter === undefined) globalData.enableRunwayMeter = true;
       if (globalData.enableCountdownGoals === undefined) globalData.enableCountdownGoals = true;
       if (globalData.enableZakatHub === undefined) globalData.enableZakatHub = true;
@@ -7998,7 +7993,8 @@ function hideSplashScreenAndTriggerAlerts() {
     }
     
     function toggleCalculatorFeature(val) {
-      // Kalkulator tersedia untuk semua pengguna; tombol ini hanya menampilkan / menyembunyikan menunya
+      // Kalkulator khusus pemilik; tombol ini menampilkan / menyembunyikan menunya
+      if (!isOwnerDevice()) val = false;
       globalData.enableCalculator = !!val;
       saveStorageData();
       let navCalc = document.getElementById('nav-calc');
@@ -9347,10 +9343,10 @@ function formatReadableSheets(ss, parsed) {
       let navCalc = document.getElementById('nav-calc');
       let dnavCalc = document.getElementById('dnav-calc');
 
-      // Rekapitulasi: khusus pemilik. Kalkulator: untuk SEMUA pengguna (dijual di paket), bisa dimatikan di Setup.
+      // Rekapitulasi & Kalkulator: KHUSUS PEMILIK (Kalkulator bisa disembunyikan di Setup)
       if (navRekap) navRekap.style.display = isOwner ? 'flex' : 'none';
       if (dnavRekap) dnavRekap.style.display = isOwner ? 'inline-flex' : 'none';
-      let calcOn = !globalData || globalData.enableCalculator !== false;
+      let calcOn = isOwner && (!globalData || globalData.enableCalculator !== false);
       if (navCalc) navCalc.style.display = calcOn ? 'flex' : 'none';
       if (dnavCalc) dnavCalc.style.display = calcOn ? 'inline-flex' : 'none';
       // Lisensi tersimpan belum membawa tanda pemilik dari server: tanyakan ke server sekarang (sekali)
@@ -9361,9 +9357,11 @@ function formatReadableSheets(ss, parsed) {
           setTimeout(() => { try { verifyLicenseStatusSilently(licNav.token, getOrCreateDeviceId()); } catch(e) {} }, 1000);
         }
       } catch(eOw) {}
-      // Pengaturan teknis Google Client ID hanya untuk pemilik
+      // Pengaturan teknis Google Client ID & kartu Kalkulator hanya untuk pemilik
       let cidRow = document.getElementById('google-clientid-row');
       if (cidRow) cidRow.classList.toggle('hidden', !isOwner);
+      let calcCard = document.getElementById('setup-calc-card');
+      if (calcCard) calcCard.classList.toggle('hidden', !isOwner);
       // Kartu "Amankan Cloud Script" hanya untuk perangkat yang memakai Cloud Script (cara sinkron lama)
       let csCard = document.getElementById('setup-cloudscript-card');
       if (csCard) {
@@ -9462,8 +9460,8 @@ function formatReadableSheets(ss, parsed) {
         renderSetupView(); 
       } 
       else if (page === 'kalkulator') {
-        // Kalkulator untuk SEMUA pengguna (termasuk dalam paket); hanya bisa disembunyikan lewat Setup
-        if (globalData && globalData.enableCalculator === false) {
+        // Kalkulator KHUSUS PEMILIK (dan bisa disembunyikan lewat Setup)
+        if (!isOwnerDevice() || (globalData && globalData.enableCalculator === false)) {
           navTo('dashboard');
           return;
         }
