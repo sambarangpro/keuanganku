@@ -314,6 +314,48 @@
     }
     html.dark body { background-color: #020617 !important; color: #f8fafc !important; }
     html.dark header, html.dark nav { background-color: #090d16 !important; border-color: #1e293b !important; }
+
+    /* ===== SETUP > PENGATURAN APLIKASI: tata letak sederhana & rapi (menu samping + kartu seragam) ===== */
+    .setup-settings-layout { display: block; }
+    .setup-side-nav {
+      display: flex; gap: 6px; overflow-x: auto; padding: 4px; margin-bottom: 16px;
+      background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; scrollbar-width: none;
+    }
+    .setup-side-nav::-webkit-scrollbar { display: none; }
+    .setup-side-nav-title { display: none; }
+    .setup-nav-item {
+      flex: 1 0 auto; display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 9px 14px; border-radius: 12px; font-size: 12px; font-weight: 600; white-space: nowrap;
+      color: #64748b; background: transparent; border: 0; cursor: pointer; transition: background .15s, color .15s;
+    }
+    .setup-nav-item .material-symbols-outlined { font-size: 18px; }
+    .setup-nav-item:hover { background: #f1f5f9; color: #0f172a; }
+    .setup-nav-item.is-active { background: #eff6ff; color: #1d4ed8; font-weight: 700; }
+    @media (min-width: 768px) {
+      .setup-settings-layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 24px; align-items: start; }
+      .setup-side-nav {
+        flex-direction: column; overflow: visible; margin-bottom: 0; padding: 10px;
+        position: sticky; top: 84px;
+      }
+      .setup-side-nav-title { display: block; padding: 6px 10px 8px; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #94a3b8; }
+      .setup-nav-item { flex: 0 0 auto; justify-content: flex-start; width: 100%; padding: 10px 12px; }
+    }
+    html.dark .setup-side-nav { background: #0f172a; border-color: #1e293b; }
+    html.dark .setup-nav-item { color: #94a3b8; }
+    html.dark .setup-nav-item:hover { background: #1e293b; color: #f1f5f9; }
+    html.dark .setup-nav-item.is-active { background: rgba(59,130,246,.15); color: #93c5fd; }
+
+    /* Kartu pengaturan seragam: satu warna garis, sudut & bayangan sama (kecuali kartu lisensi gelap) */
+    #setup-view-pengaturan .setup-settings-content section[class*="rounded-3xl"]:not(.bg-slate-900) {
+      border-radius: 16px !important; box-shadow: none !important; border-color: #e2e8f0 !important;
+      background-color: #ffffff !important;
+    }
+    html.dark #setup-view-pengaturan .setup-settings-content section[class*="rounded-3xl"]:not(.bg-slate-900) {
+      border-color: #1e293b !important; background-color: #0f172a !important;
+    }
+    #setup-view-pengaturan .setup-settings-content section.bg-slate-900 { border-radius: 16px !important; box-shadow: none !important; }
+    /* Judul kategori di atas isi: lebih tenang */
+    #setup-view-pengaturan .setup-settings-content [id^="setup-pane-"] > div:first-child { border-bottom-color: transparent !important; padding-bottom: 0 !important; }
     html.dark .bg-white, html.dark .bg-surface { background-color: #0f172a !important; color: #f1f5f9 !important; border-color: #334155 !important; }
     html.dark .text-on-surface { color: #ffffff !important; }
     html.dark .text-on-surface-variant { color: #cbd5e1 !important; }
@@ -2461,37 +2503,30 @@
         <!-- ========================================== -->
         <!-- SUBTAB 1: PENGATURAN APLIKASI              -->
         <!-- ========================================== -->
-        <div id="setup-view-pengaturan" class="space-y-6">
-          <!-- SUB-MENU KATEGORI PENGATURAN DI ATAS (DESKTOP & MOBILE) -->
-          <div class="bg-surface dark:bg-slate-900 border border-outline-variant/70 p-1.5 rounded-2xl shadow-sm flex items-center gap-1.5 overflow-x-auto no-scrollbar sm:grid sm:grid-cols-4">
-            
-            <!-- Nav 1: Akun & Lisensi -->
-            <button type="button" id="setup-nav-account" onclick="switchSetupCategory('account')" class="shrink-0 sm:shrink flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer bg-primary text-white shadow-sm" title="Akun & Lisensi">
-              <span class="material-symbols-outlined text-base">manage_accounts</span>
-              <span>Akun & Lisensi</span>
+        <div id="setup-view-pengaturan" class="setup-settings-layout">
+          <!-- MENU KATEGORI: daftar di samping (laptop) / tab di atas (HP) -->
+          <div class="setup-side-nav" role="navigation" aria-label="Kategori pengaturan">
+            <p class="setup-side-nav-title">Pengaturan</p>
+            <button type="button" id="setup-nav-account" onclick="switchSetupCategory('account')" class="setup-nav-item is-active" title="Akun & Lisensi">
+              <span class="material-symbols-outlined">manage_accounts</span>
+              <span>Akun &amp; Lisensi</span>
             </button>
-
-            <!-- Nav 2: Database & Cadangan -->
-            <button type="button" id="setup-nav-database" onclick="switchSetupCategory('database')" class="shrink-0 sm:shrink flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container" title="Database & Cadangan">
-              <span class="material-symbols-outlined text-base">cloud_sync</span>
-              <span>Database & Cadangan</span>
+            <button type="button" id="setup-nav-database" onclick="switchSetupCategory('database')" class="setup-nav-item" title="Data & Cadangan">
+              <span class="material-symbols-outlined">cloud_sync</span>
+              <span>Data &amp; Cadangan</span>
             </button>
-
-            <!-- Nav 3: Fitur & Notifikasi -->
-            <button type="button" id="setup-nav-features" onclick="switchSetupCategory('features')" class="shrink-0 sm:shrink flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container" title="Fitur & Notifikasi">
-              <span class="material-symbols-outlined text-base">tune</span>
-              <span>Fitur & Notifikasi</span>
+            <button type="button" id="setup-nav-features" onclick="switchSetupCategory('features')" class="setup-nav-item" title="Fitur & Notifikasi">
+              <span class="material-symbols-outlined">tune</span>
+              <span>Fitur &amp; Notifikasi</span>
             </button>
-
-            <!-- Nav 4: Sistem & Tentang -->
-            <button type="button" id="setup-nav-system" onclick="switchSetupCategory('system')" class="shrink-0 sm:shrink flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container" title="Sistem & Tentang">
-              <span class="material-symbols-outlined text-base">info</span>
-              <span>Sistem & Tentang</span>
+            <button type="button" id="setup-nav-system" onclick="switchSetupCategory('system')" class="setup-nav-item" title="Tentang Aplikasi">
+              <span class="material-symbols-outlined">info</span>
+              <span>Tentang</span>
             </button>
           </div>
 
-          <!-- KONTEN SETTING UTAMA (LEGA PENUH DI DESKTOP & MOBILE) -->
-          <div class="w-full space-y-6">
+          <!-- KONTEN SETTING UTAMA -->
+          <div class="setup-settings-content w-full space-y-5">
 
               <!-- ======================================================== -->
               <!-- KATEGORI 1: AKUN & LISENSI                               -->
@@ -2503,8 +2538,8 @@
                     <span class="material-symbols-outlined text-xl">manage_accounts</span>
                   </div>
                   <div>
-                    <h2 class="text-sm sm:text-base font-extrabold text-on-surface">Akun & Lisensi Aplikasi</h2>
-                    <p class="text-[11px] text-on-surface-variant">Kelola akun Google pemilik, token lisensi resmi, dan perangkat terhubung</p>
+                    <h2 class="text-sm sm:text-base font-extrabold text-on-surface">Akun &amp; Lisensi</h2>
+                    <p class="text-[11px] text-on-surface-variant">Akun Google, lisensi, PIN, dan perangkat terhubung</p>
                   </div>
                 </div>
 
@@ -2517,23 +2552,14 @@
                       <span class="material-symbols-outlined text-xl">cloud_done</span>
                     </div>
                     <div>
-                      <h2 class="font-headline-md text-base sm:text-lg font-bold text-on-surface">Database Pribadi (Google Drive BYODb)</h2>
-                      <p class="text-[10px] text-gray-500 dark:text-gray-400">Database Anda 100% tersimpan di Google Drive milik Anda sendiri</p>
+                      <h2 class="font-headline-md text-base sm:text-lg font-bold text-on-surface">Akun Google &amp; Google Drive</h2>
+                      <p class="text-[11px] text-gray-500 dark:text-gray-400">Data tersimpan di Google Drive milik Anda sendiri, bukan di server kami.</p>
                     </div>
                   </div>
                   <span id="byodb-status-badge" class="px-2.5 py-1 bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 text-[10px] font-extrabold rounded-full flex items-center gap-1.5 border border-amber-200 dark:border-amber-800">
                     <span id="byodb-status-dot" class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
                     <span id="byodb-status-text">BELUM TERHUBUNG</span>
                   </span>
-                </div>
-
-                <div class="p-3.5 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/40 text-xs text-emerald-950 dark:text-emerald-200 space-y-1.5 leading-relaxed">
-                  <p class="font-bold flex items-center gap-1.5 text-emerald-800 dark:text-emerald-300">
-                    <span class="material-symbols-outlined text-sm">security</span> 100% Privasi & Tanpa Biaya Server ($0)
-                  </p>
-                  <p class="text-[11px] opacity-90">
-                    Seluruh data transaksi dan foto nota disimpan langsung di Google Spreadsheet pada akun Google Drive Anda. Server developer tidak pernah menyimpan atau membaca data transaksi pribadi Anda.
-                  </p>
                 </div>
 
                 <!-- Banner Proteksi Mode Demo Iklan (Muncul saat Mode Demo Aktif) -->
@@ -2688,11 +2714,7 @@
                     </button>
                   </div>
 
-                  <!-- Banner Info Lembut -->
-                  <div class="p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl text-[11px] text-blue-200/90 flex items-start gap-2.5">
-                    <span class="material-symbols-outlined text-blue-400 text-base shrink-0 mt-0.5">info</span>
-                    <p class="leading-relaxed">Jika ada HP atau Laptop Anda yang <b>hilang</b> atau <b>lupa keluar (logout)</b>, Anda dapat mengklik tombol <b>Keluarkan</b> di samping nama perangkat untuk mencabut akses seketika.</p>
-                  </div>
+                  <p class="text-[11px] text-slate-400">HP / laptop hilang? Ketuk <b class="text-slate-200">Keluarkan</b> di samping namanya.</p>
 
                   <!-- List Kontainer Perangkat -->
                   <div id="connected-devices-list" class="space-y-2 pt-1">
@@ -2773,22 +2795,7 @@
                   </span>
                 </div>
 
-                <div id="setup-biometric-info-box" class="p-3.5 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-900 dark:text-indigo-200 text-xs leading-relaxed space-y-1">
-                  <p class="font-bold flex items-center gap-1.5 text-indigo-800 dark:text-indigo-300">
-                    <span class="material-symbols-outlined text-sm">verified_user</span> Keamanan Tingkat Perangkat
-                  </p>
-                  <p id="setup-biometric-info-text">
-                    Kunci biometrik menggunakan sensor bawaan perangkat Anda (Face ID, Touch ID, Fingerprint, atau Windows Hello). Data biometrik Anda tersimpan secara aman di dalam chip keamanan perangkat lokal dan tidak pernah dikirim ke internet.
-                  </p>
-                  <div class="mt-2 pt-2 border-t border-indigo-500/20 text-[11px] text-indigo-900/80 dark:text-indigo-200/80 space-y-1">
-                    <p class="font-semibold flex items-center gap-1">
-                      <span class="material-symbols-outlined text-xs">info</span> Sensor yang Digunakan:
-                    </p>
-                    <p class="leading-relaxed">
-                      Sistem operasi perangkat Anda secara otomatis memilih sensor dengan sertifikasi keamanan terkuat (Class 3 Hardware Security). Pada mayoritas ponsel Android, sistem keamanan Google mengaktifkan <b>Sensor Sidik Jari</b> untuk otentikasi terenkripsi. Pada perangkat Apple (iPhone/iPad), sistem otomatis menggunakan <b>Face ID 3D</b>.
-                    </p>
-                  </div>
-                </div>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">Memakai sensor bawaan perangkat (Face ID, sidik jari, atau Windows Hello). Data biometrik tetap di perangkat Anda dan tidak dikirim ke internet.</p>
 
                 <div id="setup-biometric-action-container" class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
                   <div class="text-xs text-on-surface-variant flex items-center gap-2">
@@ -2812,8 +2819,8 @@
                     <span class="material-symbols-outlined text-xl">cloud_sync</span>
                   </div>
                   <div>
-                    <h2 class="text-sm sm:text-base font-extrabold text-on-surface">Database & Cadangan Data</h2>
-                    <p class="text-[11px] text-on-surface-variant">Penyimpanan cloud Google Drive dan pencadangan offline</p>
+                    <h2 class="text-sm sm:text-base font-extrabold text-on-surface">Data &amp; Cadangan</h2>
+                    <p class="text-[11px] text-on-surface-variant">Simpan dan pulihkan salinan data Anda</p>
                   </div>
                 </div>
 
@@ -2839,18 +2846,11 @@
                         <span class="material-symbols-outlined text-xl">save_as</span>
                       </div>
                       <div>
-                        <h3 class="font-headline-md text-base sm:text-lg font-bold text-on-surface">Cadangan Manual (Offline)</h3>
-                        <p class="text-[10px] text-gray-500 dark:text-gray-400">Simpan atau pulihkan file database .json tanpa kuota internet</p>
+                        <h3 class="font-headline-md text-base sm:text-lg font-bold text-on-surface">Cadangan File</h3>
+                        <p class="text-[11px] text-gray-500 dark:text-gray-400">Unduh salinan data ke perangkat, atau pulihkan dari file cadangan (.json).</p>
                       </div>
                     </div>
-                    <span class="text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                      FILE & TEKS • OFFLINE
-                    </span>
                   </div>
-
-                  <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-                    Download salinan file database ke komputer / flashdisk, atau pulihkan data dari file cadangan sebelumnya:
-                  </p>
 
                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1 max-w-md">
                     <button type="button" onclick="openManualBackupModal('export')" class="py-2.5 px-4 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 font-bold text-xs rounded-xl shadow-2xs flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer" title="Download File Cadangan .json">
@@ -2882,24 +2882,13 @@
                     <span class="material-symbols-outlined text-xl">tune</span>
                   </div>
                   <div>
-                    <h2 class="text-sm sm:text-base font-extrabold text-on-surface">Fitur Tambahan & Notifikasi</h2>
-                    <p class="text-[11px] text-on-surface-variant">Atur modul kalkulator, zakat, indikator runway, dan pengingat jatuh tempo</p>
+                    <h2 class="text-sm sm:text-base font-extrabold text-on-surface">Fitur &amp; Notifikasi</h2>
+                    <p class="text-[11px] text-on-surface-variant">Pengingat jatuh tempo dan tampilan fitur</p>
                   </div>
                 </div>
 
                 <!-- 1. Fitur Eksklusif Pemilik -->
                 <!-- 3. FITUR EKSKLUSIF PEMILIK (DIPINDAHKAN KE SINI AGAR SEIMBANG & ELEGAN) -->
-              <!-- Menu Kalkulator: KHUSUS PEMILIK (kartu ini disembunyikan untuk pembeli) -->
-              <section id="setup-calc-card" class="hidden bg-white dark:bg-slate-800/95 border border-outline-variant/60 rounded-3xl p-5 sm:p-6 shadow-sm transition-all">
-                <div class="flex items-start gap-3">
-                  <input type="checkbox" id="setup-enable-calc" onchange="toggleCalculatorFeature(this.checked)" class="w-5 h-5 rounded text-indigo-600 border-outline-variant cursor-pointer focus:ring-indigo-500 shrink-0 mt-0.5">
-                  <label for="setup-enable-calc" class="text-xs cursor-pointer select-none">
-                    <span class="font-bold text-on-surface block">Tampilkan Menu Kalkulator Bisnis &amp; Finansial</span>
-                    <span class="text-[11px] text-gray-500 dark:text-gray-400 block mt-0.5">HPP Konveksi / Sablon, Analisis Modal Usaha, dan Kalkulator Akad Murabahah.</span>
-                  </label>
-                </div>
-              </section>
-
               <section id="setup-owner-feature-section" class="bg-white dark:bg-slate-800/95 border border-indigo-500/30 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4 transition-all hidden">
                 <div class="flex items-center justify-between flex-wrap gap-2">
                   <div class="flex items-center gap-2.5">
@@ -2907,8 +2896,8 @@
                       <span class="material-symbols-outlined text-xl">admin_panel_settings</span>
                     </div>
                     <div>
-                      <h2 class="font-headline-md text-base sm:text-lg font-bold text-indigo-950 dark:text-indigo-100">Fitur Eksklusif Pemilik</h2>
-                      <p class="text-[10px] text-gray-500 dark:text-gray-400">Modul finansial strategis khusus pemilik aplikasi</p>
+                      <h2 class="font-headline-md text-base sm:text-lg font-bold text-on-surface">Fitur Khusus Pemilik</h2>
+                      <p class="text-[11px] text-gray-500 dark:text-gray-400">Hanya terlihat di perangkat Anda, tidak di perangkat pengguna lain.</p>
                     </div>
                   </div>
                   <span class="px-2.5 py-1 bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 text-[10px] font-extrabold rounded-full flex items-center gap-1 border border-indigo-200 dark:border-indigo-800">
@@ -2916,12 +2905,17 @@
                   </span>
                 </div>
 
-                <p class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed bg-indigo-50/60 dark:bg-indigo-950/30 p-3 rounded-2xl border border-indigo-100 dark:border-indigo-900/40">
-                  Modul ini <b>hanya aktif untuk Anda</b> sebagai pemilik resmi dan disembunyikan total dari perangkat pengguna lain / kerabat.
-                </p>
-
-                <!-- Daftar Checkbox Modul Eksklusif (Kalkulator dipindah ke kartu umum di atas: untuk semua pengguna) -->
+                <!-- Daftar modul khusus pemilik: Kalkulator, Ketahanan Dana, Zakat (tidak terlihat oleh pengguna lain) -->
                 <div class="space-y-2.5 pt-1">
+                  <!-- Modul 1: Kalkulator -->
+                  <div class="flex items-start gap-3 bg-surface-container dark:bg-slate-900/80 p-3.5 rounded-2xl border border-outline-variant/60 transition-colors">
+                    <input type="checkbox" id="setup-enable-calc" onchange="toggleCalculatorFeature(this.checked)" class="w-5 h-5 rounded text-indigo-600 border-outline-variant cursor-pointer focus:ring-indigo-500 shrink-0 mt-0.5">
+                    <label for="setup-enable-calc" class="text-xs cursor-pointer select-none">
+                      <span class="font-bold text-on-surface block">Tampilkan Menu Kalkulator</span>
+                      <span class="text-[11px] text-gray-500 dark:text-gray-400 block mt-0.5">HPP konveksi/sablon, analisis modal usaha, dan akad murabahah.</span>
+                    </label>
+                  </div>
+
                   <!-- Modul 2: Emergency Runway -->
                   <div class="bg-surface-container dark:bg-slate-900/80 p-3.5 rounded-2xl border border-outline-variant/60 hover:border-indigo-500/30 transition-colors space-y-3">
                     <div class="flex items-start gap-3">
@@ -2991,16 +2985,13 @@
                 </div>
 
                 <!-- Modul 5: Mode Percontohan & Rekaman Iklan (Showcase Demo) -->
-                <div class="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/15 border border-amber-500/30 space-y-2.5">
-                  <div class="flex items-center justify-between flex-wrap gap-2">
-                    <div class="flex items-center gap-2">
-                      <span class="material-symbols-outlined text-amber-500 text-lg">movie</span>
-                      <span class="font-bold text-xs text-on-surface">Mode Percontohan & Rekaman Iklan (Showcase Demo)</span>
-                    </div>
-                    <span class="text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/30">KONTEN PROMOSI</span>
+                <div class="p-3.5 rounded-2xl bg-surface-container dark:bg-slate-900/80 border border-outline-variant/60 space-y-2">
+                  <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-amber-500 text-lg">movie</span>
+                    <span class="font-bold text-xs text-on-surface">Mode Demo (untuk rekaman iklan)</span>
                   </div>
-                  <p class="text-[11px] text-gray-600 dark:text-gray-300 leading-relaxed">
-                    Muat otomatis database percontohan lengkap (Ketahanan Kas Runway, Visual Goals Impian, Zakat Maal Hub, Transaksi dengan Bukti Struk, & Kalkulator Bisnis). Aman tanpa mengganggu database pribadi Anda.
+                  <p class="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
+                    Tampilkan data contoh untuk video promosi. Data asli Anda tidak tersentuh.
                   </p>
                   <div class="flex items-center gap-2 pt-1 flex-wrap">
                     <button type="button" id="btn-activate-demo-data" onclick="activateShowcaseDemoData()" class="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-extrabold text-xs rounded-xl shadow-sm flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer">
@@ -3014,20 +3005,7 @@
                   </div>
                 </div>
 
-                <!-- Footer Banner Portal Developer -->
-                <div class="pt-3 border-t border-indigo-100 dark:border-indigo-900/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div>
-                    <p class="text-xs font-bold text-indigo-950 dark:text-indigo-100 flex items-center gap-1.5">
-                      <span class="material-symbols-outlined text-sm text-indigo-600">terminal</span>
-                      <span>Master Developer & License Portal</span>
-                    </p>
-                    <p class="text-[10px] text-gray-500 dark:text-gray-400">Kelola kuota lisensi, token pembeli baru, cabut perangkat, dan pantau log audit.</p>
-                  </div>
-                  <a href="dev-dashboard.html" target="_blank" class="px-3.5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-md shrink-0 active:scale-95">
-                    <span class="material-symbols-outlined text-sm">open_in_new</span>
-                    <span>Dev Dashboard</span>
-                  </a>
-                </div>
+                <!-- (Tautan Dev Dashboard cukup di kartu Lisensi: "Buka Developer Dashboard") -->
               </section>
 
                 <!-- 2. Notifikasi Pengingat Perangkat -->
@@ -3039,18 +3017,14 @@
                       <span class="material-symbols-outlined text-xl">notifications_active</span>
                     </div>
                     <div>
-                      <h2 class="font-headline-md text-base sm:text-lg font-bold text-on-surface">Notifikasi Pengingat Perangkat</h2>
-                      <p class="text-[10px] text-gray-500 dark:text-gray-400">Pengingat jatuh tempo tagihan & utang di HP/PC</p>
+                      <h2 class="font-headline-md text-base sm:text-lg font-bold text-on-surface">Notifikasi Pengingat</h2>
+                      <p class="text-[11px] text-gray-500 dark:text-gray-400">Pemberitahuan saat tagihan, cicilan, atau utang jatuh tempo.</p>
                     </div>
                   </div>
                   <span id="setup-notif-status-badge" class="px-2.5 py-0.5 text-[10px] font-extrabold rounded-full border bg-amber-100 text-amber-700 border-amber-300">
                     MEMUAT STATUS...
                   </span>
                 </div>
-
-                <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-                  Dapatkan notifikasi otomatis di layar & bilah status HP/Laptop saat tanggal jatuh tempo pembayaran cicilan, utang, atau tagihan rutin tiba.
-                </p>
 
                 <div class="grid grid-cols-1 gap-2.5 pt-1 max-w-xs">
                   <button id="btn-toggle-notif-perm" onclick="requestNotificationPermissionInteractive()" class="py-2.5 px-3 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer">
@@ -3065,10 +3039,10 @@
                     <div class="space-y-0.5">
                       <div class="flex items-center gap-1.5 font-bold text-xs text-on-surface">
                         <span class="material-symbols-outlined text-sm text-amber-600 dark:text-amber-400">auto_awesome_motion</span>
-                        <span>Pop-Up Melayang Otomatis Saat Buka Aplikasi</span>
+                        <span>Tampilkan pop-up pengingat saat aplikasi dibuka</span>
                       </div>
                       <p class="text-[10px] text-gray-500 dark:text-gray-400 leading-tight">
-                        Jika dinonaktifkan, pop-up dialog di tengah layar tidak akan muncul otomatis. Peringatan tetap ada di kartu dashboard.
+                        Jika dimatikan, pengingat tetap terlihat di Beranda.
                       </p>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer shrink-0">
@@ -3094,8 +3068,8 @@
                     <span class="material-symbols-outlined text-xl">info</span>
                   </div>
                   <div>
-                    <h2 class="text-sm sm:text-base font-extrabold text-on-surface">Sistem & Informasi Aplikasi</h2>
-                    <p class="text-[11px] text-on-surface-variant">Instalasi aplikasi, update patch, dan buku panduan penggunaan</p>
+                    <h2 class="text-sm sm:text-base font-extrabold text-on-surface">Tentang Aplikasi</h2>
+                    <p class="text-[11px] text-on-surface-variant">Pasang aplikasi, versi, dan informasi hukum</p>
                   </div>
                 </div>
 
@@ -13903,13 +13877,7 @@ function formatReadableSheets(ss, parsed) {
           else pane.classList.add('hidden');
         }
 
-        if (dBtn) {
-          if (isActive) {
-            dBtn.className = "shrink-0 sm:shrink flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer bg-primary text-white shadow-sm";
-          } else {
-            dBtn.className = "shrink-0 sm:shrink flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer text-on-surface-variant hover:text-on-surface hover:bg-surface-container";
-          }
-        }
+        if (dBtn) dBtn.classList.toggle('is-active', isActive);
 
         if (mBtn) {
           if (isActive) {
