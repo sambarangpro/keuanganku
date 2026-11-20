@@ -9461,9 +9461,9 @@ function formatReadableSheets(ss, parsed) {
         }
         renderSetupView(); 
       } 
-      else if (page === 'kalkulator') { 
-        if (!isOwnerDevice()) {
-          // Jika bukan perangkat pemilik, arahkan ke dashboard
+      else if (page === 'kalkulator') {
+        // Kalkulator untuk SEMUA pengguna (termasuk dalam paket); hanya bisa disembunyikan lewat Setup
+        if (globalData && globalData.enableCalculator === false) {
           navTo('dashboard');
           return;
         }
