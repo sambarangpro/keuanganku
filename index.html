@@ -2037,11 +2037,15 @@
         <div id="tx-cal-daylist" class="space-y-2"></div>
       </section>
 
+      <!-- Untuk pengguna selain pemilik, Rekapitulasi ditampilkan di sini (menu bawah cukup 3 tombol) -->
+      <section id="dashboard-rekap-slot" class="hidden"></section>
+
       <footer class="pt-6 pb-2 text-center border-t border-outline-variant/50"><p class="text-[10px] text-gray-400 font-medium tracking-widest uppercase">Copyright © 2026 Sambarang Production</p></footer>
     </div>
 
-    <!-- PAGE: REKAPITULASI & ANALISIS FINANSIAL (MENU KHUSUS PEMILIK) -->
+    <!-- PAGE: REKAPITULASI (pemilik: menu sendiri; pengguna lain: isi #rekap-content dipindah ke Beranda) -->
     <div id="page-rekapitulasi" class="hidden space-y-4">
+      <div id="rekap-content" class="space-y-4">
       <div>
         <h2 class="font-headline-md font-bold text-on-surface text-xl">Rekapitulasi</h2>
         <p class="text-xs text-gray-500">Pilih laporan finansial untuk melihat rincian.</p>
@@ -2175,6 +2179,7 @@
           </div>
 
         </div>
+      </div>
     </div>
 
     <!-- PAGE 2: TRANSAKSI -->
@@ -9343,9 +9348,24 @@ function formatReadableSheets(ss, parsed) {
       let navCalc = document.getElementById('nav-calc');
       let dnavCalc = document.getElementById('dnav-calc');
 
-      // Rekapitulasi & Kalkulator: KHUSUS PEMILIK (Kalkulator bisa disembunyikan di Setup)
+      // Rekapitulasi: pemilik punya menu sendiri; pengguna lain melihatnya di Beranda (menu bawah 3 tombol).
+      // Kalkulator: KHUSUS PEMILIK (bisa disembunyikan di Setup).
       if (navRekap) navRekap.style.display = isOwner ? 'flex' : 'none';
       if (dnavRekap) dnavRekap.style.display = isOwner ? 'inline-flex' : 'none';
+      try {
+        let rekapContent = document.getElementById('rekap-content');
+        let rekapPage = document.getElementById('page-rekapitulasi');
+        let dashSlot = document.getElementById('dashboard-rekap-slot');
+        if (rekapContent && rekapPage && dashSlot) {
+          if (isOwner) {
+            if (rekapContent.parentElement !== rekapPage) rekapPage.appendChild(rekapContent);
+            dashSlot.classList.add('hidden');
+          } else {
+            if (rekapContent.parentElement !== dashSlot) dashSlot.appendChild(rekapContent);
+            dashSlot.classList.remove('hidden');
+          }
+        }
+      } catch(eRk) { console.warn('Posisi Rekapitulasi:', eRk); }
       let calcOn = isOwner && (!globalData || globalData.enableCalculator !== false);
       if (navCalc) navCalc.style.display = calcOn ? 'flex' : 'none';
       if (dnavCalc) dnavCalc.style.display = calcOn ? 'inline-flex' : 'none';
@@ -9415,6 +9435,12 @@ function formatReadableSheets(ss, parsed) {
         syncWithCloud(false); 
       }
       else if (page === 'rekapitulasi') {
+        // Pengguna lain: Rekapitulasi ada di Beranda
+        if (!isOwnerDevice()) {
+          navTo('dashboard');
+          setTimeout(() => { let s = document.getElementById('dashboard-rekap-slot'); if (s) s.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 200);
+          return;
+        }
         document.getElementById('page-rekapitulasi').classList.remove('hidden');
         let nr = document.getElementById('nav-rekap'); if(nr) nr.className = "flex-1 flex flex-col items-center py-1 text-primary font-bold cursor-pointer transition-all";
         let dnr = document.getElementById('dnav-rekap'); if(dnr) dnr.className = "px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-primary text-white shadow-sm transition-all flex items-center gap-1.5 cursor-pointer";
