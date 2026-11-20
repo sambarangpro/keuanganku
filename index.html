@@ -3967,6 +3967,23 @@
       return `${os} (${browser})`;
     }
 
+    /**
+     * Simpan data lisensi. Tanda "pemilik" (isOwner) dari server dipertahankan bila data baru
+     * tidak membawanya (mis. setelah masuk dengan Google), agar menu Rekapitulasi tidak hilang.
+     */
+    function saveLicenseData(newLic) {
+      try {
+        if (!newLic || typeof newLic !== 'object') return;
+        let old = getSavedLicense();
+        if (typeof newLic.isOwner !== 'boolean' && old && typeof old.isOwner === 'boolean' &&
+            String(old.token || '').toUpperCase() === String(newLic.token || '').toUpperCase()) {
+          newLic.isOwner = old.isOwner;
+        }
+        localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(newLic));
+        if (typeof applyNavigationConfig === 'function') { try { applyNavigationConfig(); } catch(e) {} }
+      } catch(e) { console.warn('saveLicenseData:', e); }
+    }
+
     function getSavedLicense() {
       try {
         let raw = localStorage.getItem("KEUANGANKU_LICENSE_DATA");
@@ -4207,6 +4224,8 @@
             saveStorageData();
           }
           // Sinkronisasi otomatis URL Cloud jika server menyediakannya dan lokal belum memilikinya
+          // (dibungkus try: bila bagian ini gagal, tanda pemilik di bawah tetap tersimpan)
+          try {
           if (res.cloudUrl && res.cloudUrl.startsWith("http")) {
             let hasLocalCloud = globalData.cloudUrl && globalData.cloudUrl.startsWith("http");
             let localTxCount = (globalData.recentHistory || []).length;
@@ -4228,6 +4247,7 @@
               }
             }
           }
+          } catch(eCloudSync) { console.warn('verifyLicenseStatusSilently cloud:', eCloudSync); }
 
           // Update status PIN & Device Count jika diubah di perangkat lain
           // (dulu variabel lic tidak dideklarasikan di sini -> error senyap, sehingga pembaruan ini tidak pernah tersimpan)
@@ -4248,7 +4268,7 @@
               needsUpdate = true;
             }
             if (needsUpdate) {
-              localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(lic));
+              saveLicenseData(lic);
               updateSetupLicenseDisplay(lic);
               updateTokenSecurityBanner(lic);
               updateCloudSyncLockUI(lic);
@@ -4722,7 +4742,7 @@
         if (res && res.success) {
           // Update status lokal
           lic.pinStatus = 'PIN_CHANGED';
-          localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(lic));
+          saveLicenseData(lic);
 
           // Simpan ke database lokal
           globalData.appPin = newPin;
@@ -5020,7 +5040,7 @@
             loadConnectedDevices(false);
             if (lic.deviceCount && lic.deviceCount > 1) {
               lic.deviceCount--;
-              localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(lic));
+              saveLicenseData(lic);
               updateSetupLicenseDisplay(lic);
             }
             alert(`Sukses: Perangkat "${targetDeviceName}" berhasil dikeluarkan dari lisensi Anda.\n\nPerangkat itu tidak bisa masuk lagi dengan PIN. Untuk memakainya kembali, tautkan lewat Scan QR dari perangkat ini.`);
@@ -5042,7 +5062,7 @@
             closeDeviceConfirmModal();
             loadConnectedDevices(false);
             lic.deviceCount = 1;
-            localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(lic));
+            saveLicenseData(lic);
             updateSetupLicenseDisplay(lic);
             alert("Semua perangkat lain berhasil dikeluarkan dari akun lisensi Anda!\n\nPerangkat-perangkat itu tidak bisa masuk lagi dengan PIN. Untuk memakainya kembali, tautkan lewat Scan QR dari perangkat ini.");
             suggestPinChangeAfterRemoval();
@@ -5285,7 +5305,7 @@
           let s = res.session;
           let licData = s.licenseData;
 
-          localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(licData));
+          saveLicenseData(licData);
           // Ditautkan lewat QR yang disetujui perangkat terdaftar: boleh dipakai lagi
           localStorage.removeItem("KEUANGANKU_DEVICE_KICKED");
           localStorage.setItem("KEUANGANKU_UNREVOKE_ME", "1");
@@ -5867,7 +5887,7 @@
         }
 
         if (res.success && res.data) {
-          localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(res.data));
+          saveLicenseData(res.data);
 
           if (res.data.pinStatus === 'USING_TOKEN') {
             globalData.appPin = res.data.token;
@@ -7082,7 +7102,7 @@ function hideSplashScreenAndTriggerAlerts() {
 
           if (res.success && res.data) {
             // Lisensi VALID & Berhasil Diaktivasi!
-            localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(res.data));
+            saveLicenseData(res.data);
             
             let finalPin = pinPart || res.data.personalPin || (res.data.pinStatus === 'USING_TOKEN' ? res.data.token : '');
             if (finalPin) {
@@ -7172,7 +7192,7 @@ function hideSplashScreenAndTriggerAlerts() {
 
           if (res && res.success && res.data) {
             // PIN COCOK DENGAN DATA LISENSI SERVER!
-            localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(res.data));
+            saveLicenseData(res.data);
             localStorage.removeItem('KEUANGANKU_IS_DEMO_MODE');
             globalData.appPin = pinInput;
             globalData.ownerPassword = pinInput;
@@ -9333,6 +9353,14 @@ function formatReadableSheets(ss, parsed) {
       let calcOn = !globalData || globalData.enableCalculator !== false;
       if (navCalc) navCalc.style.display = calcOn ? 'flex' : 'none';
       if (dnavCalc) dnavCalc.style.display = calcOn ? 'inline-flex' : 'none';
+      // Lisensi tersimpan belum membawa tanda pemilik dari server: tanyakan ke server sekarang (sekali)
+      try {
+        let licNav = getSavedLicense();
+        if (licNav && licNav.token && typeof licNav.isOwner !== 'boolean' && !window.__ownerCheckAsked && navigator.onLine) {
+          window.__ownerCheckAsked = true;
+          setTimeout(() => { try { verifyLicenseStatusSilently(licNav.token, getOrCreateDeviceId()); } catch(e) {} }, 1000);
+        }
+      } catch(eOw) {}
       // Pengaturan teknis Google Client ID hanya untuk pemilik
       let cidRow = document.getElementById('google-clientid-row');
       if (cidRow) cidRow.classList.toggle('hidden', !isOwner);
@@ -14212,7 +14240,7 @@ function formatReadableSheets(ss, parsed) {
             });
 
             if (res && res.success && res.data) {
-              localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(res.data));
+              saveLicenseData(res.data);
               if (res.data.pinStatus === 'USING_TOKEN') {
                 globalData.appPin = res.data.token;
                 globalData.ownerPassword = res.data.token;
@@ -14239,7 +14267,7 @@ function formatReadableSheets(ss, parsed) {
                   deviceName: devName
                 });
                 if (retryRes && retryRes.success && retryRes.data) {
-                  localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(retryRes.data));
+                  saveLicenseData(retryRes.data);
                   globalData.appPin = personalPinPrompt.trim();
                   globalData.ownerPassword = personalPinPrompt.trim();
                   saveStorageData();
@@ -15125,7 +15153,7 @@ async function processGoogleLoginToken(accessToken) {
     // Skenario A: Email sudah terdaftar pada lisensi Keuanganku PRO!
     if (res && res.success && res.isLicensed && res.data) {
       saveGoogleSession(googleUser);
-      localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(res.data));
+      saveLicenseData(res.data);
       localStorage.removeItem("KEUANGANKU_DEVICE_KICKED");
       sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
 
@@ -15427,9 +15455,9 @@ async function submitBindGoogleToken() {
       });
 
       if (licRes && licRes.success && licRes.data) {
-        localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(licRes.data));
+        saveLicenseData(licRes.data);
       } else if (res.data && res.data.token) {
-        localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(res.data));
+        saveLicenseData(res.data);
       }
       // Jangan buka aplikasi tanpa lisensi tersimpan (dulu bisa terbuka tanpa terdaftar di server)
       if (!getSavedLicense()) {
