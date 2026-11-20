@@ -2046,10 +2046,10 @@
           <div>
             <label class="block font-semibold text-slate-300 mb-1">Pilihan Paket Lisensi:</label>
             <select id="order-package" onchange="onOrderPackageChange()" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-blue-500">
-              <option value="PRO Personal (1 Perangkat)" data-devices="1" data-price="Rp 99.000">PRO Personal (1 Perangkat) - Rp 99.000</option>
-              <option value="PRO Multi-Device (3 Perangkat)" data-devices="3" data-price="Rp 149.000" selected>PRO Multi-Device (3 Perangkat) - Rp 149.000</option>
-              <option value="PRO Bisnis (5 Perangkat)" data-devices="5" data-price="Rp 249.000">PRO Bisnis (5 Perangkat) - Rp 249.000</option>
-              <option value="PRO Developer Master (10 Perangkat)" data-devices="10" data-price="Rp 499.000">PRO Master (10 Perangkat) - Rp 499.000</option>
+              <option value="PRO Personal (3 Perangkat)" data-devices="3" data-price="Rp 79.000" selected>PRO Personal (3 Perangkat) - Rp 79.000</option>
+              <option value="PRO Keluarga / Pasutri (5 Perangkat)" data-devices="5" data-price="Rp 149.000">PRO Keluarga / Pasutri (5 Perangkat) - Rp 149.000</option>
+              <option value="PRO Bisnis UMKM (8 Perangkat)" data-devices="8" data-price="Rp 249.000">PRO Bisnis UMKM (8 Perangkat) - Rp 249.000</option>
+              <option value="PRO Master / Multi-Cabang (12 Perangkat)" data-devices="12" data-price="Rp 399.000">PRO Master / Multi-Cabang (12 Perangkat) - Rp 399.000</option>
               <option value="CUSTOM" data-devices="2" data-price="Rp 0">Paket Kustom (Atur Sendiri)...</option>
             </select>
           </div>
@@ -2439,11 +2439,10 @@
           <div>
             <label class="block text-xs font-semibold text-slate-300 mb-1">Batas Perangkat:</label>
             <select id="gen-max-devices" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-blue-500">
-              <option value="1">1 Perangkat</option>
-              <option value="2" selected>2 Perangkat (Rekomendasi: HP + PC)</option>
-              <option value="3">3 Perangkat</option>
-              <option value="5">5 Perangkat (Paket Keluarga)</option>
-              <option value="10">10 Perangkat (Bisnis / Kantor)</option>
+              <option value="3" selected>3 Perangkat (Personal)</option>
+              <option value="5">5 Perangkat (Keluarga / Pasutri)</option>
+              <option value="8">8 Perangkat (Bisnis UMKM)</option>
+              <option value="12">12 Perangkat (Master / Multi-Cabang)</option>
             </select>
           </div>
           <div>
@@ -4419,7 +4418,7 @@
 
     function generateBuyerWaMessage(token, buyerName, maxDevices) {
       let bName = (buyerName && buyerName.trim() !== '') ? buyerName.trim() : 'Kak';
-      let mDev = maxDevices || 2;
+      let mDev = maxDevices || 3;
       return `Halo kak *${bName}*,
 
 Terima kasih telah memesan aplikasi resmi *KEUANGANKU PRO v1.0*! 🎉
@@ -4436,7 +4435,7 @@ https://sambarangpro.github.io/keuanganku/
 https://sambarangpro.github.io/keuanganku/poster-panduan-penggunaan.html
 
 💡 *Tips Hubungkan HP ke-2 / Laptop ke-3:*
-Cukup buka menu *Setup* di HP pertama Anda, klik *Hubungkan Perangkat Baru (Barcode)*, lalu scan barcode tersebut dari HP kedua Anda untuk langsung masuk otomatis tanpa ribet ketik kode!
+Di HP ke-2 / laptop, buka aplikasi lalu pilih *Tautkan via Barcode (QR)*. Di HP pertama, buka *Setup > Akun & Lisensi > Scan Barcode QR*, lalu arahkan kamera ke barcode tersebut. Perangkat baru langsung masuk tanpa mengetik kode!
 
 ☁️ *Cara Setup yang Disarankan:*
 Pilih *Masuk dengan Akun Google* di setiap perangkat Anda. Data akan tersinkron otomatis lewat Google Drive milik Anda sendiri.
@@ -4449,7 +4448,7 @@ _Copyright © 2026 Sambarang Production_`;
 
     function generateBuyerEmailMessage(token, buyerName, maxDevices) {
       let bName = (buyerName && buyerName.trim() !== '') ? buyerName.trim() : 'Bapak/Ibu/Kak';
-      let mDev = maxDevices || 2;
+      let mDev = maxDevices || 3;
       return `Kepada Yth. ${bName},
 
 Terima kasih atas pesanan dan kepercayaan Anda menggunakan aplikasi resmi KEUANGANKU PRO v1.0! 🎉
@@ -4466,7 +4465,7 @@ LANGKAH AKTIVASI DI PERANGKAT ANDA:
 1. Buka aplikasi KEUANGANKU PRO di browser HP atau Laptop Anda:
    https://sambarangpro.github.io/keuanganku/
 
-2. Masukkan Kode Lisensi di atas pada kolom "Token Pembelian", lalu klik AKTIVASI SEKARANG.
+2. Di layar masuk, ketuk "Gunakan Keyboard", ketik Kode Lisensi di atas, lalu ketuk MASUK APLIKASI.
 
 3. Di Menu Setup, Anda dapat membuat PIN Pribadi Anda sendiri untuk mengamankan data dan mengaktifkan sinkronisasi multi-perangkat.
 
@@ -4475,7 +4474,7 @@ LANGKAH AKTIVASI DI PERANGKAT ANDA:
    https://sambarangpro.github.io/keuanganku/poster-panduan-penggunaan.html
 
 💡 TIPS MENGHUBUNGKAN PERANGKAT KE-2 (HP/LAPTOP):
-Buka menu Setup di HP pertama, klik tombol "Hubungkan Perangkat Baru (Barcode)", lalu scan barcode tersebut dari kamera HP kedua Anda untuk otomatis masuk tanpa mengetik kode lagi.
+Di HP ke-2 / laptop, buka aplikasi lalu pilih "Tautkan via Barcode (QR)". Di HP pertama, buka Setup > Akun & Lisensi > "Scan Barcode QR", lalu arahkan kamera ke barcode tersebut. Perangkat baru langsung masuk tanpa mengetik kode.
 
 Jika Anda membutuhkan bantuan teknis atau konsultasi, silakan balas email ini ke: keuangankupro@gmail.com
 
@@ -5086,7 +5085,7 @@ Copyright © 2026 Sambarang Production`;
         packages: [
           { id: "pkg-personal", name: "PRO Personal (3 Perangkat)", devices: 3, price: "Rp 79.000", priceNum: 79000, description: "Ideal untuk 1 orang dengan ekosistem lengkap: HP, Laptop, dan Tablet bersamaan. Akses seumur hidup.", popular: true },
           { id: "pkg-multi", name: "PRO Keluarga / Pasutri (5 Perangkat)", devices: 5, price: "Rp 149.000", priceNum: 149000, description: "Sinkronisasi otomatis HP Suami, Istri, dan Laptop keluarga. Catatan pos belanja rumah tangga transparan.", popular: false },
-          { id: "pkg-bisnis", name: "PRO Bisnis UMKM (8 Perangkat)", devices: 8, price: "Rp 249.000", priceNum: 249000, description: "Solusi operasional toko & kantor kecil (Owner, Kasir, Admin, Gudang) + akses kalkulator usaha lengkap.", popular: false },
+          { id: "pkg-bisnis", name: "PRO Bisnis UMKM (8 Perangkat)", devices: 8, price: "Rp 249.000", priceNum: 249000, description: "Solusi operasional toko & kantor kecil (Owner, Kasir, Admin, Gudang) dalam satu catatan keuangan bersama.", popular: false },
           { id: "pkg-master", name: "PRO Master / Multi-Cabang (12 Perangkat)", devices: 12, price: "Rp 399.000", priceNum: 399000, description: "Kapasitas besar hingga 12 perangkat untuk profesional, konsultan, atau multi-cabang usaha.", popular: false }
         ],
         vouchers: [

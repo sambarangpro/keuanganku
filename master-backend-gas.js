@@ -2662,7 +2662,7 @@ function adminProcessOrderLicense(params) {
     "LANGKAH MUDAH AKTIVASI:\n" +
     "1. Buka aplikasi Keuanganku PRO di browser HP atau Laptop:\n" +
     "   https://sambarangpro.github.io/keuanganku/\n\n" +
-    "2. Masukkan Kode Lisensi di atas (" + tokenToUse + ") pada kolom Token Pembelian, lalu klik AKTIVASI SEKARANG.\n\n" +
+    "2. Masuk dengan Akun Google (disarankan), ATAU ketuk \"Gunakan Keyboard\", ketik Kode Lisensi di atas (" + tokenToUse + "), lalu ketuk MASUK APLIKASI.\n\n" +
     "3. Panduan Penggunaan Lengkap Bergambar & Setup Cloud:\n" +
     "   https://sambarangpro.github.io/keuanganku/poster-panduan-penggunaan.html\n\n" +
     "Simpan email ini dengan baik sebagai bukti kepemilikan lisensi resmi Anda.\n" +
@@ -2731,7 +2731,7 @@ function getDefaultSalesSettings() {
     packages: [
       { id: "pkg-personal", name: "PRO Personal (3 Perangkat)", devices: 3, price: "Rp 79.000", priceNum: 79000, description: "Ideal untuk 1 orang dengan ekosistem lengkap: HP, Laptop, dan Tablet bersamaan. Akses seumur hidup.", popular: true },
       { id: "pkg-multi", name: "PRO Keluarga / Pasutri (5 Perangkat)", devices: 5, price: "Rp 149.000", priceNum: 149000, description: "Sinkronisasi otomatis HP Suami, Istri, dan Laptop keluarga. Catatan pos belanja rumah tangga transparan.", popular: false },
-      { id: "pkg-bisnis", name: "PRO Bisnis UMKM (8 Perangkat)", devices: 8, price: "Rp 249.000", priceNum: 249000, description: "Solusi operasional toko & kantor kecil (Owner, Kasir, Admin, Gudang) + akses kalkulator usaha lengkap.", popular: false },
+      { id: "pkg-bisnis", name: "PRO Bisnis UMKM (8 Perangkat)", devices: 8, price: "Rp 249.000", priceNum: 249000, description: "Solusi operasional toko & kantor kecil (Owner, Kasir, Admin, Gudang) dalam satu catatan keuangan bersama.", popular: false },
       { id: "pkg-master", name: "PRO Master / Multi-Cabang (12 Perangkat)", devices: 12, price: "Rp 399.000", priceNum: 399000, description: "Kapasitas besar hingga 12 perangkat untuk profesional, konsultan, atau multi-cabang usaha.", popular: false }
     ],
     vouchers: [
@@ -2767,6 +2767,18 @@ function getStoredSalesSettings() {
           try {
             PropertiesService.getScriptProperties().setProperty("KEUANGANKU_SALES_SETTINGS", JSON.stringify(parsed));
           } catch(e) {}
+        }
+        // Kalkulator kini KHUSUS PEMILIK: hapus janji "akses kalkulator" dari deskripsi paket yang tersimpan
+        var calcFixed = false;
+        parsed.packages.forEach(function(p) {
+          var d = String(p.description || "");
+          if (/kalkulator/i.test(d)) {
+            p.description = d.replace(/\s*\+\s*akses kalkulator[^.]*\.?/i, " dalam satu catatan keuangan bersama.").replace(/\s{2,}/g, " ").trim();
+            calcFixed = true;
+          }
+        });
+        if (calcFixed) {
+          try { PropertiesService.getScriptProperties().setProperty("KEUANGANKU_SALES_SETTINGS", JSON.stringify(parsed)); } catch(e) {}
         }
         if (Array.isArray(parsed.paymentAccounts)) {
           var hasDummy = parsed.paymentAccounts.some(function(acc) {
