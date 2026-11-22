@@ -1158,6 +1158,11 @@
           <div><label class="font-bold uppercase text-gray-500">Dari Akun</label><input type="text" id="edit-tx-dari" readonly class="w-full p-2 border rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-500 mt-1"></div>
           <div><label class="font-bold uppercase text-gray-500">Ke Akun</label><input type="text" id="edit-tx-ke" readonly class="w-full p-2 border rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-500 mt-1"></div>
         </div>
+        <div id="edit-tx-fee-wrap" class="grid grid-cols-2 gap-2">
+          <div><label class="font-bold uppercase text-gray-500">Biaya Admin (Rp)</label><input type="text" id="edit-tx-fee" inputmode="numeric" placeholder="0" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-xl font-mono-data bg-surface text-on-surface font-bold mt-1"></div>
+          <div><label class="font-bold uppercase text-gray-500">Dipotong dari</label><select id="edit-tx-fee-acc" class="w-full p-2 border rounded-xl bg-surface dark:bg-slate-800 text-on-surface mt-1 cursor-pointer"></select></div>
+          <p class="col-span-2 text-[10px] text-gray-400 -mt-1">Isi bila ada biaya transfer/admin yang lupa dicatat. Kosongkan atau isi 0 bila tidak ada.</p>
+        </div>
 
         <div class="pt-2 border-t border-outline-variant/50">
           <div class="flex items-center justify-between">
@@ -13515,7 +13520,7 @@ function formatReadableSheets(ss, parsed) {
       if (dAdminFee > 0 && dAdminAcc !== '- not applicable -') { 
         adminAdded = true; 
         if (globalData.currentBalances.hasOwnProperty(dAdminAcc)) globalData.currentBalances[dAdminAcc] -= dAdminFee; 
-        let adminTx = { id: newTxId(), createdAt: createdNow + 1, dateTime: timeFormatted, rawDate: dDate, name: "Biaya Admin - " + dName, amount: dAdminFee, cashflow: "Spending", category: "Biaya Transaksi / Admin", dariAcc: dAdminAcc, keAcc: "- not applicable -" }; 
+        let adminTx = { id: newTxId(), createdAt: createdNow + 1, dateTime: timeFormatted, rawDate: dDate, name: "Biaya Admin - " + dName, amount: dAdminFee, cashflow: "Spending", category: "Biaya Transaksi / Admin", dariAcc: dAdminAcc, keAcc: "- not applicable -", feeOf: mainTx.id };
         globalData.recentHistory.unshift(mainTx); 
         globalData.recentHistory.unshift(adminTx); 
       } else { 
@@ -13627,12 +13632,51 @@ function formatReadableSheets(ss, parsed) {
       document.getElementById('edit-tx-amount').value = (tx.amount || 0).toLocaleString('id-ID'); 
       document.getElementById('edit-tx-category').value = tx.category || ''; 
       document.getElementById('edit-tx-dari').value = tx.dariAcc || ''; 
-      document.getElementById('edit-tx-ke').value = tx.keAcc || ''; 
-      editPendingAttachments = tx.attachments ? JSON.parse(JSON.stringify(tx.attachments)) : [];
+      document.getElementById('edit-tx-ke').value = tx.keAcc || '';
+      // Biaya admin: dicatat sebagai transaksi "Biaya Admin" terpisah yang ditautkan ke transaksi ini
+      try {
+        let feeWrap = document.getElementById('edit-tx-fee-wrap');
+        let feeAllowed = !isAdminFeeTx(tx);
+        if (feeWrap) feeWrap.classList.toggle('hidden', !feeAllowed);
+        if (feeAllowed) {
+          let feeIdx = findLinkedFeeIdx(tx, idx);
+          let feeTx = feeIdx >= 0 ? globalData.recentHistory[feeIdx] : null;
+          document.getElementById('edit-tx-fee').value = feeTx ? (Number(feeTx.amount) || 0).toLocaleString('id-ID') : '';
+          let accSel = document.getElementById('edit-tx-fee-acc');
+          let defAcc = feeTx ? feeTx.dariAcc : defaultFeeAccFor(tx);
+          let accs = (globalData.accounts || []).slice();
+          if (defAcc && defAcc !== '- not applicable -' && accs.indexOf(defAcc) < 0) accs.unshift(defAcc);
+          accSel.innerHTML = accs.map(a => `<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join('');
+          if (defAcc) accSel.value = defAcc;
+        }
+      } catch(eFee) { console.warn('Biaya admin (edit):', eFee); }
+      editPendingAttachments =tx.attachments ? JSON.parse(JSON.stringify(tx.attachments)) : [];
       renderEditTxFilesPreview();
       let modal = document.getElementById('edit-tx-modal'), card = document.getElementById('edit-tx-card'); 
       modal.classList.remove('hidden'); 
       setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); card.classList.add('scale-100'); }, 10); 
+    }
+    const ADMIN_FEE_CATEGORY = 'Biaya Transaksi / Admin';
+    function isAdminFeeTx(tx) { return !!(tx && (tx.feeOf || tx.category === ADMIN_FEE_CATEGORY)); }
+    function defaultFeeAccFor(tx) {
+      if (tx.dariAcc && tx.dariAcc !== '- not applicable -') return tx.dariAcc;
+      if (tx.keAcc && tx.keAcc !== '- not applicable -') return tx.keAcc;
+      return (globalData.accounts || [])[0] || '';
+    }
+    // Cari transaksi "Biaya Admin" milik transaksi utama: lewat tautan feeOf, atau (data lama) nama + tanggal yang sama
+    function findLinkedFeeIdx(tx, idx) {
+      let h = globalData.recentHistory || [];
+      if (tx.id) { let i = h.findIndex(t => t && t.feeOf === tx.id); if (i >= 0) return i; }
+      let nm = 'Biaya Admin - ' + (tx.name || '');
+      let when = tx.rawDate || tx.dateTime || '';
+      let best = -1, bestDist = Infinity;
+      h.forEach((t, i) => {
+        if (i === idx || !t || t.feeOf || t.category !== ADMIN_FEE_CATEGORY || t.name !== nm) return;
+        if ((t.rawDate || t.dateTime || '') !== when) return;
+        let d = Math.abs(i - idx);
+        if (d < bestDist) { bestDist = d; best = i; }
+      });
+      return best;
     }
     function closeEditModal() { let modal = document.getElementById('edit-tx-modal'), card = document.getElementById('edit-tx-card'); modal.classList.add('opacity-0'); card.classList.remove('scale-100'); card.classList.add('scale-95'); setTimeout(() => modal.classList.add('hidden'), 300); }
     function saveEditedTransaction() { 
@@ -13640,14 +13684,24 @@ function formatReadableSheets(ss, parsed) {
       let tx = globalData.recentHistory[idx];
       if (!tx) return;
       let newAmount = parseFloat(document.getElementById('edit-tx-amount').value.replace(/\./g, '')) || 0;
-      // PERINGATAN SALDO MINUS saat edit: hanya bila perubahan nominal membuat saldo rekening turun sampai di bawah nol
+      if (!globalData.currentBalances) globalData.currentBalances = {};
+      // Biaya admin yang ditautkan ke transaksi ini (dicatat sebagai transaksi terpisah)
+      let feeAllowed = !isAdminFeeTx(tx);
+      let feeIdx = feeAllowed ? findLinkedFeeIdx(tx, idx) : -1;
+      let feeTx = feeIdx >= 0 ? globalData.recentHistory[feeIdx] : null;
+      let newFee = feeAllowed ? (parseFloat((document.getElementById('edit-tx-fee').value || '').replace(/\./g, '')) || 0) : 0;
+      let newFeeAcc = feeAllowed ? (document.getElementById('edit-tx-fee-acc').value || defaultFeeAccFor(tx)) : '';
+      if (newFee < 0) newFee = 0;
+      // PERINGATAN SALDO MINUS saat edit: hanya bila perubahan membuat saldo rekening turun sampai di bawah nol
       try {
         let bal = globalData.currentBalances || {};
         let deltaByAcc = {};
+        let addDelta = (acc, d) => { if (d && acc && acc !== '- not applicable -' && bal.hasOwnProperty(acc)) deltaByAcc[acc] = (deltaByAcc[acc] || 0) + d; };
         let diff = newAmount - (Number(tx.amount) || 0);
-        if (diff !== 0) {
-          if (tx.dariAcc && tx.dariAcc !== '- not applicable -' && bal.hasOwnProperty(tx.dariAcc)) deltaByAcc[tx.dariAcc] = (deltaByAcc[tx.dariAcc] || 0) - diff;
-          if (tx.keAcc && tx.keAcc !== '- not applicable -' && bal.hasOwnProperty(tx.keAcc)) deltaByAcc[tx.keAcc] = (deltaByAcc[tx.keAcc] || 0) + diff;
+        if (diff !== 0) { addDelta(tx.dariAcc, -diff); addDelta(tx.keAcc, diff); }
+        if (feeAllowed) {
+          if (feeTx) addDelta(feeTx.dariAcc, Number(feeTx.amount) || 0);
+          if (newFee > 0) addDelta(newFeeAcc, -newFee);
         }
         let warnLines = Object.keys(deltaByAcc).map(acc => { let d = deltaByAcc[acc]; let now = Number(bal[acc]) || 0; let after = now + d; return (d < 0 && after < 0) ? `• ${acc}: saldo sekarang ${formatRp(now)}, setelah diubah ${formatRp(after)}` : null; }).filter(Boolean);
         if (warnLines.length && !confirm(`⚠️ Saldo akan MINUS\n\n${warnLines.join('\n')}\n\nPeriksa lagi nominalnya, atau mungkin ada pemasukan / transfer yang belum dicatat.\n\nTetap simpan perubahan ini?`)) { return; }
@@ -13666,12 +13720,43 @@ function formatReadableSheets(ss, parsed) {
       tx.amount = newAmount; 
       tx.category = newCat; 
       tx.attachments = [...editPendingAttachments];
-      saveStorageData(); 
-      renderDashboard(); 
-      renderHistoryTable(); 
-      closeEditModal(); 
-      playSuccessSound(); 
-      alert("Riwayat transaksi berhasil diperbarui & saldo akun disesuaikan!"); 
+      let feeNote = '';
+      if (feeAllowed) {
+        let h = globalData.recentHistory;
+        let oldFee = feeTx ? (Number(feeTx.amount) || 0) : 0;
+        if (feeTx && newFee <= 0) {
+          // Biaya admin dihapus
+          applyTxBalanceEffect(globalData, feeTx, -1);
+          recordTxDeletion(feeTx);
+          h.splice(h.indexOf(feeTx), 1);
+          feeNote = '\nBiaya admin dihapus.';
+        } else if (feeTx) {
+          let oldFeeAcc = feeTx.dariAcc;
+          if (oldFee !== newFee || oldFeeAcc !== newFeeAcc || feeTx.name !== 'Biaya Admin - ' + newName || feeTx.feeOf !== tx.id) {
+            applyTxBalanceEffect(globalData, feeTx, -1);
+            feeTx.amount = newFee;
+            feeTx.dariAcc = newFeeAcc;
+            feeTx.keAcc = '- not applicable -';
+            feeTx.name = 'Biaya Admin - ' + newName;
+            feeTx.feeOf = tx.id;
+            feeTx.updatedAt = Date.now();
+            applyTxBalanceEffect(globalData, feeTx, +1);
+            if (oldFee !== newFee || oldFeeAcc !== newFeeAcc) feeNote = `\nBiaya admin: ${formatRp(newFee)} dari ${newFeeAcc}.`;
+          }
+        } else if (newFee > 0) {
+          // Biaya admin yang lupa dicatat: buat transaksi "Biaya Admin" baru di tanggal yang sama
+          let adminTx = { id: newTxId(), createdAt: (Number(tx.createdAt) || Date.now()) + 1, dateTime: tx.dateTime, rawDate: tx.rawDate, name: 'Biaya Admin - ' + newName, amount: newFee, cashflow: 'Spending', category: ADMIN_FEE_CATEGORY, dariAcc: newFeeAcc, keAcc: '- not applicable -', feeOf: tx.id };
+          applyTxBalanceEffect(globalData, adminTx, +1);
+          h.splice(h.indexOf(tx), 0, adminTx);
+          feeNote = `\nBiaya admin ${formatRp(newFee)} dari ${newFeeAcc} ditambahkan.`;
+        }
+      }
+      saveStorageData();
+      renderDashboard();
+      renderHistoryTable();
+      closeEditModal();
+      playSuccessSound();
+      alert("Riwayat transaksi berhasil diperbarui & saldo akun disesuaikan!" + feeNote);
     }
     function deleteTransaction(idx) { let tx = globalData.recentHistory[idx]; if (!tx) return; if (confirm(`Hapus transaksi "${tx.name}" (${formatRp(tx.amount)})? Saldo akun akan dikembalikan secara otomatis.`)) { materializeTxIds(globalData); recordTxDeletion(tx); let amt = tx.amount; if (tx.dariAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.dariAcc)) globalData.currentBalances[tx.dariAcc] += amt; if (tx.keAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.keAcc)) globalData.currentBalances[tx.keAcc] -= amt; globalData.recentHistory.splice(idx, 1); saveStorageData(); renderDashboard(); renderHistoryTable(); alert("Transaksi berhasil dihapus!"); } }
     function formatFullDateTime(dateStr) { let days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"]; let months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"]; let now = new Date(); let hours = String(now.getHours()).padStart(2, '0'), mins = String(now.getMinutes()).padStart(2, '0'); if (!dateStr) return `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()} (${hours}:${mins})`; let p = dateStr.split('-'); let dObj = new Date(p[0], parseInt(p[1], 10) - 1, p[2]); return `${days[dObj.getDay()]}, ${p[2]} ${months[dObj.getMonth()]} ${p[0]} (${hours}:${mins})`; }
