@@ -1636,7 +1636,7 @@
       <!-- DESKTOP NAVIGATION TABS (TAMPIL PADA LAYAR LAPTOP / PC) -->
       <!-- DESKTOP NAVIGATION TABS (5 MENU RESMI DENGAN IKON LENGKAP) -->
       <nav class="hidden md:flex items-center gap-1.5 bg-white dark:bg-slate-800 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
-        <button onclick="navTo('dashboard')" id="dnav-dash" class="px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-primary text-white shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+        <button onclick="navTo('dashboard')" id="dnav-dash" class="px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-blue-50 text-primary ring-1 ring-inset ring-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:ring-blue-400/30 transition-all flex items-center gap-1.5 cursor-pointer">
           <span class="material-symbols-outlined text-base">home</span>
           <span>Beranda</span>
         </button>
@@ -9423,7 +9423,7 @@ function formatReadableSheets(ss, parsed) {
       if (page === 'dashboard') { 
         document.getElementById('page-dashboard').classList.remove('hidden'); 
         let nd = document.getElementById('nav-dash'); if(nd) nd.className = "flex-1 flex flex-col items-center py-1 text-primary font-bold cursor-pointer transition-all"; 
-        let dnd = document.getElementById('dnav-dash'); if(dnd) dnd.className = "px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-primary text-white shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"; 
+        let dnd = document.getElementById('dnav-dash'); if(dnd) dnd.className = "px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-blue-50 text-primary ring-1 ring-inset ring-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:ring-blue-400/30 transition-all flex items-center gap-1.5 cursor-pointer"; 
         renderDashboard(); 
         syncWithCloud(false); 
       }
@@ -9436,7 +9436,7 @@ function formatReadableSheets(ss, parsed) {
         }
         document.getElementById('page-rekapitulasi').classList.remove('hidden');
         let nr = document.getElementById('nav-rekap'); if(nr) nr.className = "flex-1 flex flex-col items-center py-1 text-primary font-bold cursor-pointer transition-all";
-        let dnr = document.getElementById('dnav-rekap'); if(dnr) dnr.className = "px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-primary text-white shadow-sm transition-all flex items-center gap-1.5 cursor-pointer";
+        let dnr = document.getElementById('dnav-rekap'); if(dnr) dnr.className = "px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-blue-50 text-primary ring-1 ring-inset ring-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:ring-blue-400/30 transition-all flex items-center gap-1.5 cursor-pointer";
       } 
       else if (page === 'transaksi') { 
         document.getElementById('page-transaksi').classList.remove('hidden'); 
@@ -9461,7 +9461,7 @@ function formatReadableSheets(ss, parsed) {
       else if (page === 'setup') { 
         document.getElementById('page-setup').classList.remove('hidden'); 
         let ns = document.getElementById('nav-setup'); if(ns) ns.className = "flex-1 flex flex-col items-center py-1 text-primary font-bold cursor-pointer transition-all"; 
-        let dns = document.getElementById('dnav-setup'); if(dns) dns.className = "px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-primary text-white shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"; 
+        let dns = document.getElementById('dnav-setup'); if(dns) dns.className = "px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-blue-50 text-primary ring-1 ring-inset ring-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:ring-blue-400/30 transition-all flex items-center gap-1.5 cursor-pointer"; 
         
         // Auto-unlock jika pengguna sudah berada di dalam aplikasi (lolos autentikasi PIN di awal atau memiliki lisensi tersimpan)
         let isPassed = sessionStorage.getItem("KEUANGANKU_PIN_PASSED") === "true";
@@ -9488,7 +9488,7 @@ function formatReadableSheets(ss, parsed) {
         let navCalc = document.getElementById('nav-calc'); 
         if (navCalc) navCalc.className = "flex-1 flex flex-col items-center py-1 text-primary font-bold cursor-pointer transition-all"; 
         let dnavCalc = document.getElementById('dnav-calc'); 
-        if (dnavCalc) dnavCalc.className = "px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-primary text-white shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"; 
+        if (dnavCalc) dnavCalc.className = "px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-blue-50 text-primary ring-1 ring-inset ring-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:ring-blue-400/30 transition-all flex items-center gap-1.5 cursor-pointer"; 
         backToCalcMenu(); 
       }
     }
