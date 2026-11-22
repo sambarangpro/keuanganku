@@ -1153,7 +1153,7 @@
       <div class="space-y-3 text-xs">
         <div><label class="font-bold uppercase text-gray-500">Nama Transaksi</label><input type="text" id="edit-tx-name" class="w-full p-2 border rounded-xl bg-surface text-on-surface font-bold mt-1"></div>
         <div><label class="font-bold uppercase text-gray-500">Nominal (Rp)</label><input type="text" id="edit-tx-amount" oninput="formatInputNominal(this)" class="w-full p-2 border rounded-xl font-mono-data bg-surface text-on-surface font-bold mt-1"></div>
-        <div><label class="font-bold uppercase text-gray-500">Kategori</label><input type="text" id="edit-tx-category" class="w-full p-2 border rounded-xl bg-surface text-on-surface mt-1"></div>
+        <div><label class="font-bold uppercase text-gray-500">Kategori</label><select id="edit-tx-category" class="w-full p-2 border rounded-xl bg-surface dark:bg-slate-800 text-on-surface mt-1 cursor-pointer disabled:bg-gray-100 dark:disabled:bg-slate-800 disabled:text-gray-400"></select></div>
         <div class="grid grid-cols-2 gap-2">
           <div><label class="font-bold uppercase text-gray-500">Dari Akun</label><input type="text" id="edit-tx-dari" readonly class="w-full p-2 border rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-500 mt-1"></div>
           <div><label class="font-bold uppercase text-gray-500">Ke Akun</label><input type="text" id="edit-tx-ke" readonly class="w-full p-2 border rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-500 mt-1"></div>
@@ -13630,7 +13630,18 @@ function formatReadableSheets(ss, parsed) {
       document.getElementById('edit-tx-index').value = idx; 
       document.getElementById('edit-tx-name').value = tx.name || ''; 
       document.getElementById('edit-tx-amount').value = (tx.amount || 0).toLocaleString('id-ID'); 
-      document.getElementById('edit-tx-category').value = tx.category || ''; 
+      // Kategori: dropdown sesuai jenis cashflow, sama seperti saat mencatat transaksi
+      try {
+        let catSel = document.getElementById('edit-tx-category');
+        let cur = tx.category || '- not applicable -';
+        let opts = categoryOptionsForCashflow(tx.cashflow);
+        if (isAdminFeeTx(tx)) opts = [ADMIN_FEE_CATEGORY];
+        let list = ['- not applicable -'].concat((opts || []).filter(o => o && o !== '- not applicable -'));
+        if (list.indexOf(cur) < 0) list.push(cur);
+        catSel.innerHTML = list.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('');
+        catSel.value = cur;
+        catSel.disabled = (opts === null && cur === '- not applicable -');
+      } catch(eCat) { console.warn('Kategori (edit):', eCat); }
       document.getElementById('edit-tx-dari').value = tx.dariAcc || ''; 
       document.getElementById('edit-tx-ke').value = tx.keAcc || '';
       // Biaya admin: dicatat sebagai transaksi "Biaya Admin" terpisah yang ditautkan ke transaksi ini
@@ -13655,6 +13666,24 @@ function formatReadableSheets(ss, parsed) {
       let modal = document.getElementById('edit-tx-modal'), card = document.getElementById('edit-tx-card'); 
       modal.classList.remove('hidden'); 
       setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); card.classList.add('scale-100'); }, 10); 
+    }
+    // Daftar kategori per jenis cashflow (mengikuti applyCashflowLogic). null = kategori tidak dipakai (Transfer).
+    function categoryOptionsForCashflow(cf) {
+      let g = globalData || {};
+      let keys = o => Object.keys(o || {});
+      switch (cf) {
+        case 'Income': return (g.incomes || []).slice();
+        case 'Pelunasan Piutang': return keys(g.receivablesData);
+        case 'Cicilan / Utang Baru': return [...new Set(keys(g.receivablesData).concat(keys(g.debtData)))];
+        case 'Spending': return (g.spendings || []).slice();
+        case 'Bayar Cicilan / Utang': return keys(g.debtData).concat(g.bills || []);
+        case 'Piutang Baru': return keys(g.receivablesData);
+        case 'Transfer': return null;
+        case 'Invest / Savings': return keys(g.investData);
+        case 'Financial Goals': return keys(g.goalsData);
+        case 'Dari Asset / Saving': return keys(g.sinkingData).concat(keys(g.investData));
+        default: return [];
+      }
     }
     const ADMIN_FEE_CATEGORY = 'Biaya Transaksi / Admin';
     function isAdminFeeTx(tx) { return !!(tx && (tx.feeOf || tx.category === ADMIN_FEE_CATEGORY)); }
