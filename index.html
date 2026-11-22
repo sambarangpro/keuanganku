@@ -13639,11 +13639,23 @@ function formatReadableSheets(ss, parsed) {
       let idx = parseInt(document.getElementById('edit-tx-index').value, 10); 
       let tx = globalData.recentHistory[idx];
       if (!tx) return;
+      let newAmount = parseFloat(document.getElementById('edit-tx-amount').value.replace(/\./g, '')) || 0;
+      // PERINGATAN SALDO MINUS saat edit: hanya bila perubahan nominal membuat saldo rekening turun sampai di bawah nol
+      try {
+        let bal = globalData.currentBalances || {};
+        let deltaByAcc = {};
+        let diff = newAmount - (Number(tx.amount) || 0);
+        if (diff !== 0) {
+          if (tx.dariAcc && tx.dariAcc !== '- not applicable -' && bal.hasOwnProperty(tx.dariAcc)) deltaByAcc[tx.dariAcc] = (deltaByAcc[tx.dariAcc] || 0) - diff;
+          if (tx.keAcc && tx.keAcc !== '- not applicable -' && bal.hasOwnProperty(tx.keAcc)) deltaByAcc[tx.keAcc] = (deltaByAcc[tx.keAcc] || 0) + diff;
+        }
+        let warnLines = Object.keys(deltaByAcc).map(acc => { let d = deltaByAcc[acc]; let now = Number(bal[acc]) || 0; let after = now + d; return (d < 0 && after < 0) ? `• ${acc}: saldo sekarang ${formatRp(now)}, setelah diubah ${formatRp(after)}` : null; }).filter(Boolean);
+        if (warnLines.length && !confirm(`⚠️ Saldo akan MINUS\n\n${warnLines.join('\n')}\n\nPeriksa lagi nominalnya, atau mungkin ada pemasukan / transfer yang belum dicatat.\n\nTetap simpan perubahan ini?`)) { return; }
+      } catch(eWarn) { console.warn('Cek saldo minus (edit):', eWarn); }
       // Kunci ID transaksi sebelum isinya berubah, lalu tandai waktu edit (untuk sinkron antar perangkat)
       materializeTxIds(globalData);
       tx.updatedAt = Date.now();
       let newName = document.getElementById('edit-tx-name').value;
-      let newAmount = parseFloat(document.getElementById('edit-tx-amount').value.replace(/\./g, '')) || 0; 
       let newCat = document.getElementById('edit-tx-category').value; 
       let oldAmt = tx.amount; 
       if (tx.dariAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.dariAcc)) globalData.currentBalances[tx.dariAcc] += oldAmt; 
