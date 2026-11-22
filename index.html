@@ -12505,7 +12505,60 @@ function formatReadableSheets(ss, parsed) {
           <span class="shrink-0 text-xs font-extrabold font-mono-data ${amtCls}">${formatRp(tx.amount)}</span>
         </div>`;
       }).join('');
-      listEl.innerHTML = `<div class="flex items-center justify-between text-xs font-bold text-on-surface pt-1"><span>${escapeHtml(selLabel)}</span><span class="text-gray-500 font-medium">${sel.count} transaksi</span></div>${rows}`;
+      listEl.innerHTML = `<div class="flex items-center justify-between text-xs font-bold text-on-surface pt-1"><span>${escapeHtml(selLabel)}</span><span class="text-gray-500 font-medium">${sel.count} transaksi</span></div>${rows}${txCalBalanceRecapHtml(txCalState.selected)}`;
+    }
+
+    /**
+     * Saldo setiap rekening pada AKHIR tanggal tertentu.
+     * Dihitung mundur dari saldo sekarang: efek semua transaksi bertanggal SETELAH hari itu dibatalkan.
+     * Mengembalikan { balances, change } (change = perubahan saldo per rekening pada hari itu).
+     */
+    function txCalBalancesAtEndOf(dayKey) {
+      let balances = Object.assign({}, globalData.currentBalances || {});
+      let change = {};
+      Object.keys(balances).forEach(a => { balances[a] = Number(balances[a]) || 0; });
+      (globalData.recentHistory || []).forEach(tx => {
+        let k = txCalDateKey(tx);
+        if (!k) return;
+        if (k > dayKey) applyTxBalanceEffect({ currentBalances: balances }, tx, -1);
+        else if (k === dayKey) {
+          let probe = { currentBalances: {} };
+          Object.keys(balances).forEach(a => { probe.currentBalances[a] = 0; });
+          applyTxBalanceEffect(probe, tx, 1);
+          Object.keys(probe.currentBalances).forEach(a => { if (probe.currentBalances[a]) change[a] = (change[a] || 0) + probe.currentBalances[a]; });
+        }
+      });
+      return { balances, change };
+    }
+
+    /** Kotak "Saldo rekening di akhir hari" (hanya untuk tanggal yang ada transaksinya). */
+    function txCalBalanceRecapHtml(dayKey) {
+      try {
+        let accounts = (globalData.accounts || []).filter(a => (globalData.currentBalances || {}).hasOwnProperty(a));
+        if (!accounts.length) return '';
+        let { balances, change } = txCalBalancesAtEndOf(dayKey);
+        let total = 0;
+        // Rekening yang berubah hari itu ditampilkan lebih dulu
+        let ordered = accounts.slice().sort((a, b) => (change[b] ? 1 : 0) - (change[a] ? 1 : 0));
+        let rows = ordered.map(acc => {
+          let bal = balances[acc] || 0; total += bal;
+          let ch = change[acc] || 0;
+          let balCls = bal < 0 ? 'text-red-600 dark:text-red-400' : 'text-on-surface';
+          let chHtml = ch ? `<span class="text-[10px] font-bold ${ch > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}">${ch > 0 ? '+' : '−'}${formatRp(Math.abs(ch))}</span>` : '<span class="text-[10px] text-gray-400">tetap</span>';
+          return `<div class="flex items-center justify-between gap-2 py-1.5 border-b border-outline-variant/30 last:border-0">
+            <span class="text-[11px] ${ch ? 'font-bold text-on-surface' : 'text-gray-500'} truncate">${escapeHtml(acc)}</span>
+            <span class="flex items-center gap-2 shrink-0">${chHtml}<span class="text-xs font-extrabold font-mono-data ${balCls}">${formatRp(bal)}</span></span>
+          </div>`;
+        }).join('');
+        return `<div class="mt-2 p-3 rounded-2xl border border-outline-variant/60 bg-white dark:bg-slate-900/40">
+          <div class="flex items-center justify-between mb-1">
+            <p class="text-xs font-bold text-on-surface flex items-center gap-1.5"><span class="material-symbols-outlined text-sm text-primary">account_balance_wallet</span>Saldo rekening di akhir hari</p>
+            <span class="text-[10px] text-gray-500">Total <b class="font-mono-data ${total < 0 ? 'text-red-600' : 'text-on-surface'}">${formatRp(total)}</b></span>
+          </div>
+          ${rows}
+          <p class="text-[10px] text-gray-400 mt-1.5">Dihitung dari saldo sekarang dikurangi transaksi setelah tanggal ini. Angka merah = saldo minus.</p>
+        </div>`;
+      } catch(e) { console.warn('Rekap saldo kalender:', e); return ''; }
     }
 
     function renderDashboard() {
@@ -13420,9 +13473,25 @@ function formatReadableSheets(ss, parsed) {
       let rawAdmin = document.getElementById('tx-admin-fee').value.replace(/\./g, ''); 
       let dAdminFee = parseFloat(rawAdmin) || 0; 
       let dAdminAcc = document.getElementById('tx-admin-account').value || dDari; 
-      let timeFormatted = formatFullDateTime(dDate); 
-      if (!globalData.currentBalances) globalData.currentBalances = {}; 
-      if (dDari !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(dDari)) globalData.currentBalances[dDari] -= dAmount; 
+      let timeFormatted = formatFullDateTime(dDate);
+      if (!globalData.currentBalances) globalData.currentBalances = {};
+
+      // PERINGATAN SALDO MINUS: tanyakan dulu bila transaksi ini membuat saldo rekening di bawah nol
+      try {
+        let outByAcc = {};
+        if (dDari !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(dDari)) outByAcc[dDari] = (outByAcc[dDari] || 0) + dAmount;
+        if (dAdminFee > 0 && dAdminAcc && dAdminAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(dAdminAcc)) outByAcc[dAdminAcc] = (outByAcc[dAdminAcc] || 0) + dAdminFee;
+        let warnLines = Object.keys(outByAcc).map(acc => {
+          let now = Number(globalData.currentBalances[acc]) || 0;
+          let after = now - outByAcc[acc];
+          return after < 0 ? `• ${acc}: saldo sekarang ${formatRp(now)}, setelah transaksi ${formatRp(after)}` : null;
+        }).filter(Boolean);
+        if (warnLines.length && !confirm(`⚠️ Saldo akan MINUS\n\n${warnLines.join('\n')}\n\nMungkin ada pemasukan / transfer yang belum dicatat, atau rekening yang dipilih kurang tepat.\n\nTetap simpan transaksi ini?`)) {
+          return;
+        }
+      } catch(eWarn) { console.warn('Cek saldo minus:', eWarn); }
+
+      if (dDari !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(dDari)) globalData.currentBalances[dDari] -= dAmount;
       if (dKe !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(dKe)) globalData.currentBalances[dKe] += dAmount; 
       
       // ID unik + waktu dibuat: memungkinkan transaksi dari beberapa perangkat digabung saat sinkron
