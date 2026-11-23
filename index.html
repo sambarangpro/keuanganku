@@ -753,45 +753,51 @@
     }
 
     /* Kartu rekening (Saldo per Akun) berbentuk DOMPET seperti logo KEUANGANKU:
-       badan dompet bersudut bulat + tutup/kancing di sisi kanan dengan titik pengait */
+       badan dompet berwarna (warna rekening) + tutup/kancing bergaris putih di sisi kanan dengan titik pengait */
     .acc-card {
-      --acc-line: color-mix(in srgb, var(--acc-color) 38%, var(--ui-border));
-      position: relative; display: flex; flex-direction: column; gap: 10px; min-height: 124px;
-      padding: 14px 14px 13px; border-radius: 20px; background: var(--ui-card);
-      border: 1.5px solid var(--acc-line);
-      box-shadow: var(--ui-shadow); transition: box-shadow .25s var(--ui-ease), transform .25s var(--ui-ease), border-color .25s var(--ui-ease);
-      margin-right: 7px; /* ruang untuk tutup dompet yang menonjol ke kanan */
+      --acc-deep: color-mix(in oklab, var(--acc-color) 62%, #0b1220);
+      --acc-mid: color-mix(in oklab, var(--acc-color) 84%, #0b1220);
+      position: relative; isolation: isolate; overflow: hidden;
+      display: flex; flex-direction: column; gap: 9px; min-height: 128px;
+      padding: 14px 14px 12px; border-radius: 18px; color: #fff;
+      background:
+        radial-gradient(120% 90% at 0% 0%, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0) 55%),
+        linear-gradient(145deg, var(--acc-mid) 0%, var(--acc-deep) 100%);
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.10) inset, 0 10px 22px -14px var(--acc-deep);
+      transition: box-shadow .25s var(--ui-ease), transform .25s var(--ui-ease);
     }
-    /* Tutup dompet (flap) + titik pengait */
+    /* Garis badan dompet (tipis, di dalam tepi kartu) */
+    .acc-card::before {
+      content: ""; position: absolute; inset: 6px; border-radius: 13px; pointer-events: none; z-index: -1;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+    }
+    /* Tutup dompet: kotak bergaris putih yang menyeberangi tepi kanan, dengan titik pengait */
     .acc-card-flap {
-      position: absolute; top: 14px; right: -8px; width: 46px; height: 36px; border-radius: 11px;
-      background: color-mix(in srgb, var(--acc-color) 10%, var(--ui-card));
-      border: 1.5px solid var(--acc-line);
-      display: flex; align-items: center; justify-content: center;
+      position: absolute; top: 13px; right: -12px; width: 50px; height: 36px; border-radius: 11px;
+      border: 1.5px solid rgba(255, 255, 255, 0.62); background: rgba(255, 255, 255, 0.14);
+      display: flex; align-items: center; justify-content: flex-start; padding-left: 12px;
       transition: transform .25s var(--ui-ease), background-color .25s var(--ui-ease);
     }
-    .acc-card-flap::after { content: ""; width: 8px; height: 8px; border-radius: 999px; background: var(--acc-color); box-shadow: 0 0 0 3px color-mix(in srgb, var(--acc-color) 18%, transparent); }
+    .acc-card-flap::after { content: ""; width: 7px; height: 7px; border-radius: 999px; background: #fff; }
     @media (hover: hover) {
-      .acc-card:hover { box-shadow: var(--ui-shadow-hover); transform: translateY(-2px); border-color: var(--acc-color); }
-      .acc-card:hover .acc-card-flap { border-color: var(--acc-color); transform: translateX(2px); }
+      .acc-card:hover { transform: translateY(-2px); box-shadow: 0 1px 0 rgba(255, 255, 255, 0.10) inset, 0 16px 28px -14px var(--acc-deep); }
+      .acc-card:hover .acc-card-flap { transform: translateX(-3px); background: rgba(255, 255, 255, 0.22); }
     }
-    .acc-card-top { display: flex; align-items: flex-start; gap: 10px; min-width: 0; padding-right: 40px; }
-    .acc-card-icon { width: 34px; height: 34px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; background: color-mix(in srgb, var(--acc-color) 14%, transparent); color: var(--acc-color); }
-    .acc-card-icon .material-symbols-outlined { font-size: 19px; }
-    .acc-card-name { font-size: 13px; font-weight: 650; color: var(--ui-text); line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; }
-    .acc-card-bank { font-size: 11px; color: var(--ui-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .acc-card-balance { margin-top: auto; font-size: 17px; font-weight: 700; color: var(--ui-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .acc-card-balance.is-negative { color: #e11d48; }
-    .acc-card-meta { font-size: 10.5px; color: var(--ui-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    @media (max-width: 400px) { .acc-card { padding: 12px; } .acc-card-balance { font-size: 15px; } .acc-card-icon { width: 30px; height: 30px; } }
-
+    .acc-card-top { display: flex; align-items: flex-start; gap: 10px; min-width: 0; padding-right: 42px; }
+    .acc-card-name { font-size: 13px; font-weight: 650; color: #fff; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; }
+    .acc-card-bank { font-size: 11px; color: rgba(255, 255, 255, 0.72); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .acc-card-balance { margin-top: auto; font-size: 17px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .acc-card-balance.is-negative { color: #fecdd3; }
+    .acc-card-meta { font-size: 10.5px; color: rgba(255, 255, 255, 0.70); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-top: 7px; border-top: 1px solid rgba(255, 255, 255, 0.16); }
+    @media (max-width: 400px) { .acc-card { padding: 12px 12px 11px; min-height: 120px; } .acc-card-balance { font-size: 15px; } .acc-card-flap { width: 44px; height: 32px; padding-left: 10px; } }
     /* Kartu utama (hero) Beranda */
     .hero-balance-card {
       background: radial-gradient(120% 140% at 100% 0%, #3b82f6 0%, rgba(59,130,246,0) 55%), linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 55%, #2563eb 100%) !important;
       box-shadow: 0 12px 30px -12px rgba(29, 78, 216, 0.55) !important;
     }
-    .hero-logo-mark { right: -70px; bottom: -110px; width: 380px; height: 380px; opacity: .2; }
-    @media (max-width: 639px) { .hero-logo-mark { right: -62px; bottom: -88px; width: 300px; height: 300px; } }
+    /* Logo KEUANGANKU bergaris: satu logo utuh, tebal garis rata, di sisi kanan kartu */
+    .hero-logo-mark { right: 26px; top: 24px; width: 104px; height: 99px; opacity: .2; }
+    @media (max-width: 639px) { .hero-logo-mark { right: 20px; top: 22px; width: 68px; height: 65px; } }
     html.dark .hero-balance-card { background: radial-gradient(120% 140% at 100% 0%, rgba(59,130,246,.55) 0%, rgba(59,130,246,0) 55%), linear-gradient(135deg, #0b1f4d 0%, #142c6b 60%, #1d3f91 100%) !important; box-shadow: 0 12px 30px -14px rgba(0,0,0,.8) !important; }
 
     /* Kartu fitur pemilik (Ketahanan Kas & Zakat): latar gelap yang sama, tenang, tanpa cahaya buram */
@@ -2001,26 +2007,19 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 items-stretch">
         <section class="hero-balance-card text-white p-6 sm:p-7 rounded-3xl flex flex-col justify-between relative overflow-hidden min-h-[190px]">
           <!-- Logo KEUANGANKU (garis tipis) sebagai hiasan latar -->
-          <svg class="hero-logo-mark absolute pointer-events-none" viewBox="0 0 512 512" aria-hidden="true">
-            <defs>
-              <g id="kk-logo-line">
-                <path d="M 355 206 L 355 185 A 40 40 0 0 0 315 145 L 180 145 A 40 40 0 0 0 140 185 L 140 327 A 40 40 0 0 0 180 367 L 315 367 A 40 40 0 0 0 355 327 L 355 306" vector-effect="non-scaling-stroke"/>
-                <rect x="260" y="206" width="115" height="100" rx="26" vector-effect="non-scaling-stroke"/>
-                <circle cx="317.5" cy="256" r="13" vector-effect="non-scaling-stroke"/>
-              </g>
-            </defs>
-            <g fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <use href="#kk-logo-line"/>
-              <use href="#kk-logo-line" transform="translate(257.5 256) scale(1.5) translate(-257.5 -256)" opacity=".7"/>
-              <use href="#kk-logo-line" transform="translate(257.5 256) scale(2.05) translate(-257.5 -256)" opacity=".45"/>
+          <svg class="hero-logo-mark absolute pointer-events-none" viewBox="128 133 259 246" aria-hidden="true">
+            <g fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M 355 206 L 355 185 A 40 40 0 0 0 315 145 L 180 145 A 40 40 0 0 0 140 185 L 140 327 A 40 40 0 0 0 180 367 L 315 367 A 40 40 0 0 0 355 327 L 355 306" stroke-width="5"/>
+              <rect x="260" y="206" width="115" height="100" rx="26" stroke-width="5"/>
+              <circle cx="317.5" cy="256" r="11" fill="#fff" stroke="none"/>
             </g>
           </svg>
           <div class="relative">
-            <div class="flex items-center justify-between gap-2">
+            <div class="flex flex-wrap items-center gap-x-2 gap-y-1 pr-20 sm:pr-28">
               <p class="text-[13px] font-medium text-white/80">Total Aset & Tabungan</p>
-              <span class="bg-white/15 text-white/90 text-[10.5px] font-semibold px-2.5 py-1 rounded-full ring-1 ring-inset ring-white/20">Hanya uang kas</span>
+              <span class="bg-white/15 text-white/90 text-[10.5px] font-semibold px-2 py-0.5 rounded-full ring-1 ring-inset ring-white/20">Hanya uang kas</span>
             </div>
-            <h2 id="dash-total-asset" class="text-[34px] sm:text-4xl md:text-[44px] leading-tight mt-2 font-mono-data">Rp 0</h2>
+            <h2 id="dash-total-asset" class="text-[30px] sm:text-4xl md:text-[44px] leading-tight mt-2 font-mono-data">Rp 0</h2>
           </div>
           <p class="relative text-[11.5px] text-white/70 mt-5 pt-3 border-t border-white/15 leading-relaxed">Gabungan simpanan kas di Invest/Savings, Sinking Fund & Financial Goals.</p>
         </section>
