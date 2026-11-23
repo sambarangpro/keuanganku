@@ -65,9 +65,9 @@
       theme: {
         extend: {
           "colors": {
-            "surface-container-low": "#e2e8f0", "surface-bright": "#f0f4f8", "outline": "#64748b", "error": "#ef4444",
+            "surface-container-low": "#f2f4f7", "surface-bright": "#f0f4f8", "outline": "#64748b", "error": "#ef4444",
             "on-surface": "#0f172a", "primary": "#2563eb", "outline-variant": "#cbd5e1", "secondary": "#0284c7",
-            "on-surface-variant": "#334155", "surface-container-lowest": "#ffffff", "surface-container": "#f1f5f9",
+            "on-surface-variant": "#475467", "surface-container-lowest": "#ffffff", "surface-container": "#eef1f5",
             "background": "#f8fafc", "surface": "#ffffff", "tertiary": "#4f46e5", "primary-container": "#1d4ed8", "navy-dark": "#020617"
           },
           "fontFamily": {
@@ -585,6 +585,219 @@
     @media (min-width: 1000px) and (min-height: 900px) {
       .splash-card-zoom { zoom: 1.45; }
     }
+
+    /* =====================================================================
+       TAMPILAN PROFESIONAL (v6.76): satu bahasa desain untuk seluruh aplikasi
+       - warna tenang + 1 warna utama (biru), warna lain hanya untuk makna (masuk/keluar/peringatan)
+       - angka memakai Inter tabular (rapi & sejajar), bukan huruf mesin ketik
+       - kartu: sudut, garis & bayangan seragam; tombol: warna solid tanpa gradasi mencolok
+       - animasi halus & singkat; animasi berkedip/memantul dihilangkan
+       ===================================================================== */
+    :root {
+      --ui-bg: #f4f6f9;
+      --ui-card: #ffffff;
+      --ui-card-2: #f8fafc;
+      --ui-border: #e4e7ec;
+      --ui-border-strong: #d0d5dd;
+      --ui-text: #101828;
+      --ui-muted: #667085;
+      --ui-brand: #2563eb;
+      --ui-brand-strong: #1d4ed8;
+      --ui-brand-soft: rgba(37, 99, 235, 0.08);
+      --ui-radius-lg: 20px;
+      --ui-radius: 14px;
+      --ui-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+      --ui-shadow-hover: 0 6px 18px -4px rgba(16, 24, 40, 0.10), 0 2px 6px -2px rgba(16, 24, 40, 0.05);
+      --ui-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    html.dark {
+      --ui-bg: #0a0f1a;
+      --ui-card: #111827;
+      --ui-card-2: #0f172a;
+      --ui-border: #1f2937;
+      --ui-border-strong: #334155;
+      --ui-text: #f1f5f9;
+      --ui-muted: #94a3b8;
+      --ui-brand: #3b82f6;
+      --ui-brand-strong: #2563eb;
+      --ui-brand-soft: rgba(59, 130, 246, 0.14);
+      --ui-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+      --ui-shadow-hover: 0 8px 22px -6px rgba(0, 0, 0, 0.55);
+    }
+
+    /* Dasar halaman & huruf */
+    html body { background-color: var(--ui-bg) !important; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
+    html.dark body { background-color: var(--ui-bg) !important; }
+
+    /* Angka & nominal: Inter dengan digit tabular (lebar sama, sejajar rapi) */
+    .font-mono-data {
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif !important;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1, "cv11" 1;
+      letter-spacing: -0.015em;
+    }
+    h1.font-mono-data, h2.font-mono-data, h3.font-mono-data, .text-3xl.font-mono-data, .text-4xl.font-mono-data, .text-5xl.font-mono-data { letter-spacing: -0.03em; font-weight: 700 !important; }
+
+    /* Ketebalan & huruf kapital lebih kalem */
+    main .font-black { font-weight: 800 !important; }
+    main .font-extrabold { font-weight: 700 !important; }
+    main .uppercase.tracking-wider, main .uppercase.tracking-wide, main .uppercase.tracking-widest { letter-spacing: 0.05em !important; }
+
+    /* Kartu: sudut, garis & bayangan seragam */
+    main .rounded-3xl { border-radius: var(--ui-radius-lg) !important; }
+    main .rounded-2xl { border-radius: 16px !important; }
+    main [class*="rounded-3xl"][class*="border"],
+    main [class*="rounded-2xl"][class*="bg-white"][class*="border"] {
+      border-color: var(--ui-border) !important;
+      box-shadow: var(--ui-shadow) !important;
+      transition: box-shadow .25s var(--ui-ease), border-color .25s var(--ui-ease), transform .25s var(--ui-ease);
+    }
+    html.dark main [class*="dark:bg-slate-800"],
+    html.dark main [class*="dark:bg-slate-900"]:not(button) { background-color: var(--ui-card) !important; }
+    html.dark main [class*="rounded-3xl"][class*="border"] { border-color: var(--ui-border) !important; }
+    @media (hover: hover) {
+      main [class*="rounded-3xl"][class*="bg-white"][class*="border"]:hover { box-shadow: var(--ui-shadow-hover) !important; }
+    }
+
+    /* Header & navigasi */
+    header.app-header-safe { box-shadow: none !important; border-bottom: 1px solid var(--ui-border) !important; }
+    html.dark header.app-header-safe { background-color: rgba(10, 15, 26, 0.96) !important; }
+    #header-brand-title > span:first-child { letter-spacing: 0.06em; font-weight: 800; }
+    .bottom-nav-safe { box-shadow: 0 -1px 0 var(--ui-border), 0 -8px 24px -12px rgba(16, 24, 40, 0.12) !important; border-top: 0 !important; }
+    html.dark .bottom-nav-safe { background-color: #0d1321 !important; }
+    #nav-tx-btn-circle { background-image: none !important; background-color: var(--ui-brand) !important; box-shadow: 0 8px 18px -6px rgba(37, 99, 235, 0.55) !important; }
+
+    /* Tombol: gradasi biru -> biru solid; warna makna tetap (hijau/oranye/merah) tapi solid */
+    button[class*="from-blue-"], button[class*="from-indigo-"], button[class*="from-sky-"], button[class*="from-cyan-"],
+    a[class*="from-blue-"][class*="rounded"], label[class*="from-blue-"][class*="rounded"] {
+      background-image: none !important;
+      background-color: var(--ui-brand) !important;
+      color: #fff !important;
+      box-shadow: 0 1px 2px rgba(16, 24, 40, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.10) !important;
+    }
+    button[class*="from-emerald-"], button[class*="from-green-"], button[class*="from-teal-"] { background-image: none !important; background-color: #059669 !important; color: #fff !important; box-shadow: 0 1px 2px rgba(16, 24, 40, 0.10) !important; }
+    button[class*="from-amber-"], button[class*="from-orange-"], button[class*="from-yellow-"] { background-image: none !important; background-color: #f59e0b !important; color: #1f1300 !important; box-shadow: 0 1px 2px rgba(16, 24, 40, 0.10) !important; }
+    button[class*="from-rose-"], button[class*="from-red-"], button[class*="from-pink-"] { background-image: none !important; background-color: #e11d48 !important; color: #fff !important; box-shadow: 0 1px 2px rgba(16, 24, 40, 0.10) !important; }
+    button[class*="from-"]:hover { filter: brightness(0.94); }
+    button { -webkit-tap-highlight-color: transparent; }
+    button:not(:disabled):active { transform: scale(0.98); }
+    button:disabled { opacity: 0.55; cursor: not-allowed; }
+    :focus-visible { outline: 2px solid var(--ui-brand) !important; outline-offset: 2px; }
+
+    /* Kolom isian */
+    main input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+    main select, main textarea, .fixed input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]), .fixed select, .fixed textarea {
+      border-color: var(--ui-border-strong);
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+    main input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus,
+    main select:focus, main textarea:focus, .fixed input:focus, .fixed select:focus, .fixed textarea:focus {
+      outline: none !important;
+      border-color: var(--ui-brand) !important;
+      box-shadow: 0 0 0 3px var(--ui-brand-soft) !important;
+    }
+
+    /* Animasi: halus & singkat. Efek berkedip/memantul terus-menerus dihilangkan (terkesan murahan) */
+    main .animate-pulse, main .animate-bounce, #demo-mode-sticky-bar .animate-pulse, #header-sync-icon.animate-pulse { animation: none !important; }
+    @keyframes ui-fade-up { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    @keyframes ui-fade-in { from { opacity: 0; } to { opacity: 1; } }
+    #page-dashboard:not(.hidden), #page-rekapitulasi:not(.hidden), #page-transaksi:not(.hidden), #page-setup:not(.hidden), #page-kalkulator:not(.hidden) { animation: ui-fade-up .35s var(--ui-ease) both; }
+    #account-grid > * { animation: ui-fade-up .4s var(--ui-ease) both; }
+    #account-grid > *:nth-child(2) { animation-delay: .03s; } #account-grid > *:nth-child(3) { animation-delay: .06s; }
+    #account-grid > *:nth-child(4) { animation-delay: .09s; } #account-grid > *:nth-child(5) { animation-delay: .12s; }
+    #account-grid > *:nth-child(n+6) { animation-delay: .15s; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+
+    /* Peringatan jatuh tempo / piutang: kartu ringkas & tenang dengan aksen warna di kiri */
+    #due-date-alert-container > div, #receivable-alert-container > div {
+      background: var(--ui-card) !important;
+      color: var(--ui-text) !important;
+      border: 1px solid var(--ui-border) !important;
+      border-left: 4px solid var(--alert-accent, #f59e0b) !important;
+      box-shadow: var(--ui-shadow) !important;
+      padding: 12px 14px !important;
+      animation: ui-fade-up .35s var(--ui-ease) both !important;
+    }
+    #due-date-alert-container > div[class*="rose"], #due-date-alert-container > div[class*="red-"], #receivable-alert-container > div[class*="rose"], #receivable-alert-container > div[class*="red-"] { --alert-accent: #e11d48; --alert-soft: rgba(225, 29, 72, 0.10); --alert-ink: #be123c; }
+    #due-date-alert-container > div[class*="amber"], #due-date-alert-container > div[class*="orange"], #receivable-alert-container > div[class*="amber"], #receivable-alert-container > div[class*="orange"] { --alert-accent: #f59e0b; --alert-soft: rgba(245, 158, 11, 0.12); --alert-ink: #b45309; }
+    #due-date-alert-container > div[class*="emerald"], #due-date-alert-container > div[class*="green"], #receivable-alert-container > div[class*="emerald"], #receivable-alert-container > div[class*="green"] { --alert-accent: #059669; --alert-soft: rgba(5, 150, 105, 0.10); --alert-ink: #047857; }
+    #due-date-alert-container > div[class*="blue"], #due-date-alert-container > div[class*="indigo"], #due-date-alert-container > div[class*="sky"], #receivable-alert-container > div[class*="blue"], #receivable-alert-container > div[class*="indigo"], #receivable-alert-container > div[class*="sky"] { --alert-accent: #2563eb; --alert-soft: rgba(37, 99, 235, 0.10); --alert-ink: #1d4ed8; }
+    html.dark #due-date-alert-container > div, html.dark #receivable-alert-container > div { --alert-ink: #fda4af; }
+    html.dark #due-date-alert-container > div[class*="amber"], html.dark #due-date-alert-container > div[class*="orange"], html.dark #receivable-alert-container > div[class*="amber"] { --alert-ink: #fcd34d; }
+    html.dark #due-date-alert-container > div[class*="emerald"], html.dark #receivable-alert-container > div[class*="emerald"], html.dark #receivable-alert-container > div[class*="green"] { --alert-ink: #6ee7b7; }
+    #due-date-alert-container h4, #receivable-alert-container h4 {
+      color: var(--ui-text) !important; text-transform: none !important; letter-spacing: 0 !important;
+      font-weight: 650 !important; font-size: 13px !important; white-space: normal !important; overflow: visible !important; text-overflow: clip !important; line-height: 1.35;
+    }
+    #due-date-alert-container p, #receivable-alert-container p { color: var(--ui-muted) !important; font-size: 12px !important; margin-top: 2px; }
+    #due-date-alert-container p b, #receivable-alert-container p b { color: var(--ui-text) !important; font-weight: 600; }
+    #due-date-alert-container > div > div:first-child > div:first-child, #receivable-alert-container > div > div:first-child > div:first-child {
+      width: 36px !important; height: 36px !important; border-radius: 10px !important;
+      background: var(--alert-soft, rgba(245, 158, 11, 0.12)) !important; color: var(--alert-accent, #f59e0b) !important;
+    }
+    #due-date-alert-container > div > div:first-child > div:first-child .material-symbols-outlined, #receivable-alert-container > div > div:first-child > div:first-child .material-symbols-outlined { font-size: 20px !important; color: var(--alert-accent) !important; }
+    #due-date-alert-container > div > div:last-child button:first-child, #receivable-alert-container > div > div:last-child button:first-child {
+      background: var(--alert-accent) !important; background-image: none !important; color: #fff !important; border: 0 !important;
+      box-shadow: none !important; font-weight: 600 !important; border-radius: 10px !important; padding: 7px 12px !important;
+    }
+    #due-date-alert-container > div > div:last-child button:last-child:not(:first-child), #receivable-alert-container > div > div:last-child button:last-child:not(:first-child) {
+      background: transparent !important; color: var(--ui-muted) !important; box-shadow: none !important; border-radius: 10px !important;
+    }
+    #due-date-alert-container > div > div:last-child button:last-child:not(:first-child):hover, #receivable-alert-container > div > div:last-child button:last-child:not(:first-child):hover { background: var(--ui-card-2) !important; color: var(--ui-text) !important; }
+    @media (max-width: 639px) {
+      #due-date-alert-container > div, #receivable-alert-container > div { flex-wrap: wrap; row-gap: 10px; }
+      #due-date-alert-container > div > div:first-child, #receivable-alert-container > div > div:first-child { flex: 1 1 100%; }
+      #due-date-alert-container > div > div:last-child, #receivable-alert-container > div > div:last-child { flex: 1 1 100%; justify-content: flex-end; }
+    }
+
+    /* Kartu rekening (Saldo per Akun) */
+    .acc-card {
+      position: relative; display: flex; flex-direction: column; gap: 10px; min-height: 118px;
+      padding: 14px; border-radius: 16px; background: var(--ui-card); border: 1px solid var(--ui-border);
+      box-shadow: var(--ui-shadow); transition: box-shadow .25s var(--ui-ease), transform .25s var(--ui-ease), border-color .25s var(--ui-ease);
+      overflow: hidden;
+    }
+    .acc-card::before { content: ""; position: absolute; left: 0; top: 0; right: 0; height: 3px; background: var(--acc-color); opacity: .9; }
+    @media (hover: hover) { .acc-card:hover { box-shadow: var(--ui-shadow-hover); transform: translateY(-2px); border-color: var(--ui-border-strong); } }
+    .acc-card-top { display: flex; align-items: flex-start; gap: 10px; min-width: 0; }
+    .acc-card-icon { width: 34px; height: 34px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; background: color-mix(in srgb, var(--acc-color) 14%, transparent); color: var(--acc-color); }
+    .acc-card-icon .material-symbols-outlined { font-size: 19px; }
+    .acc-card-name { font-size: 13px; font-weight: 650; color: var(--ui-text); line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; }
+    .acc-card-bank { font-size: 11px; color: var(--ui-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .acc-card-balance { margin-top: auto; font-size: 17px; font-weight: 700; color: var(--ui-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .acc-card-balance.is-negative { color: #e11d48; }
+    .acc-card-meta { font-size: 10.5px; color: var(--ui-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    @media (max-width: 400px) { .acc-card { padding: 12px; } .acc-card-balance { font-size: 15px; } .acc-card-icon { width: 30px; height: 30px; } }
+
+    /* Kartu utama (hero) Beranda */
+    .hero-balance-card {
+      background: radial-gradient(120% 140% at 100% 0%, #3b82f6 0%, rgba(59,130,246,0) 55%), linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 55%, #2563eb 100%) !important;
+      box-shadow: 0 12px 30px -12px rgba(29, 78, 216, 0.55) !important;
+    }
+    html.dark .hero-balance-card { background: radial-gradient(120% 140% at 100% 0%, rgba(59,130,246,.55) 0%, rgba(59,130,246,0) 55%), linear-gradient(135deg, #0b1f4d 0%, #142c6b 60%, #1d3f91 100%) !important; box-shadow: 0 12px 30px -14px rgba(0,0,0,.8) !important; }
+
+    /* Kartu fitur pemilik (Ketahanan Kas & Zakat): latar gelap yang sama, tenang, tanpa cahaya buram */
+    #owner-runway-container > div, #owner-zakat-container > div {
+      background: linear-gradient(180deg, #111a2e 0%, #0c1324 100%) !important;
+      border: 1px solid rgba(148, 163, 184, 0.16) !important;
+      box-shadow: 0 10px 28px -14px rgba(2, 6, 23, 0.55) !important;
+    }
+    #owner-zakat-container > div { background: radial-gradient(120% 90% at 100% 0%, rgba(16, 185, 129, 0.16) 0%, rgba(16, 185, 129, 0) 60%), linear-gradient(180deg, #0f1f1b 0%, #0b1714 100%) !important; border-color: rgba(52, 211, 153, 0.18) !important; }
+    #owner-runway-container .blur-3xl, #owner-zakat-container .blur-3xl { display: none !important; }
+    #owner-runway-container [class*="border-white/10"], #owner-zakat-container [class*="border-emerald-500/30"] { border-color: rgba(148, 163, 184, 0.14) !important; }
+
+    /* Notifikasi & panel mengambang */
+    #sync-toast { border-radius: 12px !important; }
+    #pwa-update-banner { background: #0f172a !important; border: 1px solid #1e293b !important; border-radius: 18px !important; box-shadow: 0 20px 40px -12px rgba(2, 6, 23, 0.55) !important; }
+    #btn-mask-balance-fab { background: var(--ui-card) !important; color: var(--ui-text) !important; border: 1px solid var(--ui-border) !important; box-shadow: var(--ui-shadow-hover) !important; padding: 11px !important; }
+    #btn-mask-balance-fab .material-symbols-outlined { font-size: 22px !important; }
+    #demo-mode-sticky-bar { background: #f59e0b !important; background-image: none !important; box-shadow: 0 1px 0 rgba(0,0,0,.06) !important; }
+
+    /* Jendela pop-up (modal): bayangan & sudut lebih rapi */
+    .fixed.inset-0 > div[class*="rounded-2xl"], .fixed.inset-0 > div[class*="rounded-3xl"] { border-radius: 20px !important; box-shadow: 0 24px 48px -12px rgba(16, 24, 40, 0.28) !important; }
+    .fixed.inset-0[class*="bg-black"] { backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
   </style>
 </head>
 <body class="bg-background text-on-surface font-body-md min-h-screen pb-32">
@@ -1759,23 +1972,25 @@
 
       <!-- TOP HERO ROW: 2 KOLOM SEIMBANG PADA LAYAR LEBAR / DESKTOP -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 items-stretch">
-        <section class="bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-600 text-white p-6 sm:p-7 rounded-3xl flex flex-col justify-between relative overflow-hidden shadow-xl shadow-blue-500/20 min-h-[190px]">
-          <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl pointer-events-none"></div>
-          <div>
-            <span class="bg-white/20 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider backdrop-blur-sm">Hanya Uang Kas</span>
-            <p class="font-label-caps text-xs tracking-wider opacity-90 uppercase font-bold mt-2.5">TOTAL ASSET & SAVINGS</p>
-            <h2 id="dash-total-asset" class="text-3xl sm:text-4xl md:text-5xl font-extrabold mt-1 tracking-tight font-mono-data">Rp 0</h2>
+        <section class="hero-balance-card text-white p-6 sm:p-7 rounded-3xl flex flex-col justify-between relative overflow-hidden min-h-[190px]">
+          <svg class="absolute -right-10 -bottom-16 w-72 h-72 opacity-[0.09] pointer-events-none" viewBox="0 0 200 200" aria-hidden="true"><circle cx="100" cy="100" r="98" fill="none" stroke="#fff" stroke-width="1.5"/><circle cx="100" cy="100" r="70" fill="none" stroke="#fff" stroke-width="1.5"/><circle cx="100" cy="100" r="42" fill="none" stroke="#fff" stroke-width="1.5"/></svg>
+          <div class="relative">
+            <div class="flex items-center justify-between gap-2">
+              <p class="text-[13px] font-medium text-white/80">Total Aset & Tabungan</p>
+              <span class="bg-white/15 text-white/90 text-[10.5px] font-semibold px-2.5 py-1 rounded-full ring-1 ring-inset ring-white/20">Hanya uang kas</span>
+            </div>
+            <h2 id="dash-total-asset" class="text-[34px] sm:text-4xl md:text-[44px] leading-tight mt-2 font-mono-data">Rp 0</h2>
           </div>
-          <p class="text-[11px] opacity-90 mt-4 border-t border-white/25 pt-3">*Akumulasi simpanan uang kas dari Invest/Savings, Sinking Fund, & Financial Goals.</p>
+          <p class="relative text-[11.5px] text-white/70 mt-5 pt-3 border-t border-white/15 leading-relaxed">Gabungan simpanan kas di Invest/Savings, Sinking Fund & Financial Goals.</p>
         </section>
 
         <!-- KARTU AKUMULASI SELURUH REKENING DENGAN MINI DONUT DI SISI KANAN -->
         <div class="bg-white dark:bg-slate-800 border border-outline-variant rounded-3xl p-6 sm:p-7 shadow-sm flex flex-col justify-between min-h-[190px]">
           <div class="flex items-center justify-between gap-4">
             <div class="flex-1 min-w-0">
-              <span class="text-[11px] sm:text-xs font-bold text-secondary uppercase tracking-wider">AKUMULASI SELURUH REKENING</span>
-              <p class="text-[10px] text-gray-500">Total Nominal Saldo Bank & E-Wallet Terkini</p>
-              <h3 id="dash-total-bank" class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-primary dark:text-blue-400 font-mono-data mt-1 tracking-tight truncate">Rp 0</h3>
+              <p class="text-[13px] font-medium text-on-surface-variant dark:text-slate-400">Saldo Seluruh Rekening</p>
+              <p class="text-[11px] text-gray-500">Bank & e-wallet, terkini</p>
+              <h3 id="dash-total-bank" class="text-[24px] sm:text-3xl md:text-4xl leading-tight text-on-surface dark:text-white font-mono-data mt-2 truncate">Rp 0</h3>
               <div id="dash-top-wallet-hint" class="mt-2 flex items-center gap-1.5 text-[11px] font-medium text-gray-500">
                 <!-- Indikator dompet terbanyak otomatis diisi oleh JS -->
               </div>
@@ -1790,8 +2005,8 @@
             </div>
           </div>
           <div class="text-[11px] text-gray-400 dark:text-gray-500 border-t border-outline-variant/60 pt-2.5 mt-3 flex items-center justify-between">
-            <span>Distribusi Dompet & Rekening Aktif</span>
-            <span class="text-[10px] font-bold text-primary dark:text-blue-400 uppercase">Realtime Sync</span>
+            <span>Sebaran saldo per rekening</span>
+            <span class="inline-flex items-center gap-1 text-[10.5px] font-semibold text-emerald-600 dark:text-emerald-400"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Terkini</span>
           </div>
         </div>
       </div>
@@ -1809,9 +2024,8 @@
               <span class="material-symbols-outlined text-primary">account_balance</span>
               <span>Saldo Per Akun</span>
             </h3>
-            <span id="account-count-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary hidden"></span>
+            <span id="account-count-badge" class="px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-primary/10 text-primary hidden"></span>
           </div>
-          <span class="text-xs font-bold text-secondary uppercase tracking-wider">DATABASE AKUN</span>
         </div>
         <div id="account-grid" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2.5 sm:gap-4"></div>
       </section>
@@ -2011,7 +2225,7 @@
         </div>
 
         <!-- STAT MINI HIGHLIGHTS (KOTAK RINGKASAN TREN) -->
-        <div id="wallet-history-stats" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 text-xs"></div>
+        <div id="wallet-history-stats" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 2xl:grid-cols-4 gap-2.5 sm:gap-3 text-xs"></div>
 
         <!-- PANEL DRAWER CHIPS MANUAL (TERSEMBUNYI SECARA DEFAULT, MUNCUL SAAT DIKLIK) -->
         <div id="wallet-history-chips-drawer" class="hidden p-3 rounded-2xl bg-surface-container-lowest/80 dark:bg-slate-900/60 border border-outline-variant/60 space-y-2 animate-fadeIn">
@@ -3885,6 +4099,20 @@
 
   <script>
     Chart.register(ChartDataLabels);
+    // Gaya grafik seragam: huruf Inter, warna teks & garis bantu yang lembut
+    try {
+      Chart.defaults.font.family = 'Inter, system-ui, -apple-system, "Segoe UI", sans-serif';
+      Chart.defaults.color = '#667085';
+      Chart.defaults.borderColor = 'rgba(148, 163, 184, 0.18)';
+      Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(15, 23, 42, 0.92)';
+      Chart.defaults.plugins.tooltip.padding = 10;
+      Chart.defaults.plugins.tooltip.cornerRadius = 10;
+      Chart.defaults.plugins.tooltip.titleFont = { weight: '600', size: 12 };
+      Chart.defaults.plugins.tooltip.bodyFont = { size: 12 };
+      Chart.defaults.plugins.tooltip.boxPadding = 4;
+      Chart.defaults.animation.duration = 650;
+      Chart.defaults.animation.easing = 'easeOutQuart';
+    } catch(eChartDef) {}
 
     let currentLang = 'id';
     let isBalanceMasked = localStorage.getItem('keuanganku_privacy_mode') === 'true';
@@ -9045,6 +9273,22 @@ function formatReadableSheets(ss, parsed) {
       showSyncToast(toBuyer ? '👤 Tampilan Pengguna: Beranda, Transaksi, Setup' : '👑 Tampilan Pemilik: 5 menu lengkap');
     }
 
+    // Rapikan judul kartu peringatan: buang emoji di depan & ubah HURUF KAPITAL SEMUA jadi huruf biasa
+    function tidyAlertTitles(root) {
+      try {
+        const titleCase = w => (w.length > 3 && w === w.toUpperCase() && /[A-Z]/.test(w)) ? (w.charAt(0) + w.slice(1).toLowerCase()) : w;
+        (root || document).querySelectorAll('h4').forEach(h => {
+          let txt = (h.textContent || '').replace(/^[^A-Za-z0-9]+/, '').trim();
+          let idx = txt.indexOf(':');
+          let head = idx > 0 ? txt.slice(0, idx) : '';
+          let rest = idx > 0 ? txt.slice(idx + 1).trim() : txt;
+          if (head && head === head.toUpperCase()) head = head.charAt(0) + head.slice(1).toLowerCase();
+          rest = rest.split(/(\s+)/).map(titleCase).join('');
+          h.textContent = head ? (head + ' · ' + rest) : rest;
+        });
+      } catch(e) {}
+    }
+
     function isDemoLicense(l) {
       return !!(l && (String(l.token || '').toUpperCase() === 'PRO-DEMO-IKLAN-2026' || (l.buyerName && String(l.buyerName).includes('Demo'))));
     }
@@ -10871,6 +11115,7 @@ function formatReadableSheets(ss, parsed) {
       }
 
       container.innerHTML = alertsHtml.join('');
+      tidyAlertTitles(container);
 
       // Auto-popup modal jika ada utang/tagihan jatuh tempo dan belum ditutup hari ini
       if (activeDueModalItems.length > 0) {
@@ -11040,6 +11285,7 @@ function formatReadableSheets(ss, parsed) {
       });
 
       container.innerHTML = alertsHtml.join('');
+      tidyAlertTitles(container);
     }
     function getCategoryCashflowNet(categoryName) { let net = 0, used = 0; if (!globalData.recentHistory) return { net, used }; globalData.recentHistory.forEach(tx => { if (tx.category === categoryName) { if (['Invest / Savings', 'Financial Goals', 'Income', 'Dari Asset / Saving'].includes(tx.cashflow)) net += tx.amount; if (tx.cashflow === 'Spending') used += tx.amount; } }); return { net, used }; }
     
@@ -11678,7 +11924,7 @@ function formatReadableSheets(ss, parsed) {
               },
               ticks: {
                 color: labelColor,
-                font: { family: 'Plus Jakarta Sans', size: 10, weight: 'bold' },
+                font: { family: 'Inter', size: 10.5, weight: '500' },
                 maxRotation: 0,
                 autoSkip: true,
                 maxTicksLimit: (dateList.length > 90) ? 8 : (dateList.length > 40 ? 10 : 8),
@@ -11703,7 +11949,7 @@ function formatReadableSheets(ss, parsed) {
               },
               ticks: {
                 color: labelColor,
-                font: { family: 'JetBrains Mono', size: 10 },
+                font: { family: 'Inter', size: 10 },
                 callback: function(value) {
                   if (isBalanceMasked) return '••••';
                   if (Math.abs(value) >= 1000000000) return 'Rp ' + (value / 1000000000).toFixed(1).replace('.0','') + 'M';
@@ -12546,7 +12792,7 @@ function formatReadableSheets(ss, parsed) {
         let bg = '', amountHtml = '';
         if (info) {
           let ratio = (flowDef.key === 'ALL' ? info.count : info.total) / maxDay;
-          bg = `background: rgba(${rgb}, ${(0.12 + ratio * 0.45).toFixed(2)});`;
+          bg = `background: rgba(${rgb}, ${(0.08 + ratio * 0.24).toFixed(2)});`;
           amountHtml = flowDef.key === 'ALL'
             ? `<span class="block text-[9px] font-bold leading-none mt-0.5">${info.count}×</span>`
             : `<span class="block text-[9px] font-bold leading-none mt-0.5 truncate">${txCalCompact(info.total)}</span>`;
@@ -12675,31 +12921,24 @@ function formatReadableSheets(ss, parsed) {
           let dt = (globalData.accountDetails && globalData.accountDetails[acc]) ? globalData.accountDetails[acc] : { bankName: acc, accNo: "-", owner: "-" }; 
           
           // Kartu Dompet diselaraskan warna teks dan icon dengan diagram donut (Tampilan 2 Kolom Berderet ke Bawah)
+          // Kartu rekening: nama utuh (maks. 2 baris, tanpa teks berjalan), saldo menonjol, detail ringkas
+          let accSafe = escapeHtml(acc);
+          let accNoTxt = (dt.accNo && dt.accNo !== '-') ? escapeHtml(dt.accNo) : '';
+          let ownerTxt = (dt.owner && dt.owner !== '-') ? escapeHtml(dt.owner) : '';
+          let metaTxt = [accNoTxt, ownerTxt].filter(Boolean).join(' · ');
+          let bankTxt = (dt.bankName && dt.bankName !== acc) ? escapeHtml(dt.bankName) : '';
           grid.innerHTML += `
-            <div class="p-2.5 sm:p-4 bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl shadow-sm hover:border-primary transition-all flex flex-col justify-between border-l-4 min-h-[112px]" style="border-left-color: ${color};">
-              <div class="flex justify-between items-start gap-1">
-                <div class="min-w-0 flex-1 overflow-hidden">
-                  <div class="flex items-center gap-1.5 overflow-hidden">
-                    <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full inline-block flex-shrink-0" style="background-color: ${color};"></span>
-                    <div class="overflow-hidden flex-1 min-w-0">
-                      <span class="acc-marquee-title text-[11px] sm:text-xs font-extrabold uppercase tracking-wide inline-block whitespace-nowrap" style="color: ${color};" title="${acc}">${acc}</span>
-                    </div>
-                  </div>
-                  <p class="text-[9px] sm:text-[10px] text-gray-500 mt-0.5 truncate">${dt.bankName || '-'}</p>
-                </div>
-                <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background-color: ${color}15; color: ${color};">
-                  <span class="material-symbols-outlined text-sm sm:text-lg">account_balance_wallet</span>
+            <div class="acc-card" style="--acc-color: ${color};" title="${accSafe}">
+              <div class="acc-card-top">
+                <span class="acc-card-icon"><span class="material-symbols-outlined">account_balance_wallet</span></span>
+                <div class="min-w-0 flex-1">
+                  <p class="acc-card-name">${accSafe}</p>
+                  ${bankTxt ? `<p class="acc-card-bank">${bankTxt}</p>` : ''}
                 </div>
               </div>
-              <div class="pt-1.5 border-t border-outline-variant/30 text-[9px] sm:text-[10px] space-y-0.5">
-                <p class="text-gray-500 truncate">No. Rek: <b class="font-mono-data text-on-surface">${dt.accNo || '-'}</b></p>
-                <p class="text-gray-500 truncate">a.n: <b class="text-on-surface">${dt.owner || '-'}</b></p>
-              </div>
-              <div class="pt-1.5 border-t border-outline-variant/30 flex justify-between items-center gap-1">
-                <span class="text-[8px] sm:text-[10px] font-bold text-gray-400 flex-shrink-0">SALDO:</span>
-                <p class="text-xs sm:text-sm font-extrabold text-on-surface font-mono-data truncate text-right">${formatRp(bal)}</p>
-              </div>
-            </div>`; 
+              <p class="acc-card-balance font-mono-data${bal < 0 ? ' is-negative' : ''}">${formatRp(bal)}</p>
+              ${metaTxt ? `<p class="acc-card-meta">${metaTxt}</p>` : ''}
+            </div>`;
         }); 
 
         // Update badge jumlah akun
@@ -13149,9 +13388,9 @@ function formatReadableSheets(ss, parsed) {
     }
 
     let chart1 = null, chart2 = null, chart3 = null, trendChart = null;
-    function renderMonthlyChart() { setTimeout(() => { let dropdown = document.getElementById('monthly-select-dropdown'); if (!dropdown) return; let selectedMonthIdx = parseInt(dropdown.value, 10); if (chart1) chart1.destroy(); if (chart2) chart2.destroy(); if (chart3) chart3.destroy(); let totalInc = 0, totalSpend = 0, totalBills = 0; let spendCatMap = {}; let incCatMap = {}; if (globalData.recentHistory) { globalData.recentHistory.forEach(h => { if (h.rawDate && new Date(h.rawDate).getMonth() === selectedMonthIdx) { if (h.cashflow === 'Income') { totalInc += h.amount; let cat = h.category || "Lainnya"; incCatMap[cat] = (incCatMap[cat] || 0) + h.amount; } if (h.cashflow === 'Spending') { totalSpend += h.amount; let cat = h.category || "Lainnya"; spendCatMap[cat] = (spendCatMap[cat] || 0) + h.amount; } if (h.cashflow === 'Bayar Cicilan / Utang') totalBills += h.amount; } }); } let mContainer = document.getElementById('monthly-summary-boxes'); if (mContainer) { mContainer.innerHTML = `<div class="p-2.5 bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 rounded-xl"><span>Total Income</span><br/><b class="font-mono-data text-green-600 dark:text-green-400">${formatRp(totalInc)}</b></div><div class="p-2.5 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-xl"><span>Total Spending</span><br/><b class="font-mono-data text-error">${formatRp(totalSpend)}</b></div><div class="p-2.5 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 rounded-xl"><span>Bills Paid</span><br/><b class="font-mono-data text-tertiary dark:text-indigo-400">${formatRp(totalBills)}</b></div><div class="p-2.5 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-xl"><span>Sisa Uang</span><br/><b class="font-mono-data text-primary dark:text-blue-400">${formatRp(totalInc - (totalSpend + totalBills))}</b></div>`; } let isDark = document.documentElement.classList.contains('dark'); let labelColor = isDark ? '#cbd5e1' : '#475569'; let ctx1 = document.getElementById('monthlyFlowChart'); if (ctx1) { chart1 = new Chart(ctx1.getContext('2d'), { type: 'doughnut', data: { labels: ['Income', 'Spending', 'Bills Paid'], datasets: [{ data: [totalInc, totalSpend, totalBills], backgroundColor: ['#22c55e', '#ef4444', '#6366f1'], borderWidth: 2, borderColor: isDark ? '#0f172a' : '#ffffff' }] }, options: { responsive: true, maintainAspectRatio: false, layout: { padding: { top: 10, bottom: 10 } }, plugins: { legend: { display: true, position: 'bottom', labels: { color: labelColor, font: {size: 10} } }, tooltip: { callbacks: { label: function(c) { return isBalanceMasked ? "Rp ••••••" : "Rp " + c.raw.toLocaleString('id-ID'); } } }, datalabels: { formatter: function(v) { if (isBalanceMasked) return "••••"; if(v === 0) return ""; if (v >= 1000000) return (v/1000000).toFixed(1).replace('.0','') + 'Jt'; if (v >= 1000) return (v/1000).toFixed(0) + 'k'; return v.toLocaleString('id-ID'); }, font: { family: 'JetBrains Mono', size: 10, weight: 'bold' }, color: '#ffffff' } } } }); } let spendKeys = Object.keys(spendCatMap).sort((a, b) => spendCatMap[b] - spendCatMap[a]); let labelsSpend = spendKeys.length > 0 ? spendKeys : ["Belum Ada Data"]; let valuesSpend = spendKeys.length > 0 ? spendKeys.map(k => spendCatMap[k]) : [0]; let ctx2 = document.getElementById('spendingCategoryChart'); if (ctx2) { chart2 = new Chart(ctx2.getContext('2d'), { type: 'bar', data: { labels: labelsSpend, datasets: [{ data: valuesSpend, backgroundColor: '#ef4444', borderRadius: 4 }] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, layout: { padding: { right: 80 } }, scales: { x: { display: false, beginAtZero: true }, y: { grid: { display: false }, ticks: { font: { weight: 'bold' }, color: labelColor } } }, plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) { return isBalanceMasked ? "Rp ••••••" : "Rp " + c.raw.toLocaleString('id-ID'); } } }, datalabels: { anchor: 'end', align: 'right', formatter: function(v) { if (isBalanceMasked) return v > 0 ? "••••" : ""; return v > 0 ? "Rp " + v.toLocaleString('id-ID') : ""; }, font: { family: 'JetBrains Mono', size: 10, weight: 'bold' }, color: labelColor } } } }); } let incKeys = Object.keys(incCatMap).sort((a, b) => incCatMap[b] - incCatMap[a]); let labelsInc = incKeys.length > 0 ? incKeys : ["Belum Ada Data"]; let valuesInc = incKeys.length > 0 ? incKeys.map(k => incCatMap[k]) : [0]; let ctx3 = document.getElementById('incomeCategoryChart'); if (ctx3) { chart3 = new Chart(ctx3.getContext('2d'), { type: 'bar', data: { labels: labelsInc, datasets: [{ data: valuesInc, backgroundColor: '#22c55e', borderRadius: 4 }] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, layout: { padding: { right: 80 } }, scales: { x: { display: false, beginAtZero: true }, y: { grid: { display: false }, ticks: { font: { weight: 'bold' }, color: labelColor } } }, plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) { return isBalanceMasked ? "Rp ••••••" : "Rp " + c.raw.toLocaleString('id-ID'); } } }, datalabels: { anchor: 'end', align: 'right', formatter: function(v) { if (isBalanceMasked) return v > 0 ? "••••" : ""; return v > 0 ? "Rp " + v.toLocaleString('id-ID') : ""; }, font: { family: 'JetBrains Mono', size: 10, weight: 'bold' }, color: labelColor } } } }); } renderBudgetRecap(); }, 100); }
+    function renderMonthlyChart() { setTimeout(() => { let dropdown = document.getElementById('monthly-select-dropdown'); if (!dropdown) return; let selectedMonthIdx = parseInt(dropdown.value, 10); if (chart1) chart1.destroy(); if (chart2) chart2.destroy(); if (chart3) chart3.destroy(); let totalInc = 0, totalSpend = 0, totalBills = 0; let spendCatMap = {}; let incCatMap = {}; if (globalData.recentHistory) { globalData.recentHistory.forEach(h => { if (h.rawDate && new Date(h.rawDate).getMonth() === selectedMonthIdx) { if (h.cashflow === 'Income') { totalInc += h.amount; let cat = h.category || "Lainnya"; incCatMap[cat] = (incCatMap[cat] || 0) + h.amount; } if (h.cashflow === 'Spending') { totalSpend += h.amount; let cat = h.category || "Lainnya"; spendCatMap[cat] = (spendCatMap[cat] || 0) + h.amount; } if (h.cashflow === 'Bayar Cicilan / Utang') totalBills += h.amount; } }); } let mContainer = document.getElementById('monthly-summary-boxes'); if (mContainer) { mContainer.innerHTML = `<div class="p-2.5 bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 rounded-xl"><span>Total Income</span><br/><b class="font-mono-data text-green-600 dark:text-green-400">${formatRp(totalInc)}</b></div><div class="p-2.5 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-xl"><span>Total Spending</span><br/><b class="font-mono-data text-error">${formatRp(totalSpend)}</b></div><div class="p-2.5 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 rounded-xl"><span>Bills Paid</span><br/><b class="font-mono-data text-tertiary dark:text-indigo-400">${formatRp(totalBills)}</b></div><div class="p-2.5 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-xl"><span>Sisa Uang</span><br/><b class="font-mono-data text-primary dark:text-blue-400">${formatRp(totalInc - (totalSpend + totalBills))}</b></div>`; } let isDark = document.documentElement.classList.contains('dark'); let labelColor = isDark ? '#cbd5e1' : '#475569'; let ctx1 = document.getElementById('monthlyFlowChart'); if (ctx1) { chart1 = new Chart(ctx1.getContext('2d'), { type: 'doughnut', data: { labels: ['Income', 'Spending', 'Bills Paid'], datasets: [{ data: [totalInc, totalSpend, totalBills], backgroundColor: ['#22c55e', '#ef4444', '#6366f1'], borderWidth: 2, borderColor: isDark ? '#0f172a' : '#ffffff' }] }, options: { responsive: true, maintainAspectRatio: false, layout: { padding: { top: 10, bottom: 10 } }, plugins: { legend: { display: true, position: 'bottom', labels: { color: labelColor, font: {size: 10} } }, tooltip: { callbacks: { label: function(c) { return isBalanceMasked ? "Rp ••••••" : "Rp " + c.raw.toLocaleString('id-ID'); } } }, datalabels: { formatter: function(v) { if (isBalanceMasked) return "••••"; if(v === 0) return ""; if (v >= 1000000) return (v/1000000).toFixed(1).replace('.0','') + 'Jt'; if (v >= 1000) return (v/1000).toFixed(0) + 'k'; return v.toLocaleString('id-ID'); }, font: { family: 'Inter', size: 10.5, weight: '500' }, color: '#ffffff' } } } }); } let spendKeys = Object.keys(spendCatMap).sort((a, b) => spendCatMap[b] - spendCatMap[a]); let labelsSpend = spendKeys.length > 0 ? spendKeys : ["Belum Ada Data"]; let valuesSpend = spendKeys.length > 0 ? spendKeys.map(k => spendCatMap[k]) : [0]; let ctx2 = document.getElementById('spendingCategoryChart'); if (ctx2) { chart2 = new Chart(ctx2.getContext('2d'), { type: 'bar', data: { labels: labelsSpend, datasets: [{ data: valuesSpend, backgroundColor: '#ef4444', borderRadius: 4 }] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, layout: { padding: { right: 80 } }, scales: { x: { display: false, beginAtZero: true }, y: { grid: { display: false }, ticks: { font: { weight: 'bold' }, color: labelColor } } }, plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) { return isBalanceMasked ? "Rp ••••••" : "Rp " + c.raw.toLocaleString('id-ID'); } } }, datalabels: { anchor: 'end', align: 'right', formatter: function(v) { if (isBalanceMasked) return v > 0 ? "••••" : ""; return v > 0 ? "Rp " + v.toLocaleString('id-ID') : ""; }, font: { family: 'Inter', size: 10.5, weight: '500' }, color: labelColor } } } }); } let incKeys = Object.keys(incCatMap).sort((a, b) => incCatMap[b] - incCatMap[a]); let labelsInc = incKeys.length > 0 ? incKeys : ["Belum Ada Data"]; let valuesInc = incKeys.length > 0 ? incKeys.map(k => incCatMap[k]) : [0]; let ctx3 = document.getElementById('incomeCategoryChart'); if (ctx3) { chart3 = new Chart(ctx3.getContext('2d'), { type: 'bar', data: { labels: labelsInc, datasets: [{ data: valuesInc, backgroundColor: '#22c55e', borderRadius: 4 }] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, layout: { padding: { right: 80 } }, scales: { x: { display: false, beginAtZero: true }, y: { grid: { display: false }, ticks: { font: { weight: 'bold' }, color: labelColor } } }, plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) { return isBalanceMasked ? "Rp ••••••" : "Rp " + c.raw.toLocaleString('id-ID'); } } }, datalabels: { anchor: 'end', align: 'right', formatter: function(v) { if (isBalanceMasked) return v > 0 ? "••••" : ""; return v > 0 ? "Rp " + v.toLocaleString('id-ID') : ""; }, font: { family: 'Inter', size: 10.5, weight: '500' }, color: labelColor } } } }); } renderBudgetRecap(); }, 100); }
     function initCategoryTrendChart() { let select = document.getElementById('trend-category-select'); if (!select) return; let uniqueCats = new Set(); if (globalData.recentHistory) globalData.recentHistory.forEach(tx => { if (tx.category && tx.category !== '- not applicable -') uniqueCats.add(tx.category); }); let currentVal = select.value; select.innerHTML = '<option value="">-- Pilih Kategori --</option>'; let sortedCats = Array.from(uniqueCats).sort(); sortedCats.forEach(c => { select.innerHTML += `<option value="${c}">${c}</option>`; }); if (sortedCats.length > 0) { if (currentVal && sortedCats.includes(currentVal)) select.value = currentVal; else select.value = sortedCats[0]; } updateCategoryTrendChart(); }
-    function updateCategoryTrendChart() { let select = document.getElementById('trend-category-select'); if (!select) return; let cat = select.value; let titleEl = document.getElementById('trend-chart-title'); if (titleEl) titleEl.textContent = cat ? `Perbandingan Tren: ${cat} (Jan-Des)` : "Pilih kategori untuk melihat perbandingan"; let monthlyData = new Array(12).fill(0); let currentYear = new Date().getFullYear(); if (cat && globalData.recentHistory) { globalData.recentHistory.forEach(tx => { if (tx.category === cat && tx.rawDate) { let d = new Date(tx.rawDate); if (d.getFullYear() === currentYear) monthlyData[d.getMonth()] += tx.amount; } }); } let isDark = document.documentElement.classList.contains('dark'); let labelColor = isDark ? '#cbd5e1' : '#475569'; let ctx = document.getElementById('categoryTrendChart'); if (!ctx) return; if (trendChart) trendChart.destroy(); trendChart = new Chart(ctx.getContext('2d'), { type: 'bar', data: { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'], datasets: [{ data: monthlyData, backgroundColor: '#a855f7', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, layout: { padding: { top: 25 } }, scales: { y: { display: false, beginAtZero: true }, x: { grid: { display: false }, ticks: { font: { weight: 'bold' }, color: labelColor } } }, plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) { return isBalanceMasked ? "Rp ••••••" : "Rp " + c.raw.toLocaleString('id-ID'); } } }, datalabels: { anchor: 'end', align: 'top', formatter: function(value) { if (isBalanceMasked) return value > 0 ? "••••" : ""; if (value === 0) return ""; if (value >= 1000000) return (value/1000000).toFixed(1).replace('.0','') + 'Jt'; if (value >= 1000) return (value/1000).toFixed(0) + 'k'; return value.toLocaleString('id-ID'); }, font: { family: 'JetBrains Mono', size: 9, weight: 'bold' }, color: labelColor } } } }); }
+    function updateCategoryTrendChart() { let select = document.getElementById('trend-category-select'); if (!select) return; let cat = select.value; let titleEl = document.getElementById('trend-chart-title'); if (titleEl) titleEl.textContent = cat ? `Perbandingan Tren: ${cat} (Jan-Des)` : "Pilih kategori untuk melihat perbandingan"; let monthlyData = new Array(12).fill(0); let currentYear = new Date().getFullYear(); if (cat && globalData.recentHistory) { globalData.recentHistory.forEach(tx => { if (tx.category === cat && tx.rawDate) { let d = new Date(tx.rawDate); if (d.getFullYear() === currentYear) monthlyData[d.getMonth()] += tx.amount; } }); } let isDark = document.documentElement.classList.contains('dark'); let labelColor = isDark ? '#cbd5e1' : '#475569'; let ctx = document.getElementById('categoryTrendChart'); if (!ctx) return; if (trendChart) trendChart.destroy(); trendChart = new Chart(ctx.getContext('2d'), { type: 'bar', data: { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'], datasets: [{ data: monthlyData, backgroundColor: '#a855f7', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, layout: { padding: { top: 25 } }, scales: { y: { display: false, beginAtZero: true }, x: { grid: { display: false }, ticks: { font: { weight: 'bold' }, color: labelColor } } }, plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) { return isBalanceMasked ? "Rp ••••••" : "Rp " + c.raw.toLocaleString('id-ID'); } } }, datalabels: { anchor: 'end', align: 'top', formatter: function(value) { if (isBalanceMasked) return value > 0 ? "••••" : ""; if (value === 0) return ""; if (value >= 1000000) return (value/1000000).toFixed(1).replace('.0','') + 'Jt'; if (value >= 1000) return (value/1000).toFixed(0) + 'k'; return value.toLocaleString('id-ID'); }, font: { family: 'Inter', size: 9, weight: 'bold' }, color: labelColor } } } }); }
     
     // LOGIKA FILTER RIWAYAT TRANSAKSI (CASHFLOW, KATEGORI, DAN WAKTU)
     function onCashflowFilterChange() {
