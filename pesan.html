@@ -470,6 +470,94 @@
       color: #64748b !important;
     }
   </style>
+
+  <style id="kp-redesign">
+    /* ====== Redesign: hero 3 perangkat & showcase (aman untuk mode gelap/terang) ====== */
+    .kp-wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+    .kp-hero{position:relative;z-index:1;overflow:hidden;background:#0b1736;color:#fff;border-bottom:1px solid rgba(148,163,184,.15)}
+    .kp-hero:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 88% 8%,rgba(59,130,246,.45),transparent 45%),radial-gradient(circle at 0% 100%,rgba(37,99,235,.35),transparent 50%);pointer-events:none}
+    .kp-hero:after{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.07) 1.2px,transparent 1.2px);background-size:28px 28px;-webkit-mask-image:linear-gradient(180deg,#000,transparent 85%);mask-image:linear-gradient(180deg,#000,transparent 85%);pointer-events:none}
+    .kp-hero .kp-wrap{position:relative;z-index:1;display:grid;grid-template-columns:.92fr 1.08fr;gap:40px;align-items:center;padding-top:56px;padding-bottom:56px}
+    .kp-pill{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:800;letter-spacing:.3px;padding:7px 13px;border-radius:999px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#bfdbfe!important}
+    .kp-pill .material-symbols-outlined{font-size:16px}
+    html.light .kp-hero #hero-status-tag,html:not(.dark) .kp-hero #hero-status-tag{color:#bfdbfe!important;background:transparent!important;border:0!important}
+    .kp-kicker{margin-top:18px;font-size:13px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#93c5fd}
+    .kp-hero h2{font-size:clamp(30px,4.2vw,48px);line-height:1.08;letter-spacing:-1.4px;font-weight:900;margin:10px 0 16px;color:#fff!important}
+    .kp-hero h2 span{background:linear-gradient(90deg,#93c5fd,#60a5fa);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .kp-hero p.kp-lead{font-size:16.5px;line-height:1.65;color:#cbd5e1!important;max-width:520px}
+    .kp-hero p.kp-lead b{color:#fff}
+    .kp-checks{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px;margin:22px 0 28px;max-width:520px}
+    .kp-checks div{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:600;color:#e2e8f0}
+    .kp-checks .material-symbols-outlined{font-size:18px;color:#4ade80}
+    .kp-cta{display:flex;gap:12px;flex-wrap:wrap}
+    .kp-btn{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font-weight:800;font-size:15px;padding:14px 22px;border-radius:14px;transition:.15s}
+    .kp-btn .material-symbols-outlined{font-size:20px}
+    .kp-btn-p{background:linear-gradient(90deg,#10b981,#14b8a6 40%,#2563eb);color:#fff!important;box-shadow:0 10px 24px rgba(16,185,129,.25)}
+    .kp-btn-p:hover{filter:brightness(1.08)}
+    .kp-btn-g{background:rgba(255,255,255,.08);color:#fff!important;border:1px solid rgba(255,255,255,.22)}
+    .kp-btn-g:hover{background:rgba(255,255,255,.14)}
+
+    /* 3 perangkat */
+    .kp-devices{position:relative;width:100%;aspect-ratio:1.42/1}
+    .kp-laptop{position:absolute;left:13%;top:2%;width:84%}
+    .kp-laptop .scr{background:#0b1220;border-radius:14px 14px 0 0;padding:2.2% 2.2% 2.6%;box-shadow:0 30px 60px -10px rgba(2,6,23,.6),inset 0 0 0 1px #334155;position:relative}
+    .kp-laptop .scr:before{content:"";position:absolute;top:.9%;left:50%;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:#334155}
+    .kp-laptop img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;object-position:top;border-radius:4px;background:#f1f5f9}
+    .kp-laptop .base{height:0;padding-bottom:3.2%;background:linear-gradient(180deg,#cbd5e1,#94a3b8);border-radius:0 0 14px 14px;margin:0 -6%;position:relative;box-shadow:0 18px 30px -8px rgba(2,6,23,.6)}
+    .kp-laptop .base:before{content:"";position:absolute;left:50%;top:0;width:16%;margin-left:-8%;height:38%;background:#94a3b8;border-radius:0 0 8px 8px}
+    .kp-tablet{position:absolute;left:0;bottom:0;width:31%;background:#0b1220;border-radius:22px;padding:2.2%;box-shadow:0 30px 50px -12px rgba(2,6,23,.65),inset 0 0 0 1px #334155;z-index:2}
+    .kp-tablet img{display:block;width:100%;aspect-ratio:788/1151;object-fit:cover;object-position:top;border-radius:13px;background:#f1f5f9}
+    .kp-phone{position:absolute;right:2%;bottom:0;width:18.5%;background:#0b1220;border-radius:24px;padding:1.6%;box-shadow:0 30px 50px -12px rgba(2,6,23,.65),inset 0 0 0 1px #334155;z-index:3}
+    .kp-phone img{display:block;width:100%;aspect-ratio:414/896;object-fit:cover;object-position:top;border-radius:19px;background:#f1f5f9}
+    .kp-dev-labels{display:flex;justify-content:center;gap:18px;margin-top:18px;font-size:12.5px;font-weight:700;color:#94a3b8}
+    .kp-dev-labels span{display:flex;align-items:center;gap:6px}
+    .kp-dev-labels .material-symbols-outlined{font-size:17px;color:#60a5fa}
+
+    /* showcase */
+    .kp-show{position:relative;z-index:1;padding:56px 0 8px}
+    .kp-sec-h{text-align:center;max-width:640px;margin:0 auto 30px}
+    .kp-sec-h .kp-eyebrow{font-size:12.5px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:#60a5fa}
+    .kp-sec-h h3{font-size:clamp(24px,3vw,32px);font-weight:900;letter-spacing:-.8px;line-height:1.15;margin:8px 0 10px;color:#f8fafc}
+    .kp-sec-h p{font-size:15px;color:#94a3b8}
+    .kp-shots{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+    .kp-shot{border-radius:24px;padding:22px 18px 20px;background:rgba(15,23,42,.75);border:1px solid #1e293b;text-align:center}
+    .kp-shot .ph{width:72%;margin:0 auto 16px;background:#0b1220;border-radius:26px;padding:6px;box-shadow:0 20px 40px -14px rgba(2,6,23,.7),inset 0 0 0 1px #334155}
+    .kp-shot .ph img{display:block;width:100%;border-radius:21px;aspect-ratio:414/896;object-fit:cover;object-position:top;background:#f1f5f9}
+    .kp-shot b{display:block;font-size:15.5px;color:#f8fafc;margin-bottom:4px}
+    .kp-shot span{font-size:13px;line-height:1.5;color:#94a3b8;display:block}
+    .kp-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:26px}
+    .kp-step{border-radius:20px;padding:18px;background:rgba(15,23,42,.75);border:1px solid #1e293b;display:flex;gap:14px;align-items:flex-start}
+    .kp-step .n{width:36px;height:36px;border-radius:11px;background:#2563eb;color:#fff;font-weight:900;display:grid;place-items:center;flex:none}
+    .kp-step b{display:block;font-size:14.5px;color:#f8fafc}
+    .kp-step span{font-size:12.5px;line-height:1.5;color:#94a3b8}
+    .kp-form-h{max-width:768px;margin:44px auto -6px;padding:0 20px;display:flex;align-items:center;gap:12px}
+    .kp-form-h .ic{width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,#3b82f6,#1d4ed8);display:grid;place-items:center;color:#fff;flex:none}
+    .kp-form-h h3{font-size:22px;font-weight:900;letter-spacing:-.5px;color:#f8fafc}
+    .kp-form-h p{font-size:13px;color:#94a3b8}
+    #pesan-step-1,#public-order-form{scroll-margin-top:90px}
+
+    html.light .kp-sec-h h3,html.light .kp-shot b,html.light .kp-step b,html.light .kp-form-h h3,
+    html:not(.dark) .kp-sec-h h3,html:not(.dark) .kp-shot b,html:not(.dark) .kp-step b,html:not(.dark) .kp-form-h h3{color:#0f172a}
+    html.light .kp-shot,html.light .kp-step,html:not(.dark) .kp-shot,html:not(.dark) .kp-step{background:#fff;border-color:#e2e8f0;box-shadow:0 8px 24px -12px rgba(15,23,42,.12)}
+    html.light .kp-sec-h p,html.light .kp-shot span,html.light .kp-step span,html.light .kp-form-h p,
+    html:not(.dark) .kp-sec-h p,html:not(.dark) .kp-shot span,html:not(.dark) .kp-step span,html:not(.dark) .kp-form-h p{color:#64748b}
+    html.light .kp-sec-h .kp-eyebrow,html:not(.dark) .kp-sec-h .kp-eyebrow{color:#2563eb}
+
+    @media (max-width:960px){
+      .kp-hero .kp-wrap{grid-template-columns:1fr;gap:34px;padding-top:40px;padding-bottom:44px}
+      .kp-shots{grid-template-columns:repeat(2,1fr)}
+      .kp-steps{grid-template-columns:repeat(2,1fr)}
+    }
+    @media (max-width:560px){
+      .kp-checks{grid-template-columns:1fr}
+      .kp-tablet{border-radius:14px}.kp-tablet img{border-radius:8px}
+      .kp-phone{border-radius:15px}.kp-phone img{border-radius:11px}
+      .kp-laptop .scr{border-radius:9px 9px 0 0}
+      .kp-shots{gap:12px}.kp-shot{padding:14px 10px}.kp-shot .ph{width:86%;border-radius:20px;padding:5px}.kp-shot .ph img{border-radius:16px}
+      .kp-steps{grid-template-columns:1fr}
+      .kp-btn{flex:1;justify-content:center;padding:13px 14px;font-size:14.5px}
+    }
+  </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between selection:bg-blue-600 selection:text-white bg-slate-950">
 
@@ -481,7 +569,7 @@
 
   <!-- Header & Brand Bar (High Z-Index & 100% Solid Background) -->
   <header class="pesan-header sticky top-0 z-50 border-b border-slate-800/90 shadow-xl shadow-black/50 px-4 pb-3 sm:pb-3.5">
-    <div class="max-w-3xl mx-auto flex items-center justify-between gap-3">
+    <div class="max-w-6xl mx-auto flex items-center justify-between gap-3">
       <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
         <!-- Logo -->
         <img src="icon-96.png" alt="Logo Keuanganku" class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl shadow-lg shadow-blue-500/20 object-contain shrink-0">
@@ -510,24 +598,67 @@
     </div>
   </header>
 
-  <!-- Main Content Form (Stacking Context normal di bawah header z-50) -->
-  <main class="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 py-5 sm:py-6 space-y-6">
-
-    <!-- Hero Card Banner -->
-    <div class="hero-banner-order p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-blue-950/60 via-slate-900 to-indigo-950/40 border border-blue-500/30 shadow-2xl relative overflow-hidden">
-      <div class="relative z-10 space-y-2">
-        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[11px] font-bold">
-          <span class="material-symbols-outlined text-xs">verified</span>
-          <span id="hero-status-tag">Masa Uji Coba Lisensi (v0.1 BETA)</span>
+  <!-- ===== HERO: 3 PERANGKAT (desain baru) ===== -->
+  <section class="kp-hero">
+    <div class="kp-wrap">
+      <div>
+        <span class="kp-pill"><span class="material-symbols-outlined">verified</span><span id="hero-status-tag">Masa Uji Coba Lisensi (v0.1 BETA)</span></span>
+        <div class="kp-kicker">Formulir Pemesanan Lisensi Resmi</div>
+        <h2>Satu aplikasi keuangan, <span>di HP, tablet &amp; laptop.</span></h2>
+        <p class="kp-lead">Kelola uang pribadi dan usaha Anda dengan rapi, aman di Google Drive Anda sendiri, serta sinkron otomatis di seluruh HP, Tablet, dan Laptop. <b>Sekali beli, bebas pakai selamanya tanpa biaya langganan bulanan!</b></p>
+        <div class="kp-checks">
+          <div><span class="material-symbols-outlined">check_circle</span>Sekali bayar, tanpa langganan</div>
+          <div><span class="material-symbols-outlined">check_circle</span>Data di Google Drive Anda</div>
+          <div><span class="material-symbols-outlined">check_circle</span>Sinkron multi-perangkat</div>
+          <div><span class="material-symbols-outlined">check_circle</span>Tetap bisa dipakai offline</div>
         </div>
-        <h2 class="text-xl sm:text-2xl font-black text-white leading-tight">
-          Formulir Pemesanan Lisensi Resmi Keuanganku PRO
-        </h2>
-        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-2xl">
-          Kelola uang pribadi dan usaha Anda dengan rapi, aman di Google Drive Anda sendiri, serta sinkron otomatis di seluruh HP, Tablet, dan Laptop. <b>Sekali beli, bebas pakai selamanya tanpa biaya langganan bulanan!</b>
-        </p>
+        <div class="kp-cta">
+          <a href="#public-order-form" class="kp-btn kp-btn-p"><span class="material-symbols-outlined">shopping_cart</span>Pesan Sekarang</a>
+          <a href="poster-panduan-penggunaan.html" target="_blank" class="kp-btn kp-btn-g"><span class="material-symbols-outlined">menu_book</span>Lihat Panduan</a>
+        </div>
+      </div>
+      <div>
+        <div class="kp-devices" aria-label="Keuanganku PRO di laptop, tablet, dan HP">
+          <div class="kp-laptop"><div class="scr"><img src="panduan/hero-desktop.jpg" alt="Keuanganku PRO di laptop" width="800" height="500"></div><div class="base"></div></div>
+          <div class="kp-tablet"><img src="panduan/hero-tablet.jpg" alt="Keuanganku PRO di tablet" width="788" height="1151"></div>
+          <div class="kp-phone"><img src="panduan/beranda_akun.jpg" alt="Keuanganku PRO di HP" width="414" height="896"></div>
+        </div>
+        <div class="kp-dev-labels"><span><span class="material-symbols-outlined">laptop_mac</span>Laptop / PC</span><span><span class="material-symbols-outlined">tablet_mac</span>Tablet</span><span><span class="material-symbols-outlined">smartphone</span>Android &amp; iPhone</span></div>
       </div>
     </div>
+  </section>
+
+  <!-- ===== SHOWCASE: tangkapan layar asli ===== -->
+  <section class="kp-show">
+    <div class="kp-wrap">
+      <div class="kp-sec-h">
+        <div class="kp-eyebrow">Tangkapan layar asli</div>
+        <h3>Lihat langsung isi aplikasinya</h3>
+        <p>Semua yang Anda butuhkan untuk mengatur keuangan pribadi, keluarga, dan usaha kecil.</p>
+      </div>
+      <div class="kp-shots">
+        <div class="kp-shot"><div class="ph"><img src="panduan/beranda_akun.jpg" alt="Beranda: saldo semua akun" loading="lazy"></div><b>Saldo semua akun</b><span>Bank, e-wallet &amp; tunai terpantau di satu Beranda.</span></div>
+        <div class="kp-shot"><div class="ph"><img src="panduan/budget.jpg" alt="Monthly Budgeting" loading="lazy"></div><b>Anggaran bulanan</b><span>Batas per pos, sisa anggaran, dan tanda OVER.</span></div>
+        <div class="kp-shot"><div class="ph"><img src="panduan/umroh.jpg" alt="Financial Goals" loading="lazy"></div><b>Target &amp; impian</b><span>Hitung otomatis berapa yang perlu ditabung per bulan.</span></div>
+        <div class="kp-shot"><div class="ph"><img src="panduan/setup_drive.jpg" alt="Database di Google Drive" loading="lazy"></div><b>Data milik Anda</b><span>Tersimpan di Google Drive sendiri, bukan server kami.</span></div>
+      </div>
+      <div class="kp-steps">
+        <div class="kp-step"><div class="n">1</div><div><b>Pilih paket</b><span>Sesuaikan jumlah perangkat yang Anda butuhkan.</span></div></div>
+        <div class="kp-step"><div class="n">2</div><div><b>Isi data &amp; Gmail</b><span>Lisensi dikirim ke alamat Gmail aktif Anda.</span></div></div>
+        <div class="kp-step"><div class="n">3</div><div><b>Transfer tepat</b><span>Sesuai total, termasuk 2 digit kode urutan.</span></div></div>
+        <div class="kp-step"><div class="n">4</div><div><b>Terima lisensi</b><span>Kode lisensi &amp; tautan aktivasi masuk ke Gmail Anda.</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="kp-form-h" id="formulir">
+    <div class="ic"><span class="material-symbols-outlined">edit_document</span></div>
+    <div><h3>Formulir pemesanan</h3><p>Lengkapi 4 langkah di bawah ini. Total transfer dihitung otomatis.</p></div>
+  </div>
+
+
+  <!-- Main Content Form (Stacking Context normal di bawah header z-50) -->
+  <main class="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 py-5 sm:py-6 space-y-6">
 
     <form id="public-order-form" onsubmit="handlePublicOrderSubmit(event)" class="space-y-6">
       <!-- Kolom jebakan anti-robot: disembunyikan dari manusia, jangan diisi -->
