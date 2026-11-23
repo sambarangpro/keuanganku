@@ -1685,13 +1685,17 @@
 
   <!-- STICKY BAR KHUSUS MODE DEMO IKLAN -->
   <div id="demo-mode-sticky-bar" class="hidden fixed top-16 left-0 w-full z-40 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-slate-950 px-4 py-2 text-xs font-bold flex items-center justify-between shadow-md">
-    <div class="flex items-center gap-2">
+    <div class="hidden sm:flex items-center gap-2 min-w-0">
       <span class="material-symbols-outlined text-base animate-pulse">movie</span>
-      <span class="truncate">🎬 Mode Demo Iklan Aktif: Semua Fitur Baru Terbuka • Cloud & Drive Pribadi Terkunci Aman</span>
+      <span class="truncate">🎬 Mode Demo Iklan Aktif • Cloud & Drive Pribadi Terkunci Aman</span>
     </div>
+    <button id="btn-demo-view-toggle" onclick="toggleDemoView()" title="Ganti tampilan akun demo: Pemilik (5 menu) atau Pengguna (3 menu)" class="px-3 py-1 bg-white/90 text-slate-900 hover:bg-white rounded-lg text-[11px] font-extrabold flex items-center gap-1 active:scale-95 transition-all cursor-pointer shrink-0 ml-auto">
+      <span class="material-symbols-outlined text-xs">swap_horiz</span>
+      <span class="hidden sm:inline">Tampilan:</span> <span id="demo-view-label">Pemilik</span>
+    </button>
     <button onclick="restoreUserRealData()" class="px-3 py-1 bg-slate-950 text-amber-300 hover:text-white rounded-lg text-[11px] font-extrabold flex items-center gap-1 active:scale-95 transition-all cursor-pointer shrink-0 ml-2">
       <span class="material-symbols-outlined text-xs text-emerald-400">restart_alt</span>
-      <span>Kembalikan Data Asli</span>
+      <span class="sm:hidden">Data Asli</span><span class="hidden sm:inline">Kembalikan Data Asli</span>
     </button>
   </div>
 
@@ -7973,6 +7977,8 @@ function hideSplashScreenAndTriggerAlerts() {
     
     function isOwnerDevice() {
       // Akun resmi Pemilik / Developer (Muh Akbar & Sambarang) serta Akun Demo Iklan (Showcase Showcase)
+      // Akun Demo Iklan dengan "Tampilan: Pengguna" -> tampil persis seperti pembeli (3 menu)
+      if (isDemoContext() && isDemoBuyerView()) return false;
       let lic = (typeof getSavedLicense === 'function') ? getSavedLicense() : null;
       if (lic) {
         let tok = (lic.token || '').toUpperCase();
@@ -9009,6 +9015,34 @@ function formatReadableSheets(ss, parsed) {
       if (typeof updateByodbUi === 'function') {
         updateByodbUi();
       }
+      updateDemoViewButton();
+    }
+
+    // Akun Demo Iklan bisa ditampilkan seperti Pemilik (5 menu) atau seperti Pengguna/pembeli (3 menu)
+    function isDemoContext() {
+      try {
+        if (localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true') return true;
+        let raw = localStorage.getItem('KEUANGANKU_LICENSE_DATA');
+        let l = raw ? JSON.parse(raw) : null;
+        return !!(l && String(l.token || '').toUpperCase().includes('DEMO-IKLAN'));
+      } catch(e) { return false; }
+    }
+    function isDemoBuyerView() {
+      try { return localStorage.getItem('KEUANGANKU_DEMO_VIEW') === 'buyer'; } catch(e) { return false; }
+    }
+    function updateDemoViewButton() {
+      let lbl = document.getElementById('demo-view-label');
+      if (lbl) lbl.textContent = isDemoBuyerView() ? 'Pengguna (3 menu)' : 'Pemilik (5 menu)';
+    }
+    function toggleDemoView() {
+      let toBuyer = !isDemoBuyerView();
+      try { localStorage.setItem('KEUANGANKU_DEMO_VIEW', toBuyer ? 'buyer' : 'owner'); } catch(e) {}
+      updateDemoViewButton();
+      try { initApp(); } catch(e) { console.warn('initApp (ganti tampilan demo):', e); }
+      try { applyNavigationConfig(); } catch(e) {}
+      navTo('dashboard');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      showSyncToast(toBuyer ? '👤 Tampilan Pengguna: Beranda, Transaksi, Setup' : '👑 Tampilan Pemilik: 5 menu lengkap');
     }
 
     function isDemoLicense(l) {
