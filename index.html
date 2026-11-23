@@ -752,52 +752,44 @@
       #due-date-alert-container > div > div:last-child, #receivable-alert-container > div > div:last-child { flex: 1 1 100%; justify-content: flex-end; }
     }
 
-    /* Kartu rekening (Saldo per Akun) berbentuk DOMPET seperti logo KEUANGANKU:
-       badan dompet berwarna (warna rekening) + tutup/kancing bergaris putih di sisi kanan dengan titik pengait */
+    /* Kartu rekening (Saldo per Akun): kartu putih, garis warna rekening di atas, ikon dompet.
+       Kartu bisa ditekan (langsung ke Transaksi dengan rekening ini terpilih) + tombol salin nomor rekening */
     .acc-card {
-      --acc-deep: color-mix(in oklab, var(--acc-color) 62%, #0b1220);
-      --acc-mid: color-mix(in oklab, var(--acc-color) 84%, #0b1220);
-      position: relative; isolation: isolate; overflow: hidden;
-      display: flex; flex-direction: column; gap: 9px; min-height: 128px;
-      padding: 14px 14px 12px; border-radius: 18px; color: #fff;
-      background:
-        radial-gradient(120% 90% at 0% 0%, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0) 55%),
-        linear-gradient(145deg, var(--acc-mid) 0%, var(--acc-deep) 100%);
-      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.10) inset, 0 10px 22px -14px var(--acc-deep);
-      transition: box-shadow .25s var(--ui-ease), transform .25s var(--ui-ease);
+      position: relative; display: flex; flex-direction: column; gap: 10px; min-height: 118px;
+      padding: 14px; border-radius: 16px; background: var(--ui-card); border: 1px solid var(--ui-border);
+      box-shadow: var(--ui-shadow); transition: box-shadow .25s var(--ui-ease), transform .25s var(--ui-ease), border-color .25s var(--ui-ease);
+      overflow: hidden; cursor: pointer; text-align: left; -webkit-tap-highlight-color: transparent;
     }
-    /* Garis badan dompet (tipis, di dalam tepi kartu) */
-    .acc-card::before {
-      content: ""; position: absolute; inset: 6px; border-radius: 13px; pointer-events: none; z-index: -1;
-      border: 1px solid rgba(255, 255, 255, 0.14);
+    .acc-card::before { content: ""; position: absolute; left: 0; top: 0; right: 0; height: 3px; background: var(--acc-color); opacity: .9; }
+    .acc-card:active { transform: scale(0.98); }
+    .acc-card:focus-visible { outline: 2px solid var(--acc-color) !important; outline-offset: 2px; }
+    @media (hover: hover) { .acc-card:hover { box-shadow: var(--ui-shadow-hover); transform: translateY(-2px); border-color: var(--ui-border-strong); } }
+    .acc-card-top { display: flex; align-items: flex-start; gap: 10px; min-width: 0; }
+    .acc-card-icon { width: 34px; height: 34px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; background: color-mix(in srgb, var(--acc-color) 14%, transparent); color: var(--acc-color); }
+    .acc-card-icon .material-symbols-outlined { font-size: 19px; }
+    .acc-card-name { font-size: 13px; font-weight: 650; color: var(--ui-text); line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; }
+    .acc-card-bank { font-size: 11px; color: var(--ui-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .acc-card-balance { margin-top: auto; font-size: 17px; font-weight: 700; color: var(--ui-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .acc-card-balance.is-negative { color: #e11d48; }
+    .acc-card-meta { display: flex; align-items: center; gap: 4px; min-width: 0; font-size: 10.5px; color: var(--ui-muted); white-space: nowrap; }
+    .acc-card-meta .acc-no { font-variant-numeric: tabular-nums; flex-shrink: 0; color: var(--ui-text); font-weight: 500; }
+    .acc-card-meta .acc-owner { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+    .acc-copy-btn {
+      flex-shrink: 0; width: 22px; height: 22px; margin: -4px 0; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center;
+      color: var(--ui-muted); background: transparent; border: 0; cursor: pointer; transition: background-color .15s ease, color .15s ease;
     }
-    /* Tutup dompet: kotak bergaris putih yang menyeberangi tepi kanan, dengan titik pengait */
-    .acc-card-flap {
-      position: absolute; top: 13px; right: -12px; width: 50px; height: 36px; border-radius: 11px;
-      border: 1.5px solid rgba(255, 255, 255, 0.62); background: rgba(255, 255, 255, 0.14);
-      display: flex; align-items: center; justify-content: flex-start; padding-left: 12px;
-      transition: transform .25s var(--ui-ease), background-color .25s var(--ui-ease);
-    }
-    .acc-card-flap::after { content: ""; width: 7px; height: 7px; border-radius: 999px; background: #fff; }
-    @media (hover: hover) {
-      .acc-card:hover { transform: translateY(-2px); box-shadow: 0 1px 0 rgba(255, 255, 255, 0.10) inset, 0 16px 28px -14px var(--acc-deep); }
-      .acc-card:hover .acc-card-flap { transform: translateX(-3px); background: rgba(255, 255, 255, 0.22); }
-    }
-    .acc-card-top { display: flex; align-items: flex-start; gap: 10px; min-width: 0; padding-right: 42px; }
-    .acc-card-name { font-size: 13px; font-weight: 650; color: #fff; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; }
-    .acc-card-bank { font-size: 11px; color: rgba(255, 255, 255, 0.72); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .acc-card-balance { margin-top: auto; font-size: 17px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .acc-card-balance.is-negative { color: #fecdd3; }
-    .acc-card-meta { font-size: 10.5px; color: rgba(255, 255, 255, 0.70); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-top: 7px; border-top: 1px solid rgba(255, 255, 255, 0.16); }
-    @media (max-width: 400px) { .acc-card { padding: 12px 12px 11px; min-height: 120px; } .acc-card-balance { font-size: 15px; } .acc-card-flap { width: 44px; height: 32px; padding-left: 10px; } }
+    .acc-copy-btn .material-symbols-outlined { font-size: 14px; }
+    .acc-copy-btn:hover { background: var(--ui-card-2); color: var(--acc-color); }
+    .acc-copy-btn.is-copied { color: #059669; }
+    @media (max-width: 400px) { .acc-card { padding: 12px; } .acc-card-balance { font-size: 15px; } .acc-card-icon { width: 30px; height: 30px; } }
     /* Kartu utama (hero) Beranda */
     .hero-balance-card {
       background: radial-gradient(120% 140% at 100% 0%, #3b82f6 0%, rgba(59,130,246,0) 55%), linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 55%, #2563eb 100%) !important;
       box-shadow: 0 12px 30px -12px rgba(29, 78, 216, 0.55) !important;
     }
     /* Logo KEUANGANKU bergaris: satu logo utuh, tebal garis rata, di sisi kanan kartu */
-    .hero-logo-mark { right: 26px; top: 24px; width: 104px; height: 99px; opacity: .2; }
-    @media (max-width: 639px) { .hero-logo-mark { right: 20px; top: 22px; width: 68px; height: 65px; } }
+    .hero-logo-mark { right: -4px; bottom: -22px; width: 210px; height: 200px; opacity: .22; }
+    @media (max-width: 639px) { .hero-logo-mark { right: -2px; bottom: -18px; width: 146px; height: 139px; } }
     html.dark .hero-balance-card { background: radial-gradient(120% 140% at 100% 0%, rgba(59,130,246,.55) 0%, rgba(59,130,246,0) 55%), linear-gradient(135deg, #0b1f4d 0%, #142c6b 60%, #1d3f91 100%) !important; box-shadow: 0 12px 30px -14px rgba(0,0,0,.8) !important; }
 
     /* Kartu fitur pemilik (Ketahanan Kas & Zakat): latar gelap yang sama, tenang, tanpa cahaya buram */
@@ -2007,15 +1999,28 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 items-stretch">
         <section class="hero-balance-card text-white p-6 sm:p-7 rounded-3xl flex flex-col justify-between relative overflow-hidden min-h-[190px]">
           <!-- Logo KEUANGANKU (garis tipis) sebagai hiasan latar -->
-          <svg class="hero-logo-mark absolute pointer-events-none" viewBox="128 133 259 246" aria-hidden="true">
-            <g fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M 355 206 L 355 185 A 40 40 0 0 0 315 145 L 180 145 A 40 40 0 0 0 140 185 L 140 327 A 40 40 0 0 0 180 367 L 315 367 A 40 40 0 0 0 355 327 L 355 306" stroke-width="5"/>
-              <rect x="260" y="206" width="115" height="100" rx="26" stroke-width="5"/>
-              <circle cx="317.5" cy="256" r="11" fill="#fff" stroke="none"/>
-            </g>
+          <!-- Logo KEUANGANKU sebagai garis ganda (tepi luar & tepi dalam dari garis logo yang tebal) -->
+          <svg class="hero-logo-mark absolute pointer-events-none" viewBox="118 123 279 266" aria-hidden="true">
+            <defs>
+              <mask id="kk-logo-outline-mask" maskUnits="userSpaceOnUse" x="118" y="123" width="279" height="266">
+                <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <g stroke="#fff" stroke-width="30">
+                    <path d="M 355 206 L 355 185 A 40 40 0 0 0 315 145 L 180 145 A 40 40 0 0 0 140 185 L 140 327 A 40 40 0 0 0 180 367 L 315 367 A 40 40 0 0 0 355 327 L 355 306"/>
+                    <rect x="260" y="206" width="115" height="100" rx="26"/>
+                  </g>
+                  <g stroke="#000" stroke-width="25">
+                    <path d="M 355 206 L 355 185 A 40 40 0 0 0 315 145 L 180 145 A 40 40 0 0 0 140 185 L 140 327 A 40 40 0 0 0 180 367 L 315 367 A 40 40 0 0 0 355 327 L 355 306"/>
+                    <rect x="260" y="206" width="115" height="100" rx="26"/>
+                  </g>
+                </g>
+                <circle cx="317.5" cy="256" r="15" fill="#fff"/>
+                <circle cx="317.5" cy="256" r="12.5" fill="#000"/>
+              </mask>
+            </defs>
+            <rect x="118" y="123" width="279" height="266" fill="#fff" mask="url(#kk-logo-outline-mask)"/>
           </svg>
           <div class="relative">
-            <div class="flex flex-wrap items-center gap-x-2 gap-y-1 pr-20 sm:pr-28">
+            <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
               <p class="text-[13px] font-medium text-white/80">Total Aset & Tabungan</p>
               <span class="bg-white/15 text-white/90 text-[10.5px] font-semibold px-2 py-0.5 rounded-full ring-1 ring-inset ring-white/20">Hanya uang kas</span>
             </div>
@@ -9313,6 +9318,61 @@ function formatReadableSheets(ss, parsed) {
       showSyncToast(toBuyer ? '👤 Tampilan Pengguna: Beranda, Transaksi, Setup' : '👑 Tampilan Pemilik: 5 menu lengkap');
     }
 
+    // ===== Kartu rekening di Beranda: salin nomor rekening & catat transaksi untuk rekening itu =====
+    function copyAccountNumber(btn, accNo) {
+      let text = String(accNo || '').trim();
+      if (!text) return;
+      const done = () => {
+        try {
+          if (btn) {
+            btn.classList.add('is-copied');
+            let ic = btn.querySelector('.material-symbols-outlined');
+            if (ic) ic.textContent = 'check';
+            setTimeout(() => { btn.classList.remove('is-copied'); if (ic) ic.textContent = 'content_copy'; }, 1600);
+          }
+          showSyncToast('📋 Nomor rekening disalin: ' + text);
+        } catch(e) {}
+      };
+      const fallback = () => {
+        try {
+          let ta = document.createElement('textarea');
+          ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+          document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+          done();
+        } catch(e) { alert('Nomor rekening: ' + text); }
+      };
+      if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done).catch(fallback);
+      else fallback();
+    }
+
+    // Rekening pilihan dari kartu Beranda. Diisikan otomatis begitu jenis transaksi dipilih:
+    // Pemasukan / Pelunasan / Transfer -> "Ke Akun"; Pengeluaran / Bayar / Tabungan dll -> "Dari Akun".
+    window.__txPreferredAccount = null;
+    function openTxForAccount(acc) {
+      window.__txPreferredAccount = acc || null;
+      navTo('transaksi');
+      setTimeout(() => {
+        try {
+          let cf = document.getElementById('tx-cashflow');
+          if (cf) { cf.scrollIntoView({ behavior: 'smooth', block: 'center' }); if (!cf.value) cf.focus({ preventScroll: true }); }
+        } catch(e) {}
+      }, 250);
+      showSyncToast('💳 Rekening "' + acc + '" dipilih. Tinggal pilih jenis transaksi.');
+    }
+    function applyPreferredTxAccount() {
+      try {
+        let acc = window.__txPreferredAccount;
+        if (!acc) return;
+        let cf = (document.getElementById('tx-cashflow') || {}).value || '';
+        let dari = document.getElementById('tx-dari'), ke = document.getElementById('tx-ke');
+        const canUse = sel => sel && !sel.disabled && Array.from(sel.options).some(o => o.value === acc);
+        let target = null;
+        if (cf === 'Transfer' || (dari && dari.disabled)) target = canUse(ke) ? ke : null;
+        else target = canUse(dari) ? dari : (canUse(ke) ? ke : null);
+        if (target) target.value = acc;
+      } catch(e) { console.warn('applyPreferredTxAccount:', e); }
+    }
+
     // Rapikan judul kartu peringatan: buang emoji di depan & ubah HURUF KAPITAL SEMUA jadi huruf biasa
     function tidyAlertTitles(root) {
       try {
@@ -9742,6 +9802,8 @@ function formatReadableSheets(ss, parsed) {
     }
 
     function navTo(page) {
+      // Rekening pilihan dari kartu Beranda hanya berlaku selama di halaman Transaksi
+      if (page !== 'transaksi') window.__txPreferredAccount = null;
       // Pengganti tombol "Simpan Perubahan": saat keluar dari halaman Setup, simpan sekali lagi (pengaman)
       try {
         let setupEl = document.getElementById('page-setup');
@@ -12965,19 +13027,28 @@ function formatReadableSheets(ss, parsed) {
           let accSafe = escapeHtml(acc);
           let accNoTxt = (dt.accNo && dt.accNo !== '-') ? escapeHtml(dt.accNo) : '';
           let ownerTxt = (dt.owner && dt.owner !== '-') ? escapeHtml(dt.owner) : '';
-          let metaTxt = [accNoTxt, ownerTxt].filter(Boolean).join(' · ');
           let bankTxt = (dt.bankName && dt.bankName !== acc) ? escapeHtml(dt.bankName) : '';
+          let accAttr = escapeForAttr(acc);
+          let metaHtml = '';
+          if (accNoTxt || ownerTxt) {
+            metaHtml = `<p class="acc-card-meta">`
+              + (accNoTxt ? `<span class="acc-no">${accNoTxt}</span><button type="button" class="acc-copy-btn" onclick="event.stopPropagation(); copyAccountNumber(this, '${escapeForAttr(dt.accNo)}')" title="Salin nomor rekening" aria-label="Salin nomor rekening ${accSafe}"><span class="material-symbols-outlined">content_copy</span></button>` : '')
+              + (accNoTxt && ownerTxt ? `<span aria-hidden="true">·</span>` : '')
+              + (ownerTxt ? `<span class="acc-owner">${ownerTxt}</span>` : '')
+              + `</p>`;
+          }
           grid.innerHTML += `
-            <div class="acc-card" style="--acc-color: ${color};" title="${accSafe}">
-              <span class="acc-card-flap" aria-hidden="true"></span>
+            <div class="acc-card" style="--acc-color: ${color};" role="button" tabindex="0" title="Catat transaksi untuk ${accSafe}"
+                 onclick="openTxForAccount('${accAttr}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openTxForAccount('${accAttr}');}">
               <div class="acc-card-top">
+                <span class="acc-card-icon"><span class="material-symbols-outlined">account_balance_wallet</span></span>
                 <div class="min-w-0 flex-1">
                   <p class="acc-card-name">${accSafe}</p>
                   ${bankTxt ? `<p class="acc-card-bank">${bankTxt}</p>` : ''}
                 </div>
               </div>
               <p class="acc-card-balance font-mono-data${bal < 0 ? ' is-negative' : ''}">${formatRp(bal)}</p>
-              ${metaTxt ? `<p class="acc-card-meta">${metaTxt}</p>` : ''}
+              ${metaHtml}
             </div>`;
         }); 
 
@@ -13517,7 +13588,9 @@ function formatReadableSheets(ss, parsed) {
     }
 
     function populateFormDropdowns() { let adminAcc = document.getElementById('tx-admin-account'); if (adminAcc && globalData.accounts) { adminAcc.innerHTML = `<option value="">Sama dengan Dari Account</option>`; globalData.accounts.forEach(a => { adminAcc.innerHTML += `<option value="${a}">${a}</option>`; }); } }
-    function applyCashflowLogic() { let cf = document.getElementById('tx-cashflow').value; let catSelect = document.getElementById('tx-category'); let dariSelect = document.getElementById('tx-dari'); let keSelect = document.getElementById('tx-ke'); catSelect.innerHTML = '<option value="- not applicable -" selected>- not applicable -</option>'; dariSelect.innerHTML = '<option value="- not applicable -" selected>- not applicable -</option>'; keSelect.innerHTML = '<option value="- not applicable -" selected>- not applicable -</option>'; catSelect.disabled = false; dariSelect.disabled = false; keSelect.disabled = false; if (cf === 'Income') { dariSelect.disabled = true; fillOptions(catSelect, globalData.incomes); fillOptions(keSelect, globalData.accounts); } else if (cf === 'Pelunasan Piutang') { dariSelect.disabled = true; fillOptions(catSelect, Object.keys(globalData.receivablesData || {})); fillOptions(keSelect, globalData.accounts); } else if (cf === 'Cicilan / Utang Baru') { dariSelect.disabled = true; let allPeople = Object.keys(globalData.receivablesData || {}).concat(Object.keys(globalData.debtData || {})); fillOptions(catSelect, [...new Set(allPeople)]); fillOptions(keSelect, globalData.accounts); } else if (cf === 'Spending') { keSelect.disabled = true; fillOptions(catSelect, globalData.spendings); fillOptions(dariSelect, globalData.accounts); } else if (cf === 'Bayar Cicilan / Utang') { keSelect.disabled = true; let debtKeys = Object.keys(globalData.debtData || {}).concat(globalData.bills || []); fillOptions(catSelect, debtKeys); fillOptions(dariSelect, globalData.accounts); } else if (cf === 'Piutang Baru') { keSelect.disabled = true; fillOptions(catSelect, Object.keys(globalData.receivablesData || {})); fillOptions(dariSelect, globalData.accounts); } else if (cf === 'Transfer') { catSelect.disabled = true; fillOptions(dariSelect, globalData.accounts); fillOptions(keSelect, globalData.accounts); } else if (cf === 'Invest / Savings') { fillOptions(catSelect, Object.keys(globalData.investData || {})); fillOptions(dariSelect, globalData.accounts); fillOptions(keSelect, globalData.accounts); } else if (cf === 'Financial Goals') { fillOptions(catSelect, Object.keys(globalData.goalsData || {})); fillOptions(dariSelect, globalData.accounts); fillOptions(keSelect, globalData.accounts); } else if (cf === 'Dari Asset / Saving') { let combined = Object.keys(globalData.sinkingData || {}).concat(Object.keys(globalData.investData || {})); fillOptions(catSelect, combined); fillOptions(dariSelect, globalData.accounts); fillOptions(keSelect, globalData.accounts); } }
+    // Setelah daftar kolom diisi ulang, pilih otomatis rekening dari kartu yang ditekan di Beranda
+    function applyCashflowLogic() { try { __applyCashflowLogicBase(); } finally { applyPreferredTxAccount(); } }
+    function __applyCashflowLogicBase() { let cf = document.getElementById('tx-cashflow').value; let catSelect = document.getElementById('tx-category'); let dariSelect = document.getElementById('tx-dari'); let keSelect = document.getElementById('tx-ke'); catSelect.innerHTML = '<option value="- not applicable -" selected>- not applicable -</option>'; dariSelect.innerHTML = '<option value="- not applicable -" selected>- not applicable -</option>'; keSelect.innerHTML = '<option value="- not applicable -" selected>- not applicable -</option>'; catSelect.disabled = false; dariSelect.disabled = false; keSelect.disabled = false; if (cf === 'Income') { dariSelect.disabled = true; fillOptions(catSelect, globalData.incomes); fillOptions(keSelect, globalData.accounts); } else if (cf === 'Pelunasan Piutang') { dariSelect.disabled = true; fillOptions(catSelect, Object.keys(globalData.receivablesData || {})); fillOptions(keSelect, globalData.accounts); } else if (cf === 'Cicilan / Utang Baru') { dariSelect.disabled = true; let allPeople = Object.keys(globalData.receivablesData || {}).concat(Object.keys(globalData.debtData || {})); fillOptions(catSelect, [...new Set(allPeople)]); fillOptions(keSelect, globalData.accounts); } else if (cf === 'Spending') { keSelect.disabled = true; fillOptions(catSelect, globalData.spendings); fillOptions(dariSelect, globalData.accounts); } else if (cf === 'Bayar Cicilan / Utang') { keSelect.disabled = true; let debtKeys = Object.keys(globalData.debtData || {}).concat(globalData.bills || []); fillOptions(catSelect, debtKeys); fillOptions(dariSelect, globalData.accounts); } else if (cf === 'Piutang Baru') { keSelect.disabled = true; fillOptions(catSelect, Object.keys(globalData.receivablesData || {})); fillOptions(dariSelect, globalData.accounts); } else if (cf === 'Transfer') { catSelect.disabled = true; fillOptions(dariSelect, globalData.accounts); fillOptions(keSelect, globalData.accounts); } else if (cf === 'Invest / Savings') { fillOptions(catSelect, Object.keys(globalData.investData || {})); fillOptions(dariSelect, globalData.accounts); fillOptions(keSelect, globalData.accounts); } else if (cf === 'Financial Goals') { fillOptions(catSelect, Object.keys(globalData.goalsData || {})); fillOptions(dariSelect, globalData.accounts); fillOptions(keSelect, globalData.accounts); } else if (cf === 'Dari Asset / Saving') { let combined = Object.keys(globalData.sinkingData || {}).concat(Object.keys(globalData.investData || {})); fillOptions(catSelect, combined); fillOptions(dariSelect, globalData.accounts); fillOptions(keSelect, globalData.accounts); } }
     function fillOptions(selectElem, arr) { if (!arr || arr.length === 0) return; selectElem.innerHTML = ''; arr.forEach(item => { selectElem.innerHTML += `<option value="${item}">${item}</option>`; }); }
     let pendingAttachments = [];
     let editPendingAttachments = [];
@@ -13887,9 +13960,10 @@ function formatReadableSheets(ss, parsed) {
       renderTxFilesPreview();
       let dateInput = document.getElementById('tx-date'); 
       if (dateInput) dateInput.value = getLocalDateStr(); 
-      applyCashflowLogic(); 
-      playSuccessSound(); 
-      showSuccessModal(mainTx, adminAdded, dAdminFee); 
+      window.__txPreferredAccount = null; // rekening pilihan dari kartu Beranda hanya untuk 1 transaksi
+      applyCashflowLogic();
+      playSuccessSound();
+      showSuccessModal(mainTx, adminAdded, dAdminFee);
     }
     
     function renderHistoryTable() { 
