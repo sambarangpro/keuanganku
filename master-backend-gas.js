@@ -60,6 +60,23 @@ function hasPriorityQuota_(tok) {
   return isOwnerToken_(tok) || normalizeToken_(tok) === normalizeToken_(DEMO_TOKEN);
 }
 
+/** Akun Demo Iklan (token publik untuk promosi). */
+function isDemoToken_(tok) {
+  return !!normalizeToken_(tok) && normalizeToken_(tok) === normalizeToken_(DEMO_TOKEN);
+}
+
+/**
+ * Akun Demo Iklan dipakai bersama: barisnya TIDAK BOLEH menyimpan email Google, Spreadsheet ID,
+ * atau alamat Cloud milik siapa pun. Dibersihkan otomatis setiap kali token demo dipakai.
+ */
+function scrubDemoRow_(sheet, rowNum, colMap, row) {
+  ["buyerEmail", "spreadsheetId", "cloudUrl"].forEach(function(k) {
+    var c = colMap[k];
+    if (c === undefined || !row || !row[c]) return;
+    try { sheet.getRange(rowNum, c + 1).setValue(""); row[c] = ""; } catch(e) {}
+  });
+}
+
 function isOwnerEmail_(email) {
   var e = String(email || "").trim().toLowerCase();
   if (!e) return false;
@@ -982,6 +999,8 @@ function validateClientToken(params) {
 
     if (rowToken === tokenInput || (cleanInputToken && cleanRowToken === cleanInputToken)) {
       tokenInput = rowToken; // Gunakan format resmi canonical (dengan tanda strip)
+      var isDemoTok = isDemoToken_(tokenInput);
+      if (isDemoTok) scrubDemoRow_(sheet, i + 1, colMap, data[i]);
       var buyerName = data[i][colMap.buyerName] || "";
       var maxDevices = parseInt(data[i][colMap.maxDevices]) || 3;
       if (maxDevices < 3) maxDevices = 3; // Standar lisensi resmi Keuanganku PRO Multi-Device minimal 3 perangkat
@@ -1112,7 +1131,7 @@ function validateClientToken(params) {
       }
 
       var currentCloudUrl = (colMap.cloudUrl !== undefined && data[i][colMap.cloudUrl]) ? stripCloudKey_(data[i][colMap.cloudUrl]) : "";
-      if (params.cloudUrl && colMap.cloudUrl !== undefined && shouldReplaceCloudUrl_(currentCloudUrl, params.cloudUrl)) {
+      if (!isDemoTok && params.cloudUrl && colMap.cloudUrl !== undefined && shouldReplaceCloudUrl_(currentCloudUrl, params.cloudUrl)) {
         currentCloudUrl = stripCloudKey_(params.cloudUrl);
         sheet.getRange(i + 1, colMap.cloudUrl + 1).setValue(currentCloudUrl);
       }
@@ -1120,8 +1139,9 @@ function validateClientToken(params) {
       // -------------------------------------------------------------
       // BYODb: PENGUNCIAN & TAUTAN AKUN GOOGLE (EMAIL BINDING)
       // Email hanya dipercaya jika sudah diverifikasi langsung ke Google (googleAccessToken).
+      // Akun Demo Iklan tidak pernah ditautkan ke akun Google siapa pun.
       // -------------------------------------------------------------
-      var inputEmail = params.googleAccessToken ? getVerifiedGoogleEmail_(params.googleAccessToken) : "";
+      var inputEmail = (!isDemoTok && params.googleAccessToken) ? getVerifiedGoogleEmail_(params.googleAccessToken) : "";
       var boundEmail = (colMap.buyerEmail !== undefined && data[i][colMap.buyerEmail]) ? String(data[i][colMap.buyerEmail]).trim().toLowerCase() : "";
       var isOwnerToken = isOwnerToken_(tokenInput);
 
@@ -1145,7 +1165,7 @@ function validateClientToken(params) {
 
       // Simpan Spreadsheet ID jika dikirimkan oleh klien
       var currentSpreadsheetId = (colMap.spreadsheetId !== undefined && data[i][colMap.spreadsheetId]) ? String(data[i][colMap.spreadsheetId]).trim() : "";
-      if (params.spreadsheetId && colMap.spreadsheetId !== undefined) {
+      if (!isDemoTok && params.spreadsheetId && colMap.spreadsheetId !== undefined) {
         var newSheetId = String(params.spreadsheetId).trim();
         // Hanya ID Google Sheet yang sah (cegah rumus/teks asing masuk ke sheet Tokens)
         if (newSheetId && /^[A-Za-z0-9_-]{20,100}$/.test(newSheetId) && newSheetId !== currentSpreadsheetId) {
@@ -1513,16 +1533,19 @@ function authorizePairSession(params) {
 
   logEvent("PAIR_SESSION_AUTHORIZED", tokenInput, buyerName, targetDeviceId, targetDeviceName, "Perangkat berhasil ditautkan via Scan HP WhatsApp Style");
 
+  var isDemoPair = isDemoToken_(tokenInput);
+  if (isDemoPair) scrubDemoRow_(sheet, foundRow, colMap, data[foundRow - 1]);
   var currentCloudUrl = (colMap.cloudUrl !== undefined && data[foundRow - 1][colMap.cloudUrl]) ? stripCloudKey_(data[foundRow - 1][colMap.cloudUrl]) : "";
-  if (params.cloudUrl && colMap.cloudUrl !== undefined && shouldReplaceCloudUrl_(currentCloudUrl, params.cloudUrl)) {
+  if (!isDemoPair && params.cloudUrl && colMap.cloudUrl !== undefined && shouldReplaceCloudUrl_(currentCloudUrl, params.cloudUrl)) {
     currentCloudUrl = stripCloudKey_(params.cloudUrl);
     sheet.getRange(foundRow, colMap.cloudUrl + 1).setValue(currentCloudUrl);
   }
 
   // URL Cloud BERKUNCI dari HP utama hanya dititipkan SEMENTARA di sesi barcode (maks. 5 menit,
   // dihapus setelah dibaca perangkat baru) dan TIDAK disimpan di sheet Tokens.
-  var keyedCloudForPairing = String(params.cloudUrl || "").trim();
-  if (keyedCloudForPairing.indexOf("https://script.google.com/") !== 0) keyedCloudForPairing = currentCloudUrl;
+  // Akun Demo Iklan tidak pernah menitipkan alamat Cloud.
+  var keyedCloudForPairing = isDemoPair ? "" : String(params.cloudUrl || "").trim();
+  if (!isDemoPair && keyedCloudForPairing.indexOf("https://script.google.com/") !== 0) keyedCloudForPairing = currentCloudUrl;
 
   // Update session di cache Google Apps Script agar PC/iPad langsung otomatis login
   sessionObj.status = "AUTHORIZED";
@@ -1669,15 +1692,17 @@ function verifyClientStatus(params) {
         return { success: true, active: false, reason: "DEVICE_REMOVED", message: "Perangkat ini belum/tidak lagi terdaftar di lisensi. Silakan masuk ulang dengan Token + PIN." };
       }
 
+      var isDemoTok = isDemoToken_(tokenInput);
+      if (isDemoTok) scrubDemoRow_(sheet, i + 1, colMap, data[i]);
       var currentCloudUrl = (colMap.cloudUrl !== undefined && data[i][colMap.cloudUrl]) ? stripCloudKey_(data[i][colMap.cloudUrl]) : "";
-      if (params.cloudUrl && colMap.cloudUrl !== undefined && shouldReplaceCloudUrl_(currentCloudUrl, params.cloudUrl)) {
+      if (!isDemoTok && params.cloudUrl && colMap.cloudUrl !== undefined && shouldReplaceCloudUrl_(currentCloudUrl, params.cloudUrl)) {
         currentCloudUrl = stripCloudKey_(params.cloudUrl);
         sheet.getRange(i + 1, colMap.cloudUrl + 1).setValue(currentCloudUrl);
       }
 
-      return { 
-        success: true, 
-        active: true, 
+      return {
+        success: true,
+        active: true,
         buyerName: data[i][colMap.buyerName],
         pinStatus: pinStatus,
         isPasswordChanged: (pinStatus === "PIN_CHANGED"),
@@ -3464,6 +3489,9 @@ function verifyGoogleAccount(params) {
     // Kontak pembeli bisa berisi "0812xxxx | email@gmail.com" -> cocokkan email secara PERSIS per bagian
     var contactEmails = contactVal.split(/[|,;\s]+/).map(function(s) { return s.trim(); }).filter(function(s) { return s.indexOf("@") > 0; });
 
+    // Akun Demo Iklan tidak pernah dicocokkan dengan akun Google siapa pun
+    if (isDemoToken_(rowToken)) continue;
+
     var isMatch = false;
     if (boundEmail && boundEmail === emailInput) {
       isMatch = true;
@@ -3617,6 +3645,9 @@ function bindGoogleAccount(params) {
 
     if (rowToken === tokenInput || (cleanInputToken && cleanRowToken === cleanInputToken)) {
       tokenInput = rowToken;
+      if (isDemoToken_(rowToken)) {
+        return { success: false, message: "Akun Demo Iklan tidak bisa ditautkan ke akun Google. Gunakan lisensi Anda sendiri." };
+      }
       var buyerName = String(data[i][colMap.buyerName] || "");
       var boundEmail = (colMap.buyerEmail !== undefined && data[i][colMap.buyerEmail]) ? String(data[i][colMap.buyerEmail]).trim().toLowerCase() : "";
 
@@ -3713,6 +3744,9 @@ function saveSpreadsheetId(params) {
     if (tokenInput && tokensMatch_(rowToken, tokenInput)) isMatch = true;
     else if (!tokenInput && verifiedEmail && boundEmail === verifiedEmail) isMatch = true;
 
+    if (isMatch && isDemoToken_(rowToken)) {
+      return { success: false, message: "Akun Demo Iklan tidak menyimpan Spreadsheet ID." };
+    }
     if (isMatch) {
       // Hanya pemilik sah: perangkat terdaftar ATAU akun Google terverifikasi yang tertaut ke token ini
       var ssDevices = parseDevices_(data[i][colMap.usedDevices]);

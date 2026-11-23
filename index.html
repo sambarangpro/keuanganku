@@ -6488,6 +6488,14 @@ function hideSplashScreenAndTriggerAlerts() {
       }
       updateThemeIcon();
       loadStorageData();
+      // Perbaikan: perangkat yang dulu masuk Akun Demo Iklan tetapi masih menampilkan data pribadi
+      // -> cadangkan data pribadi & pindah ke data contoh (dipulihkan lewat "Kembalikan Data Asli")
+      try {
+        if (isDemoLicense(getSavedLicense()) && localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') !== 'true') {
+          activateShowcaseDemoData(true);
+          setTimeout(() => alert("🎬 AKUN DEMO IKLAN\n\nPerangkat ini masuk dengan Akun Demo Iklan, tetapi sebelumnya masih menampilkan data pribadi Anda.\n\nSekarang yang tampil adalah DATA CONTOH. Data pribadi Anda sudah disimpan aman di perangkat ini.\nUntuk kembali, tekan \"Kembalikan Data Asli\" di bilah oranye bagian atas."), 1500);
+        }
+      } catch(eDemoFix) { console.warn('Perbaikan mode demo:', eDemoFix); }
       checkAppLicenseOnStartup();
       if (typeof applyNavigationConfig === "function") applyNavigationConfig();
       if (typeof updateByodbUi === 'function') updateByodbUi();
@@ -7093,6 +7101,26 @@ function hideSplashScreenAndTriggerAlerts() {
             }
           }
 
+          if (res.success && res.data && isDemoLicense(res.data)) {
+            // AKUN DEMO IKLAN: selalu pakai data contoh terpisah. Data pribadi, akun Google & lisensi asli
+            // disimpan dulu di perangkat (dipulihkan lewat "Kembalikan Data Asli"), dan sinkron Cloud/Drive dijeda.
+            // (Dulu data contoh hanya dipasang bila perangkat kosong -> akun demo menampilkan data pribadi.)
+            activateShowcaseDemoData(true);
+            saveLicenseData(Object.assign({}, res.data, { email: '', spreadsheetId: '', cloudUrl: '' }));
+            sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
+            playSuccessSound();
+            showSyncToast("🎬 Akun Demo Iklan Aktif!");
+            hideSplashScreenAndTriggerAlerts();
+            let demoLic = getSavedLicense() || res.data;
+            updateSetupLicenseDisplay(demoLic);
+            updateTokenSecurityBanner(demoLic);
+            updateCloudSyncLockUI(demoLic);
+            renderSetupPasswordCard(demoLic);
+            updateDemoModeUI();
+            alert("🎬 AKUN DEMO IKLAN AKTIF\n\nYang tampil sekarang adalah DATA CONTOH, bukan data pribadi Anda.\nSinkron Cloud & Google Drive dijeda selama mode demo.\n\nData pribadi Anda tersimpan aman di perangkat ini. Untuk kembali, tekan tombol \"Kembalikan Data Asli\" di bilah oranye bagian atas.");
+            return;
+          }
+
           if (res.success && res.data) {
             // Lisensi VALID & Berhasil Diaktivasi!
             saveLicenseData(res.data);
@@ -7122,13 +7150,6 @@ function hideSplashScreenAndTriggerAlerts() {
             if (isRemChecked && finalPin) {
               localStorage.setItem("KEUANGANKU_REMEMBER_PIN", "true");
               localStorage.setItem("KEUANGANKU_SAVED_PIN", finalPin);
-            }
-
-            // Jika mengaktifkan Akun Demo Iklan dan data transaksi masih kosong, otomatis isi data percontohan estetik
-            if (res.data.token === 'PRO-DEMO-IKLAN-2026' || (res.data.buyerName && res.data.buyerName.includes('Demo'))) {
-              if (!globalData.recentHistory || globalData.recentHistory.length === 0) {
-                activateShowcaseDemoData(true);
-              }
             }
 
             playSuccessSound();
@@ -8990,6 +9011,10 @@ function formatReadableSheets(ss, parsed) {
       }
     }
 
+    function isDemoLicense(l) {
+      return !!(l && (String(l.token || '').toUpperCase() === 'PRO-DEMO-IKLAN-2026' || (l.buyerName && String(l.buyerName).includes('Demo'))));
+    }
+
     function activateShowcaseDemoData(isSilent = false) {
       // 1. Simpan backup data asli pengguna jika belum dalam mode demo
       let isAlreadyDemo = localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true';
@@ -9003,8 +9028,10 @@ function formatReadableSheets(ss, parsed) {
           let realSheet = localStorage.getItem('KEUANGANKU_BYODB_SHEET_ID');
           if (realSheet) localStorage.setItem('KEUANGANKU_USER_REAL_BYODB_SHEET_ID', realSheet);
 
+          // Lisensi demo bukan lisensi asli: jangan disimpan sebagai cadangan
           let realLic = localStorage.getItem('KEUANGANKU_LICENSE_DATA');
-          if (realLic) localStorage.setItem('KEUANGANKU_USER_REAL_LICENSE_DATA', realLic);
+          if (realLic && !isDemoLicense(getSavedLicense())) localStorage.setItem('KEUANGANKU_USER_REAL_LICENSE_DATA', realLic);
+          else localStorage.removeItem('KEUANGANKU_USER_REAL_LICENSE_DATA');
         } catch(e) {}
       }
 
@@ -9274,9 +9301,15 @@ function formatReadableSheets(ss, parsed) {
 
         // 4. Pulihkan Lisensi Asli
         let realLic = localStorage.getItem('KEUANGANKU_USER_REAL_LICENSE_DATA');
+        let needRelogin = false;
         if (realLic) {
           localStorage.setItem('KEUANGANKU_LICENSE_DATA', realLic);
           localStorage.removeItem('KEUANGANKU_USER_REAL_LICENSE_DATA');
+        } else if (isDemoLicense(getSavedLicense())) {
+          // Lisensi asli tidak tercadang (perangkat dulu langsung masuk akun demo):
+          // lepas lisensi demo agar perangkat tidak kembali ke mode demo; pengguna masuk lagi dengan lisensinya.
+          localStorage.removeItem('KEUANGANKU_LICENSE_DATA');
+          needRelogin = true;
         }
 
         globalData = JSON.parse(backupStr);
@@ -9286,6 +9319,13 @@ function formatReadableSheets(ss, parsed) {
         initApp();
         updateDemoModeUI();
         if (typeof updateByodbUi === 'function') updateByodbUi();
+        if (needRelogin) {
+          if (typeof applyNavigationConfig === 'function') { try { applyNavigationConfig(); } catch(eNav) {} }
+          alert("✅ DATA ASLI ANDA SUDAH DIKEMBALIKAN\n\nMode demo iklan telah dinonaktifkan.\n\nKarena perangkat ini sebelumnya langsung masuk dengan Akun Demo, lisensi asli Anda perlu dimasukkan lagi. Aplikasi akan dimuat ulang: silakan masuk dengan akun Google atau Token + PIN Anda.");
+          sessionStorage.removeItem("KEUANGANKU_PIN_PASSED");
+          location.reload();
+          return;
+        }
         syncWithCloud(true); // Langsung sambungkan kembali ke Cloud
         alert("✅ DATA ASLI & AKUN GOOGLE PRIBADI BERHASIL DIPULIHKAN!\n\nMode demo iklan telah dinonaktifkan.\n\nAkun Google Drive asli dan seluruh data transaksi & saldo pribadi Anda telah kembali aktif 100%.");
       } catch(e) {
@@ -16341,20 +16381,9 @@ function disconnectGoogleAccount() {
  */
 function loginDemoByodb() {
   let isAlreadyDemo = localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true';
-  if (!isAlreadyDemo) {
-    try {
-      localStorage.setItem('KEUANGANKU_USER_REAL_BACKUP', JSON.stringify(globalData));
-
-      let realGoogle = localStorage.getItem('KEUANGANKU_GOOGLE_USER');
-      if (realGoogle) localStorage.setItem('KEUANGANKU_USER_REAL_GOOGLE_USER', realGoogle);
-
-      let realSheet = localStorage.getItem('KEUANGANKU_BYODB_SHEET_ID');
-      if (realSheet) localStorage.setItem('KEUANGANKU_USER_REAL_BYODB_SHEET_ID', realSheet);
-
-      let realLic = localStorage.getItem('KEUANGANKU_LICENSE_DATA');
-      if (realLic) localStorage.setItem('KEUANGANKU_USER_REAL_LICENSE_DATA', realLic);
-    } catch(e) {}
-  }
+  // Selalu pakai data contoh: data pribadi, akun Google & lisensi asli dicadangkan dulu oleh
+  // activateShowcaseDemoData (dulu data contoh hanya dipasang bila perangkat kosong).
+  if (!isAlreadyDemo) activateShowcaseDemoData(true);
   localStorage.setItem('KEUANGANKU_IS_DEMO_MODE', 'true');
 
   let demoUser = {
@@ -16383,10 +16412,6 @@ function loginDemoByodb() {
 
   localStorage.setItem("KEUANGANKU_LICENSE_DATA", JSON.stringify(demoLicense));
   sessionStorage.setItem("KEUANGANKU_PIN_PASSED", "true");
-
-  if (!globalData.recentHistory || globalData.recentHistory.length === 0) {
-    if (typeof activateShowcaseDemoData === 'function') activateShowcaseDemoData(true);
-  }
 
   playSuccessSound();
   showSyncToast("🎬 Mode Demo BYODb Aktif!");
