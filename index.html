@@ -798,6 +798,10 @@
     /* Jendela pop-up (modal): bayangan & sudut lebih rapi */
     .fixed.inset-0 > div[class*="rounded-2xl"], .fixed.inset-0 > div[class*="rounded-3xl"] { border-radius: 20px !important; box-shadow: 0 24px 48px -12px rgba(16, 24, 40, 0.28) !important; }
     .fixed.inset-0[class*="bg-black"] { backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+    #modal-due-date-items .animate-bounce, #modal-due-date-items .animate-pulse { animation: none !important; }
+    /* Tombol mata (mode privasi) tidak menutupi isi pop-up */
+    body:has(.fixed.inset-0[class*="bg-black"]:not(.hidden):not(.opacity-0)) #btn-mask-balance-fab,
+    body:has(.fixed.inset-0[class*="bg-slate-9"]:not(.hidden):not(.opacity-0)) #btn-mask-balance-fab { opacity: 0 !important; pointer-events: none !important; }
   </style>
 </head>
 <body class="bg-background text-on-surface font-body-md min-h-screen pb-32">
@@ -2705,25 +2709,25 @@
 
       <div id="setup-unlocked-content" class="hidden space-y-6">
         <!-- SUB-TAB SWITCHER SETUP (PENGATURAN vs DATABASE) -->
-        <div class="bg-surface dark:bg-slate-900 border border-outline-variant p-2 rounded-2xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div class="inline-flex p-1 bg-surface-container dark:bg-slate-800 rounded-xl w-full sm:w-auto">
-            <button id="btn-subtab-pengaturan" onclick="switchSetupSubtab('pengaturan')" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-xs font-bold transition-all bg-primary text-white shadow">
+        <div class="bg-surface dark:bg-slate-900 border border-outline-variant p-1.5 sm:p-2 rounded-2xl shadow-sm flex flex-row items-center justify-between gap-2 sm:gap-3">
+          <div class="inline-flex p-1 bg-surface-container dark:bg-slate-800 rounded-xl flex-1 sm:flex-none min-w-0">
+            <button id="btn-subtab-pengaturan" onclick="switchSetupSubtab('pengaturan')" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs font-bold transition-all bg-primary text-white shadow whitespace-nowrap">
               <span class="material-symbols-outlined text-base">tune</span>
-              <span>Pengaturan Aplikasi</span>
+              <span class="sm:hidden">Pengaturan</span><span class="hidden sm:inline">Pengaturan Aplikasi</span>
             </button>
-            <button id="btn-subtab-database" onclick="switchSetupSubtab('database')" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-xs font-bold transition-all text-gray-500 dark:text-gray-400 hover:text-on-surface">
+            <button id="btn-subtab-database" onclick="switchSetupSubtab('database')" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs font-bold transition-all text-gray-500 dark:text-gray-400 hover:text-on-surface whitespace-nowrap">
               <span class="material-symbols-outlined text-base">database</span>
-              <span>Kategori &amp; Saldo</span>
-              <span id="badge-db-total-count" class="ml-1 px-2 py-0.5 text-[10px] bg-primary/15 text-primary dark:text-blue-400 rounded-full font-extrabold">12</span>
+              <span class="sm:hidden">Kategori</span><span class="hidden sm:inline">Kategori &amp; Saldo</span>
+              <span id="badge-db-total-count" class="ml-0.5 px-1.5 py-0.5 text-[10px] bg-primary/15 text-primary dark:text-blue-400 rounded-full font-extrabold">12</span>
             </button>
           </div>
-          <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+          <div class="flex items-center gap-2 shrink-0 justify-end">
             <a href="poster-panduan-penggunaan.html" target="_blank" class="px-3.5 py-2 bg-sky-500/10 hover:bg-sky-500/20 text-sky-600 dark:text-cyan-400 border border-sky-500/30 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all" title="Buka Buku Panduan Bergambar">
               <span class="material-symbols-outlined text-base">menu_book</span>
               <span class="hidden sm:inline">Panduan</span>
             </a>
             <!-- Tombol "Simpan Perubahan" dihapus: setiap perubahan di Setup sudah tersimpan otomatis -->
-            <span class="text-[10px] text-gray-500 dark:text-gray-400 flex items-center gap-1" title="Setiap perubahan langsung tersimpan">
+            <span class="text-[10px] text-gray-500 dark:text-gray-400 hidden sm:flex items-center gap-1" title="Setiap perubahan langsung tersimpan">
               <span class="material-symbols-outlined text-sm text-emerald-500">cloud_done</span>
               <span class="hidden sm:inline">Tersimpan otomatis</span>
             </span>
@@ -10505,29 +10509,29 @@ function formatReadableSheets(ss, parsed) {
       if (!list || list.length === 0) {
         itemsContainer.innerHTML = '<div class="text-center py-6 text-gray-500 text-xs"><span class="material-symbols-outlined text-3xl text-green-500 block mb-1">verified</span>Semua kewajiban pembayaran dalam kondisi aman. Tidak ada tagihan atau utang yang jatuh tempo saat ini.</div>';
       } else {
+        // Kartu pengingat: judul & keterangan utuh (tidak terjepit), tombol di baris bawah
+        const tidyCaps = s => String(s || '').split(/(\s+)/).map(w => (w.length > 3 && w === w.toUpperCase() && /[A-Z]/.test(w)) ? (w.charAt(0) + w.slice(1).toLowerCase()) : w).join('');
         itemsContainer.innerHTML = list.map(it => `
-          <div class="p-3.5 rounded-2xl border ${it.borderClass} ${it.bgClass} flex items-center justify-between gap-3 text-xs shadow-xs">
-            <div class="flex items-center gap-3 min-w-0">
-              <div class="w-10 h-10 rounded-xl ${it.iconBgClass} flex items-center justify-center shrink-0">
-                <span class="material-symbols-outlined text-2xl ${it.iconColorClass}">${it.icon}</span>
+          <div class="p-3.5 rounded-2xl border ${it.borderClass} ${it.bgClass} text-xs">
+            <div class="flex items-start gap-3">
+              <div class="w-9 h-9 rounded-xl ${it.iconBgClass} flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-xl ${it.iconColorClass}">${it.icon}</span>
               </div>
-              <div class="min-w-0">
-                <div class="flex items-center gap-2 flex-wrap">
-                  <span class="font-extrabold text-xs uppercase ${it.titleColorClass}">${it.title}</span>
-                  <span class="text-[9px] px-2 py-0.5 rounded-full font-extrabold ${it.badgeClass}">${it.badge}</span>
-                </div>
-                <p class="text-[11px] ${it.descColorClass} mt-0.5 leading-snug">${it.desc}</p>
+              <div class="min-w-0 flex-1">
+                <p class="font-semibold text-[13px] leading-snug ${it.titleColorClass}">${tidyCaps(it.title)}</p>
+                <span class="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full font-semibold ${it.badgeClass}">${tidyCaps(it.badge)}</span>
+                <p class="text-[12px] ${it.descColorClass} mt-1.5 leading-snug">${it.desc}</p>
               </div>
             </div>
-            <div class="flex items-center gap-1.5 shrink-0">
-              <button onclick="closeDueDateModalPopup(); ${it.actionOnClick}" class="px-3.5 py-2 ${it.btnClass} font-extrabold rounded-xl text-xs shadow-sm transition-all active:scale-95 cursor-pointer">
-                ${it.actionLabel}
-              </button>
+            <div class="flex items-center justify-end gap-1.5 mt-3">
               ${it.alertKey ? `
-                <button type="button" onclick="dismissModalItem('${it.alertKey}')" class="w-8 h-8 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-600 dark:text-gray-300 flex items-center justify-center font-black text-xs cursor-pointer shadow-xs active:scale-90 border border-outline-variant/60" title="Tutup pengingat pos ini (✕)">
-                  ✕
+                <button type="button" onclick="dismissModalItem('${it.alertKey}')" class="px-3 py-2 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10 text-xs font-semibold cursor-pointer" title="Tutup pengingat pos ini">
+                  Tutup
                 </button>
               ` : ''}
+              <button onclick="closeDueDateModalPopup(); ${it.actionOnClick}" class="px-3.5 py-2 ${it.btnClass} font-semibold rounded-xl text-xs transition-all cursor-pointer">
+                ${it.actionLabel}
+              </button>
             </div>
           </div>
         `).join('');
@@ -14427,10 +14431,10 @@ function formatReadableSheets(ss, parsed) {
         if (viewDatabase) viewDatabase.classList.remove('hidden');
 
         if (btnPengaturan) {
-          btnPengaturan.className = "flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-xs font-bold transition-all text-gray-500 dark:text-gray-400 hover:text-on-surface";
+          btnPengaturan.className = "flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap text-gray-500 dark:text-gray-400 hover:text-on-surface";
         }
         if (btnDatabase) {
-          btnDatabase.className = "flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-xs font-bold transition-all bg-primary text-white shadow";
+          btnDatabase.className = "flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap bg-primary text-white shadow";
         }
         renderSetupDatabaseCards();
       } else {
@@ -14438,10 +14442,10 @@ function formatReadableSheets(ss, parsed) {
         if (viewDatabase) viewDatabase.classList.add('hidden');
 
         if (btnPengaturan) {
-          btnPengaturan.className = "flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-xs font-bold transition-all bg-primary text-white shadow";
+          btnPengaturan.className = "flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap bg-primary text-white shadow";
         }
         if (btnDatabase) {
-          btnDatabase.className = "flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-xs font-bold transition-all text-gray-500 dark:text-gray-400 hover:text-on-surface";
+          btnDatabase.className = "flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap text-gray-500 dark:text-gray-400 hover:text-on-surface";
         }
       }
     }
