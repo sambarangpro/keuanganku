@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "pro.keuanganku.app",
+        "sha256_cert_fingerprints": ["95:D1:C5:B0:95:7C:A4:00:9B:5D:D0:A6:47:B3:32:BE:68:76:EF:B2:37:4A:16:F5:F4:58:CA:C0:61:13:85:54"]
+      }
+    }]

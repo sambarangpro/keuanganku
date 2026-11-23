@@ -2216,9 +2216,9 @@ function adminGenerateToken(params) {
     "🔑 *Token Akses:* `" + newToken + "`\n" +
     "📱 *Kuota Perangkat:* Maksimal " + maxDevices + " Perangkat (HP / Laptop)\n\n" +
     "🌐 *Link Aplikasi:*\n" +
-    "https://sambarangpro.github.io/keuanganku/\n\n" +
+    "https://keuanganku.pro/\n\n" +
     "📖 *Panduan Penggunaan Lengkap Bergambar:*\n" +
-    "https://sambarangpro.github.io/keuanganku/poster-panduan-penggunaan.html\n\n" +
+    "https://keuanganku.pro/poster-panduan-penggunaan.html\n\n" +
     "*(Seluruh petunjuk aktivasi, cara pasang di layar utama HP/laptop, setup Google Sheets Cloud, hingga multi-perangkat sudah lengkap beserta gambar & kode skrip di link panduan di atas)*\n\n" +
     "Selamat mengelola keuangan dengan rapi & berkah! 🙏✨\n" +
     "_Copyright © 2026 Sambarang Production_";
@@ -2686,10 +2686,10 @@ function adminProcessOrderLicense(params) {
     "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n" +
     "LANGKAH MUDAH AKTIVASI:\n" +
     "1. Buka aplikasi Keuanganku PRO di browser HP atau Laptop:\n" +
-    "   https://sambarangpro.github.io/keuanganku/\n\n" +
+    "   https://keuanganku.pro/\n\n" +
     "2. Masuk dengan Akun Google (disarankan), ATAU ketuk \"Gunakan Keyboard\", ketik Kode Lisensi di atas (" + tokenToUse + "), lalu ketuk MASUK APLIKASI.\n\n" +
     "3. Panduan Penggunaan Lengkap Bergambar & Setup Cloud:\n" +
-    "   https://sambarangpro.github.io/keuanganku/poster-panduan-penggunaan.html\n\n" +
+    "   https://keuanganku.pro/poster-panduan-penggunaan.html\n\n" +
     "Simpan email ini dengan baik sebagai bukti kepemilikan lisensi resmi Anda.\n" +
     "Jika membutuhkan bantuan teknis atau konsultasi, Anda dapat langsung membalas email ini.\n\n" +
     "Selamat mengelola keuangan pribadi & usaha dengan rapi, akurat, dan berkah! 🙏✨\n\n" +
@@ -2722,9 +2722,9 @@ function adminProcessOrderLicense(params) {
     "📱 *Kuota Perangkat:* Maksimal " + maxDevices + " Perangkat\n" +
     "🆔 *ID Pemesanan:* " + orderId + "\n\n" +
     "🌐 *Link Aplikasi:*\n" +
-    "https://sambarangpro.github.io/keuanganku/\n\n" +
+    "https://keuanganku.pro/\n\n" +
     "📖 *Panduan Penggunaan Lengkap:*\n" +
-    "https://sambarangpro.github.io/keuanganku/poster-panduan-penggunaan.html\n\n" +
+    "https://keuanganku.pro/poster-panduan-penggunaan.html\n\n" +
     "Selamat menggunakan Keuanganku PRO untuk mengelola keuangan Anda lebih rapi dan berkah! ✨\n\n" +
     "_Sambarang Production_";
 
@@ -2752,7 +2752,7 @@ function getDefaultSalesSettings() {
     sellerWhatsApp: "087788197916",
     fonnteToken: "",
     fonnteAutoSend: false,
-    orderFormUrl: "https://sambarangpro.github.io/keuanganku/pesan.html",
+    orderFormUrl: "https://keuanganku.pro/pesan.html",
     packages: [
       { id: "pkg-personal", name: "PRO Personal (3 Perangkat)", devices: 3, price: "Rp 79.000", priceNum: 79000, description: "Ideal untuk 1 orang dengan ekosistem lengkap: HP, Laptop, dan Tablet bersamaan. Akses seumur hidup.", popular: true },
       { id: "pkg-multi", name: "PRO Keluarga / Pasutri (5 Perangkat)", devices: 5, price: "Rp 149.000", priceNum: 149000, description: "Sinkronisasi otomatis HP Suami, Istri, dan Laptop keluarga. Catatan pos belanja rumah tangga transparan.", popular: false },
@@ -2802,6 +2802,11 @@ function getStoredSalesSettings() {
             calcFixed = true;
           }
         });
+        // Pindah domain: alamat lama github.io -> keuanganku.pro
+        if (parsed.orderFormUrl && /sambarangpro\.github\.io\/keuanganku/i.test(parsed.orderFormUrl)) {
+          parsed.orderFormUrl = String(parsed.orderFormUrl).replace(/https?:\/\/sambarangpro\.github\.io\/keuanganku\/?/i, "https://keuanganku.pro/");
+          calcFixed = true;
+        }
         if (calcFixed) {
           try { PropertiesService.getScriptProperties().setProperty("KEUANGANKU_SALES_SETTINGS", JSON.stringify(parsed)); } catch(e) {}
         }
@@ -3209,10 +3214,10 @@ function submitPublicOrder(params) {
             "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n" +
             "LANGKAH MUDAH AKTIVASI 1-KLIK:\n" +
             "1. Buka tautan aktivasi langsung di browser HP atau Laptop Anda:\n" +
-            "   https://sambarangpro.github.io/keuanganku/?token=" + encodeURIComponent(tokenGenerated) + "\n\n" +
+            "   https://keuanganku.pro/?token=" + encodeURIComponent(tokenGenerated) + "\n\n" +
             "2. Aplikasi akan otomatis memvalidasi lisensi dan membuka dashboard penuh.\n\n" +
             "3. Panduan Penggunaan Lengkap Bergambar:\n" +
-            "   https://sambarangpro.github.io/keuanganku/poster-panduan-penggunaan.html\n\n" +
+            "   https://keuanganku.pro/poster-panduan-penggunaan.html\n\n" +
             "Simpan email ini dengan baik sebagai bukti kepemilikan lisensi resmi seumur hidup Anda.\n" +
             "Terima kasih telah menjadi bagian dari peluncuran perdana Keuanganku PRO! 🙏✨\n\n" +
             "Salam hormat,\n" +

@@ -1794,7 +1794,7 @@
         <ol class="list-decimal list-inside space-y-1 text-[11px] opacity-90">
           <li>Buka <a href="https://console.cloud.google.com/" target="_blank" class="text-primary underline">Google Cloud Console</a> &gt; <b>APIs & Services</b> &gt; <b>Credentials</b></li>
           <li>Buat <b>OAuth 2.0 Client ID</b> (Application type: <b>Web Application</b>)</li>
-          <li>Tambahkan Authorized JavaScript origins: <code class="px-1 py-0.5 bg-slate-200 dark:bg-slate-800 rounded text-[10px]">https://sambarangpro.github.io</code></li>
+          <li>Tambahkan Authorized JavaScript origins: <code class="px-1 py-0.5 bg-slate-200 dark:bg-slate-800 rounded text-[10px]">https://keuanganku.pro</code></li>
           <li>Salin Client ID (format: <code class="text-[10px]">xxx.apps.googleusercontent.com</code>) lalu tempel di bawah ini.</li>
         </ol>
       </div>
@@ -5723,11 +5723,11 @@
       let origin = window.location.origin;
       let pathname = window.location.pathname;
       if (!origin || origin === 'null' || origin.startsWith('file:') || origin.includes('localhost') || origin.includes('127.0.0.1')) {
-        return "https://sambarangpro.github.io/keuanganku/index.html";
+        return "https://keuanganku.pro/index.html";
       }
       // Koreksi otomatis jika terdapat typo domain sambarang.github.io tanpa 'pro'
       if (origin.includes("sambarang.github.io") && !origin.includes("sambarangpro.github.io")) {
-        return "https://sambarangpro.github.io/keuanganku/index.html";
+        return "https://keuanganku.pro/index.html";
       }
       return `${origin}${pathname}`;
     }
@@ -15329,7 +15329,7 @@ async function handleGoogleSignIn() {
 
   // Cek jika dibuka via file:/// (Google OAuth mutlak melarang origin file://)
   if (window.location.protocol === 'file:') {
-    alert("⚠️ Perhatian Keamanan Google:\n\nGoogle Sign-In tidak dapat berjalan jika aplikasi dibuka langsung dari folder lokal komputer (file:///).\n\nSilakan buka aplikasi melalui link resmi:\n👉 https://sambarangpro.github.io/keuanganku/\n\natau melalui local server (http://localhost:8000).");
+    alert("⚠️ Perhatian Keamanan Google:\n\nGoogle Sign-In tidak dapat berjalan jika aplikasi dibuka langsung dari folder lokal komputer (file:///).\n\nSilakan buka aplikasi melalui link resmi:\n👉 https://keuanganku.pro/\n\natau melalui local server (http://localhost:8000).");
     return;
   }
 
