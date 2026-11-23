@@ -1,4 +1,4 @@
-const CACHE_NAME = 'keuanganku-pwa-v6.81';
+const CACHE_NAME = 'keuanganku-pwa-v6.82';
 const ASSETS_TO_CACHE = [
   './login-bg.jpg',
   './',

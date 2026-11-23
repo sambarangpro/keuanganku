@@ -1524,6 +1524,14 @@
         </button>
       </div>
 
+      <!-- KHUSUS HP ANDROID: unduh aplikasi (APK) -->
+      <div id="pwa-android-apk-box" class="hidden text-left bg-emerald-50 dark:bg-emerald-950/30 p-3.5 rounded-xl border border-emerald-500/30 space-y-2 text-xs">
+        <a href="https://keuanganku.pro/unduh/KEUANGANKU.apk" download class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-base">android</span> Unduh Aplikasi Android (±1 MB)
+        </a>
+        <p class="text-[11px] text-on-surface-variant leading-relaxed">Buka file <b>KEUANGANKU.apk</b> setelah terunduh → izinkan <b>"instal dari sumber ini"</b> bila diminta → <b>Instal</b>.</p>
+      </div>
+
       <!-- KONDISI UNTUK iOS (iPhone / iPad di Safari) -->
       <div id="pwa-ios-guide-box" class="hidden text-left bg-surface-container dark:bg-slate-800 p-3.5 rounded-xl border border-outline-variant/60 space-y-2 text-xs">
         <p class="font-bold text-primary flex items-center gap-1.5 text-xs">
@@ -16887,6 +16895,9 @@ function saveGoogleConfigModal() {
         if (nativeBox) nativeBox.classList.remove('hidden');
         if (iosBox) iosBox.classList.add('hidden');
       }
+      // HP Android: tawarkan juga aplikasi Android (APK) yang bisa diunduh
+      let apkBox = document.getElementById('pwa-android-apk-box');
+      if (apkBox) apkBox.classList.toggle('hidden', !/Android/i.test(navigator.userAgent || ''));
 
       if (modal && card) {
         modal.classList.remove('hidden');

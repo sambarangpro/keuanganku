@@ -2217,6 +2217,8 @@ function adminGenerateToken(params) {
     "📱 *Kuota Perangkat:* Maksimal " + maxDevices + " Perangkat (HP / Laptop)\n\n" +
     "🌐 *Link Aplikasi:*\n" +
     "https://keuanganku.pro/\n\n" +
+    "📲 *Aplikasi HP Android (unduh & pasang, ±1 MB):*\n" +
+    "https://keuanganku.pro/unduh/KEUANGANKU.apk\n\n" +
     "📖 *Panduan Penggunaan Lengkap Bergambar:*\n" +
     "https://keuanganku.pro/poster-panduan-penggunaan.html\n\n" +
     "*(Seluruh petunjuk aktivasi, cara pasang di layar utama HP/laptop, setup Google Sheets Cloud, hingga multi-perangkat sudah lengkap beserta gambar & kode skrip di link panduan di atas)*\n\n" +
@@ -2686,7 +2688,8 @@ function adminProcessOrderLicense(params) {
     "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n" +
     "LANGKAH MUDAH AKTIVASI:\n" +
     "1. Buka aplikasi Keuanganku PRO di browser HP atau Laptop:\n" +
-    "   https://keuanganku.pro/\n\n" +
+    "   https://keuanganku.pro/\n" +
+    "   (HP Android: bisa juga pasang aplikasinya di https://keuanganku.pro/unduh/KEUANGANKU.apk)\n\n" +
     "2. Masuk dengan Akun Google (disarankan), ATAU ketuk \"Gunakan Keyboard\", ketik Kode Lisensi di atas (" + tokenToUse + "), lalu ketuk MASUK APLIKASI.\n\n" +
     "3. Panduan Penggunaan Lengkap Bergambar & Setup Cloud:\n" +
     "   https://keuanganku.pro/poster-panduan-penggunaan.html\n\n" +
@@ -2723,6 +2726,8 @@ function adminProcessOrderLicense(params) {
     "🆔 *ID Pemesanan:* " + orderId + "\n\n" +
     "🌐 *Link Aplikasi:*\n" +
     "https://keuanganku.pro/\n\n" +
+    "📲 *Aplikasi HP Android (unduh & pasang, ±1 MB):*\n" +
+    "https://keuanganku.pro/unduh/KEUANGANKU.apk\n\n" +
     "📖 *Panduan Penggunaan Lengkap:*\n" +
     "https://keuanganku.pro/poster-panduan-penggunaan.html\n\n" +
     "Selamat menggunakan Keuanganku PRO untuk mengelola keuangan Anda lebih rapi dan berkah! ✨\n\n" +
@@ -3214,7 +3219,8 @@ function submitPublicOrder(params) {
             "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n" +
             "LANGKAH MUDAH AKTIVASI 1-KLIK:\n" +
             "1. Buka tautan aktivasi langsung di browser HP atau Laptop Anda:\n" +
-            "   https://keuanganku.pro/?token=" + encodeURIComponent(tokenGenerated) + "\n\n" +
+            "   https://keuanganku.pro/?token=" + encodeURIComponent(tokenGenerated) + "\n" +
+            "   (HP Android: bisa juga pasang aplikasinya di https://keuanganku.pro/unduh/KEUANGANKU.apk)\n\n" +
             "2. Aplikasi akan otomatis memvalidasi lisensi dan membuka dashboard penuh.\n\n" +
             "3. Panduan Penggunaan Lengkap Bergambar:\n" +
             "   https://keuanganku.pro/poster-panduan-penggunaan.html\n\n" +
