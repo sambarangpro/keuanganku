@@ -1,6 +1,170 @@
 <!DOCTYPE html>
 <html class="light" lang="id">
 <head>
+  <script>
+/* Dialog Keuanganku (pengganti alert / confirm / prompt bawaan browser) */
+(function () {
+  if (window.kpPrompt) return;
+  var css = '' +
+  '.kpd-ov{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(2,6,23,.62);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;transition:opacity .16s ease;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}' +
+  '.kpd-ov.in{opacity:1}' +
+  '.kpd-box{width:100%;max-width:440px;max-height:calc(100vh - 32px);display:flex;flex-direction:column;background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:24px;box-shadow:0 30px 70px -20px rgba(2,6,23,.55);transform:translateY(10px) scale(.98);transition:transform .18s ease;overflow:hidden}' +
+  '.kpd-ov.in .kpd-box{transform:none}' +
+  'html.dark .kpd-box{background:#0b1220;color:#f1f5f9;border-color:#1e293b}' +
+  '.kpd-hd{display:flex;align-items:flex-start;gap:14px;padding:20px 22px 6px}' +
+  '.kpd-ic{width:44px;height:44px;flex:none;border-radius:14px;display:grid;place-items:center;background:#eff6ff;color:#2563eb;border:1px solid #dbeafe}' +
+  '.kpd-ic .material-symbols-outlined{font-size:24px}' +
+  'html.dark .kpd-ic{background:rgba(37,99,235,.14);border-color:rgba(59,130,246,.3);color:#60a5fa}' +
+  '.kpd-ic.warn{background:#fffbeb;color:#d97706;border-color:#fde68a}html.dark .kpd-ic.warn{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.3);color:#fbbf24}' +
+  '.kpd-ic.danger{background:#fef2f2;color:#dc2626;border-color:#fecaca}html.dark .kpd-ic.danger{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.32);color:#f87171}' +
+  '.kpd-ic.ok{background:#ecfdf5;color:#059669;border-color:#a7f3d0}html.dark .kpd-ic.ok{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.3);color:#34d399}' +
+  '.kpd-tt{font-weight:800;font-size:16.5px;line-height:1.35;margin:2px 0 0;letter-spacing:-.01em}' +
+  '.kpd-sub{font-size:12px;color:#64748b;margin-top:2px}html.dark .kpd-sub{color:#94a3b8}' +
+  '.kpd-bd{padding:8px 22px 4px;overflow:auto}' +
+  '.kpd-msg{white-space:pre-line;font-size:14px;line-height:1.6;color:#334155;margin:0}html.dark .kpd-msg{color:#cbd5e1}' +
+  '.kpd-in{display:block;width:100%;box-sizing:border-box;margin:14px 0 4px;padding:13px 15px;font:600 15px/1.4 Inter,system-ui,sans-serif;color:#0f172a;background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:14px;outline:none;transition:border-color .15s,box-shadow .15s;-webkit-appearance:none;appearance:none}' +
+  '.kpd-in:focus{border-color:#2563eb;box-shadow:0 0 0 4px rgba(37,99,235,.15);background:#fff}' +
+  'html.dark .kpd-in{background:#020617;border-color:#334155;color:#f8fafc;color-scheme:dark}html.dark .kpd-in:focus{border-color:#3b82f6;background:#020617;box-shadow:0 0 0 4px rgba(59,130,246,.2)}' +
+  '.kpd-in::placeholder{color:#94a3b8}' +
+  'textarea.kpd-in{min-height:150px;font:500 12px/1.5 "JetBrains Mono",ui-monospace,monospace;resize:vertical}' +
+  '.kpd-pin{letter-spacing:.35em;text-align:center;font-size:20px}' +
+  '.kpd-hint{font-size:11.5px;color:#94a3b8;margin:4px 2px 0}' +
+  '.kpd-ft{display:flex;gap:10px;justify-content:flex-end;padding:16px 22px 20px}' +
+  '.kpd-btn{min-height:46px;padding:0 20px;border-radius:14px;font:800 14px Inter,system-ui,sans-serif;cursor:pointer;border:1px solid transparent;display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:filter .15s,background .15s,transform .1s}' +
+  '.kpd-btn:active{transform:scale(.97)}' +
+  '.kpd-btn .material-symbols-outlined{font-size:18px}' +
+  '.kpd-p{background:#2563eb;color:#fff;box-shadow:0 10px 22px -10px rgba(37,99,235,.7)}.kpd-p:hover{filter:brightness(1.08)}' +
+  '.kpd-p.danger{background:#dc2626;box-shadow:0 10px 22px -10px rgba(220,38,38,.7)}' +
+  '.kpd-g{background:#f1f5f9;color:#334155;border-color:#e2e8f0}.kpd-g:hover{background:#e2e8f0}' +
+  'html.dark .kpd-g{background:#1e293b;color:#e2e8f0;border-color:#334155}html.dark .kpd-g:hover{background:#273449}' +
+  '@media (max-width:640px){.kpd-ov{align-items:flex-end;padding:0}.kpd-box{max-width:none;border-radius:24px 24px 0 0;max-height:88vh;padding-bottom:env(safe-area-inset-bottom)}.kpd-ov .kpd-box{transform:translateY(40px)}.kpd-ov.in .kpd-box{transform:none}.kpd-ft{flex-direction:column-reverse}.kpd-btn{width:100%}.kpd-hd{padding-top:22px}}';
+  function addCss() {
+    if (document.getElementById('kpd-css')) return;
+    var st = document.createElement('style'); st.id = 'kpd-css'; st.textContent = css;
+    (document.head || document.documentElement).appendChild(st);
+  }
+  function esc(t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+  // Pisahkan judul dari pesan: baris pertama yang pendek menjadi judul
+  function split(msg, kind) {
+    var t = String(msg == null ? '' : msg).replace(/\r/g, '').trim();
+    var parts = t.split(/\n\s*\n/);
+    var first = parts[0];
+    if (parts.length > 1 && first.length <= 70 && first.indexOf('\n') === -1) {
+      var title = first.replace(/:\s*$/, '');
+      if (title === title.toUpperCase() && /[A-Z]/.test(title)) title = title.charAt(0) + title.slice(1).toLowerCase();
+      return { title: title, body: parts.slice(1).join('\n\n') };
+    }
+    if (kind === 'prompt' && t.length <= 80 && t.indexOf('\n') === -1) return { title: t.replace(/:\s*$/, ''), body: '' };
+    return { title: kind === 'confirm' ? 'Konfirmasi' : (kind === 'prompt' ? 'Isi data' : 'Informasi'), body: t };
+  }
+  function tone(text, kind) {
+    var s = String(text || '');
+    if (/hapus|reset|hangus|menimpa|dikosongkan|minus|nonaktifkan|putuskan|dilepas|dikeluarkan/i.test(s) && kind === 'confirm') return 'danger';
+    if (/gagal|error|tidak valid|salah|ditolak|⛔|❌/i.test(s)) return 'danger';
+    if (/peringatan|perhatian|⚠|penting|belum|tidak ditemukan|wajib/i.test(s)) return 'warn';
+    if (/berhasil|sukses|✓|✅|🎉|selamat|alhamdulillah/i.test(s)) return 'ok';
+    return '';
+  }
+  var ICON = { prompt: 'edit_note', confirm: 'help', alert: 'info', danger: 'warning', warn: 'error', ok: 'check_circle' };
+
+  var queue = [], showing = false, pending = {};
+  function run() {
+    if (showing || !queue.length) return;
+    if (!document.body) { setTimeout(run, 50); return; }
+    showing = true;
+    var job = queue.shift();
+    build(job, function (val) {
+      showing = false;
+      delete pending[job.key];
+      job.resolve(val);
+      setTimeout(run, 30);
+    });
+  }
+  function enqueue(kind, msg, def, opts) {
+    var key = kind + '|' + msg + '|' + (def == null ? '' : def);
+    if (pending[key]) return pending[key];
+    var p = new Promise(function (resolve) { queue.push({ kind: kind, msg: msg, def: def, opts: opts || {}, resolve: resolve, key: key }); });
+    pending[key] = p;
+    setTimeout(run, 0);
+    return p;
+  }
+
+  function build(job, done) {
+    addCss();
+    var kind = job.kind, raw = String(job.msg == null ? '' : job.msg), o = job.opts;
+    var sp = split(raw, kind);
+    var tn = tone(raw, kind);
+    var isCopy = kind === 'prompt' && /salin manual/i.test(raw);
+    var isPin = kind === 'prompt' && /\bPIN\b/.test(raw);
+    var isDate = kind === 'prompt' && /YYYY-MM-DD/.test(raw);
+    var isMoney = kind === 'prompt' && /\(Rp\)|harga/i.test(raw);
+    var icon = isCopy ? 'content_copy' : (isPin ? 'lock' : (tn ? ICON[tn] : ICON[kind]));
+    var okText = o.okText || (isCopy ? 'Salin & Tutup' : (kind === 'prompt' ? 'Simpan' : (kind === 'confirm' ? (tn === 'danger' ? 'Ya, lanjutkan' : 'Lanjutkan') : 'Mengerti')));
+    var ov = document.createElement('div');
+    ov.className = 'kpd-ov';
+    ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true');
+    var input = '';
+    if (kind === 'prompt') {
+      var dv = job.def == null ? '' : String(job.def);
+      if (isCopy) input = '<textarea class="kpd-in" readonly>' + esc(dv) + '</textarea>';
+      else if (isDate) input = '<input class="kpd-in" type="date" value="' + esc(/^\d{4}-\d{2}-\d{2}$/.test(dv) ? dv : '') + '"><div class="kpd-hint">Kosongkan lalu Simpan untuk menghapus tanggal.</div>';
+      else if (isPin) input = '<input class="kpd-in kpd-pin" type="password" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="••••••" value="' + esc(dv) + '">';
+      else input = '<input class="kpd-in" type="text" ' + (isMoney ? 'inputmode="numeric" ' : '') + 'autocomplete="off" placeholder="' + esc(o.placeholder || 'Ketik di sini…') + '" value="' + esc(dv) + '">';
+    }
+    var showCancel = kind !== 'alert' && !isCopy;
+    ov.innerHTML = '<div class="kpd-box">' +
+      '<div class="kpd-hd"><div class="kpd-ic ' + tn + '"><span class="material-symbols-outlined">' + icon + '</span></div>' +
+      '<div style="min-width:0;flex:1"><div class="kpd-tt">' + esc(sp.title) + '</div><div class="kpd-sub">Keuanganku PRO</div></div></div>' +
+      '<div class="kpd-bd">' + (sp.body ? '<p class="kpd-msg">' + esc(sp.body) + '</p>' : '') + input + '</div>' +
+      '<div class="kpd-ft">' + (showCancel ? '<button type="button" class="kpd-btn kpd-g" data-a="no">Batal</button>' : '') +
+      '<button type="button" class="kpd-btn kpd-p ' + (kind === 'confirm' && tn === 'danger' ? 'danger' : '') + '" data-a="ok">' + esc(okText) + '</button></div></div>';
+    document.body.appendChild(ov);
+    var field = ov.querySelector('.kpd-in');
+    var prevFocus = document.activeElement;
+    var closed = false;
+    function finish(ok) {
+      if (closed) return; closed = true;
+      var val;
+      if (kind === 'prompt') {
+        if (isCopy) { try { field.select(); document.execCommand('copy'); } catch (e) {} try { if (navigator.clipboard) navigator.clipboard.writeText(field.value); } catch (e) {} val = ok ? field.value : null; }
+        else val = ok ? field.value : null;
+      } else if (kind === 'confirm') val = !!ok;
+      else val = undefined;
+      document.removeEventListener('keydown', onKey, true);
+      ov.classList.remove('in');
+      setTimeout(function () { ov.remove(); try { if (prevFocus && prevFocus.focus) prevFocus.focus(); } catch (e) {} }, 150);
+      done(val);
+    }
+    function onKey(e) {
+      if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); finish(kind === 'alert'); }
+      else if (e.key === 'Enter' && !(field && field.tagName === 'TEXTAREA')) { e.preventDefault(); e.stopPropagation(); finish(true); }
+    }
+    document.addEventListener('keydown', onKey, true);
+    ov.addEventListener('click', function (e) {
+      var b = e.target.closest && e.target.closest('[data-a]');
+      if (b) finish(b.getAttribute('data-a') === 'ok');
+    });
+    if (field && isMoney && !isCopy) {
+      field.addEventListener('input', function () {
+        var d = field.value.replace(/[^\d]/g, '');
+        field.value = d ? Number(d).toLocaleString('id-ID') : '';
+      });
+    }
+    requestAnimationFrame(function () { ov.classList.add('in'); });
+    setTimeout(function () {
+      if (field) { field.focus(); try { if (!isDate) field.select(); } catch (e) {} }
+      else { var b = ov.querySelector('[data-a=ok]'); if (b) b.focus(); }
+    }, 60);
+  }
+
+  window.kpPrompt = function (msg, def, opts) { return enqueue('prompt', msg, def, opts); };
+  window.kpConfirm = function (msg, opts) { return enqueue('confirm', msg, null, opts); };
+  window.kpAlert = function (msg, opts) { return enqueue('alert', msg, null, opts); };
+  window.__nativeAlert = window.alert;
+  window.alert = function (msg) { window.kpAlert(msg); };
+})();
+  </script>
   <meta charset="utf-8"/>
   <script>
     (function() {
@@ -4982,13 +5146,13 @@
       if (!pinInput) return;
       let newPin = pinInput.value.trim();
       if (!newPin || !/^[0-9]{4,6}$/.test(newPin)) {
-        alert("PIN Pribadi Baru harus berupa 4 hingga 6 digit angka (contoh: 482916)!");
+        await kpAlert("PIN Pribadi Baru harus berupa 4 hingga 6 digit angka (contoh: 482916)!");
         return;
       }
 
       let lic = getSavedLicense();
       if (!lic || !lic.token) {
-        alert("Lisensi resmi tidak ditemukan di perangkat ini.");
+        await kpAlert("Lisensi resmi tidak ditemukan di perangkat ini.");
         return;
       }
 
@@ -4997,7 +5161,7 @@
         ? `🔥 KONFIRMASI BUAT PIN & HANGUSKAN TOKEN:\n\n1. Token lisensi Anda (${lic.token}) akan HANGUS dan tidak bisa dipakai lagi oleh orang lain.\n2. PIN baru Anda (${newPin}) akan menjadi kunci masuk aplikasi dan otorisasi perangkat baru.\n3. Fitur Sinkronisasi Cloud Multi-Perangkat akan langsung TERBUKA.\n\nApakah Anda yakin ingin memproses ini sekarang?`
         : `Konfirmasi Perubahan PIN Pribadi:\n\nUbah PIN Pribadi menjadi: ${newPin}?`;
 
-      if (!confirm(confirmMsg)) return;
+      if (!await kpConfirm(confirmMsg)) return;
 
       let devId = getOrCreateDeviceId();
       let apiUrl = getMasterLicenseServerUrl();
@@ -5036,12 +5200,12 @@
           updateCloudSyncLockUI(lic);
           renderSetupPasswordCard(lic);
 
-          alert(`🎉 SELAMAT!\n\nPIN Pribadi Anda berhasil dibuat (${newPin}).\n\n✓ Token bawaan (${lic.token}) telah HANGUS di server master dan tidak dapat dibagikan secara ilegal.\n✓ Fitur Sinkronisasi Cloud Multi-Perangkat sekarang TERBUKA!`);
+          await kpAlert(`🎉 SELAMAT!\n\nPIN Pribadi Anda berhasil dibuat (${newPin}).\n\n✓ Token bawaan (${lic.token}) telah HANGUS di server master dan tidak dapat dibagikan secara ilegal.\n✓ Fitur Sinkronisasi Cloud Multi-Perangkat sekarang TERBUKA!`);
         } else {
-          alert("Gagal memproses PIN: " + (res.message || "Terjadi kesalahan server."));
+          await kpAlert("Gagal memproses PIN: " + (res.message || "Terjadi kesalahan server."));
         }
       } catch(err) {
-        alert("Gagal terhubung ke Master Server Lisensi. Pastikan koneksi internet Anda aktif untuk menghanguskan token di server developer.");
+        await kpAlert("Gagal terhubung ke Master Server Lisensi. Pastikan koneksi internet Anda aktif untuk menghanguskan token di server developer.");
       } finally {
         if (btn) {
           btn.innerHTML = origHtml;
@@ -5164,7 +5328,7 @@
           }
 
           if (showToastAlert) {
-            alert("Daftar perangkat terhubung berhasil diperbarui.");
+            await kpAlert("Daftar perangkat terhubung berhasil diperbarui.");
           }
         } else {
           renderFallbackCurrentDevice(listEl, currentDevName, currentDevId);
@@ -5287,11 +5451,11 @@
           if (typeof clearGoogleSession === 'function') { try { clearGoogleSession(); } catch(e) {} }
           clearUserSessionAuthentication();
           closeDeviceConfirmModal();
-          alert("Perangkat ini dikeluarkan. Aplikasi akan dimuat ulang.");
+          await kpAlert("Perangkat ini dikeluarkan. Aplikasi akan dimuat ulang.");
           location.reload();
         } else {
           closeDeviceConfirmModal();
-          alert("Lisensi tidak ditemukan di perangkat ini. Masuk ulang dengan PIN atau tautkan lewat Scan QR dari perangkat utama.");
+          await kpAlert("Lisensi tidak ditemukan di perangkat ini. Masuk ulang dengan PIN atau tautkan lewat Scan QR dari perangkat utama.");
         }
         return;
       }
@@ -5321,10 +5485,10 @@
               saveLicenseData(lic);
               updateSetupLicenseDisplay(lic);
             }
-            alert(`Sukses: Perangkat "${targetDeviceName}" berhasil dikeluarkan dari lisensi Anda.\n\nPerangkat itu tidak bisa masuk lagi dengan PIN. Untuk memakainya kembali, tautkan lewat Scan QR dari perangkat ini.`);
+            await kpAlert(`Sukses: Perangkat "${targetDeviceName}" berhasil dikeluarkan dari lisensi Anda.\n\nPerangkat itu tidak bisa masuk lagi dengan PIN. Untuk memakainya kembali, tautkan lewat Scan QR dari perangkat ini.`);
             suggestPinChangeAfterRemoval();
           } else {
-            alert((res && res.message) ? res.message : "Gagal mengeluarkan perangkat.");
+            await kpAlert((res && res.message) ? res.message : "Gagal mengeluarkan perangkat.");
           }
         } else if (type === 'all_others') {
           let res = await callClientLicenseApi({
@@ -5342,10 +5506,10 @@
             lic.deviceCount = 1;
             saveLicenseData(lic);
             updateSetupLicenseDisplay(lic);
-            alert("Semua perangkat lain berhasil dikeluarkan dari akun lisensi Anda!\n\nPerangkat-perangkat itu tidak bisa masuk lagi dengan PIN. Untuk memakainya kembali, tautkan lewat Scan QR dari perangkat ini.");
+            await kpAlert("Semua perangkat lain berhasil dikeluarkan dari akun lisensi Anda!\n\nPerangkat-perangkat itu tidak bisa masuk lagi dengan PIN. Untuk memakainya kembali, tautkan lewat Scan QR dari perangkat ini.");
             suggestPinChangeAfterRemoval();
           } else {
-            alert((res && res.message) ? res.message : "Gagal memproses permintaan.");
+            await kpAlert((res && res.message) ? res.message : "Gagal memproses permintaan.");
           }
         } else if (type === 'current') {
           try {
@@ -5359,14 +5523,14 @@
           let wiped = await wipeLocalFinancialDataAfterSync(true);
           localStorage.removeItem("KEUANGANKU_LICENSE_DATA");
           if (typeof clearGoogleSession === 'function') { try { clearGoogleSession(); } catch(e) {} }
-          if (wiped) { try { alert("Data keuangan sudah aman di Cloud dan dihapus dari perangkat ini."); } catch(e) {} }
+          if (wiped) { try { await kpAlert("Data keuangan sudah aman di Cloud dan dihapus dari perangkat ini."); } catch(e) {} }
           clearUserSessionAuthentication();
           closeDeviceConfirmModal();
-          alert("Lisensi berhasil dilepas dari perangkat ini.");
+          await kpAlert("Lisensi berhasil dilepas dari perangkat ini.");
           location.reload();
         }
       } catch(err) {
-        alert("Gagal menghubungi server. Pastikan ada koneksi internet: " + err.message);
+        await kpAlert("Gagal menghubungi server. Pastikan ada koneksi internet: " + err.message);
       } finally {
         btn.disabled = false;
         btn.innerHTML = origHtml;
@@ -5376,14 +5540,14 @@
     // Perangkat yang dikeluarkan bisa saja "dihapus datanya" lalu mendaftar ulang sebagai perangkat baru.
     // Mengganti PIN menutup celah itu sepenuhnya.
     function suggestPinChangeAfterRemoval() {
-      setTimeout(() => {
-        if (!confirm("🔐 Saran keamanan:\n\nJika perangkat yang dikeluarkan hilang atau dipegang orang lain, sebaiknya GANTI PIN sekarang agar PIN lama tidak bisa dipakai di perangkat mana pun.\n\nBuka pengaturan ganti PIN sekarang?")) return;
+      setTimeout(async () => {
+        if (!await kpConfirm("🔐 Saran keamanan:\n\nJika perangkat yang dikeluarkan hilang atau dipegang orang lain, sebaiknya GANTI PIN sekarang agar PIN lama tidak bisa dipakai di perangkat mana pun.\n\nBuka pengaturan ganti PIN sekarang?")) return;
         let inp = document.getElementById('new-pass-input');
         if (inp) {
           inp.scrollIntoView({ behavior: 'smooth', block: 'center' });
           setTimeout(() => { try { inp.focus(); } catch(e) {} }, 400);
         } else {
-          alert("Buka Setup > Akun & Lisensi, lalu isi PIN Pribadi Baru dan simpan.");
+          await kpAlert("Buka Setup > Akun & Lisensi, lalu isi PIN Pribadi Baru dan simpan.");
         }
       }, 300);
     }
@@ -5659,7 +5823,7 @@
     async function handleScanPairSessionFromCamera(pairData) {
       let lic = getSavedLicense();
       if (!lic || !lic.token) {
-        alert("HP ini belum memiliki lisensi aktif. Hanya perangkat utama yang sudah teraktivasi yang dapat menautkan perangkat baru.");
+        await kpAlert("HP ini belum memiliki lisensi aktif. Hanya perangkat utama yang sudah teraktivasi yang dapat menautkan perangkat baru.");
         return;
       }
 
@@ -5668,7 +5832,7 @@
       let targetDeviceId = pairData.deviceId || '';
       let confirmMsg = `Konfirmasi Tautkan Perangkat:\n\nPerangkat di layar Anda terdeteksi sebagai:\n"${devName}"\n\nApakah Anda ingin mengizinkan perangkat ini masuk ke akun lisensi ${lic.token}?`;
       
-      if (!confirm(confirmMsg)) return;
+      if (!await kpConfirm(confirmMsg)) return;
 
       showSyncToast("⚡ Mengotorisasi perangkat...");
 
@@ -5706,7 +5870,7 @@
 
         if (res && res.success) {
           playSuccessSound();
-          alert(`🎉 SUKSES!\n\nPerangkat "${devName}" berhasil ditautkan!\n\nPeriksa layar PC / iPad Anda, perangkat tersebut akan langsung otomatis masuk.`);
+          await kpAlert(`🎉 SUKSES!\n\nPerangkat "${devName}" berhasil ditautkan!\n\nPeriksa layar PC / iPad Anda, perangkat tersebut akan langsung otomatis masuk.`);
           if (typeof loadConnectedDevices === 'function') loadConnectedDevices(false);
         } else {
           let errDetail = (res && res.message) ? res.message :
@@ -5714,10 +5878,10 @@
                           (res && res.error && typeof res.error === 'string') ? res.error :
                           (res && res.msg) ? res.msg :
                           (res ? JSON.stringify(res) : "Terjadi kesalahan server.");
-          alert("Gagal menautkan perangkat:\n\n" + errDetail);
+          await kpAlert("Gagal menautkan perangkat:\n\n" + errDetail);
         }
       } catch(e) {
-        alert("Gagal menghubungi server: " + (e.message || e.toString()) + "\n\nPastikan script Google Apps Script telah diperbarui & dideploy sebagai 'New Deployment'.");
+        await kpAlert("Gagal menghubungi server: " + (e.message || e.toString()) + "\n\nPastikan script Google Apps Script telah diperbarui & dideploy sebagai 'New Deployment'.");
       }
     }
 
@@ -5860,7 +6024,7 @@
       }
 
       if (!dataUrl) {
-        alert("Gambar barcode belum siap. Silakan tunggu 1-2 detik.");
+        await kpAlert("Gambar barcode belum siap. Silakan tunggu 1-2 detik.");
         return;
       }
 
@@ -5977,10 +6141,10 @@
         if (result && result.decodedText) {
           onQrScanSuccess(result.decodedText);
         } else {
-          alert("Kode QR / Barcode tidak terdeteksi pada gambar tersebut. Pastikan barcode terlihat jelas dan tidak terpotong.");
+          await kpAlert("Kode QR / Barcode tidak terdeteksi pada gambar tersebut. Pastikan barcode terlihat jelas dan tidak terpotong.");
         }
       } catch(err) {
-        alert("Gagal membaca barcode dari gambar: " + (err.message || "Pastikan foto barcode jelas dan terang."));
+        await kpAlert("Gagal membaca barcode dari gambar: " + (err.message || "Pastikan foto barcode jelas dan terang."));
       }
       inputEl.value = '';
     }
@@ -6007,12 +6171,12 @@
         if (result && result.decodedText) {
           onQrScanSuccess(result.decodedText);
         } else {
-          alert("Kode QR / Barcode tidak terdeteksi pada gambar tersebut. Pastikan barcode terlihat jelas.");
+          await kpAlert("Kode QR / Barcode tidak terdeteksi pada gambar tersebut. Pastikan barcode terlihat jelas.");
           if (statusEl) statusEl.textContent = "Barcode tidak terdeteksi. Coba gambar lain.";
           startQrCamera();
         }
       } catch(err) {
-        alert("Tidak dapat menemukan barcode pada foto yang dipilih. Pastikan foto jelas dan terang.");
+        await kpAlert("Tidak dapat menemukan barcode pada foto yang dipilih. Pastikan foto jelas dan terang.");
         if (statusEl) statusEl.textContent = "Pindai gagal. Silakan coba lagi.";
         startQrCamera();
       }
@@ -6099,7 +6263,7 @@
 
       let parsed = parseQrScannedPayload(decodedText);
       if (!parsed) {
-        alert("Format barcode tidak dikenali sebagai lisensi resmi KEUANGANKU PRO.\n\nTeks terbaca: " + decodedText);
+        await kpAlert("Format barcode tidak dikenali sebagai lisensi resmi KEUANGANKU PRO.\n\nTeks terbaca: " + decodedText);
         return;
       }
 
@@ -6160,7 +6324,7 @@
             err.textContent = msg;
             err.classList.remove('hidden');
           }
-          alert("Otorisasi Perangkat Tambahan:\n\n" + msg);
+          await kpAlert("Otorisasi Perangkat Tambahan:\n\n" + msg);
           return;
         }
 
@@ -6213,10 +6377,10 @@
 
         } else {
           let errMsg = res ? (res.message || (res.isBurned ? "Token sudah hangus. Masukkan PIN Pribadi Anda." : "Token tidak valid atau kuota perangkat lisensi telah penuh.")) : "Koneksi ke server lisensi gagal.";
-          alert("Gagal menghubungkan perangkat:\n\n" + errMsg);
+          await kpAlert("Gagal menghubungkan perangkat:\n\n" + errMsg);
         }
       } catch(err) {
-        alert("Gagal menghubungkan ke server lisensi. Pastikan internet aktif.");
+        await kpAlert("Gagal menghubungkan ke server lisensi. Pastikan internet aktif.");
       }
     }
 
@@ -6540,7 +6704,7 @@
     async function registerBiometrics() {
       let available = await isBiometricAvailable();
       if (!available) {
-        alert("Sensor biometrik (Face ID / Sidik Jari / Windows Hello) tidak terdeteksi atau tidak didukung di peramban ini.\n\nPastikan Anda mengakses melalui protokol HTTPS atau Localhost dan perangkat Anda memiliki sensor keamanan aktif.");
+        await kpAlert("Sensor biometrik (Face ID / Sidik Jari / Windows Hello) tidak terdeteksi atau tidak didukung di peramban ini.\n\nPastikan Anda mengakses melalui protokol HTTPS atau Localhost dan perangkat Anda memiliki sensor keamanan aktif.");
         return false;
       }
 
@@ -6594,7 +6758,7 @@
         if (err.name === 'NotAllowedError') {
           if (typeof showSyncToast === 'function') showSyncToast("Aktivasi biometrik dibatalkan.");
         } else {
-          alert("Gagal mengaktifkan biometrik: " + (err.message || err));
+          await kpAlert("Gagal mengaktifkan biometrik: " + (err.message || err));
         }
       }
       return false;
@@ -6677,7 +6841,7 @@
     async function toggleBiometricRegistration() {
       let isEnabled = localStorage.getItem("KEUANGANKU_BIOMETRIC_ENABLED") === "true";
       if (isEnabled) {
-        if (confirm("Nonaktifkan Kunci Biometrik (Face ID / Sidik Jari) di perangkat ini?\n\nAnda akan tetap dapat masuk menggunakan PIN.")) {
+        if (await kpConfirm("Nonaktifkan Kunci Biometrik (Face ID / Sidik Jari) di perangkat ini?\n\nAnda akan tetap dapat masuk menggunakan PIN.")) {
           localStorage.removeItem("KEUANGANKU_BIOMETRIC_ENABLED");
           localStorage.removeItem("KEUANGANKU_BIOMETRIC_CRED_ID");
           updateBiometricUI();
@@ -6909,7 +7073,7 @@ function hideSplashScreenAndTriggerAlerts() {
 
     async function requestNotificationPermissionInteractive() {
       if (!("Notification" in window)) {
-        alert("Maaf, browser atau perangkat ini tidak mendukung fitur Web Notification.");
+        await kpAlert("Maaf, browser atau perangkat ini tidak mendukung fitur Web Notification.");
         return;
       }
       if (Notification.permission === 'granted') {
@@ -6917,7 +7081,7 @@ function hideSplashScreenAndTriggerAlerts() {
         return;
       }
       if (Notification.permission === 'denied') {
-        alert("Izin notifikasi sebelumnya telah ditolak/diblokir pada browser ini.\\n\\nCara mengaktifkannya:\\n1. Klik ikon gembok/setelan di samping alamat web (URL bar).\\n2. Pilih 'Izin' atau 'Setelan Situs'.\\n3. Ubah 'Notifikasi' menjadi 'Izinkan' (Allow).\\n4. Muat ulang halaman aplikasi.");
+        await kpAlert("Izin notifikasi sebelumnya telah ditolak/diblokir pada browser ini.\\n\\nCara mengaktifkannya:\\n1. Klik ikon gembok/setelan di samping alamat web (URL bar).\\n2. Pilih 'Izin' atau 'Setelan Situs'.\\n3. Ubah 'Notifikasi' menjadi 'Izinkan' (Allow).\\n4. Muat ulang halaman aplikasi.");
         return;
       }
       try {
@@ -6934,9 +7098,9 @@ function hideSplashScreenAndTriggerAlerts() {
               tag: "welcome-notif"
             }
           );
-          alert("✅ Berhasil! Notifikasi pengingat perangkat telah aktif.");
+          await kpAlert("✅ Berhasil! Notifikasi pengingat perangkat telah aktif.");
         } else {
-          alert("Izin notifikasi tidak diberikan. Pengingat tetap muncul di dashboard aplikasi.");
+          await kpAlert("Izin notifikasi tidak diberikan. Pengingat tetap muncul di dashboard aplikasi.");
         }
       } catch (e) {
         Notification.requestPermission((res) => {
@@ -7149,10 +7313,10 @@ function hideSplashScreenAndTriggerAlerts() {
       }
     }
 
-    function promptEmergencyMasterTokenUnlock() {
+    async function promptEmergencyMasterTokenUnlock() {
       // (Dulu bisa melewati layar PIN untuk token tertentu. Dihapus: kini selalu lewat verifikasi PIN/token.)
       let lic = (typeof getSavedLicense === 'function') ? getSavedLicense() : null;
-      let tok = prompt("PEMULIHAN KUNCI MASTER PEMILIK:\n\nMasukkan Kode Token Pembelian resmi Anda (format: PRO-XXXX-XXXX-XXXX):", (lic && lic.token) ? lic.token : "");
+      let tok = await kpPrompt("PEMULIHAN KUNCI MASTER PEMILIK:\n\nMasukkan Kode Token Pembelian resmi Anda (format: PRO-XXXX-XXXX-XXXX):", (lic && lic.token) ? lic.token : "");
       if (!tok || !tok.trim()) return;
       let pinInp = document.getElementById('bumper-pin-input');
       if (pinInp) {
@@ -7354,7 +7518,7 @@ function hideSplashScreenAndTriggerAlerts() {
 
           // Jika token sudah dipersonalisasi di perangkat 1 dan belum menyertakan PIN:
           if (res.isBurned) {
-            let personalPinPrompt = prompt("Token lisensi ini telah dipersonalisasi di HP Utama.\n\nMasukkan PIN Pribadi Anda untuk mengotorisasi dan menghubungkan perangkat baru ini:");
+            let personalPinPrompt = await kpPrompt("Token lisensi ini telah dipersonalisasi di HP Utama.\n\nMasukkan PIN Pribadi Anda untuk mengotorisasi dan menghubungkan perangkat baru ini:");
             if (personalPinPrompt && personalPinPrompt.trim() !== '') {
               if (btn) btn.innerHTML = `<span class="material-symbols-outlined text-sm animate-spin">progress_activity</span> MENGOTORISASI PERANGKAT...`;
               let retryRes = await callClientLicenseApi({
@@ -7402,7 +7566,7 @@ function hideSplashScreenAndTriggerAlerts() {
             updateCloudSyncLockUI(demoLic);
             renderSetupPasswordCard(demoLic);
             updateDemoModeUI();
-            alert("🎬 AKUN DEMO IKLAN AKTIF\n\nYang tampil sekarang adalah DATA CONTOH, bukan data pribadi Anda.\nSinkron Cloud & Google Drive dijeda selama mode demo.\n\nData pribadi Anda tersimpan aman di perangkat ini. Untuk kembali, tekan tombol \"Kembalikan Data Asli\" di bilah oranye bagian atas.");
+            await kpAlert("🎬 AKUN DEMO IKLAN AKTIF\n\nYang tampil sekarang adalah DATA CONTOH, bukan data pribadi Anda.\nSinkron Cloud & Google Drive dijeda selama mode demo.\n\nData pribadi Anda tersimpan aman di perangkat ini. Untuk kembali, tekan tombol \"Kembalikan Data Asli\" di bilah oranye bagian atas.");
             return;
           }
 
@@ -7447,7 +7611,7 @@ function hideSplashScreenAndTriggerAlerts() {
             updateCloudSyncLockUI(res.data);
             renderSetupPasswordCard(res.data);
 
-            alert(`Selamat datang, ${res.data.buyerName}!\n\nLisensi Resmi Keuanganku PRO Anda (${res.data.token}) berhasil diaktivasi di perangkat ini.\n\nStatus Akun: Akses Resmi Seumur Hidup (Lifetime Multi-Device).`);
+            await kpAlert(`Selamat datang, ${res.data.buyerName}!\n\nLisensi Resmi Keuanganku PRO Anda (${res.data.token}) berhasil diaktivasi di perangkat ini.\n\nStatus Akun: Akses Resmi Seumur Hidup (Lifetime Multi-Device).`);
             return;
           } else {
             if (err) {
@@ -7950,7 +8114,7 @@ function hideSplashScreenAndTriggerAlerts() {
       if (!isCloudSyncUrl(globalData.cloudUrl)) {
         setSyncStatus('offline', 'Cloud Nonaktif');
         if (isManualClick) {
-          alert("Sinkronisasi belum aktif di perangkat ini.\n\nBuka Setup > Akun & Lisensi, lalu ketuk 'Hubungkan Akun Google' (atau tautkan lewat Scan QR dari HP utama).");
+          await kpAlert("Sinkronisasi belum aktif di perangkat ini.\n\nBuka Setup > Akun & Lisensi, lalu ketuk 'Hubungkan Akun Google' (atau tautkan lewat Scan QR dari HP utama).");
           navTo('setup');
         }
         return;
@@ -8008,7 +8172,7 @@ function hideSplashScreenAndTriggerAlerts() {
         if (cloudData && cloudData.status === 'unauthorized') {
           setSyncStatus('error', 'Perlu Kunci Cloud');
           if (isManualClick) {
-            alert("Perangkat ini belum memiliki kunci sinkronisasi Cloud.\n\nCara termudah:\n1. Di HP utama Anda, buka menu tautkan perangkat lalu Scan QR yang tampil di perangkat ini, ATAU\n2. Masuk dengan Akun Google yang sama.\n\nKunci tidak disimpan di server kami demi privasi Anda.");
+            await kpAlert("Perangkat ini belum memiliki kunci sinkronisasi Cloud.\n\nCara termudah:\n1. Di HP utama Anda, buka menu tautkan perangkat lalu Scan QR yang tampil di perangkat ini, ATAU\n2. Masuk dengan Akun Google yang sama.\n\nKunci tidak disimpan di server kami demi privasi Anda.");
           }
           return;
         }
@@ -8252,7 +8416,7 @@ function hideSplashScreenAndTriggerAlerts() {
         } catch(e) {}
       }
 
-      alert("Kunci Cloud berhasil disimpan! Sistem akan otomatis mengupload database Anda ke Google Sheets.");
+      await kpAlert("Kunci Cloud berhasil disimpan! Sistem akan otomatis mengupload database Anda ke Google Sheets.");
       await forceUploadToCloud();
     }
     
@@ -8460,9 +8624,9 @@ function hideSplashScreenAndTriggerAlerts() {
       renderDashboard();
     }
 
-    function setZakatHaulPrompt() {
+    async function setZakatHaulPrompt() {
       let cur = globalData.zakatHaulStartDate || getLocalDateStr();
-      let val = prompt("Masukkan Tanggal Mulai Haul (Format: YYYY-MM-DD, contoh: 2025-01-01):", cur);
+      let val = await kpPrompt("Masukkan Tanggal Mulai Haul (Format: YYYY-MM-DD, contoh: 2025-01-01):", cur);
       if (val !== null) {
         let clean = val.trim();
         if (clean === "") {
@@ -8474,14 +8638,14 @@ function hideSplashScreenAndTriggerAlerts() {
           saveStorageData();
           renderDashboard();
         } else {
-          alert("Format tanggal tidak valid. Gunakan format YYYY-MM-DD (contoh: 2025-01-01)");
+          await kpAlert("Format tanggal tidak valid. Gunakan format YYYY-MM-DD (contoh: 2025-01-01)");
         }
       }
     }
 
-    function promptUpdateGoldPrice() {
+    async function promptUpdateGoldPrice() {
       let cur = globalData.zakatGoldPrice || 1450000;
-      let val = prompt("Masukkan Harga Emas Murni Acuan per Gram (Rp):", cur.toLocaleString('id-ID'));
+      let val = await kpPrompt("Masukkan Harga Emas Murni Acuan per Gram (Rp):", cur.toLocaleString('id-ID'));
       if (val !== null) {
         let clean = parseFloat(val.replace(/\D/g, '')) || 0;
         if (clean >= 100000) {
@@ -8490,7 +8654,7 @@ function hideSplashScreenAndTriggerAlerts() {
           renderDashboard();
           renderSetupView();
         } else {
-          alert("Harga emas tidak valid. Minimal Rp 100.000 / gram.");
+          await kpAlert("Harga emas tidak valid. Minimal Rp 100.000 / gram.");
         }
       }
     }
@@ -8776,7 +8940,7 @@ function formatReadableSheets(ss, parsed) {
       let typed = input ? input.value.trim() : '';
       let baseUrl = typed || stripKeyFromCloudUrl(currentUrl);
       if (!baseUrl || !baseUrl.startsWith('https://script.google.com/')) {
-        alert('Tempelkan dulu Link Web App Google Apps Script Anda (diawali https://script.google.com/...).');
+        await kpAlert('Tempelkan dulu Link Web App Google Apps Script Anda (diawali https://script.google.com/...).');
         if (input) input.focus();
         return;
       }
@@ -8864,7 +9028,7 @@ function formatReadableSheets(ss, parsed) {
       setTimeout(() => modal.classList.add('hidden'), 300);
     }
 
-    function copyModernCloudScript() {
+    async function copyModernCloudScript() {
       let btnText = document.getElementById('btn-copy-cloud-script-text');
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(getCloudScriptWithKey()).then(() => {
@@ -8872,11 +9036,11 @@ function formatReadableSheets(ss, parsed) {
           setTimeout(() => {
             if (btnText) btnText.innerHTML = "SALIN KODE SCRIPT (1-KLIK)";
           }, 3000);
-        }).catch(() => {
-          prompt("Salin manual kode Google Apps Script di bawah ini:", getCloudScriptWithKey());
+        }).catch(async () => {
+          await kpPrompt("Salin manual kode Google Apps Script di bawah ini:", getCloudScriptWithKey());
         });
       } else {
-        prompt("Salin manual kode Google Apps Script di bawah ini:", getCloudScriptWithKey());
+        await kpPrompt("Salin manual kode Google Apps Script di bawah ini:", getCloudScriptWithKey());
       }
     }
 
@@ -8955,11 +9119,11 @@ function formatReadableSheets(ss, parsed) {
     async function forceUploadToCloud() {
       let isDemo = localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true';
       if (isDemo) {
-        alert("PERINGATAN MODE DEMO IKLAN:\n\nUpload ke Google Sheets dinonaktifkan sementara untuk menjaga database asli Anda di Cloud agar tidak tertimpa data demo.\n\nSilakan klik 'Kembalikan Data Asli' terlebih dahulu sebelum upload ke Cloud.");
+        await kpAlert("PERINGATAN MODE DEMO IKLAN:\n\nUpload ke Google Sheets dinonaktifkan sementara untuk menjaga database asli Anda di Cloud agar tidak tertimpa data demo.\n\nSilakan klik 'Kembalikan Data Asli' terlebih dahulu sebelum upload ke Cloud.");
         return;
       }
       if (!isCloudSyncUrl(globalData.cloudUrl)) {
-        alert("GAGAL: Kunci Cloud kosong atau tidak valid!\nSilakan isi link Web App Google Sheets Anda di kolom yang tersedia terlebih dahulu.");
+        await kpAlert("GAGAL: Kunci Cloud kosong atau tidak valid!\nSilakan isi link Web App Google Sheets Anda di kolom yang tersedia terlebih dahulu.");
         return;
       }
       let btn = document.getElementById('btn-upload-cloud');
@@ -8990,22 +9154,22 @@ function formatReadableSheets(ss, parsed) {
         if (isVerified) {
           setSyncStatus('synced', 'Tersinkron');
           showSyncToast("🎉 Database berhasil di-upload ke Google Sheets!");
-          alert("BERHASIL! Seluruh database dan riwayat transaksi (termasuk foto bukti bayar) telah tersimpan aman di Google Spreadsheet Anda.\n\nPerangkat Anda yang lain sekarang bisa langsung menarik data ini!");
+          await kpAlert("BERHASIL! Seluruh database dan riwayat transaksi (termasuk foto bukti bayar) telah tersimpan aman di Google Spreadsheet Anda.\n\nPerangkat Anda yang lain sekarang bisa langsung menarik data ini!");
         } else {
           let hasAttachments = (globalData.recentHistory || []).some(tx => tx.attachments && tx.attachments.length > 0);
           if (hasAttachments) {
             setSyncStatus('error', 'Perlu Update Script Cloud');
-            let doOpen = confirm("PERHATIAN SINKRONISASI BUKTI BAYAR:\n\nTransaksi Anda aman tersimpan di perangkat ini, namun Google Sheets Anda belum menerima data karena script Apps Script di Google Sheets Anda masih versi lama (terkena limit 9KB Google).\n\nApakah Anda ingin membuka dan menyalin Script Cloud Terbaru sekarang?");
+            let doOpen = await kpConfirm("PERHATIAN SINKRONISASI BUKTI BAYAR:\n\nTransaksi Anda aman tersimpan di perangkat ini, namun Google Sheets Anda belum menerima data karena script Apps Script di Google Sheets Anda masih versi lama (terkena limit 9KB Google).\n\nApakah Anda ingin membuka dan menyalin Script Cloud Terbaru sekarang?");
             if (doOpen) {
               openCloudScriptModal();
             }
           } else {
             setSyncStatus('synced', 'Tersinkron');
             showSyncToast("Database terkirim ke Cloud.");
-            alert("BERHASIL! Data aplikasi ini telah di-upload ke Google Spreadsheet Anda.");
+            await kpAlert("BERHASIL! Data aplikasi ini telah di-upload ke Google Spreadsheet Anda.");
           }
         }
-      } catch(e) { alert("Gagal mengupload data. Pastikan koneksi internet lancar dan link Anda benar."); }
+      } catch(e) { await kpAlert("Gagal mengupload data. Pastikan koneksi internet lancar dan link Anda benar."); }
       if (btn) btn.innerHTML = originalText;
     }
 
@@ -9066,16 +9230,16 @@ function formatReadableSheets(ss, parsed) {
     async function forceDownloadFromCloud() {
       let isDemo = localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true';
       if (isDemo) {
-        if (!confirm("Mode Percontohan Iklan sedang aktif.\n\nMenarik data dari Cloud sekarang akan mematikan Mode Demo dan mengembalikan data asli Anda dari Google Sheets. Lanjutkan?")) return;
+        if (!await kpConfirm("Mode Percontohan Iklan sedang aktif.\n\nMenarik data dari Cloud sekarang akan mematikan Mode Demo dan mengembalikan data asli Anda dari Google Sheets. Lanjutkan?")) return;
         localStorage.removeItem('KEUANGANKU_IS_DEMO_MODE');
         localStorage.removeItem('KEUANGANKU_USER_REAL_BACKUP');
         updateDemoModeUI();
       }
       if (!isCloudSyncUrl(globalData.cloudUrl)) {
-        alert("GAGAL: Kunci Cloud kosong!\nSilakan isi link Web App Google Sheets Anda terlebih dahulu agar sistem tahu data mana yang harus ditarik.");
+        await kpAlert("GAGAL: Kunci Cloud kosong!\nSilakan isi link Web App Google Sheets Anda terlebih dahulu agar sistem tahu data mana yang harus ditarik.");
         return;
       }
-      if (!confirm("PENTING: Menarik data dari Cloud akan MENIMPA semua data yang ada di perangkat ini dengan data Cloud. Lanjutkan?")) return;
+      if (!await kpConfirm("PENTING: Menarik data dari Cloud akan MENIMPA semua data yang ada di perangkat ini dengan data Cloud. Lanjutkan?")) return;
       let btn = document.getElementById('btn-download-cloud');
       let originalText = btn ? btn.innerHTML : '';
       if (btn) btn.innerHTML = `<span class="material-symbols-outlined text-base animate-spin">sync</span> MENDOWNLOAD...`;
@@ -9088,11 +9252,11 @@ function formatReadableSheets(ss, parsed) {
           localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(data)); 
           initApp();
           setSyncStatus('synced', 'Tersinkron');
-          alert("DATABASE BERHASIL DITARIK DARI CLOUD! \nData telah diperbarui secara otomatis."); 
+          await kpAlert("DATABASE BERHASIL DITARIK DARI CLOUD! \nData telah diperbarui secara otomatis."); 
         } else { 
-          alert("GAGAL: Data di Cloud kosong atau belum pernah di-upload."); 
+          await kpAlert("GAGAL: Data di Cloud kosong atau belum pernah di-upload."); 
         }
-      } catch(e) { alert("GAGAL MENARIK DATA. Pastikan link Google Sheets Anda sudah di-deploy dengan benar (Anyone / Semua Orang)."); }
+      } catch(e) { await kpAlert("GAGAL MENARIK DATA. Pastikan link Google Sheets Anda sudah di-deploy dengan benar (Anyone / Semua Orang)."); }
       if (btn) btn.innerHTML = originalText;
     }
 
@@ -9198,20 +9362,20 @@ function formatReadableSheets(ss, parsed) {
       reader.readAsText(file);
     }
 
-    function executeRestoreDatabase() {
+    async function executeRestoreDatabase() {
       let area = document.getElementById('import-json-textarea');
       let content = area ? area.value.trim() : '';
       if (!content) {
-        alert("Peringatan: Teks database masih kosong.\nSilakan pilih file .json cadangan Anda atau tempelkan teks database terlebih dahulu.");
+        await kpAlert("Peringatan: Teks database masih kosong.\nSilakan pilih file .json cadangan Anda atau tempelkan teks database terlebih dahulu.");
         return;
       }
       try {
         let parsed = JSON.parse(content);
         if (!parsed || (!parsed.accounts && !parsed.recentHistory)) {
-          alert("GAGAL: Format database tidak valid!\nFile/teks harus berisikan struktur data KeuanganKu (accounts/recentHistory).");
+          await kpAlert("GAGAL: Format database tidak valid!\nFile/teks harus berisikan struktur data KeuanganKu (accounts/recentHistory).");
           return;
         }
-        if (!confirm("KONFIRMASI PEMULIHAN:\nApakah Anda yakin ingin memulihkan data ini ke aplikasi?\nData lokal yang ada saat ini akan digantikan oleh data cadangan ini.")) {
+        if (!await kpConfirm("KONFIRMASI PEMULIHAN:\nApakah Anda yakin ingin memulihkan data ini ke aplikasi?\nData lokal yang ada saat ini akan digantikan oleh data cadangan ini.")) {
           return;
         }
         // Lengkapi bagian yang hilang dari file cadangan lama agar simpan/edit transaksi tidak error
@@ -9228,10 +9392,10 @@ function formatReadableSheets(ss, parsed) {
         parsed.lastUpdated = Date.now();
         localStorage.setItem("KEUANGANKU_DB_V21", JSON.stringify(parsed));
         localStorage.setItem("KEUANGANKU_RESTORE_PENDING", "1");
-        alert("DATABASE BERHASIL DIPULIHKAN!\n\nAplikasi akan dimuat ulang (Refresh) sekarang untuk menerapkan data.");
+        await kpAlert("DATABASE BERHASIL DIPULIHKAN!\n\nAplikasi akan dimuat ulang (Refresh) sekarang untuk menerapkan data.");
         location.reload();
       } catch(err) {
-        alert("GAGAL: Format JSON tidak valid atau teks database terpotong.\n\nDetail error: " + err.message);
+        await kpAlert("GAGAL: Format JSON tidak valid atau teks database terpotong.\n\nDetail error: " + err.message);
       }
     }
 
@@ -9250,7 +9414,7 @@ function formatReadableSheets(ss, parsed) {
       modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); card.classList.add('scale-100'); }, 10);
     }
 
-    function resetTransactionHistory() { if (confirm("Apakah Anda yakin ingin mereset seluruh riwayat transaksi? Data rekam transaksi akan dikosongkan.")) { materializeTxIds(globalData); (globalData.recentHistory || []).forEach(t => recordTxDeletion(t)); globalData.recentHistory = []; saveStorageData(); renderDashboard(); renderHistoryTable(); alert("Riwayat transaksi berhasil direset kosong!"); } }
+    async function resetTransactionHistory() { if (await kpConfirm("Apakah Anda yakin ingin mereset seluruh riwayat transaksi? Data rekam transaksi akan dikosongkan.")) { materializeTxIds(globalData); (globalData.recentHistory || []).forEach(t => recordTxDeletion(t)); globalData.recentHistory = []; saveStorageData(); renderDashboard(); renderHistoryTable(); await kpAlert("Riwayat transaksi berhasil direset kosong!"); } }
 
     // ==============================================================================
     // FITUR MODE PERCONTOHAN / IKLAN (SHOWCASE DEMO DATA)
@@ -9634,22 +9798,22 @@ function formatReadableSheets(ss, parsed) {
       }
     }
 
-    function restoreUserRealData() {
+    async function restoreUserRealData() {
       let backupStr = localStorage.getItem('KEUANGANKU_USER_REAL_BACKUP');
       if (!backupStr) {
         // Fallback cerdas: Jika backup lokal hilang, tawarkan unduh data asli langsung dari Cloud
         if (isCloudSyncUrl(globalData.cloudUrl)) {
-          if (confirm("PULIHKAN DARI CLOUD?\n\nCadangan lokal tidak ditemukan. Apakah Anda ingin mengunduh data keuangan asli Anda langsung dari Google Sheets Cloud?")) {
+          if (await kpConfirm("PULIHKAN DARI CLOUD?\n\nCadangan lokal tidak ditemukan. Apakah Anda ingin mengunduh data keuangan asli Anda langsung dari Google Sheets Cloud?")) {
             localStorage.removeItem('KEUANGANKU_IS_DEMO_MODE');
             updateDemoModeUI();
             forceDownloadFromCloud();
             return;
           }
         }
-        alert("Informasi: Anda saat ini sudah menggunakan database asli Anda.");
+        await kpAlert("Informasi: Anda saat ini sudah menggunakan database asli Anda.");
         return;
       }
-      if (!confirm("KEMBALIKAN DATA ASLI PRIBADI ANDA?\n\nMode demo iklan akan dinonaktifkan, akun Google Drive asli Anda akan dipulihkan, dan seluruh data transaksi & saldo pribadi Anda akan kembali seperti semula.")) return;
+      if (!await kpConfirm("KEMBALIKAN DATA ASLI PRIBADI ANDA?\n\nMode demo iklan akan dinonaktifkan, akun Google Drive asli Anda akan dipulihkan, dan seluruh data transaksi & saldo pribadi Anda akan kembali seperti semula.")) return;
 
       try {
         // 1. Amankan sesi akun Google Demo jika pengguna sempat login akun demo Google riil
@@ -9707,15 +9871,15 @@ function formatReadableSheets(ss, parsed) {
         if (typeof updateByodbUi === 'function') updateByodbUi();
         if (needRelogin) {
           if (typeof applyNavigationConfig === 'function') { try { applyNavigationConfig(); } catch(eNav) {} }
-          alert("✅ DATA ASLI ANDA SUDAH DIKEMBALIKAN\n\nMode demo iklan telah dinonaktifkan.\n\nKarena perangkat ini sebelumnya langsung masuk dengan Akun Demo, lisensi asli Anda perlu dimasukkan lagi. Aplikasi akan dimuat ulang: silakan masuk dengan akun Google atau Token + PIN Anda.");
+          await kpAlert("✅ DATA ASLI ANDA SUDAH DIKEMBALIKAN\n\nMode demo iklan telah dinonaktifkan.\n\nKarena perangkat ini sebelumnya langsung masuk dengan Akun Demo, lisensi asli Anda perlu dimasukkan lagi. Aplikasi akan dimuat ulang: silakan masuk dengan akun Google atau Token + PIN Anda.");
           sessionStorage.removeItem("KEUANGANKU_PIN_PASSED");
           location.reload();
           return;
         }
         syncWithCloud(true); // Langsung sambungkan kembali ke Cloud
-        alert("✅ DATA ASLI & AKUN GOOGLE PRIBADI BERHASIL DIPULIHKAN!\n\nMode demo iklan telah dinonaktifkan.\n\nAkun Google Drive asli dan seluruh data transaksi & saldo pribadi Anda telah kembali aktif 100%.");
+        await kpAlert("✅ DATA ASLI & AKUN GOOGLE PRIBADI BERHASIL DIPULIHKAN!\n\nMode demo iklan telah dinonaktifkan.\n\nAkun Google Drive asli dan seluruh data transaksi & saldo pribadi Anda telah kembali aktif 100%.");
       } catch(e) {
-        alert("Gagal memulihkan data: " + e.message);
+        await kpAlert("Gagal memulihkan data: " + e.message);
       }
     }
 
@@ -10351,7 +10515,7 @@ function formatReadableSheets(ss, parsed) {
       if (typeof showSyncToast === 'function') showSyncToast("✓ Rencana pembagian anggaran berhasil disimpan!");
     }
 
-    function copyBudgetAllocText() {
+    async function copyBudgetAllocText() {
       let income = getAllocIncome();
       let totalAlloc = budgetAllocItems.reduce((acc, c) => acc + (Number(c.amount) || 0), 0);
       let diff = income - totalAlloc;
@@ -10379,11 +10543,11 @@ function formatReadableSheets(ss, parsed) {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text).then(() => {
           if (typeof showSyncToast === 'function') showSyncToast("✓ Rencana anggaran berhasil disalin ke Clipboard!");
-        }).catch(() => {
-          prompt("Salin manual ringkasan anggaran Anda:", text);
+        }).catch(async () => {
+          await kpPrompt("Salin manual ringkasan anggaran Anda:", text);
         });
       } else {
-        prompt("Salin manual ringkasan anggaran Anda:", text);
+        await kpPrompt("Salin manual ringkasan anggaran Anda:", text);
       }
     }
 
@@ -10469,7 +10633,7 @@ function formatReadableSheets(ss, parsed) {
     // KALKULATOR MATA UANG
     async function calculateCurrency() {
       let rawVal = document.getElementById('calc-curr-amount').value.replace(/\./g, ''); let amount = parseFloat(rawVal) || 0;
-      if (amount <= 0) { alert('Masukkan nominal yang akan dikonversi!'); return; }
+      if (amount <= 0) { await kpAlert('Masukkan nominal yang akan dikonversi!'); return; }
       let fromCur = document.getElementById('calc-curr-from').value; let toCur = document.getElementById('calc-curr-to').value;
       let resultBox = document.getElementById('calc-curr-result'); let loadingBox = document.getElementById('calc-curr-loading');
       resultBox.classList.add('hidden'); loadingBox.classList.remove('hidden');
@@ -10483,7 +10647,7 @@ function formatReadableSheets(ss, parsed) {
           document.getElementById('calc-curr-rate-info').textContent = `*Kurs Real-time (1 ${fromCur} = ${rate.toLocaleString('id-ID')} ${toCur}) diperbarui: ${new Date(data.time_last_update_utc).toLocaleString('id-ID')}`;
           loadingBox.classList.add('hidden'); resultBox.classList.remove('hidden');
         } else throw new Error("Gagal");
-      } catch (e) { loadingBox.classList.add('hidden'); alert("Gagal mengambil kurs. Pastikan terhubung internet."); }
+      } catch (e) { loadingBox.classList.add('hidden'); await kpAlert("Gagal mengambil kurs. Pastikan terhubung internet."); }
     }
 
     // KALKULATOR HPP ZY CLOTHES
@@ -13619,7 +13783,7 @@ function formatReadableSheets(ss, parsed) {
       
       if (isPdf) {
         if (file.size > 1.2 * 1024 * 1024) {
-          alert(`File PDF "${file.name}" terlalu besar (${formatBytes(file.size)}). Maksimal ukuran file struk PDF adalah 1.2MB agar sinkronisasi Cloud tetap cepat & hemat kuota.`);
+          await kpAlert(`File PDF "${file.name}" terlalu besar (${formatBytes(file.size)}). Maksimal ukuran file struk PDF adalah 1.2MB agar sinkronisasi Cloud tetap cepat & hemat kuota.`);
           return null;
         }
         return new Promise((resolve) => {
@@ -13899,7 +14063,7 @@ function formatReadableSheets(ss, parsed) {
     }
 
     function getSelectedValueDirect(elementId) { let el = document.getElementById(elementId); if (!el) return "- not applicable -"; if (el.options && el.options.length > 0) { let idx = el.selectedIndex >= 0 ? el.selectedIndex : 0; let selectedOpt = el.options[idx]; if (selectedOpt && selectedOpt.value && selectedOpt.value.trim() !== "") return selectedOpt.value.trim(); } return "- not applicable -"; }
-    function submitTransaction(e) { 
+    async function submitTransaction(e) { 
       e.preventDefault(); 
       let dDate = document.getElementById('tx-date').value; 
       let dName = document.getElementById('tx-name').value; 
@@ -13925,7 +14089,7 @@ function formatReadableSheets(ss, parsed) {
           let after = now - outByAcc[acc];
           return after < 0 ? `• ${acc}: saldo sekarang ${formatRp(now)}, setelah transaksi ${formatRp(after)}` : null;
         }).filter(Boolean);
-        if (warnLines.length && !confirm(`⚠️ Saldo akan MINUS\n\n${warnLines.join('\n')}\n\nMungkin ada pemasukan / transfer yang belum dicatat, atau rekening yang dipilih kurang tepat.\n\nTetap simpan transaksi ini?`)) {
+        if (warnLines.length && !await kpConfirm(`⚠️ Saldo akan MINUS\n\n${warnLines.join('\n')}\n\nMungkin ada pemasukan / transfer yang belum dicatat, atau rekening yang dipilih kurang tepat.\n\nTetap simpan transaksi ini?`)) {
           return;
         }
       } catch(eWarn) { console.warn('Cek saldo minus:', eWarn); }
@@ -14143,7 +14307,7 @@ function formatReadableSheets(ss, parsed) {
       return best;
     }
     function closeEditModal() { let modal = document.getElementById('edit-tx-modal'), card = document.getElementById('edit-tx-card'); modal.classList.add('opacity-0'); card.classList.remove('scale-100'); card.classList.add('scale-95'); setTimeout(() => modal.classList.add('hidden'), 300); }
-    function saveEditedTransaction() { 
+    async function saveEditedTransaction() { 
       let idx = parseInt(document.getElementById('edit-tx-index').value, 10); 
       let tx = globalData.recentHistory[idx];
       if (!tx) return;
@@ -14168,7 +14332,7 @@ function formatReadableSheets(ss, parsed) {
           if (newFee > 0) addDelta(newFeeAcc, -newFee);
         }
         let warnLines = Object.keys(deltaByAcc).map(acc => { let d = deltaByAcc[acc]; let now = Number(bal[acc]) || 0; let after = now + d; return (d < 0 && after < 0) ? `• ${acc}: saldo sekarang ${formatRp(now)}, setelah diubah ${formatRp(after)}` : null; }).filter(Boolean);
-        if (warnLines.length && !confirm(`⚠️ Saldo akan MINUS\n\n${warnLines.join('\n')}\n\nPeriksa lagi nominalnya, atau mungkin ada pemasukan / transfer yang belum dicatat.\n\nTetap simpan perubahan ini?`)) { return; }
+        if (warnLines.length && !await kpConfirm(`⚠️ Saldo akan MINUS\n\n${warnLines.join('\n')}\n\nPeriksa lagi nominalnya, atau mungkin ada pemasukan / transfer yang belum dicatat.\n\nTetap simpan perubahan ini?`)) { return; }
       } catch(eWarn) { console.warn('Cek saldo minus (edit):', eWarn); }
       // Kunci ID transaksi sebelum isinya berubah, lalu tandai waktu edit (untuk sinkron antar perangkat)
       materializeTxIds(globalData);
@@ -14220,9 +14384,9 @@ function formatReadableSheets(ss, parsed) {
       renderHistoryTable();
       closeEditModal();
       playSuccessSound();
-      alert("Riwayat transaksi berhasil diperbarui & saldo akun disesuaikan!" + feeNote);
+      await kpAlert("Riwayat transaksi berhasil diperbarui & saldo akun disesuaikan!" + feeNote);
     }
-    function deleteTransaction(idx) { let tx = globalData.recentHistory[idx]; if (!tx) return; if (confirm(`Hapus transaksi "${tx.name}" (${formatRp(tx.amount)})? Saldo akun akan dikembalikan secara otomatis.`)) { materializeTxIds(globalData); recordTxDeletion(tx); let amt = tx.amount; if (tx.dariAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.dariAcc)) globalData.currentBalances[tx.dariAcc] += amt; if (tx.keAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.keAcc)) globalData.currentBalances[tx.keAcc] -= amt; globalData.recentHistory.splice(idx, 1); saveStorageData(); renderDashboard(); renderHistoryTable(); alert("Transaksi berhasil dihapus!"); } }
+    async function deleteTransaction(idx) { let tx = globalData.recentHistory[idx]; if (!tx) return; if (await kpConfirm(`Hapus transaksi "${tx.name}" (${formatRp(tx.amount)})? Saldo akun akan dikembalikan secara otomatis.`)) { materializeTxIds(globalData); recordTxDeletion(tx); let amt = tx.amount; if (tx.dariAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.dariAcc)) globalData.currentBalances[tx.dariAcc] += amt; if (tx.keAcc !== '- not applicable -' && globalData.currentBalances.hasOwnProperty(tx.keAcc)) globalData.currentBalances[tx.keAcc] -= amt; globalData.recentHistory.splice(idx, 1); saveStorageData(); renderDashboard(); renderHistoryTable(); await kpAlert("Transaksi berhasil dihapus!"); } }
     function formatFullDateTime(dateStr) { let days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"]; let months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"]; let now = new Date(); let hours = String(now.getHours()).padStart(2, '0'), mins = String(now.getMinutes()).padStart(2, '0'); if (!dateStr) return `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()} (${hours}:${mins})`; let p = dateStr.split('-'); let dObj = new Date(p[0], parseInt(p[1], 10) - 1, p[2]); return `${days[dObj.getDay()]}, ${p[2]} ${months[dObj.getMonth()]} ${p[0]} (${hours}:${mins})`; }
     function showSuccessModal(data, hasAdmin, adminFee) { let modal = document.getElementById('success-modal'), card = document.getElementById('success-card'), msg = document.getElementById('success-msg-text'); var adminInfo = hasAdmin ? `<br/><span class="text-xs text-primary dark:text-blue-400 font-bold">+ Biaya Admin (${formatRp(adminFee)}) dicatat terpisah.</span>` : ""; msg.innerHTML = `Transaksi berhasil dicatat ke sistem!${adminInfo}<br/><br/><b>Detail:</b> ${data.name} (${formatRp(data.amount)})<br/><b>Category:</b> ${data.category}<br/><b>Dari:</b> ${data.dariAcc} ➔ <b>Ke:</b> ${data.keAcc}`; modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); card.classList.add('scale-100'); }, 10); }
     function closeSuccessModal() { let modal = document.getElementById('success-modal'), card = document.getElementById('success-card'); modal.classList.add('opacity-0'); card.classList.remove('scale-100'); card.classList.add('scale-95'); setTimeout(() => modal.classList.add('hidden'), 300); }
@@ -14785,26 +14949,26 @@ function formatReadableSheets(ss, parsed) {
     function renderDebtListSetup() { let container = document.getElementById('setup-debt-list'); if (!container) return; container.innerHTML = ''; if (!globalData.debtData) globalData.debtData = {}; Object.keys(globalData.debtData).forEach(k => { let item = globalData.debtData[k]; let currentPeriod = item.period || 'Bulanan'; let isDateType = currentPeriod.startsWith('Setiap Tanggal'); let selectedBasePeriod = isDateType ? 'Setiap Tanggal' : currentPeriod; let selectedDateNum = isDateType ? currentPeriod.replace('Setiap Tanggal ', '') : '1'; container.innerHTML += `<div class="p-4 bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant space-y-3 text-xs"><div class="flex justify-between items-center border-b border-outline-variant/30 pb-2"><div class="flex items-center gap-2"><b class="text-sm font-bold text-primary dark:text-blue-400">${k}</b><span class="text-[10px] px-2 py-0.5 bg-primary/10 text-primary dark:text-blue-300 rounded-full font-bold">${item.category || 'Utang'}</span></div><span onclick="removeDebtItem('${k}')" class="material-symbols-outlined text-sm text-error cursor-pointer">close</span></div><div class="grid grid-cols-2 md:grid-cols-5 gap-2"><div><label class="text-[9px] uppercase font-bold text-gray-500">Kategori</label><select onchange="updateDebtField('${k}', 'category', this.value)" class="w-full p-1.5 border rounded-lg text-xs bg-surface text-on-surface"><option value="Utang" ${item.category === 'Utang' ? 'selected' : ''}>Utang</option><option value="Cicilan" ${item.category === 'Cicilan' ? 'selected' : ''}>Cicilan</option><option value="Remberg" ${item.category === 'Remberg' ? 'selected' : ''}>Remberg</option></select></div><div><label class="text-[9px] uppercase font-bold text-gray-500">Total Harus Bayar</label><input type="number" value="${item.total || 0}" onchange="updateDebtField('${k}', 'total', this.value)" class="w-full p-1.5 border rounded-lg text-xs font-mono-data bg-surface text-on-surface"></div><div><label class="text-[9px] uppercase font-bold text-gray-500">Sudah Bayar</label><input type="number" value="${item.paid || 0}" onchange="updateDebtField('${k}', 'paid', this.value)" class="w-full p-1.5 border rounded-lg text-xs font-mono-data bg-surface text-on-surface"></div><div><label class="text-[9px] uppercase font-bold text-gray-500">Nominal Pembayaran</label><input type="number" value="${item.monthlyPay || 0}" onchange="updateDebtField('${k}', 'monthlyPay', this.value)" class="w-full p-1.5 border rounded-lg text-xs font-mono-data bg-surface text-on-surface"></div><div><label class="text-[9px] uppercase font-bold text-gray-500">Bayar Setiap</label><select onchange="handleDebtPeriodChange('${k}', this.value)" class="w-full p-1.5 border rounded-lg text-xs bg-surface text-on-surface"><option value="Bulanan" ${selectedBasePeriod === 'Bulanan' ? 'selected' : ''}>Bulanan</option><option value="Mingguan" ${selectedBasePeriod === 'Mingguan' ? 'selected' : ''}>Mingguan</option><option value="Setiap Hari" ${selectedBasePeriod === 'Setiap Hari' ? 'selected' : ''}>Setiap Hari</option><option value="Tahunan" ${selectedBasePeriod === 'Tahunan' ? 'selected' : ''}>Tahunan</option><option value="Setiap Tanggal" ${selectedBasePeriod === 'Setiap Tanggal' ? 'selected' : ''}>Setiap Tanggal...</option></select></div></div><div id="debt-date-box-${k}" class="${isDateType ? '' : 'hidden'} pt-2 flex items-center justify-between flex-wrap gap-2 border-t border-outline-variant/30 mt-2"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-xs text-amber-500">alarm</span><span class="text-[10px] font-bold text-gray-500">Tanggal Jatuh Tempo Tiap Bulan:</span><select onchange="updateDebtDateNum('${k}', this.value)" class="p-1 border rounded text-xs bg-surface text-on-surface font-bold text-primary font-mono-data">${Array.from({length: 31}, (_, i) => `<option value="${i+1}" ${selectedDateNum == (i+1) ? 'selected' : ''}>Tanggal ${i+1}</option>`).join('')}</select></div><span class="text-[9px] text-primary dark:text-blue-400 font-medium">🔔 Pengingat H-3, hari H & status terlambat aktif</span></div></div>`; }); }
     function handleDebtPeriodChange(key, val) { let dateBox = document.getElementById(`debt-date-box-${key}`); if (val === 'Setiap Tanggal') { if (dateBox) dateBox.classList.remove('hidden'); updateDebtField(key, 'period', 'Setiap Tanggal 1'); } else { if (dateBox) dateBox.classList.add('hidden'); updateDebtField(key, 'period', val); } }
     function updateDebtDateNum(key, dateNum) { updateDebtField(key, 'period', `Setiap Tanggal ${dateNum}`); }
-    function addDebtItemModal() { let name = prompt("Masukkan Nama Utang / Cicilan / Rembers baru:"); if (name && name.trim() !== "") { let clean = name.trim(); if (!globalData.debtData) globalData.debtData = {}; if (!globalData.debtData[clean]) { globalData.debtData[clean] = { total: 1000000, paid: 0, monthlyPay: 100000, category: "Cicilan", period: "Bulanan" }; saveStorageData(); renderSetupView(); } else alert("Nama sudah ada!"); } }
+    async function addDebtItemModal() { let name = await kpPrompt("Masukkan Nama Utang / Cicilan / Rembers baru:"); if (name && name.trim() !== "") { let clean = name.trim(); if (!globalData.debtData) globalData.debtData = {}; if (!globalData.debtData[clean]) { globalData.debtData[clean] = { total: 1000000, paid: 0, monthlyPay: 100000, category: "Cicilan", period: "Bulanan" }; saveStorageData(); renderSetupView(); } else await kpAlert("Nama sudah ada!"); } }
     function updateDebtField(key, field, val) { if (!globalData.debtData[key]) return; if (field === 'category' || field === 'period') globalData.debtData[key][field] = val; else globalData.debtData[key][field] = parseFloat(val) || 0; saveStorageData(); }
-    function removeDebtItem(key) { if (confirm(`Hapus ${key} dari database?`)) { delete globalData.debtData[key]; saveStorageData(); renderSetupView(); } }
+    async function removeDebtItem(key) { if (await kpConfirm(`Hapus ${key} dari database?`)) { delete globalData.debtData[key]; saveStorageData(); renderSetupView(); } }
     function renderSimpleCategoryTags(key, containerId) { let container = document.getElementById(containerId); if (!container) return; container.innerHTML = ''; if (!globalData[key]) globalData[key] = []; (globalData[key] || []).forEach((item, idx) => { if (containerId === 'setup-bills-list') container.innerHTML += `<div class="flex items-center justify-between bg-surface-container dark:bg-slate-900 px-3 py-2 rounded-xl border border-outline-variant/40"><span class="text-xs font-bold text-on-surface">${item}</span><span onclick="removeSimpleCategory('${key}', ${idx})" class="material-symbols-outlined text-sm cursor-pointer hover:text-error">close</span></div>`; else container.innerHTML += `<span class="px-3.5 py-2 bg-surface dark:bg-slate-900 border border-outline-variant text-on-surface rounded-xl text-xs font-semibold flex items-center gap-1">${item}<span onclick="removeSimpleCategory('${key}', ${idx})" class="material-symbols-outlined text-xs cursor-pointer hover:text-error ml-1">close</span></span>`; }); }
     function renderValuedCategoryList(objKey, containerId, fields) { let container = document.getElementById(containerId); if (!container) return; container.innerHTML = ''; if (!globalData[objKey]) globalData[objKey] = {}; Object.keys(globalData[objKey]).forEach(k => { let item = globalData[objKey][k]; let inputsHtml = ''; fields.forEach(f => { let val = item[f] !== undefined ? item[f] : ''; inputsHtml += `<div><label class="text-[9px] uppercase font-bold text-gray-500">${f.toUpperCase()}</label><input type="${typeof val === 'number' ? 'number' : (f === 'deadline' ? 'date' : 'text')}" value="${val}" onchange="updateValuedCategoryField('${objKey}', '${k}', '${f}', this.value)" class="w-full p-1.5 border rounded-lg text-xs font-mono-data bg-surface dark:bg-slate-800 text-on-surface"></div>`; }); container.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant space-y-2 text-xs"><div class="flex justify-between items-center border-b border-outline-variant/30 pb-1"><b class="font-bold text-primary dark:text-blue-400 text-sm">${k}</b><span onclick="removeValuedCategoryItem('${objKey}', '${k}')" class="material-symbols-outlined text-sm text-error cursor-pointer">close</span></div><div class="grid grid-cols-2 md:grid-cols-4 gap-2">${inputsHtml}</div></div>`; }); }
-    function addAccountItem() { let name = prompt("Masukkan nama Akun / Bank / E-Wallet baru:"); if (name && name.trim() !== "") { let clean = name.trim(); if (!globalData.accounts.includes(clean)) { globalData.accounts.push(clean); globalData.currentBalances[clean] = 0; if (!globalData.accountDetails) globalData.accountDetails = {}; globalData.accountDetails[clean] = { bankName: clean, accNo: "-", owner: "-" }; saveStorageData(); renderSetupView(); } else alert("Nama akun sudah ada!"); } }
-    function removeAccountItem(idx) { let accName = globalData.accounts[idx]; if (confirm(`Hapus akun ${accName}?`)) { globalData.accounts.splice(idx, 1); delete globalData.currentBalances[accName]; if (globalData.accountDetails) delete globalData.accountDetails[accName]; saveStorageData(); renderSetupView(); } }
-    function addSimpleCategory(key, labelName) { let name = prompt(`Masukkan nama ${labelName} baru:`); if (name && name.trim() !== "") { let clean = name.trim(); if (!globalData[key]) globalData[key] = []; if (!globalData[key].includes(clean)) { globalData[key].push(clean); saveStorageData(); renderSetupView(); } else alert("Kategori tersebut sudah ada!"); } }
+    async function addAccountItem() { let name = await kpPrompt("Masukkan nama Akun / Bank / E-Wallet baru:"); if (name && name.trim() !== "") { let clean = name.trim(); if (!globalData.accounts.includes(clean)) { globalData.accounts.push(clean); globalData.currentBalances[clean] = 0; if (!globalData.accountDetails) globalData.accountDetails = {}; globalData.accountDetails[clean] = { bankName: clean, accNo: "-", owner: "-" }; saveStorageData(); renderSetupView(); } else await kpAlert("Nama akun sudah ada!"); } }
+    async function removeAccountItem(idx) { let accName = globalData.accounts[idx]; if (await kpConfirm(`Hapus akun ${accName}?`)) { globalData.accounts.splice(idx, 1); delete globalData.currentBalances[accName]; if (globalData.accountDetails) delete globalData.accountDetails[accName]; saveStorageData(); renderSetupView(); } }
+    async function addSimpleCategory(key, labelName) { let name = await kpPrompt(`Masukkan nama ${labelName} baru:`); if (name && name.trim() !== "") { let clean = name.trim(); if (!globalData[key]) globalData[key] = []; if (!globalData[key].includes(clean)) { globalData[key].push(clean); saveStorageData(); renderSetupView(); } else await kpAlert("Kategori tersebut sudah ada!"); } }
     function removeSimpleCategory(key, idx) { let catName = globalData[key][idx]; globalData[key].splice(idx, 1); if (key === 'spendings' && globalData.monthlyBudgets && globalData.monthlyBudgets[catName] !== undefined) { delete globalData.monthlyBudgets[catName]; } saveStorageData(); renderSetupView(); }
-    function addValuedCategory(objKey, labelName) { let name = prompt(`Masukkan nama ${labelName} baru:`); if (name && name.trim() !== "") { let clean = name.trim(); if (!globalData[objKey]) globalData[objKey] = {}; if (!globalData[objKey][clean]) { if (['investData', 'sinkingData', 'goalsData'].includes(objKey)) globalData[objKey][clean] = { initial: 0, target: 1000000, deadline: "2027-01-01", durationMonths: 12, used: 0 }; else if (objKey === 'receivablesData') globalData[objKey][clean] = { total: 1000000, deadline: "2026-12-31", paid: 0 }; else if (objKey === 'nonMoneyAssets') globalData[objKey][clean] = { type: "Emas", qty: 10, unit: "Gram", estimatedPrice: 1000000, used: 0 }; saveStorageData(); renderSetupView(); } else alert("Nama item sudah ada!"); } }
-    function removeValuedCategoryItem(objKey, keyName) { if (confirm(`Hapus ${keyName}?`)) { delete globalData[objKey][keyName]; saveStorageData(); renderSetupView(); } }
+    async function addValuedCategory(objKey, labelName) { let name = await kpPrompt(`Masukkan nama ${labelName} baru:`); if (name && name.trim() !== "") { let clean = name.trim(); if (!globalData[objKey]) globalData[objKey] = {}; if (!globalData[objKey][clean]) { if (['investData', 'sinkingData', 'goalsData'].includes(objKey)) globalData[objKey][clean] = { initial: 0, target: 1000000, deadline: "2027-01-01", durationMonths: 12, used: 0 }; else if (objKey === 'receivablesData') globalData[objKey][clean] = { total: 1000000, deadline: "2026-12-31", paid: 0 }; else if (objKey === 'nonMoneyAssets') globalData[objKey][clean] = { type: "Emas", qty: 10, unit: "Gram", estimatedPrice: 1000000, used: 0 }; saveStorageData(); renderSetupView(); } else await kpAlert("Nama item sudah ada!"); } }
+    async function removeValuedCategoryItem(objKey, keyName) { if (await kpConfirm(`Hapus ${keyName}?`)) { delete globalData[objKey][keyName]; saveStorageData(); renderSetupView(); } }
     function updateValuedCategoryField(objKey, itemKey, field, val) { if (!globalData[objKey][itemKey]) return; if (['deadline', 'type', 'unit'].includes(field)) globalData[objKey][itemKey][field] = val; else globalData[objKey][itemKey][field] = parseFloat(val) || 0; saveStorageData(); }
-    function addRoutinePaymentItem() { let name = prompt("Masukkan nama Pembayaran Rutin baru:"); if (name && name.trim() !== "") { let clean = name.trim(); if (!globalData.routinePayments) globalData.routinePayments = {}; globalData.routinePayments[clean] = { amount: 0, dueDay: 1 }; saveStorageData(); renderSetupView(); } }
+    async function addRoutinePaymentItem() { let name = await kpPrompt("Masukkan nama Pembayaran Rutin baru:"); if (name && name.trim() !== "") { let clean = name.trim(); if (!globalData.routinePayments) globalData.routinePayments = {}; globalData.routinePayments[clean] = { amount: 0, dueDay: 1 }; saveStorageData(); renderSetupView(); } }
     function removeRoutinePaymentItem(key) { delete globalData.routinePayments[key]; saveStorageData(); renderSetupView(); }
     async function changeOwnerPassword() { 
       let np = document.getElementById('new-pass-input').value; 
       if (np && np.trim() !== "") { 
         let cleanPass = np.trim();
         if (!/^[0-9]{4,6}$/.test(cleanPass)) {
-          alert("PIN Akses Baru harus berupa 4 hingga 6 digit angka (contoh: 482916)!");
+          await kpAlert("PIN Akses Baru harus berupa 4 hingga 6 digit angka (contoh: 482916)!");
           return;
         }
         globalData.ownerPassword = cleanPass; 
@@ -14823,7 +14987,7 @@ function formatReadableSheets(ss, parsed) {
           } catch(e) {}
         }
 
-        alert("Password & PIN Akses berhasil diperbarui!"); 
+        await kpAlert("Password & PIN Akses berhasil diperbarui!"); 
         document.getElementById('new-pass-input').value = ''; 
       } 
     }
@@ -14833,7 +14997,7 @@ function formatReadableSheets(ss, parsed) {
     async function verifySetupPassword() { 
       let p = (document.getElementById('setup-pass-input').value || '').trim(); 
       if (!p) {
-        alert("Masukkan Password atau Kode Token Lisensi!");
+        await kpAlert("Masukkan Password atau Kode Token Lisensi!");
         return;
       }
 
@@ -14893,7 +15057,7 @@ function formatReadableSheets(ss, parsed) {
               showSyncToast("🎉 Lisensi Berhasil Diaktivasi! Menu Setup terbuka.");
               return;
             } else if (res && res.isBurned) {
-              let personalPinPrompt = prompt("Token ini telah dipersonalisasi di HP Utama.\n\nMasukkan PIN Pribadi Anda untuk membuka akses Setup:");
+              let personalPinPrompt = await kpPrompt("Token ini telah dipersonalisasi di HP Utama.\n\nMasukkan PIN Pribadi Anda untuk membuka akses Setup:");
               if (personalPinPrompt && personalPinPrompt.trim() !== '') {
                 let retryRes = await callClientLicenseApi({
                   action: 'validate_token',
@@ -14917,13 +15081,13 @@ function formatReadableSheets(ss, parsed) {
                   showSyncToast("🎉 Lisensi Terverifikasi! Menu Setup terbuka.");
                   return;
                 } else {
-                  alert((retryRes && retryRes.message) ? retryRes.message : "PIN Pribadi salah!");
+                  await kpAlert((retryRes && retryRes.message) ? retryRes.message : "PIN Pribadi salah!");
                   return;
                 }
               }
               return;
             } else {
-              alert((res && res.message) ? res.message : "Token lisensi tidak valid.");
+              await kpAlert((res && res.message) ? res.message : "Token lisensi tidak valid.");
               return;
             }
           } catch(e) {
@@ -14992,7 +15156,7 @@ function formatReadableSheets(ss, parsed) {
         return;
       }
 
-      alert('Password / Token Lisensi salah! Masukkan Kode Token Pembelian Anda (PRO-XXXX-XXXX-XXXX) atau PIN Pribadi Anda.'); 
+      await kpAlert('Password / Token Lisensi salah! Masukkan Kode Token Pembelian Anda (PRO-XXXX-XXXX-XXXX) atau PIN Pribadi Anda.'); 
     }
 
     // === PWA & SERVICE WORKER INSTALLATION MANAGEMENT ===
@@ -15089,7 +15253,7 @@ function formatReadableSheets(ss, parsed) {
       }
 
       if (!('serviceWorker' in navigator)) {
-        alert("Browser ini tidak mendukung Service Worker.");
+        await kpAlert("Browser ini tidak mendukung Service Worker.");
         if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
         return;
       }
@@ -15156,7 +15320,7 @@ function formatReadableSheets(ss, parsed) {
     }
 
     async function forceHardRefreshApp() {
-      if (!confirm("Bersihkan cache aplikasi dan muat ulang ke versi paling baru dari server?\n\nCatatan: Seluruh data keuangan, catatan, dan PIN Anda 100% AMAN di perangkat ini.")) return;
+      if (!await kpConfirm("Bersihkan cache aplikasi dan muat ulang ke versi paling baru dari server?\n\nCatatan: Seluruh data keuangan, catatan, dan PIN Anda 100% AMAN di perangkat ini.")) return;
 
       showSyncToast("Membersihkan cache & memuat versi baru...");
 
@@ -15260,11 +15424,11 @@ async function handleGoogleRedirectReturn() {
   try { saved = JSON.parse(localStorage.getItem('KEUANGANKU_OAUTH_STATE') || 'null'); } catch(e) {}
   localStorage.removeItem('KEUANGANKU_OAUTH_STATE');
   if (!saved || saved.state !== params.get('state') || Date.now() - (Number(saved.at) || 0) > 15 * 60 * 1000) {
-    alert("Sesi masuk Google sudah kedaluwarsa atau tidak cocok. Silakan coba lagi.");
+    await kpAlert("Sesi masuk Google sudah kedaluwarsa atau tidak cocok. Silakan coba lagi.");
     return;
   }
   if (params.get('error')) {
-    if (params.get('error') !== 'access_denied') alert("Gagal masuk dengan Google: " + params.get('error'));
+    if (params.get('error') !== 'access_denied') await kpAlert("Gagal masuk dengan Google: " + params.get('error'));
     return;
   }
   let token = params.get('access_token');
@@ -15322,7 +15486,7 @@ async function handleGoogleSignIn() {
 
   // Jika akun demo iklan, berikan opsi hubungkan akun Google demo asli atau simulasi instan
   if (isDemo || (lic && lic.token === 'PRO-DEMO-IKLAN-2026')) {
-    let pickRealDemo = confirm(
+    let pickRealDemo = await kpConfirm(
       "🎬 KONEKSI GOOGLE DRIVE (MODE DEMO IKLAN):\n\n" +
       "Anda sedang dalam Mode Demo. Google Drive akun asli Anda telah DIKUNCI 100% AMAN.\n\n" +
       "Pilih jenis koneksi untuk demonstrasi video iklan:\n" +
@@ -15337,7 +15501,7 @@ async function handleGoogleSignIn() {
 
   // Cek jika dibuka via file:/// (Google OAuth mutlak melarang origin file://)
   if (window.location.protocol === 'file:') {
-    alert("⚠️ Perhatian Keamanan Google:\n\nGoogle Sign-In tidak dapat berjalan jika aplikasi dibuka langsung dari folder lokal komputer (file:///).\n\nSilakan buka aplikasi melalui link resmi:\n👉 https://keuanganku.pro/\n\natau melalui local server (http://localhost:8000).");
+    await kpAlert("⚠️ Perhatian Keamanan Google:\n\nGoogle Sign-In tidak dapat berjalan jika aplikasi dibuka langsung dari folder lokal komputer (file:///).\n\nSilakan buka aplikasi melalui link resmi:\n👉 https://keuanganku.pro/\n\natau melalui local server (http://localhost:8000).");
     return;
   }
 
@@ -15364,7 +15528,7 @@ async function handleGoogleSignIn() {
       s.defer = true;
       document.head.appendChild(s);
     }
-    alert("⚠️ SDK Google Identity Services sedang dimuat atau diblokir oleh Adblocker/Browser.\n\n1. Pastikan perangkat Anda terhubung ke internet.\n2. Jika Anda mengaktifkan Brave Shields / Adblocker, mohon nonaktifkan untuk situs ini.\n3. Tunggu 3 detik dan klik tombol 'Masuk dengan Akun Google' kembali.");
+    await kpAlert("⚠️ SDK Google Identity Services sedang dimuat atau diblokir oleh Adblocker/Browser.\n\n1. Pastikan perangkat Anda terhubung ke internet.\n2. Jika Anda mengaktifkan Brave Shields / Adblocker, mohon nonaktifkan untuk situs ini.\n3. Tunggu 3 detik dan klik tombol 'Masuk dengan Akun Google' kembali.");
     return;
   }
 
@@ -15389,7 +15553,7 @@ async function handleGoogleSignIn() {
         if (tokenResponse.error) {
           console.warn("Google OAuth error:", tokenResponse);
           let errDetail = tokenResponse.error_description || tokenResponse.details || tokenResponse.error;
-          alert("Gagal masuk dengan Google (" + tokenResponse.error + "):\n\n" + errDetail + "\n\nDomain asal (Origin): " + window.location.origin);
+          await kpAlert("Gagal masuk dengan Google (" + tokenResponse.error + "):\n\n" + errDetail + "\n\nDomain asal (Origin): " + window.location.origin);
           return;
         }
 
@@ -15418,7 +15582,7 @@ async function handleGoogleSignIn() {
     console.error("Gagal inisialisasi Google Sign-In:", err);
     if (btnText) btnText.textContent = oldText;
     if (btn) btn.disabled = false;
-    alert("Gagal membuka dialog Google:\n\n" + (err.message || err));
+    await kpAlert("Gagal membuka dialog Google:\n\n" + (err.message || err));
   }
 }
 
@@ -15539,7 +15703,7 @@ function waitForRejoinApproval(token, requestId, accessToken) {
     if (busy) return;
     if (Date.now() - started > 15 * 60 * 1000) {
       closeRejoinOverlay();
-      alert("Permintaan masuk kembali sudah kedaluwarsa. Silakan coba 'Masuk dengan Akun Google' lagi.");
+      await kpAlert("Permintaan masuk kembali sudah kedaluwarsa. Silakan coba 'Masuk dengan Akun Google' lagi.");
       return;
     }
     busy = true;
@@ -15554,10 +15718,10 @@ function waitForRejoinApproval(token, requestId, accessToken) {
         await processGoogleLoginToken(accessToken);
       } else if (st === 'DENIED') {
         closeRejoinOverlay();
-        alert("Permintaan masuk kembali DITOLAK oleh perangkat yang terhubung.");
+        await kpAlert("Permintaan masuk kembali DITOLAK oleh perangkat yang terhubung.");
       } else if (st === 'EXPIRED') {
         closeRejoinOverlay();
-        alert("Permintaan masuk kembali sudah tidak berlaku. Silakan coba 'Masuk dengan Akun Google' lagi.");
+        await kpAlert("Permintaan masuk kembali sudah tidak berlaku. Silakan coba 'Masuk dengan Akun Google' lagi.");
       }
     } catch(e) {
       let s = document.getElementById('rejoin-wait-status');
@@ -15581,7 +15745,7 @@ async function pollJoinRequests() {
     for (let q of reqs) {
       if (answeredJoinIds[q.id]) continue;
       answeredJoinIds[q.id] = true;
-      let ok = confirm(`🔐 Permintaan masuk kembali\n\nPerangkat "${q.deviceName}"${q.email ? ' (' + q.email + ')' : ''} yang pernah dikeluarkan ingin masuk kembali ke lisensi Anda.\n\nIzinkan? (OK = Izinkan, Batal = Tolak)`);
+      let ok = await kpConfirm(`🔐 Permintaan masuk kembali\n\nPerangkat "${q.deviceName}"${q.email ? ' (' + q.email + ')' : ''} yang pernah dikeluarkan ingin masuk kembali ke lisensi Anda.\n\nIzinkan? (OK = Izinkan, Batal = Tolak)`);
       let a = await callClientLicenseApi({ action: 'answer_join_request', token: lic.token, requestId: q.id, approve: ok, deviceId: getOrCreateDeviceId() });
       if (a && a.success && ok && a.deviceId) {
         // Tandai di data bahwa perangkat itu aktif kembali (agar tidak langsung terkunci lagi setelah sinkron)
@@ -15591,7 +15755,7 @@ async function pollJoinRequests() {
         showSyncToast("✓ Perangkat \"" + q.deviceName + "\" diizinkan masuk kembali");
         if (typeof loadConnectedDevices === 'function') setTimeout(() => loadConnectedDevices(false), 4000);
       } else if (a && !a.success) {
-        alert(a.message || "Gagal menjawab permintaan.");
+        await kpAlert(a.message || "Gagal menjawab permintaan.");
       }
     }
   } catch(e) {
@@ -15711,7 +15875,7 @@ async function processGoogleLoginToken(accessToken) {
     if (!detectedEmail) {
       // Jangan pernah mengisi email "pemilik" secara otomatis. Minta pengguna login ulang.
       if (btnText) btnText.textContent = 'Masuk dengan Akun Google';
-      alert("Email akun Google tidak dapat dibaca.\n\nCoba langkah berikut:\n1. Pastikan internet stabil, lalu masuk lagi.\n2. Di jendela izin Google, pilih 'Lanjutkan' / 'Izinkan semua'.\n3. Jika memakai Safari di iPad/iPhone: Pengaturan > Safari > matikan sementara 'Cegah Pelacakan Lintas Situs', lalu coba lagi.\n\nAtau gunakan 'Tautkan via Barcode (QR)' dari HP utama Anda.\n\nKode diagnosa: " + (window.__gLoginDiag || []).join(' ') + ' | izin: ' + (window.__gGrantedScope || '-'));
+      await kpAlert("Email akun Google tidak dapat dibaca.\n\nCoba langkah berikut:\n1. Pastikan internet stabil, lalu masuk lagi.\n2. Di jendela izin Google, pilih 'Lanjutkan' / 'Izinkan semua'.\n3. Jika memakai Safari di iPad/iPhone: Pengaturan > Safari > matikan sementara 'Cegah Pelacakan Lintas Situs', lalu coba lagi.\n\nAtau gunakan 'Tautkan via Barcode (QR)' dari HP utama Anda.\n\nKode diagnosa: " + (window.__gLoginDiag || []).join(' ') + ' | izin: ' + (window.__gGrantedScope || '-'));
       return;
     }
 
@@ -15734,7 +15898,7 @@ async function processGoogleLoginToken(accessToken) {
       } catch(e) {}
 
       if (realEmail && detectedEmail.toLowerCase() === realEmail) {
-        alert("⚠️ PERINGATAN KEAMANAN DATA PRIBADI:\n\nAnda memilih Akun Google pribadi asli Anda (" + detectedEmail + ") saat Mode Demo aktif!\n\nDemi mencegah data demo menimpa Google Drive asli Anda, proses ini dibatalkan secara otomatis.\n\nSilakan pilih akun Google lain (khusus demo/cadangan) untuk demonstrasi iklan.");
+        await kpAlert("⚠️ PERINGATAN KEAMANAN DATA PRIBADI:\n\nAnda memilih Akun Google pribadi asli Anda (" + detectedEmail + ") saat Mode Demo aktif!\n\nDemi mencegah data demo menimpa Google Drive asli Anda, proses ini dibatalkan secara otomatis.\n\nSilakan pilih akun Google lain (khusus demo/cadangan) untuk demonstrasi iklan.");
         if (btnText) btnText.textContent = 'Masuk dengan Akun Google';
         return;
       }
@@ -15762,7 +15926,7 @@ async function processGoogleLoginToken(accessToken) {
       hideSplashScreenAndTriggerAlerts();
       if (typeof updateByodbUi === 'function') updateByodbUi();
 
-      alert(`🎬 AKUN GOOGLE DEMO TERHUBUNG!\n\nEmail Demo: ${googleUser.email}\nStatus: Wadah Demo Terisolasi (Sandbox).\n\nDatabase percontohan berhasil dibuat di Google Drive akun demo Anda.\n\n🛡️ Google Drive akun pribadi Anda tetap 100% AMAN & TERKUNCI.`);
+      await kpAlert(`🎬 AKUN GOOGLE DEMO TERHUBUNG!\n\nEmail Demo: ${googleUser.email}\nStatus: Wadah Demo Terisolasi (Sandbox).\n\nDatabase percontohan berhasil dibuat di Google Drive akun demo Anda.\n\n🛡️ Google Drive akun pribadi Anda tetap 100% AMAN & TERKUNCI.`);
       return;
     }
 
@@ -15879,9 +16043,9 @@ async function processGoogleLoginToken(accessToken) {
       renderSetupPasswordCard(res.data);
 
       if (needsQrForCloud) {
-        alert(`Selamat datang kembali, ${res.data.buyerName}!\n\nAnda sudah masuk dengan ${googleUser.email}.\n\nPENTING: data terbaru Anda tersimpan di Cloud Script dan perangkat ini belum memiliki kuncinya. Agar data dari perangkat lain ikut muncul:\n\nDi HP utama, buka menu tautkan perangkat lalu Scan QR dari perangkat ini (cukup sekali).\n\nKode diagnosa Drive: ${(function(){ let d = window.__driveDiag; return d ? ('file ' + d.files + ' | ' + d.read.join(', ') + ' | pilih ' + d.pick) : 'tidak diperiksa'; })()}`);
+        await kpAlert(`Selamat datang kembali, ${res.data.buyerName}!\n\nAnda sudah masuk dengan ${googleUser.email}.\n\nPENTING: data terbaru Anda tersimpan di Cloud Script dan perangkat ini belum memiliki kuncinya. Agar data dari perangkat lain ikut muncul:\n\nDi HP utama, buka menu tautkan perangkat lalu Scan QR dari perangkat ini (cukup sekali).\n\nKode diagnosa Drive: ${(function(){ let d = window.__driveDiag; return d ? ('file ' + d.files + ' | ' + d.read.join(', ') + ' | pilih ' + d.pick) : 'tidak diperiksa'; })()}`);
       } else {
-        alert(`Selamat datang kembali, ${res.data.buyerName}!\n\nAplikasi Keuanganku PRO terbuka menggunakan database pribadi Anda (${googleUser.email}).`);
+        await kpAlert(`Selamat datang kembali, ${res.data.buyerName}!\n\nAplikasi Keuanganku PRO terbuka menggunakan database pribadi Anda (${googleUser.email}).`);
       }
       return;
     }
@@ -15935,7 +16099,7 @@ async function processGoogleLoginToken(accessToken) {
       playSuccessSound();
       showSyncToast("✓ Akun Google & Database Berhasil Ditautkan!");
 
-      alert(`Selamat, ${localLic.buyerName || 'Pemilik'}!\n\nAkun Google (${googleUser.email}) berhasil ditautkan ke Lisensi Anda.\n\nDatabase spreadsheet telah terhubung di Google Drive Anda.`);
+      await kpAlert(`Selamat, ${localLic.buyerName || 'Pemilik'}!\n\nAkun Google (${googleUser.email}) berhasil ditautkan ke Lisensi Anda.\n\nDatabase spreadsheet telah terhubung di Google Drive Anda.`);
       return;
     }
 
@@ -15964,18 +16128,18 @@ async function processGoogleLoginToken(accessToken) {
     if (res && !res.success) {
       if (btnText) btnText.textContent = 'Masuk dengan Akun Google';
       let diagLine = (res.diag ? ('server ' + res.diag + ' ') : '') + ((window.__gLoginDiag || []).join(' '));
-      alert("Pemberitahuan Sistem:\n\n" + (res.message || "Gagal memverifikasi akun Google Anda.") + (diagLine.trim() ? ("\n\nKode diagnosa: " + diagLine.trim() + ' | izin: ' + (window.__gGrantedScope || '-')) : ''));
+      await kpAlert("Pemberitahuan Sistem:\n\n" + (res.message || "Gagal memverifikasi akun Google Anda.") + (diagLine.trim() ? ("\n\nKode diagnosa: " + diagLine.trim() + ' | izin: ' + (window.__gGrantedScope || '-')) : ''));
       return;
     }
 
     // Skenario D: server lisensi tidak menjawab (internet lambat / browser memblokir) -> jangan diam saja
     if (btnText) btnText.textContent = 'Masuk dengan Akun Google';
-    alert("Server lisensi tidak merespons.\n\nPeriksa koneksi internet lalu coba 'Masuk dengan Akun Google' sekali lagi.\n\nJika tetap gagal, gunakan 'Tautkan via Barcode (QR)' dari HP utama Anda.");
+    await kpAlert("Server lisensi tidak merespons.\n\nPeriksa koneksi internet lalu coba 'Masuk dengan Akun Google' sekali lagi.\n\nJika tetap gagal, gunakan 'Tautkan via Barcode (QR)' dari HP utama Anda.");
 
   } catch(err) {
     console.error("Error processGoogleLoginToken:", err);
     if (btnText) btnText.textContent = 'Masuk dengan Akun Google';
-    alert("Terjadi kendala saat verifikasi: " + (err.message || err));
+    await kpAlert("Terjadi kendala saat verifikasi: " + (err.message || err));
   }
 }
 
@@ -16013,7 +16177,7 @@ function closeBindGoogleModal() {
  */
 async function submitBindGoogleToken() {
   if (!pendingGoogleAuth || !pendingGoogleAuth.googleUser) {
-    alert("Sesi Google kedaluwarsa. Silakan klik 'Masuk dengan Akun Google' kembali.");
+    await kpAlert("Sesi Google kedaluwarsa. Silakan klik 'Masuk dengan Akun Google' kembali.");
     closeBindGoogleModal();
     return;
   }
@@ -16054,7 +16218,7 @@ async function submitBindGoogleToken() {
 
     // Token sudah aktif di perangkat lain: minta PIN Pribadi sebagai bukti kepemilikan
     if (res && !res.success && res.needsPin) {
-      let pinAsk = prompt((res.message || "Token ini sudah aktif di perangkat lain.") + "\n\nMasukkan PIN Pribadi Anda:");
+      let pinAsk = await kpPrompt((res.message || "Token ini sudah aktif di perangkat lain.") + "\n\nMasukkan PIN Pribadi Anda:");
       if (pinAsk && pinAsk.trim()) {
         bindPayload.pin = pinAsk.trim();
         res = await callClientLicenseApi(bindPayload);
@@ -16098,7 +16262,7 @@ async function submitBindGoogleToken() {
       // Jangan buka aplikasi tanpa lisensi tersimpan (dulu bisa terbuka tanpa terdaftar di server)
       if (!getSavedLicense()) {
         if (btn) { btn.innerHTML = origHtml; btn.disabled = false; }
-        alert((licRes && licRes.message) || "Penautan belum selesai: server lisensi tidak merespons. Periksa internet lalu coba lagi, atau tautkan lewat Scan QR dari HP utama.");
+        await kpAlert((licRes && licRes.message) || "Penautan belum selesai: server lisensi tidak merespons. Periksa internet lalu coba lagi, atau tautkan lewat Scan QR dari HP utama.");
         return;
       }
       saveGoogleSession(googleUser);
@@ -16123,7 +16287,7 @@ async function submitBindGoogleToken() {
         renderSetupPasswordCard(licRes.data);
       }
 
-      alert(`Selamat! Akun Google Anda (${googleUser.email}) berhasil ditautkan permanen dengan Lisensi ${tokenVal}.
+      await kpAlert(`Selamat! Akun Google Anda (${googleUser.email}) berhasil ditautkan permanen dengan Lisensi ${tokenVal}.
 
 Database Google Sheets telah otomatis dibuat di Google Drive Anda. Di perangkat lain (HP / Laptop), Anda cukup klik 'Masuk dengan Akun Google' untuk langsung masuk!`);
     } else {
@@ -16443,7 +16607,7 @@ async function syncByodbNow(isManualClick = true) {
 
   if (!gUser || !gUser.accessToken) {
     if (isManualClick) {
-      alert("Akun Google belum terhubung.\n\nKlik 'Masuk dengan Akun Google' untuk menghubungkan akun Anda.");
+      await kpAlert("Akun Google belum terhubung.\n\nKlik 'Masuk dengan Akun Google' untuk menghubungkan akun Anda.");
       handleGoogleSignIn();
     }
     return;
@@ -16460,7 +16624,7 @@ async function syncByodbNow(isManualClick = true) {
     showSyncToast("✓ (Simulasi) Tersimpan di Google Drive Demo!");
     if (isManualClick) {
       playSuccessSound();
-      alert("✓ (SIMULASI IKLAN BERHASIL)\n\nData percontohan tersimpan di Google Drive Demo ('Database Keuanganku PRO')!\n\n🛡️ Keamanan: Google Drive akun pribadi Anda tetap 100% aman dan terkunci.");
+      await kpAlert("✓ (SIMULASI IKLAN BERHASIL)\n\nData percontohan tersimpan di Google Drive Demo ('Database Keuanganku PRO')!\n\n🛡️ Keamanan: Google Drive akun pribadi Anda tetap 100% aman dan terkunci.");
       updateByodbUi();
     }
     return;
@@ -16485,7 +16649,7 @@ async function syncByodbNow(isManualClick = true) {
     if (result && result.blocked) {
       if (statusText) statusText.textContent = origText;
       if (isManualClick) {
-        alert("🛡️ MODE DEMO IKLAN AKTIF:\n\nSinkronisasi ke Google Drive asli Anda telah DIBLOKIR demi keamanan data pribadi Anda.\n\nUntuk demonstrasi Drive, Anda dapat menghubungkan Akun Google khusus Demo.");
+        await kpAlert("🛡️ MODE DEMO IKLAN AKTIF:\n\nSinkronisasi ke Google Drive asli Anda telah DIBLOKIR demi keamanan data pribadi Anda.\n\nUntuk demonstrasi Drive, Anda dapat menghubungkan Akun Google khusus Demo.");
       }
       return;
     }
@@ -16496,7 +16660,7 @@ async function syncByodbNow(isManualClick = true) {
     showSyncToast(isDemo ? "✓ Tersimpan di Drive Demo!" : "✓ Tersimpan di Google Drive!");
     if (isManualClick) {
       playSuccessSound();
-      alert(isDemo
+      await kpAlert(isDemo
         ? "✓ Seluruh data percontohan berhasil disimpan ke Google Drive Demo ('Database Keuanganku PRO')!\n\n🛡️ Google Drive pribadi Anda tetap aman terlindungi."
         : "✓ Seluruh data keuangan Anda berhasil disimpan ke Google Drive ('Database Keuanganku PRO')!"
       );
@@ -16507,10 +16671,10 @@ async function syncByodbNow(isManualClick = true) {
     console.error("syncByodbNow error:", err);
     if (isManualClick) {
       if (String(err.message || err).includes("AUTH_REQUIRED")) {
-        alert("⚠️ Izin Google Drive Diperlukan:\n\nSesi Google Anda memerlukan izin Spreadsheet atau telah berakhir.\n\nKlik OK untuk masuk kembali dan pastikan memilih 'Lanjutkan' / centang izin Google Drive.");
+        await kpAlert("⚠️ Izin Google Drive Diperlukan:\n\nSesi Google Anda memerlukan izin Spreadsheet atau telah berakhir.\n\nKlik OK untuk masuk kembali dan pastikan memilih 'Lanjutkan' / centang izin Google Drive.");
         handleGoogleSignIn();
       } else {
-        alert("Gagal sinkronisasi ke Google Drive:\n\n" + (err.message || err));
+        await kpAlert("Gagal sinkronisasi ke Google Drive:\n\n" + (err.message || err));
       }
     }
   }
@@ -16525,7 +16689,7 @@ async function pullByodbNow(isManualClick = true) {
   let sheetId = localStorage.getItem("KEUANGANKU_BYODB_SHEET_ID");
 
   if (!gUser || !gUser.accessToken || !sheetId) {
-    if (isManualClick) alert("Google Drive belum terhubung.");
+    if (isManualClick) await kpAlert("Google Drive belum terhubung.");
     return;
   }
 
@@ -16538,7 +16702,7 @@ async function pullByodbNow(isManualClick = true) {
     await new Promise(r => setTimeout(r, 500));
     if (statusText) statusText.textContent = 'TERSIMPAN DI DRIVE DEMO';
     showSyncToast("✓ (Simulasi) Data dimuat dari Google Drive Demo!");
-    if (isManualClick) alert("✓ (SIMULASI IKLAN BERHASIL)\n\nData percontohan berhasil dimuat dari Google Drive Demo!");
+    if (isManualClick) await kpAlert("✓ (SIMULASI IKLAN BERHASIL)\n\nData percontohan berhasil dimuat dari Google Drive Demo!");
     return;
   }
 
@@ -16579,16 +16743,16 @@ async function pullByodbNow(isManualClick = true) {
       if (statusText) statusText.textContent = 'TERSIMPAN DI GOOGLE DRIVE';
       try { initApp(); } catch(eI) {}
       showSyncToast(fromCloud ? "✓ Data terbaru dimuat dari Cloud" : "✓ Data berhasil diperbarui dari Google Drive!");
-      if (isManualClick) alert(fromCloud
+      if (isManualClick) await kpAlert(fromCloud
         ? "✓ Data terbaru berhasil dimuat (kunci Cloud didapat dari Google Drive). Perangkat ini kini sinkron dengan perangkat lain."
         : ("✓ Data dimuat dari Google Drive, tetapi salinan ini belum membawa kunci Cloud, jadi belum sinkron otomatis dengan perangkat lain.\n\nDi perangkat utama: Setup > Database & Cadangan > Upload ke Drive, lalu tekan Tarik dari Drive lagi di sini." + diagTxt));
     } else {
       if (statusText) statusText.textContent = origText;
-      if (isManualClick) alert("Database Google Drive masih kosong atau belum pernah di-upload.\n\nDi perangkat utama: Setup > Database & Cadangan > Upload ke Drive, lalu tekan Tarik dari Drive lagi di sini." + diagTxt);
+      if (isManualClick) await kpAlert("Database Google Drive masih kosong atau belum pernah di-upload.\n\nDi perangkat utama: Setup > Database & Cadangan > Upload ke Drive, lalu tekan Tarik dari Drive lagi di sini." + diagTxt);
     }
   } catch(e) {
     if (statusText) statusText.textContent = origText;
-    if (isManualClick) alert("Gagal mengambil data dari Google Drive: " + (e.message || e));
+    if (isManualClick) await kpAlert("Gagal mengambil data dari Google Drive: " + (e.message || e));
   }
 }
 
@@ -16601,18 +16765,18 @@ async function migrateOldCloudToByodb() {
   if (!cloudUrl && urlInput && urlInput.value) cloudUrl = urlInput.value.trim();
 
   if (!cloudUrl || !cloudUrl.startsWith("http")) {
-    alert("Link Cloud Script lama belum diatur di perangkat ini.");
+    await kpAlert("Link Cloud Script lama belum diatur di perangkat ini.");
     return;
   }
 
   let gUser = getGoogleSession();
   if (!gUser || !gUser.accessToken) {
-    alert("Akun Google belum terhubung.\n\nSilakan klik 'Hubungkan Akun Google' terlebih dahulu.");
+    await kpAlert("Akun Google belum terhubung.\n\nSilakan klik 'Hubungkan Akun Google' terlebih dahulu.");
     handleGoogleSignIn();
     return;
   }
 
-  if (!confirm("Salin & migrasikan seluruh data keuangan dari Cloud lama ke Google Drive baru Anda sekarang?\n\n(Seluruh rekening, saldo, dan riwayat transaksi lama akan dipindahkan ke Google Drive baru).")) return;
+  if (!await kpConfirm("Salin & migrasikan seluruh data keuangan dari Cloud lama ke Google Drive baru Anda sekarang?\n\n(Seluruh rekening, saldo, dan riwayat transaksi lama akan dipindahkan ke Google Drive baru).")) return;
 
   showSyncToast("Mengambil data dari Cloud lama...");
 
@@ -16622,7 +16786,7 @@ async function migrateOldCloudToByodb() {
     let oldData = await resp.json();
 
     if (!oldData || (!oldData.accounts && !oldData.recentHistory)) {
-      alert("Data dari Cloud lama kosong atau belum pernah di-upload.");
+      await kpAlert("Data dari Cloud lama kosong atau belum pernah di-upload.");
       return;
     }
 
@@ -16644,15 +16808,15 @@ async function migrateOldCloudToByodb() {
 
     playSuccessSound();
     showSyncToast("✓ Migrasi Sukses!");
-    alert(`🎉 MIGRASI BERHASIL!\n\nSebanyak ${accCount} Rekening dan ${txCount} Transaksi dari Cloud lama telah berhasil dipindahkan ke Google Drive Anda ('Database Keuanganku PRO').\n\nKini PC dan iPad Anda otomatis menggunakan database yang sama di Google Drive.`);
+    await kpAlert(`🎉 MIGRASI BERHASIL!\n\nSebanyak ${accCount} Rekening dan ${txCount} Transaksi dari Cloud lama telah berhasil dipindahkan ke Google Drive Anda ('Database Keuanganku PRO').\n\nKini PC dan iPad Anda otomatis menggunakan database yang sama di Google Drive.`);
     updateByodbUi();
   } catch(e) {
     console.error("Migrate error:", e);
     if (String(e.message || e).includes("AUTH_REQUIRED")) {
-      alert("⚠️ Izin Google Drive Diperlukan:\n\nGoogle membutuhkan izin untuk menyimpan database ke Google Drive Anda.\n\nKlik OK untuk masuk kembali dan pastikan menyetujui izin Google Drive.");
+      await kpAlert("⚠️ Izin Google Drive Diperlukan:\n\nGoogle membutuhkan izin untuk menyimpan database ke Google Drive Anda.\n\nKlik OK untuk masuk kembali dan pastikan menyetujui izin Google Drive.");
       handleGoogleSignIn();
     } else {
-      alert("Kendala saat menyimpan ke Google Drive:\n\n" + (e.message || e));
+      await kpAlert("Kendala saat menyimpan ke Google Drive:\n\n" + (e.message || e));
     }
   }
 }
@@ -16741,13 +16905,13 @@ function updateByodbUi() {
 /**
  * Putuskan / Ganti Akun Google
  */
-function disconnectGoogleAccount() {
+async function disconnectGoogleAccount() {
   let isDemo = localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true';
   let confirmMsg = isDemo
     ? "Apakah Anda yakin ingin memutuskan tautan akun Google Demo pada perangkat ini?"
     : "Apakah Anda yakin ingin memutuskan tautan akun Google pada perangkat ini?\n\nData lokal Anda tidak akan terhapus.";
 
-  if (confirm(confirmMsg)) {
+  if (await kpConfirm(confirmMsg)) {
     if (isDemo) {
       localStorage.removeItem('KEUANGANKU_DEMO_GOOGLE_USER');
       localStorage.removeItem('KEUANGANKU_DEMO_BYODB_SHEET_ID');
@@ -16929,7 +17093,7 @@ function saveGoogleConfigModal() {
         deferredPWAInstallPrompt = null;
         closePWAInstallModal();
       } else {
-        alert("Untuk menginstal aplikasi:\n\n• Di Android (Chrome): Ketuk menu titik tiga (⋮) di pojok kanan atas ➔ pilih 'Instal aplikasi' atau 'Tambahkan ke Layar Utama'.\n\n• Di Laptop / PC (Chrome/Edge): Klik ikon Pasang/Instal (⊕) di bilah alamat browser.\n\n• Di iPhone/iPad (Safari): Ketuk tombol Share (kotak panah ke atas) ➔ 'Tambahkan ke Layar Utama'.");
+        await kpAlert("Untuk menginstal aplikasi:\n\n• Di Android (Chrome): Ketuk menu titik tiga (⋮) di pojok kanan atas ➔ pilih 'Instal aplikasi' atau 'Tambahkan ke Layar Utama'.\n\n• Di Laptop / PC (Chrome/Edge): Klik ikon Pasang/Instal (⊕) di bilah alamat browser.\n\n• Di iPhone/iPad (Safari): Ketuk tombol Share (kotak panah ke atas) ➔ 'Tambahkan ke Layar Utama'.");
         closePWAInstallModal();
       }
     }
