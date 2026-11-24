@@ -5268,7 +5268,7 @@
         } catch(e) {}
       }
       ['KEUANGANKU_DB_V21', 'KEUANGANKU_CLOUD_URL', 'KEUANGANKU_SAVED_PIN', 'KEUANGANKU_REMEMBER_PIN',
-       'KEUANGANKU_USER_REAL_BACKUP', 'KEUANGANKU_BIOMETRIC_ENABLED', 'KEUANGANKU_BIOMETRIC_CRED_ID'
+       'KEUANGANKU_USER_REAL_BACKUP', 'KEUANGANKU_SYNCED_WITH', 'KEUANGANKU_BIOMETRIC_ENABLED', 'KEUANGANKU_BIOMETRIC_CRED_ID'
       ].forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
       try { globalData = { accounts: [], recentHistory: [], currentBalances: {} }; } catch(e) {}
       return true;
@@ -7989,14 +7989,14 @@ function hideSplashScreenAndTriggerAlerts() {
         const timeoutId = setTimeout(() => controller.abort(), 12000);
 
         // Parameter _t acak memaksa browser tidak mengambil cache lama
-        let fetchUrl = globalData.cloudUrl;
+        let __luBefore = Number(globalData.lastUpdated) || 0; let fetchUrl = globalData.cloudUrl;
         let sep = fetchUrl.includes('?') ? '&' : '?';
         fetchUrl += `${sep}_t=${Date.now()}`;
 
         let response = await cloudFetch(fetchUrl, { signal: controller.signal });
         clearTimeout(timeoutId);
         
-        let cloudData = await response.json();
+        let cloudData = await response.json(); if ((Number(globalData.lastUpdated) || 0) !== __luBefore) { setSyncStatus('synced', 'Tersinkron'); return; }
 
         // Google Drive: izin Google habis di tengah jalan -> tunggu ketukan pengguna
         if (cloudData && cloudData.status === 'needs_google') {
@@ -8058,7 +8058,7 @@ function hideSplashScreenAndTriggerAlerts() {
           let isCloudNewer = false;
 
           // Cek mana yang benar-benar lebih baru dan lebih lengkap
-          if (localTxCount === 0 && (!localStorage.getItem("KEUANGANKU_DB_V21") || cloudTxCount > 0 || (cloudData.accounts && cloudData.accounts.length > 0))) {
+          if (localTxCount === 0 && localStorage.getItem("KEUANGANKU_SYNCED_WITH") !== String(globalData.cloudUrl || "") && (!localStorage.getItem("KEUANGANKU_DB_V21") || cloudTxCount > 0 || (cloudData.accounts && cloudData.accounts.length > 0))) {
             // Perangkat baru / lokal masih kosong atau belum ada transaksi, utamakan Cloud!
             isCloudNewer = true;
           } else if (cloudUpdated > localUpdated && cloudTxCount >= localTxCount) {
@@ -8171,7 +8171,7 @@ function hideSplashScreenAndTriggerAlerts() {
               showSyncToast("Data Anda sudah paling mutakhir.");
             }
           }
-          refreshDriveCopyInBackground();
+          try { localStorage.setItem("KEUANGANKU_SYNCED_WITH", String(globalData.cloudUrl || "")); } catch(eSW) {} refreshDriveCopyInBackground();
           checkSelfRevokedAfterSync();
         } else {
           setSyncStatus('error', 'Format Data Cloud Salah');
