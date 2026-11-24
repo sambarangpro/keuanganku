@@ -3749,7 +3749,7 @@
             <div id="db-panel-invest" class="setup-db-panel hidden space-y-4">
               <div class="p-3 bg-cyan-50 dark:bg-cyan-950/30 border border-cyan-200 dark:border-cyan-900/50 rounded-xl text-xs text-cyan-900 dark:text-cyan-200 leading-relaxed">
                 <b>Fungsi & Tujuan:</b> Akumulasi simpanan kas yang disisihkan secara likuid untuk dana darurat, tabungan masa depan, atau instrumen pertumbuhan uang.<br>
-                <span class="text-cyan-700 dark:text-cyan-300"><b>Contoh:</b> Dana Darurat, Reksadana Pasar Uang, Deposito Bank Digital, Simpanan Modal Usaha, Tabungan Hari Tua.</span>
+                <span class="text-cyan-700 dark:text-cyan-300"><b>Contoh:</b> Dana Darurat, Tabungan Emas, Reksa Dana Syariah, Simpanan Modal Usaha, Tabungan Hari Tua.</span>
               </div>
               <div id="setup-invest-list" class="space-y-3"></div>
               <button onclick="addValuedCategory('investData', 'Invest')" class="w-full py-2.5 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 border border-cyan-500/30 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer">
@@ -3773,7 +3773,7 @@
             <div id="db-panel-goals" class="setup-db-panel hidden space-y-4">
               <div class="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-xl text-xs text-amber-900 dark:text-amber-200 leading-relaxed">
                 <b>Fungsi & Tujuan:</b> Target impian bernilai besar dengan nominal target dan batas waktu tertentu (*deadline*) untuk mengukur progres pencapaian aset impian.<br>
-                <span class="text-amber-700 dark:text-amber-300"><b>Contoh:</b> Beli Rumah / DP KPR (Target Rp 100 Jt), Beli Mobil Baru, Biaya Pernikahan, Ibadah Umroh / Haji, Liburan Luar Negeri.</span>
+                <span class="text-amber-700 dark:text-amber-300"><b>Contoh:</b> Beli Rumah Tunai (Target Rp 100 Jt), Beli Mobil Baru, Biaya Pernikahan, Ibadah Umroh / Haji, Liburan Luar Negeri.</span>
               </div>
               <div id="setup-goals-list" class="space-y-3"></div>
               <button onclick="addValuedCategory('goalsData', 'Goals')" class="w-full py-2.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer">
@@ -3809,7 +3809,7 @@
             <div id="db-panel-debts" class="setup-db-panel hidden space-y-4">
               <div class="p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-xl text-xs text-red-900 dark:text-red-200 leading-relaxed">
                 <b>Fungsi & Tujuan:</b> Mencatat kewajiban utang atau cicilan yang wajib Anda bayar ke pihak lain. Memantau sisa pokok utang, nominal cicilan, serta siklus pembayarannya (Bulanan / Mingguan / Tanggal Tertentu).<br>
-                <span class="text-red-700 dark:text-red-300"><b>Contoh:</b> Cicilan KPR Rumah, Kredit Kendaraan (Leasing), Utang Kartu Kredit, Pinjaman Usaha / KUR, Paylater.</span>
+                <span class="text-red-700 dark:text-red-300"><b>Contoh:</b> Utang ke Keluarga / Teman, Cicilan Pembiayaan Syariah (Murabahah), Tempo Bayar ke Supplier, Kasbon Usaha, Cicilan Barang Langsung ke Penjual.</span>
               </div>
               <div id="setup-debt-list" class="space-y-3"></div>
               <button onclick="addDebtItemModal()" class="w-full py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-700 dark:text-red-300 border border-red-500/30 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer">
@@ -3899,7 +3899,7 @@
             <div class="p-3 bg-purple-100 dark:bg-purple-950 text-purple-600 rounded-xl group-hover:scale-110 transition-transform"><span class="material-symbols-outlined text-2xl">two_wheeler</span></div>
             <div>
               <h3 class="font-bold text-sm text-on-surface group-hover:text-primary">Pembiayaan (Murabahah)</h3>
-              <p class="text-[11px] text-gray-500 mt-1">Simulasi kredit syariah (dengan/tanpa DP) memperhitungkan margin.</p>
+              <p class="text-[11px] text-gray-500 mt-1">Simulasi pembiayaan syariah akad jual beli Murabahah (dengan/tanpa DP), margin disepakati di awal.</p>
             </div>
           </button>
         </div>
@@ -13488,7 +13488,7 @@ function formatReadableSheets(ss, parsed) {
           </div>`; 
       }); 
     }
-    function renderNonMoneyRecap() { let container = document.getElementById('nonmoney-recap-grid'); if (!container) return; container.innerHTML = ''; if (!globalData.nonMoneyAssets) return; Object.keys(globalData.nonMoneyAssets).forEach(k => { let item = globalData.nonMoneyAssets[k]; let totalVal = (parseFloat(item.qty) || 0) * (parseFloat(item.estimatedPrice) || 0); let isNisabReached = (item.type === 'Emas' && item.qty >= 85) || (item.type === 'Perak' && item.qty >= 595); let cardBg = isNisabReached ? "bg-red-50 dark:bg-red-950/40 border-2 border-red-500 shadow-md" : "bg-surface dark:bg-slate-900 border border-outline-variant"; container.innerHTML += `<div class="p-4 rounded-xl space-y-3 text-xs ${cardBg}"><div class="flex justify-between items-start"><div><p class="font-extrabold text-sm ${isNisabReached ? 'text-red-700 dark:text-red-400' : 'text-yellow-800 dark:text-yellow-400'}">${k} (${item.type})</p><p class="text-[10px] text-gray-500">Satuan: ${item.unit}</p></div>${isNisabReached ? `<div class="flex items-center gap-1 bg-red-600 text-white px-3 py-1 rounded-lg text-xs font-black animate-pulse shadow"><span class="material-symbols-outlined text-sm">warning</span><span>MASUK NISAB (2.5%)</span></div>` : `<span class="text-[10px] px-2 py-0.5 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 rounded-full font-bold">Belum Nisab</span>`}</div>${isNisabReached ? `<div class="p-2.5 bg-red-100 dark:bg-red-900/50 border border-red-300 dark:border-red-700 rounded-lg text-red-900 dark:text-red-200 font-bold text-xs flex items-center justify-between"><span class="flex items-center gap-1"><span class="material-symbols-outlined text-base text-red-600">error</span> PERINGATAN ZAKAT!</span><span>Wajib Zakat: <b class="font-mono-data text-red-700 dark:text-red-300">${formatRp(totalVal * 0.025)}</b></span></div>` : ''}<div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-[11px] pt-1"><div><span class="text-gray-500 font-bold">Total Kuantitas:</span><br/><b class="text-primary dark:text-blue-400 text-xs">${item.qty} ${item.unit}</b></div><div><span class="text-gray-500 font-bold">Estimasi / Satuan:</span><br/><b class="font-mono-data">${formatRp(item.estimatedPrice)}</b></div><div><span class="text-gray-500 font-bold">Total Nilai Aset:</span><br/><b class="font-mono-data text-green-600 dark:text-green-400 text-xs">${formatRp(totalVal)}</b></div><div><span class="text-gray-500 font-bold">Terpakai (Dijual):</span><br/><b class="text-error">${item.used || 0} ${item.unit}</b></div></div></div>`; }); }
+    function renderNonMoneyRecap() { let container = document.getElementById('nonmoney-recap-grid'); if (!container) return; container.innerHTML = ''; if (!globalData.nonMoneyAssets) return; Object.keys(globalData.nonMoneyAssets).forEach(k => { let item = globalData.nonMoneyAssets[k]; let totalVal = (parseFloat(item.qty) || 0) * (parseFloat(item.estimatedPrice) || 0); let isNisabReached = (item.type === 'Emas' && item.qty >= 85) || (item.type === 'Perak' && item.qty >= 595); let cardBg = isNisabReached ? "bg-red-50 dark:bg-red-950/40 border-2 border-red-500 shadow-md" : "bg-surface dark:bg-slate-900 border border-outline-variant"; container.innerHTML += `<div class="p-4 rounded-xl space-y-3 text-xs ${cardBg}"><div class="flex justify-between items-start"><div><p class="font-extrabold text-sm ${isNisabReached ? 'text-red-700 dark:text-red-400' : 'text-yellow-800 dark:text-yellow-400'}">${k} (${item.type})</p><p class="text-[10px] text-gray-500">Satuan: ${item.unit}</p></div>${isNisabReached ? `<div class="flex items-center gap-1 bg-red-600 text-white px-3 py-1 rounded-lg text-xs font-black animate-pulse shadow"><span class="material-symbols-outlined text-sm">warning</span><span>MASUK NISAB (2.5%)</span></div>` : `<span class="text-[10px] px-2 py-0.5 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 rounded-full font-bold">${(item.type === 'Emas' || item.type === 'Perak') ? 'Belum Nisab' : 'Tidak dihitung nisab'}</span>`}</div>${isNisabReached ? `<div class="p-2.5 bg-red-100 dark:bg-red-900/50 border border-red-300 dark:border-red-700 rounded-lg text-red-900 dark:text-red-200 font-bold text-xs flex items-center justify-between"><span class="flex items-center gap-1"><span class="material-symbols-outlined text-base text-red-600">error</span> PERINGATAN ZAKAT!</span><span>Wajib Zakat: <b class="font-mono-data text-red-700 dark:text-red-300">${formatRp(totalVal * 0.025)}</b></span></div>` : ''}<div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-[11px] pt-1"><div><span class="text-gray-500 font-bold">Total Kuantitas:</span><br/><b class="text-primary dark:text-blue-400 text-xs">${item.qty} ${item.unit}</b></div><div><span class="text-gray-500 font-bold">Estimasi / Satuan:</span><br/><b class="font-mono-data">${formatRp(item.estimatedPrice)}</b></div><div><span class="text-gray-500 font-bold">Total Nilai Aset:</span><br/><b class="font-mono-data text-green-600 dark:text-green-400 text-xs">${formatRp(totalVal)}</b></div><div><span class="text-gray-500 font-bold">Terpakai (Dijual):</span><br/><b class="text-error">${item.used || 0} ${item.unit}</b></div></div></div>`; }); }
     function renderDebtRecap() { 
       let container = document.getElementById('debt-recap-grid'); 
       if (!container) return; 
@@ -14542,7 +14542,7 @@ function formatReadableSheets(ss, parsed) {
         iconColor: 'text-cyan-600 dark:text-cyan-400',
         bgIcon: 'bg-cyan-500/10 dark:bg-cyan-500/20',
         badgeColor: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-950 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800',
-        desc: 'Instrumen simpanan dana darurat, reksadana, deposito, & modal investasi.',
+        desc: 'Simpanan dana darurat, tabungan emas, reksa dana syariah, & modal usaha.',
         getCount: () => (globalData.investData ? Object.keys(globalData.investData).length : 0),
         getCountUnit: () => 'Instrumen',
         getPreview: () => {
@@ -14953,12 +14953,107 @@ function formatReadableSheets(ss, parsed) {
     function updateDebtField(key, field, val) { if (!globalData.debtData[key]) return; if (field === 'category' || field === 'period') globalData.debtData[key][field] = val; else globalData.debtData[key][field] = parseFloat(val) || 0; saveStorageData(); }
     async function removeDebtItem(key) { if (await kpConfirm(`Hapus ${key} dari database?`)) { delete globalData.debtData[key]; saveStorageData(); renderSetupView(); } }
     function renderSimpleCategoryTags(key, containerId) { let container = document.getElementById(containerId); if (!container) return; container.innerHTML = ''; if (!globalData[key]) globalData[key] = []; (globalData[key] || []).forEach((item, idx) => { if (containerId === 'setup-bills-list') container.innerHTML += `<div class="flex items-center justify-between bg-surface-container dark:bg-slate-900 px-3 py-2 rounded-xl border border-outline-variant/40"><span class="text-xs font-bold text-on-surface">${item}</span><span onclick="removeSimpleCategory('${key}', ${idx})" class="material-symbols-outlined text-sm cursor-pointer hover:text-error">close</span></div>`; else container.innerHTML += `<span class="px-3.5 py-2 bg-surface dark:bg-slate-900 border border-outline-variant text-on-surface rounded-xl text-xs font-semibold flex items-center gap-1">${item}<span onclick="removeSimpleCategory('${key}', ${idx})" class="material-symbols-outlined text-xs cursor-pointer hover:text-error ml-1">close</span></span>`; }); }
-    function renderValuedCategoryList(objKey, containerId, fields) { let container = document.getElementById(containerId); if (!container) return; container.innerHTML = ''; if (!globalData[objKey]) globalData[objKey] = {}; Object.keys(globalData[objKey]).forEach(k => { let item = globalData[objKey][k]; let inputsHtml = ''; fields.forEach(f => { let val = item[f] !== undefined ? item[f] : ''; inputsHtml += `<div><label class="text-[9px] uppercase font-bold text-gray-500">${f.toUpperCase()}</label><input type="${typeof val === 'number' ? 'number' : (f === 'deadline' ? 'date' : 'text')}" value="${val}" onchange="updateValuedCategoryField('${objKey}', '${k}', '${f}', this.value)" class="w-full p-1.5 border rounded-lg text-xs font-mono-data bg-surface dark:bg-slate-800 text-on-surface"></div>`; }); container.innerHTML += `<div class="p-3 bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant space-y-2 text-xs"><div class="flex justify-between items-center border-b border-outline-variant/30 pb-1"><b class="font-bold text-primary dark:text-blue-400 text-sm">${k}</b><span onclick="removeValuedCategoryItem('${objKey}', '${k}')" class="material-symbols-outlined text-sm text-error cursor-pointer">close</span></div><div class="grid grid-cols-2 md:grid-cols-4 gap-2">${inputsHtml}</div></div>`; }); }
+    function renderValuedCategoryList(objKey, containerId, fields) {
+      let container = document.getElementById(containerId); if (!container) return; container.innerHTML = '';
+      if (!globalData[objKey]) globalData[objKey] = {};
+      const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+      const jsq = s => esc(String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'"));
+      const initLbl = { investData: ['Nilai Investasi Saat Ini (Rp)', 'Modal / saldo investasi yang sudah ada'], sinkingData: ['Dana Terkumpul (Rp)', 'Jumlah yang sudah disisihkan saat ini'], goalsData: ['Dana Terkumpul (Rp)', 'Tabungan yang sudah ada untuk impian ini'] }[objKey] || ['Saldo Awal (Rp)', 'Jumlah saat ini'];
+      const LBL = {
+        initial: initLbl,
+        target: ['Target Dana (Rp)', 'Jumlah yang ingin dicapai'],
+        deadline: objKey === 'receivablesData' ? ['Jatuh Tempo', 'Tanggal janji pelunasan'] : ['Tanggal Target', 'Kapan dana harus terkumpul'],
+        durationMonths: ['Lama Menabung (Bulan)', 'Contoh: 12 = setahun'],
+        timeframeVal: ['Keterangan Waktu', 'Contoh: 10 Bulan Lagi'],
+        total: ['Total Piutang (Rp)', 'Jumlah uang yang dipinjamkan'],
+        paid: ['Sudah Dikembalikan (Rp)', 'Total cicilan yang sudah diterima'],
+        qty: ['Jumlah / Banyaknya', 'Berapa banyak aset ini'],
+        estimatedPrice: ['Taksiran Harga per Satuan (Rp)', 'Harga pasar saat ini untuk 1 satuan'],
+        type: ['Jenis Aset', 'Pilih kelompok asetnya'],
+        unit: ['Satuan', 'Satuan untuk kolom Jumlah']
+      };
+      const MONEY = ['initial', 'target', 'total', 'paid', 'estimatedPrice'];
+      const TYPES = (typeof NONMONEY_TYPES_ !== 'undefined') ? NONMONEY_TYPES_ : {};
+      const UNITS = ['Gram', 'Kilogram', 'm²', 'Hektar', 'Unit', 'Lembar', 'Lot', 'Ekor', 'Buah', 'Paket'];
+      const inCls = 'w-full mt-1 px-3 py-2 rounded-xl border border-outline-variant dark:border-slate-700 bg-surface-container-lowest dark:bg-slate-950 text-on-surface dark:text-slate-100 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary';
+      Object.keys(globalData[objKey]).forEach(k => {
+        let item = globalData[objKey][k]; let inputsHtml = '';
+        fields.forEach(f => {
+          let val = item[f] !== undefined ? item[f] : '';
+          let lb = LBL[f] || [f, ''];
+          let ctl;
+          if (objKey === 'nonMoneyAssets' && f === 'type') {
+            let opts = Object.keys(TYPES); if (val && !opts.includes(val)) opts = [val].concat(opts);
+            ctl = `<select onchange="setNonMoneyAssetType('${jsq(k)}', this.value)" class="${inCls}">${opts.map(o => `<option value="${esc(o)}" ${o === val ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
+          } else if (objKey === 'nonMoneyAssets' && f === 'unit') {
+            let opts = UNITS.slice(); if (val && !opts.includes(val)) opts = [val].concat(opts);
+            ctl = `<select onchange="updateValuedCategoryField('${objKey}', '${jsq(k)}', 'unit', this.value); nmUpdateTotal_(this, '${jsq(k)}');" class="${inCls}">${opts.map(o => `<option value="${esc(o)}" ${o === val ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
+          } else if (MONEY.includes(f)) {
+            let shown = (parseFloat(val) || 0).toLocaleString('id-ID');
+            ctl = `<div class="relative"><span class="absolute left-3 top-1/2 -translate-y-1/2 mt-0.5 text-xs font-bold text-gray-400">Rp</span><input type="text" inputmode="numeric" value="${shown}" oninput="let d=this.value.replace(/[^0-9]/g,''); this.value=d?Number(d).toLocaleString('id-ID'):'';" onchange="updateValuedCategoryField('${objKey}', '${jsq(k)}', '${f}', this.value.replace(/[^0-9]/g,'')); ${objKey === 'nonMoneyAssets' ? `nmUpdateTotal_(this, '${jsq(k)}');` : ''}" class="${inCls} pl-9 font-mono-data"></div>`;
+          } else if (f === 'deadline') {
+            ctl = `<input type="date" value="${esc(val)}" onchange="updateValuedCategoryField('${objKey}', '${jsq(k)}', 'deadline', this.value)" class="${inCls}">`;
+          } else if (typeof val === 'number' || f === 'qty' || f === 'durationMonths') {
+            let unitTxt = (objKey === 'nonMoneyAssets' && f === 'qty') ? `<span class="nm-unit absolute right-3 top-1/2 -translate-y-1/2 mt-0.5 text-xs font-bold text-gray-400">${esc(item.unit || '')}</span>` : '';
+            ctl = `<div class="relative"><input type="number" step="any" min="0" value="${esc(val)}" onchange="updateValuedCategoryField('${objKey}', '${jsq(k)}', '${f}', this.value); ${objKey === 'nonMoneyAssets' ? `nmUpdateTotal_(this, '${jsq(k)}');` : ''}" class="${inCls} font-mono-data ${unitTxt ? 'pr-16' : ''}">${unitTxt}</div>`;
+          } else {
+            ctl = `<input type="text" value="${esc(val)}" onchange="updateValuedCategoryField('${objKey}', '${jsq(k)}', '${f}', this.value)" class="${inCls}">`;
+          }
+          inputsHtml += `<div><label class="block text-[11px] font-bold text-on-surface-variant dark:text-slate-300">${esc(lb[0])}</label>${ctl}${lb[1] ? `<span class="block text-[10px] text-gray-400 mt-1 leading-snug">${esc(lb[1])}</span>` : ''}</div>`;
+        });
+        let footer = '';
+        if (objKey === 'nonMoneyAssets') {
+          let total = (parseFloat(item.qty) || 0) * (parseFloat(item.estimatedPrice) || 0);
+          let tinfo = TYPES[item.type] || {};
+          footer = `<div class="flex flex-wrap items-center justify-between gap-2 pt-2 mt-1 border-t border-outline-variant/30"><span class="text-[11px] text-gray-500 dark:text-slate-400">${esc(tinfo.hint || 'Isi jumlah, satuan, dan taksiran harga per satuan.')}</span><span class="text-xs font-bold text-on-surface dark:text-slate-100">Total nilai: <b class="nm-total font-mono-data text-green-600 dark:text-green-400">Rp ${total.toLocaleString('id-ID')}</b></span></div>`;
+        }
+        let badge = (objKey === 'nonMoneyAssets' && item.type) ? `<span class="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border border-yellow-500/20">${esc(item.type)}</span>` : '';
+        container.innerHTML += `<div data-nm="1" class="p-4 bg-surface dark:bg-slate-900 rounded-2xl border border-outline-variant dark:border-slate-800 space-y-3 text-xs"><div class="flex justify-between items-center border-b border-outline-variant/30 pb-2"><div class="flex items-center min-w-0"><b class="font-bold text-primary dark:text-blue-400 text-sm truncate">${esc(k)}</b>${badge}</div><span onclick="removeValuedCategoryItem('${objKey}', '${jsq(k)}')" title="Hapus" class="material-symbols-outlined text-base text-error cursor-pointer p-1 rounded-lg hover:bg-red-500/10">delete</span></div><div class="grid grid-cols-1 sm:grid-cols-2 ${fields.length >= 4 ? 'lg:grid-cols-4' : ''} gap-3">${inputsHtml}</div>${footer}</div>`;
+      });
+    }
+    var NONMONEY_TYPES_ = {
+      'Emas': { unit: 'Gram', hint: 'Emas dihitung ke nisab zakat (85 gram).' },
+      'Perak': { unit: 'Gram', hint: 'Perak dihitung ke nisab zakat (595 gram).' },
+      'Tanah': { unit: 'm²', hint: 'Isi luas tanah dan taksiran harga per m².' },
+      'Bangunan / Properti': { unit: 'Unit', hint: 'Isi jumlah unit dan taksiran harga per unit.' },
+      'Kendaraan': { unit: 'Unit', hint: 'Isi jumlah kendaraan dan taksiran harga jual per unit.' },
+      'Saham Syariah / Sukuk': { unit: 'Lembar', hint: 'Isi jumlah lembar dan harga per lembar.' },
+      'Peralatan Usaha': { unit: 'Unit', hint: 'Mesin, alat produksi, inventaris usaha.' },
+      'Hewan Ternak': { unit: 'Ekor', hint: 'Isi jumlah ekor dan taksiran harga per ekor.' },
+      'Barang Berharga Lainnya': { unit: 'Buah', hint: 'Koleksi, perhiasan non-emas, elektronik bernilai, dll.' }
+    };
+    function guessNonMoneyType_(name) {
+      let n = String(name || '').toLowerCase();
+      if (/emas|antam|logam mulia|gold|perhiasan/.test(n)) return 'Emas';
+      if (/perak|silver/.test(n)) return 'Perak';
+      if (/tanah|kebun|sawah|kavling|lahan/.test(n)) return 'Tanah';
+      if (/rumah|ruko|apartemen|bangunan|kost|gedung|properti/.test(n)) return 'Bangunan / Properti';
+      if (/mobil|motor|kendaraan|truk|sepeda/.test(n)) return 'Kendaraan';
+      if (/saham|sukuk/.test(n)) return 'Saham Syariah / Sukuk';
+      if (/mesin|alat|peralatan|printer|sablon|inventaris/.test(n)) return 'Peralatan Usaha';
+      if (/sapi|kambing|domba|ayam|ternak|kerbau|bebek/.test(n)) return 'Hewan Ternak';
+      return 'Barang Berharga Lainnya';
+    }
+    function nmUpdateTotal_(el, key) {
+      try {
+        let item = globalData.nonMoneyAssets[key]; let card = el.closest('[data-nm]'); if (!item || !card) return;
+        let t = card.querySelector('.nm-total'); if (t) t.textContent = 'Rp ' + ((parseFloat(item.qty) || 0) * (parseFloat(item.estimatedPrice) || 0)).toLocaleString('id-ID');
+        let u = card.querySelector('.nm-unit'); if (u) u.textContent = item.unit || '';
+      } catch (e) {}
+    }
+    function setNonMoneyAssetType(key, type) {
+      let item = globalData.nonMoneyAssets && globalData.nonMoneyAssets[key]; if (!item) return;
+      let oldDef = (NONMONEY_TYPES_[item.type] || {}).unit;
+      item.type = type;
+      let newDef = (NONMONEY_TYPES_[type] || {}).unit;
+      if (newDef && (!item.unit || item.unit === oldDef)) item.unit = newDef;
+      saveStorageData(); renderSetupView();
+    }
     async function addAccountItem() { let name = await kpPrompt("Masukkan nama Akun / Bank / E-Wallet baru:"); if (name && name.trim() !== "") { let clean = name.trim(); if (!globalData.accounts.includes(clean)) { globalData.accounts.push(clean); globalData.currentBalances[clean] = 0; if (!globalData.accountDetails) globalData.accountDetails = {}; globalData.accountDetails[clean] = { bankName: clean, accNo: "-", owner: "-" }; saveStorageData(); renderSetupView(); } else await kpAlert("Nama akun sudah ada!"); } }
     async function removeAccountItem(idx) { let accName = globalData.accounts[idx]; if (await kpConfirm(`Hapus akun ${accName}?`)) { globalData.accounts.splice(idx, 1); delete globalData.currentBalances[accName]; if (globalData.accountDetails) delete globalData.accountDetails[accName]; saveStorageData(); renderSetupView(); } }
     async function addSimpleCategory(key, labelName) { let name = await kpPrompt(`Masukkan nama ${labelName} baru:`); if (name && name.trim() !== "") { let clean = name.trim(); if (!globalData[key]) globalData[key] = []; if (!globalData[key].includes(clean)) { globalData[key].push(clean); saveStorageData(); renderSetupView(); } else await kpAlert("Kategori tersebut sudah ada!"); } }
     function removeSimpleCategory(key, idx) { let catName = globalData[key][idx]; globalData[key].splice(idx, 1); if (key === 'spendings' && globalData.monthlyBudgets && globalData.monthlyBudgets[catName] !== undefined) { delete globalData.monthlyBudgets[catName]; } saveStorageData(); renderSetupView(); }
-    async function addValuedCategory(objKey, labelName) { let name = await kpPrompt(`Masukkan nama ${labelName} baru:`); if (name && name.trim() !== "") { let clean = name.trim(); if (!globalData[objKey]) globalData[objKey] = {}; if (!globalData[objKey][clean]) { if (['investData', 'sinkingData', 'goalsData'].includes(objKey)) globalData[objKey][clean] = { initial: 0, target: 1000000, deadline: "2027-01-01", durationMonths: 12, used: 0 }; else if (objKey === 'receivablesData') globalData[objKey][clean] = { total: 1000000, deadline: "2026-12-31", paid: 0 }; else if (objKey === 'nonMoneyAssets') globalData[objKey][clean] = { type: "Emas", qty: 10, unit: "Gram", estimatedPrice: 1000000, used: 0 }; saveStorageData(); renderSetupView(); } else await kpAlert("Nama item sudah ada!"); } }
+    async function addValuedCategory(objKey, labelName) { let name = await kpPrompt(`Masukkan nama ${labelName} baru:`); if (name && name.trim() !== "") { let clean = name.trim(); if (!globalData[objKey]) globalData[objKey] = {}; if (!globalData[objKey][clean]) { if (['investData', 'sinkingData', 'goalsData'].includes(objKey)) globalData[objKey][clean] = { initial: 0, target: 1000000, deadline: "2027-01-01", durationMonths: 12, used: 0 }; else if (objKey === 'receivablesData') globalData[objKey][clean] = { total: 1000000, deadline: "2026-12-31", paid: 0 }; else if (objKey === 'nonMoneyAssets') { let t = guessNonMoneyType_(clean); globalData[objKey][clean] = { type: t, qty: 1, unit: (NONMONEY_TYPES_[t] || {}).unit || 'Unit', estimatedPrice: t === 'Emas' ? (Number(globalData.zakatGoldPrice) || 0) : 0, used: 0 }; } saveStorageData(); renderSetupView(); } else await kpAlert("Nama item sudah ada!"); } }
     async function removeValuedCategoryItem(objKey, keyName) { if (await kpConfirm(`Hapus ${keyName}?`)) { delete globalData[objKey][keyName]; saveStorageData(); renderSetupView(); } }
     function updateValuedCategoryField(objKey, itemKey, field, val) { if (!globalData[objKey][itemKey]) return; if (['deadline', 'type', 'unit'].includes(field)) globalData[objKey][itemKey][field] = val; else globalData[objKey][itemKey][field] = parseFloat(val) || 0; saveStorageData(); }
     async function addRoutinePaymentItem() { let name = await kpPrompt("Masukkan nama Pembayaran Rutin baru:"); if (name && name.trim() !== "") { let clean = name.trim(); if (!globalData.routinePayments) globalData.routinePayments = {}; globalData.routinePayments[clean] = { amount: 0, dueDay: 1 }; saveStorageData(); renderSetupView(); } }
