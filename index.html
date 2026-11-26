@@ -820,6 +820,510 @@
   else document.addEventListener('DOMContentLoaded', start);
 })();
   </script>
+  <script>
+/* Keyboard Keuanganku: keyboard bawaan aplikasi (huruf, angka & kalkulator) untuk HP/tablet. Bisa dimatikan di Setup. */
+(function () {
+  if (window.__kpkb) return;
+  window.__kpkb = true;
+  var KEY = 'KEUANGANKU_APP_KEYBOARD';
+  var Z = 2147483300;
+  var ELIG = 'input:not([type]),input[type="text"],input[type="search"],input[type="tel"],input[type="number"],input[type="password"],input[type="email"],input[type="url"],textarea';
+
+  function isOn() { try { return localStorage.getItem(KEY) !== '0'; } catch (e) { return true; } }
+  function isTouch() {
+    try { return (navigator.maxTouchPoints || 0) > 0 && window.matchMedia('(pointer: coarse)').matches; } catch (e) { return false; }
+  }
+  function active() { return isOn() && isTouch(); }
+
+  var css = [
+    '.kpkb{position:fixed;left:0;right:0;bottom:0;z-index:' + Z + ';background:var(--kpkb-bg,#e9edf3);border-top:1px solid var(--ui-border,#e4e7ec);padding:0 0 env(safe-area-inset-bottom);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;transform:translateY(105%);transition:transform .2s cubic-bezier(.2,.8,.2,1);-webkit-user-select:none;user-select:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent;box-shadow:0 -10px 30px -18px rgba(2,6,23,.45)}',
+    'html.dark .kpkb{--kpkb-bg:#0b1220;--kpkb-key:#1e293b;--kpkb-key2:#111a2e;--kpkb-txt:#f1f5f9}',
+    '.kpkb.in{transform:none}',
+    '.kpkb-in{max-width:760px;margin:0 auto;padding:0 5px 6px}',
+    '.kpkb-bar{display:flex;align-items:center;gap:6px;height:42px;padding:0 4px 0 10px}',
+    '.kpkb-ex{flex:1;min-width:0;font-size:13px;font-weight:700;color:var(--ui-muted,#667085);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}',
+    '.kpkb-ex b{color:var(--ui-brand,#2563eb);font-weight:800}',
+    '.kpkb-tb{height:34px;min-width:38px;padding:0 10px;border-radius:10px;border:0;background:transparent;color:var(--ui-muted,#667085);display:inline-flex;align-items:center;justify-content:center;gap:4px;font:700 12px Inter,system-ui,sans-serif;cursor:pointer}',
+    '.kpkb-tb .material-symbols-outlined{font-size:20px}',
+    '.kpkb-tb:active{background:var(--ui-brand-soft,rgba(37,99,235,.1))}',
+    '.kpkb-g{display:grid;gap:6px}',
+    '.kpkb-r{display:flex;gap:5px;margin-top:7px}',
+    '.kpkb-r.ind{padding:0 5%}',
+    '.kpkb-k{flex:1 1 0;min-width:0;height:46px;border:0;border-radius:9px;background:var(--kpkb-key,#ffffff);color:var(--kpkb-txt,#101828);font:500 20px/1 Inter,system-ui,sans-serif;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 0 rgba(2,6,23,.18);cursor:pointer;padding:0;transition:background .06s}',
+    '.kpkb-k.sm{font-size:14px;font-weight:700}',
+    '.kpkb-k.fn{background:var(--kpkb-key2,#cfd6e0);font-size:14px;font-weight:700}',
+    '.kpkb-k.fn .material-symbols-outlined{font-size:22px}',
+    '.kpkb-k.op{background:var(--kpkb-key2,#cfd6e0);color:var(--ui-brand,#2563eb);font-size:23px;font-weight:700}',
+    '.kpkb-k.ok{background:var(--ui-brand,#2563eb);color:#fff;font-size:15px;font-weight:800}',
+    '.kpkb-k.on{background:var(--ui-brand,#2563eb);color:#fff}',
+    '.kpkb-k.dn{filter:brightness(.86)}',
+    'html.dark .kpkb-k.dn{filter:brightness(1.45)}',
+    '.kpkb-k.w15{flex-grow:1.5}.kpkb-k.w2{flex-grow:2}.kpkb-k.w5{flex-grow:5}',
+    '.kpkb-np{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:4px}',
+    '.kpkb-np.pin{grid-template-columns:repeat(4,1fr)}',
+    '.kpkb-np .kpkb-k{height:50px;font-size:23px;font-weight:600}',
+    '.kpkb-np .kpkb-k.r2{grid-row:span 2;height:auto}',
+    '.kpkb-np .kpkb-k.ok{font-size:15px}',
+    '.kpkb-np .kpkb-k.blank{visibility:hidden}',
+    '@media (min-width:700px){.kpkb-k{height:52px}.kpkb-np .kpkb-k{height:54px}}',
+    'html.kpkb-open body{padding-bottom:var(--kpkb-h,0px)!important}',
+    'html.kpkb-open .fixed.inset-0:not(.kpkb),html.kpkb-open .kpd-ov{bottom:var(--kpkb-h,0px)!important}',
+    'html.kpkb-open #splash-screen{bottom:var(--kpkb-h,0px)!important;height:auto!important;overflow-y:auto!important}',
+    'html.kpkb-open .kpu-pop.sheet{bottom:var(--kpkb-h,0px)!important;max-height:calc(100vh - var(--kpkb-h,0px) - 40px)!important}',
+    /* kartu pengaturan */
+    '.kpkb-set{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}',
+    '.kpkb-set .t{font-weight:700;font-size:14px;color:var(--ui-text,#101828);display:flex;align-items:center;gap:6px}',
+    '.kpkb-set .t .material-symbols-outlined{font-size:19px;color:var(--ui-brand,#2563eb)}',
+    '.kpkb-set .d{display:block;font-size:11px;line-height:1.5;color:var(--ui-muted,#667085);margin-top:3px}',
+    '.kpkb-sw{position:relative;flex:none;width:46px;height:26px;border-radius:26px;border:0;background:var(--ui-border-strong,#d0d5dd);cursor:pointer;transition:background .18s;margin-top:2px;padding:0}',
+    '.kpkb-sw:after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(2,6,23,.3);transition:transform .18s}',
+    '.kpkb-sw[aria-checked="true"]{background:var(--ui-brand,#2563eb)}',
+    '.kpkb-sw[aria-checked="true"]:after{transform:translateX(20px)}'
+  ].join('\n');
+  function addCss() {
+    if (document.getElementById('kpkb-css')) return;
+    var st = document.createElement('style'); st.id = 'kpkb-css'; st.textContent = css;
+    (document.head || document.documentElement).appendChild(st);
+  }
+
+  /* ---------- kolom yang memakai keyboard aplikasi ---------- */
+  function eligible(el) {
+    if (!el || el.nodeType !== 1 || !el.matches || !el.matches(ELIG)) return false;
+    if (el.readOnly || el.disabled || el.hasAttribute('data-kp-native') || el.closest('[data-kp-native]')) return false;
+    if (el.classList.contains('kpu-nat')) return false;
+    if (el.getAttribute('data-kpkb-off') === '1') return false;
+    return true;
+  }
+  function prep(el) {
+    if (!eligible(el)) return;
+    if (!el.hasAttribute('data-kpkb-im')) el.setAttribute('data-kpkb-im', el.getAttribute('inputmode') || '');
+    if (el.getAttribute('inputmode') !== 'none') el.setAttribute('inputmode', 'none');
+  }
+  function unprep(el) {
+    if (!el.hasAttribute('data-kpkb-im')) return;
+    var im = el.getAttribute('data-kpkb-im');
+    el.removeAttribute('data-kpkb-im');
+    if (im) el.setAttribute('inputmode', im); else el.removeAttribute('inputmode');
+  }
+  function prepAll(root) {
+    if (!active() || !root || !root.querySelectorAll) return;
+    if (root.matches && root.matches(ELIG)) prep(root);
+    var l = root.querySelectorAll(ELIG);
+    for (var i = 0; i < l.length; i++) prep(l[i]);
+  }
+  function unprepAll() {
+    var l = document.querySelectorAll('[data-kpkb-im]');
+    for (var i = 0; i < l.length; i++) unprep(l[i]);
+  }
+
+  function kindOf(el) {
+    var t = (el.getAttribute('type') || 'text').toLowerCase();
+    var im = (el.getAttribute('data-kpkb-im') || el.getAttribute('inputmode') || '').toLowerCase();
+    var oi = el.getAttribute('oninput') || '';
+    var num = el.hasAttribute('data-kpkb-num') || t === 'number' || t === 'tel' || im === 'numeric' || im === 'decimal' || im === 'tel' || el.hasAttribute('data-num') || /formatInputNominal|formatMurMarginInput/.test(oi);
+    if (!num) return { num: false, text: t };
+    var pin = t === 'password';
+    var isNumType = t === 'number' || el.hasAttribute('data-kpkb-num');
+    var step = el.getAttribute('step') || '';
+    var dec = im === 'decimal' || el.hasAttribute('data-dec') || /formatMurMarginInput/.test(oi) || (isNumType && (step === 'any' || /\./.test(step)));
+    return { num: true, pin: pin, dec: dec, neg: el.hasAttribute('data-neg'), numType: isNumType, money: /formatInputNominal/.test(oi) || (el.hasAttribute('data-num') && !el.hasAttribute('data-dec')), calc: !pin };
+  }
+
+  /* ---------- menulis ke kolom ---------- */
+  function canSel(el) { try { return typeof el.selectionStart === 'number'; } catch (e) { return false; } }
+  function fireInput(el, type, data) {
+    var ev;
+    try { ev = new InputEvent('input', { bubbles: true, inputType: type, data: data == null ? null : data }); }
+    catch (e) { ev = document.createEvent('Event'); ev.initEvent('input', true, false); }
+    el.dispatchEvent(ev);
+  }
+  function insert(el, txt) {
+    var ml = el.maxLength;
+    if (canSel(el)) {
+      var s = el.selectionStart, e = el.selectionEnd;
+      if (ml > 0 && el.value.length - (e - s) + txt.length > ml) return;
+      el.setRangeText(txt, s, e, 'end');
+    } else {
+      if (ml > 0 && el.value.length + txt.length > ml) return;
+      el.value = el.value + txt;
+    }
+    fireInput(el, 'insertText', txt);
+  }
+  function backspace(el) {
+    if (canSel(el)) {
+      var s = el.selectionStart, e = el.selectionEnd;
+      if (s === e) {
+        if (s === 0) return;
+        var v = el.value, cut = 1;
+        var c = v.charCodeAt(s - 1);
+        if (c >= 0xDC00 && c <= 0xDFFF && s > 1) cut = 2;
+        /* lewati pemisah ribuan pada kolom nominal */
+        if (cur && cur.k.num && v.charAt(s - 1) === '.' && s > 1) { s = s - 1; e = e - 1; }
+        el.setRangeText('', s - cut, e, 'end');
+      } else el.setRangeText('', s, e, 'end');
+    } else el.value = el.value.slice(0, -1);
+    fireInput(el, 'deleteContentBackward', null);
+  }
+  function setVal(el, v) {
+    el.value = v;
+    try { if (canSel(el)) el.setSelectionRange(el.value.length, el.value.length); } catch (e) {}
+    fireInput(el, 'insertReplacementText', v);
+  }
+
+  /* ---------- kalkulator ---------- */
+  function parseField(el, k) {
+    var v = String(el.value || '').trim();
+    if (!v) return 0;
+    if (k.numType) return parseFloat(v.replace(',', '.')) || 0;
+    if (typeof window.kpParseNum === 'function') return window.kpParseNum(v);
+    var s = v.replace(/[^0-9,\-]/g, '').replace(',', '.');
+    return parseFloat(s) || 0;
+  }
+  function parseB(b) { return b === '' ? NaN : parseFloat(b.replace(',', '.')); }
+  function fmt(n) {
+    if (!isFinite(n)) return '—';
+    return Number(n).toLocaleString('id-ID', { maximumFractionDigits: 4 });
+  }
+  function compute(a, op, b) {
+    if (isNaN(b)) return a;
+    if (op === '+') return a + b;
+    if (op === '−') return a - b;
+    if (op === '×') return a * b;
+    if (op === '÷') return b === 0 ? NaN : a / b;
+    return b;
+  }
+  function writeNum(el, k, n) {
+    if (!isFinite(n)) return;
+    var s;
+    if (k.numType) s = String(Math.round(n * 10000) / 10000);
+    else if (k.money && !k.dec) s = String(Math.round(n));
+    else s = String(Math.round(n * 10000) / 10000).replace('.', ',');
+    if (n < 0 && !k.neg && !k.numType) s = s.replace('-', '');
+    setVal(el, s);
+  }
+
+  /* ---------- panel keyboard ---------- */
+  var kb = null, cur = null, shift = 0, lastShiftAt = 0, layer = 'abc', calc = null, rep = null, hideT = null;
+  function vib() { try { if (navigator.vibrate) navigator.vibrate(6); } catch (e) {} }
+  function el(tag, cls, html) { var x = document.createElement(tag); if (cls) x.className = cls; if (html != null) x.innerHTML = html; return x; }
+  function icon(n) { return '<span class="material-symbols-outlined">' + n + '</span>'; }
+  function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+  function build() {
+    if (kb) return kb;
+    kb = el('div', 'kpkb');
+    kb.setAttribute('role', 'group');
+    kb.setAttribute('aria-label', 'Keyboard Keuanganku');
+    kb.innerHTML = '<div class="kpkb-in"><div class="kpkb-bar"><div class="kpkb-ex"></div>' +
+      '<button type="button" class="kpkb-tb" data-act="native" aria-label="Pakai keyboard HP">' + icon('keyboard') + '<span>Keyboard HP</span></button>' +
+      '<button type="button" class="kpkb-tb" data-act="hide" aria-label="Tutup keyboard">' + icon('keyboard_hide') + '</button></div>' +
+      '<div class="kpkb-keys"></div></div>';
+    document.body.appendChild(kb);
+    kb.addEventListener('pointerdown', onDown);
+    kb.addEventListener('pointerup', function (e) { stopRep(); var b = e.target.closest && e.target.closest('[data-act="native"]'); if (b) useNative(); });
+    kb.addEventListener('pointercancel', stopRep);
+    kb.addEventListener('pointerleave', stopRep);
+    kb.addEventListener('mousedown', function (e) { e.preventDefault(); });
+    kb.addEventListener('touchstart', function (e) { if (e.cancelable) e.preventDefault(); }, { passive: false });
+    return kb;
+  }
+  function keyHtml(k, label, cls) { return '<button type="button" class="kpkb-k' + (cls ? ' ' + cls : '') + '" data-k="' + esc(k) + '">' + label + '</button>'; }
+  var ROWS = {
+    abc: ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'],
+    sym: ['1234567890', '@#&_-+()/', '*"\':;!?'],
+    sym2: ['%=<>[]{}~^', '$€£¥|\\•°\x60', '×÷…©®™¶']
+  };
+  function render() {
+    var box = kb.querySelector('.kpkb-keys');
+    var k = cur.k, h = '';
+    if (k.num && layer === 'num') {
+      if (k.pin) {
+        h = '<div class="kpkb-np pin">' +
+          keyHtml('1', '1') + keyHtml('2', '2') + keyHtml('3', '3') + keyHtml('BK', icon('backspace'), 'fn') +
+          keyHtml('4', '4') + keyHtml('5', '5') + keyHtml('6', '6') + keyHtml('OK', 'Selesai', 'ok r2') +
+          keyHtml('7', '7') + keyHtml('8', '8') + keyHtml('9', '9') +
+          keyHtml('ABC', 'ABC', 'fn sm') + keyHtml('0', '0') + keyHtml('', '', 'blank') + '<span></span></div>';
+      } else {
+        var third = k.dec ? keyHtml(',', ',') : keyHtml('00', '00', 'sm');
+        h = '<div class="kpkb-np">' +
+          keyHtml('7', '7') + keyHtml('8', '8') + keyHtml('9', '9') + keyHtml('÷', '÷', 'op') + keyHtml('BK', icon('backspace'), 'fn') +
+          keyHtml('4', '4') + keyHtml('5', '5') + keyHtml('6', '6') + keyHtml('×', '×', 'op') + keyHtml('=', '=', 'op') +
+          keyHtml('1', '1') + keyHtml('2', '2') + keyHtml('3', '3') + keyHtml('−', '−', 'op') + (k.neg ? keyHtml('NEG', '±', 'fn') : keyHtml('C', 'C', 'fn sm')) +
+          keyHtml('000', '000', 'sm') + keyHtml('0', '0') + third + keyHtml('+', '+', 'op') + keyHtml('OK', 'Selesai', 'ok') +
+          '</div>';
+      }
+    } else {
+      var rows = ROWS[layer] || ROWS.abc;
+      var up = layer === 'abc' && shift > 0;
+      function row(chars) {
+        var out = '';
+        for (var i = 0; i < chars.length; i++) {
+          var c = chars.charAt(i), lab = up ? c.toUpperCase() : c;
+          out += keyHtml(up ? c.toUpperCase() : c, esc(lab));
+        }
+        return out;
+      }
+      h += '<div class="kpkb-r">' + row(rows[0]) + '</div>';
+      h += '<div class="kpkb-r' + (layer === 'abc' ? ' ind' : '') + '">' + row(rows[1]) + '</div>';
+      var left = layer === 'abc' ? keyHtml('SHIFT', icon(shift === 2 ? 'keyboard_capslock' : 'shift'), 'fn w15' + (shift ? ' on' : '')) :
+        keyHtml(layer === 'sym' ? 'SYM2' : 'SYM', layer === 'sym' ? '=\\&lt;' : '?123', 'fn sm w15');
+      h += '<div class="kpkb-r">' + left + row(rows[2]) + keyHtml('BK', icon('backspace'), 'fn w15') + '</div>';
+      var isTA = cur.el.tagName === 'TEXTAREA';
+      h += '<div class="kpkb-r">' + keyHtml(layer === 'abc' ? 'SYM' : 'ABC', layer === 'abc' ? '?123' : 'ABC', 'fn sm w15') +
+        (k.num ? keyHtml('NUM', '123', 'fn sm') : keyHtml(',', ',', 'fn')) +
+        keyHtml(' ', 'spasi', 'sm w5') + keyHtml('.', '.', 'fn') +
+        keyHtml('OK', isTA ? icon('keyboard_return') : 'Selesai', 'ok w2') + '</div>';
+    }
+    box.innerHTML = h;
+    bar();
+  }
+  function fieldLabel(f) {
+    var t = '';
+    try {
+      if (f.id) { var l = document.querySelector('label[for="' + f.id + '"]'); if (l) t = l.textContent; }
+      if (!t) t = f.getAttribute('aria-label') || f.getAttribute('placeholder') || '';
+    } catch (e) {}
+    t = String(t).replace(/\s+/g, ' ').trim();
+    return t.length > 40 ? t.slice(0, 38) + '…' : t;
+  }
+  function bar() {
+    var ex = kb.querySelector('.kpkb-ex');
+    if (calc) {
+      var r = compute(calc.a, calc.op, parseB(calc.b));
+      ex.innerHTML = esc(fmt(calc.a) + ' ' + calc.op + ' ' + (calc.b === '' ? '' : calc.b.replace(/\B(?=(\d{3})+(?!\d))/g, '.'))) + (calc.b === '' ? '' : ' = <b>' + esc(fmt(r)) + '</b>');
+    } else {
+      ex.textContent = cur && cur.k.num && cur.k.calc ? 'Bisa langsung hitung: + − × ÷' : (cur ? fieldLabel(cur.el) : '');
+    }
+  }
+  function measure() {
+    var h = kb.getBoundingClientRect().height;
+    document.documentElement.style.setProperty('--kpkb-h', Math.round(h) + 'px');
+  }
+  function ensureVisible(f) {
+    requestAnimationFrame(function () {
+      var r = f.getBoundingClientRect(), kh = kb.getBoundingClientRect().height;
+      var limit = window.innerHeight - kh - 14;
+      if (r.bottom > limit || r.top < 56) {
+        try { f.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) { f.scrollIntoView(); }
+      }
+    });
+  }
+  function autoShift() {
+    if (!cur || cur.k.num) return;
+    var t = cur.k.text;
+    if (t === 'password' || t === 'email' || t === 'url' || cur.el.getAttribute('autocapitalize') === 'off') { if (shift === 1) shift = 0; return; }
+    if (shift === 2) return;
+    var v = cur.el.value, p = canSel(cur.el) ? cur.el.selectionStart : v.length;
+    var before = v.slice(0, p);
+    shift = (!before.trim() || /[.!?]\s$/.test(before) || /\n$/.test(before)) ? 1 : 0;
+  }
+  function show(f) {
+    clearTimeout(hideT);
+    build();
+    var same = cur && cur.el === f;
+    if (!same) {
+      if (cur) commit();
+      cur = { el: f, k: kindOf(f), start: f.value };
+      if (cur.k.numType && f.getAttribute('type') === 'number') {
+        f.setAttribute('data-kpkb-num', '1');
+        try { f.type = 'text'; } catch (e) {}
+      }
+      layer = cur.k.num ? 'num' : 'abc';
+      shift = 0;
+      autoShift();
+      render();
+    }
+    kb.classList.add('in');
+    document.documentElement.classList.add('kpkb-open');
+    measure();
+    ensureVisible(f);
+  }
+  function restoreNum(f) {
+    if (f && f.getAttribute('data-kpkb-num') === '1') {
+      var v = String(f.value).replace(',', '.').replace(/\.$/, '');
+      f.removeAttribute('data-kpkb-num');
+      try { f.type = 'number'; } catch (e) {}
+      if (f.value !== v) f.value = v;
+    }
+  }
+  function commit() {
+    finishCalc();
+    var f = cur.el;
+    restoreNum(f);
+    if (f.isConnected && f.value !== cur.start) {
+      cur.start = f.value;
+      try { f.dispatchEvent(new Event('change', { bubbles: true })); } catch (e) {}
+    }
+  }
+  function hide() {
+    if (cur) commit();
+    cur = null;
+    if (kb) kb.classList.remove('in');
+    document.documentElement.classList.remove('kpkb-open');
+  }
+  function finishCalc() {
+    if (!calc || !cur) { calc = null; return; }
+    var r = compute(calc.a, calc.op, parseB(calc.b));
+    calc = null;
+    if (isFinite(r)) writeNum(cur.el, cur.k, r);
+  }
+  function useNative() {
+    if (!cur) return;
+    var f = cur.el;
+    hide();
+    f.setAttribute('data-kpkb-off', '1');
+    unprep(f);
+    try { f.blur(); f.focus(); } catch (e) {}
+  }
+  function stopRep() { if (rep) { clearTimeout(rep.t); clearInterval(rep.i); rep = null; } kb && kb.querySelectorAll('.kpkb-k.dn').forEach(function (x) { x.classList.remove('dn'); }); }
+  function onDown(e) {
+    e.preventDefault();
+    var b = e.target.closest('.kpkb-k,.kpkb-tb');
+    if (!b || !cur) return;
+    if (b.classList.contains('kpkb-tb')) {
+      if (b.getAttribute('data-act') === 'hide') { var f = cur.el; hide(); try { f.blur(); } catch (x) {} }
+      return;
+    }
+    b.classList.add('dn');
+    vib();
+    var k = b.getAttribute('data-k');
+    press(k);
+    if (k === 'BK') {
+      rep = { t: setTimeout(function () { rep.i = setInterval(function () { press('BK'); }, 55); }, 420) };
+    }
+  }
+  function press(k) {
+    var f = cur && cur.el;
+    if (!f || !f.isConnected) { hide(); return; }
+    var K = cur.k;
+    if (k === 'SHIFT') {
+      var now = Date.now();
+      if (shift === 1 && now - lastShiftAt < 380) shift = 2; else shift = shift ? 0 : 1;
+      lastShiftAt = now; render(); return;
+    }
+    if (k === 'SYM') { layer = 'sym'; render(); return; }
+    if (k === 'SYM2') { layer = 'sym2'; render(); return; }
+    if (k === 'ABC') { layer = 'abc'; autoShift(); render(); return; }
+    if (k === 'NUM') { layer = 'num'; render(); return; }
+    if (k === 'OK') {
+      if (f.tagName === 'TEXTAREA' && layer !== 'num') { insert(f, '\n'); autoShift(); render(); return; }
+      finishCalc();
+      var ev = new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true, cancelable: true });
+      var go = f.dispatchEvent(ev);
+      f.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true, cancelable: true }));
+      if (go && document.activeElement === f) { hide(); try { f.blur(); } catch (x) {} }
+      return;
+    }
+    if (K.num && layer === 'num' && K.calc) {
+      if (k === '+' || k === '−' || k === '×' || k === '÷') {
+        if (!calc) calc = { a: parseField(f, K), op: k, b: '' };
+        else if (calc.b === '') calc.op = k;
+        else { var r = compute(calc.a, calc.op, parseB(calc.b)); if (!isFinite(r)) return; calc = { a: r, op: k, b: '' }; writeNum(f, K, r); }
+        bar(); return;
+      }
+      if (k === '=') { finishCalc(); bar(); return; }
+      if (k === 'C') { calc = null; setVal(f, ''); bar(); return; }
+      if (calc) {
+        if (k === 'BK') { if (calc.b) calc.b = calc.b.slice(0, -1); else { writeNum(f, K, calc.a); calc = null; } }
+        else if (k === ',') { if (calc.b.indexOf(',') === -1) calc.b = (calc.b || '0') + ','; }
+        else if (/^\d+$/.test(k)) { if (calc.b.replace(/\D/g, '').length < 15) calc.b += k; }
+        if (calc) { var rr = compute(calc.a, calc.op, parseB(calc.b)); if (isFinite(rr)) writeNum(f, K, rr); }
+        bar(); return;
+      }
+    }
+    if (k === 'NEG') {
+      var v = String(f.value || '');
+      setVal(f, /^\s*-/.test(v) ? v.replace(/^\s*-/, '') : '-' + v);
+      return;
+    }
+    if (k === 'BK') { backspace(f); autoShift(); if (!K.num || layer !== 'num') render(); return; }
+    if (k === ',' && K.numType && layer === 'num') { if (String(f.value).indexOf('.') === -1) insert(f, String(f.value) === '' ? '0.' : '.'); return; }
+    insert(f, k);
+    if (layer === 'abc' && shift === 1) { shift = 0; autoShift(); render(); }
+    else if (layer === 'abc' && k === ' ') { var old = shift; autoShift(); if (old !== shift) render(); }
+    if (calc === null && K.num) bar();
+  }
+
+  /* ---------- fokus ---------- */
+  function onFocusIn(e) {
+    var f = e.target;
+    if (!active()) return;
+    if (f && f.closest && f.closest('.kpkb')) return;
+    if (eligible(f)) { prep(f); show(f); }
+    else if (cur) { hideT = setTimeout(hide, 10); }
+  }
+  function onFocusOut(e) {
+    if (!cur || e.target !== cur.el) return;
+    hideT = setTimeout(function () {
+      var a = document.activeElement;
+      if (!a || !eligible(a) || !active()) hide();
+    }, 60);
+  }
+  function onPointerDown(e) {
+    if (!active()) return;
+    var f = e.target && e.target.closest ? e.target.closest(ELIG) : null;
+    if (f && eligible(f)) prep(f);
+  }
+
+  /* ---------- pengaturan di Setup ---------- */
+  function setOn(v) {
+    try { localStorage.setItem(KEY, v ? '1' : '0'); } catch (e) {}
+    if (active()) prepAll(document.body);
+    else { hide(); unprepAll(); }
+    var sw = document.getElementById('kpkb-switch');
+    if (sw) sw.setAttribute('aria-checked', v ? 'true' : 'false');
+    var l = document.querySelectorAll('[data-kpkb-off]');
+    for (var i = 0; i < l.length; i++) l[i].removeAttribute('data-kpkb-off');
+  }
+  window.kpKeyboard = { enabled: isOn, set: setOn, active: active };
+  function setupCard() {
+    if (document.getElementById('kpkb-setup')) return;
+    var anchor = document.getElementById('setup-enable-countdown-goals');
+    var sec = anchor && anchor.closest('section');
+    if (!sec || !sec.parentNode) return;
+    var c = document.createElement('section');
+    c.id = 'kpkb-setup';
+    c.className = sec.className.replace(/\bhidden\b/g, '');
+    c.innerHTML = '<div class="kpkb-set"><div style="min-width:0"><span class="t"><span class="material-symbols-outlined">keyboard</span>Keyboard Keuanganku</span>' +
+      '<span class="d">Saat mengisi kolom di HP &amp; tablet, pakai keyboard aplikasi (huruf, angka, dan kalkulator + − × ÷), bukan keyboard bawaan HP. Matikan bila ingin kembali memakai keyboard HP (misalnya untuk ketik suara atau emoji).</span>' +
+      (isTouch() ? '' : '<span class="d" style="margin-top:6px">Perangkat ini tidak memakai layar sentuh, jadi pengaturan ini hanya berlaku di HP &amp; tablet.</span>') +
+      '</div><button type="button" id="kpkb-switch" class="kpkb-sw" role="switch" aria-label="Keyboard Keuanganku" aria-checked="' + (isOn() ? 'true' : 'false') + '"></button></div>';
+    sec.parentNode.insertBefore(c, sec.nextSibling);
+    c.querySelector('#kpkb-switch').addEventListener('click', function () { setOn(!isOn()); });
+  }
+
+  function start() {
+    addCss();
+    setupCard();
+    prepAll(document.body);
+    document.addEventListener('focusin', onFocusIn, true);
+    document.addEventListener('focusout', onFocusOut, true);
+    document.addEventListener('pointerdown', onPointerDown, true);
+    window.addEventListener('resize', function () { if (kb && cur) measure(); });
+    var mo = new MutationObserver(function (muts) {
+      if (!active()) { if (!document.getElementById('kpkb-setup')) setupCard(); return; }
+      for (var i = 0; i < muts.length; i++) {
+        var m = muts[i];
+        if (m.type === 'childList') {
+          for (var j = 0; j < m.addedNodes.length; j++) {
+            var n = m.addedNodes[j];
+            if (n.nodeType === 1 && !(n.classList && n.classList.contains('kpkb'))) prepAll(n);
+          }
+          if (cur && !cur.el.isConnected) hide();
+        } else if (m.type === 'attributes' && m.target.matches && m.target.matches(ELIG)) {
+          if (eligible(m.target)) prep(m.target);
+        }
+      }
+      if (!document.getElementById('kpkb-setup')) setupCard();
+    });
+    mo.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['readonly', 'disabled', 'type'] });
+    var a = document.activeElement;
+    if (active() && eligible(a)) { prep(a); show(a); }
+  }
+  if (document.body) start();
+  else document.addEventListener('DOMContentLoaded', start);
+})();
+  </script>
   <meta charset="utf-8"/>
   <script>
     (function() {
