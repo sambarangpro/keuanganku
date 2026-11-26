@@ -166,6 +166,174 @@
 })();
   </script>
   <script>
+/* Kunci Aplikasi Keuanganku: pilihan buka tanpa PIN / kunci otomatis per perangkat (diatur di Setup) */
+(function () {
+  if (window.__kplock) return;
+  window.__kplock = true;
+  var MODE = 'KEUANGANKU_LOCK_MODE', SEEN = 'KEUANGANKU_LOCK_SEEN', NOPIN = 'KEUANGANKU_NOPIN_SESSION', PASSED = 'KEUANGANKU_PIN_PASSED';
+  var DUR = { '5m': 5 * 60000, '30m': 30 * 60000, '1h': 3600000, '1d': 86400000 };
+  var OPTS = [
+    ['always', 'Selalu minta PIN saat dibuka'],
+    ['5m', 'Kunci setelah 5 menit tidak dipakai'],
+    ['30m', 'Kunci setelah 30 menit tidak dipakai'],
+    ['1h', 'Kunci setelah 1 jam tidak dipakai'],
+    ['1d', 'Kunci setelah 1 hari tidak dipakai'],
+    ['never', 'Buka tanpa PIN di HP ini']
+  ];
+  function ls(k, v) { try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { return null; } }
+  function ss(k, v) { try { if (v === undefined) return sessionStorage.getItem(k); if (v === null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch (e) { return null; } }
+  function mode() { var m = ls(MODE); return (m === 'never' || DUR[m]) ? m : 'always'; }
+  function lic() { try { return JSON.parse(ls('KEUANGANKU_LICENSE_DATA') || 'null'); } catch (e) { return null; } }
+  /* hanya perangkat yang sudah terdaftar & terverifikasi, punya data, dan tidak dikeluarkan */
+  function canSkip() {
+    var l = lic();
+    if (!l || !l.token || l.token === 'PRO-DEMO-IKLAN-2026') return false;
+    if (ls('KEUANGANKU_IS_DEMO_MODE') === 'true') return false;
+    if (ls('KEUANGANKU_DEVICE_KICKED') === '1') return false;
+    if (!ls('KEUANGANKU_DB_V21')) return false;
+    return true;
+  }
+
+  /* 1) Saat aplikasi dibuka: lewati layar PIN bila pengaturan mengizinkan */
+  try {
+    var m0 = mode();
+    if (m0 !== 'always' && ss(PASSED) !== 'true' && canSkip()) {
+      var last = parseInt(ls(SEEN) || '0', 10) || 0;
+      if (m0 === 'never' || (last && Date.now() - last <= DUR[m0])) {
+        ss(PASSED, 'true');
+        ss(NOPIN, '1');
+      }
+    }
+  } catch (e) {}
+
+  /* 2) Catat waktu terakhir dipakai (hanya saat sudah masuk) */
+  function seen() { if (ss(PASSED) === 'true') ls(SEEN, String(Date.now())); }
+  var hiddenAt = 0;
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden') { seen(); hiddenAt = Date.now(); return; }
+    var m = mode();
+    if (DUR[m] && hiddenAt && Date.now() - hiddenAt > DUR[m] && ss(PASSED) === 'true' && typeof window.lockAppNow === 'function') {
+      try { window.lockAppNow(); } catch (e) {}
+    } else seen();
+    hiddenAt = 0;
+  });
+  window.addEventListener('pagehide', seen);
+  setInterval(function () { if (document.visibilityState === 'visible') seen(); }, 20000);
+
+  /* 3) Setup tetap minta PIN bila aplikasi dibuka tanpa PIN */
+  function candidates() {
+    var c = [];
+    function add(v) { if (v != null && String(v).trim()) c.push(String(v).trim()); }
+    try { var g = (typeof globalData !== 'undefined') ? globalData : window.globalData; if (g) { add(g.appPin); add(g.ownerPassword); } } catch (e) {}
+    ['KEUANGANKU_DB_V21', 'KEUANGANKU_USER_REAL_BACKUP'].forEach(function (k) { try { var o = JSON.parse(ls(k) || 'null'); if (o) { add(o.appPin); add(o.ownerPassword); } } catch (e) {} });
+    var l = lic();
+    if (l) { add(l.personalPin); add(l.token); }
+    return c;
+  }
+  function pinOk(p) {
+    p = String(p || '').trim();
+    if (!p) return false;
+    var clean = p.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    var c = candidates();
+    for (var i = 0; i < c.length; i++) {
+      if (p === c[i]) return true;
+      if (/^PRO/i.test(c[i]) && clean === c[i].toUpperCase().replace(/[^A-Z0-9]/g, '')) return true;
+    }
+    return false;
+  }
+  function askPin(reason) {
+    if (typeof window.kpPrompt !== 'function') return Promise.resolve(false);
+    return window.kpPrompt('Masukkan PIN\n\n' + reason, '', { okText: 'Buka' }).then(function (v) {
+      if (v == null) return false;
+      if (pinOk(v)) { ss(NOPIN, null); ss('KEUANGANKU_SETUP_UNLOCKED', 'true'); return true; }
+      if (typeof window.kpAlert === 'function') window.kpAlert('PIN salah\n\nPIN atau token yang dimasukkan tidak cocok. Silakan coba lagi.');
+      return false;
+    });
+  }
+  function wrapNav() {
+    if (typeof window.navTo !== 'function' || window.navTo.__kplock) return;
+    var orig = window.navTo;
+    var w = function (page) {
+      var self = this, args = arguments;
+      if (page === 'setup' && ss(NOPIN) === '1') {
+        askPin('Setup dilindungi PIN karena aplikasi dibuka tanpa PIN di HP ini.').then(function (ok) { if (ok) { orig.apply(self, args); ensureCard(); } });
+        return;
+      }
+      var r = orig.apply(self, args);
+      if (page === 'setup') ensureCard();
+      return r;
+    };
+    w.__kplock = true;
+    window.navTo = w;
+  }
+
+  /* 4) Pengaturan di Setup */
+  var css = '#kplock-setup .kl-t{font-weight:700;font-size:14px;color:var(--ui-text,#101828);display:flex;align-items:center;gap:6px}' +
+    '#kplock-setup .kl-t .material-symbols-outlined{font-size:19px;color:var(--ui-brand,#2563eb)}' +
+    '#kplock-setup .kl-d{display:block;font-size:11px;line-height:1.5;color:var(--ui-muted,#667085);margin-top:3px}' +
+    '#kplock-setup .kl-sel{display:flex;width:100%;margin-top:12px;padding:11px 14px;border:1px solid var(--ui-border-strong,#d0d5dd);border-radius:14px;font-size:13.5px;font-weight:700;background:var(--ui-card,#fff);color:var(--ui-text,#101828)}' +
+    '#kplock-setup .kl-w{display:none;margin-top:10px;padding:10px 12px;border-radius:12px;font-size:11.5px;line-height:1.5;background:#fffbeb;color:#92400e;border:1px solid #fde68a}' +
+    'html.dark #kplock-setup .kl-w{background:rgba(245,158,11,.1);color:#fcd34d;border-color:rgba(245,158,11,.3)}' +
+    '#kplock-setup .kl-w.on{display:block}';
+  function addCss() { if (document.getElementById('kplock-css')) return; var st = document.createElement('style'); st.id = 'kplock-css'; st.textContent = css; (document.head || document.documentElement).appendChild(st); }
+  function warnText(m) {
+    if (m === 'never') return 'Aplikasi langsung terbuka tanpa PIN di HP ini. Siapa pun yang memegang HP ini bisa melihat keuangan Anda. Menu Setup tetap meminta PIN.';
+    if (DUR[m]) return 'Selama masih dalam batas waktu itu, aplikasi langsung terbuka tanpa PIN di HP ini. Menu Setup tetap meminta PIN bila aplikasi dibuka tanpa PIN.';
+    return '';
+  }
+  function ensureCard() {
+    addCss();
+    if (document.getElementById('kplock-setup')) return;
+    var anchor = document.getElementById('setup-enable-countdown-goals');
+    var sec = anchor && anchor.closest('section');
+    if (!sec || !sec.parentNode) return;
+    var c = document.createElement('section');
+    c.id = 'kplock-setup';
+    c.className = sec.className.replace(/\bhidden\b/g, '');
+    var o = '';
+    for (var i = 0; i < OPTS.length; i++) o += '<option value="' + OPTS[i][0] + '">' + OPTS[i][1] + '</option>';
+    c.innerHTML = '<span class="kl-t"><span class="material-symbols-outlined">lock</span>Kunci Aplikasi</span>' +
+      '<span class="kl-d">Atur kapan aplikasi meminta PIN saat dibuka di HP ini. Pengaturan ini hanya berlaku di perangkat ini dan hanya untuk perangkat yang sudah terdaftar.</span>' +
+      '<select id="kplock-mode" class="kl-sel" aria-label="Kunci Aplikasi">' + o + '</select><div class="kl-w"></div>';
+    sec.parentNode.insertBefore(c, sec.nextSibling);
+    var sel = c.querySelector('#kplock-mode'), w = c.querySelector('.kl-w');
+    sel.value = mode();
+    function paint() { var t = warnText(sel.value); w.textContent = t; w.classList.toggle('on', !!t); }
+    paint();
+    sel.addEventListener('change', function () {
+      var v = sel.value, prev = mode();
+      if (v === prev) return;
+      if (v === 'always') { ls(MODE, 'always'); paint(); return; }
+      var msg = v === 'never' ? 'Buka tanpa PIN?\n\nAplikasi akan langsung terbuka tanpa PIN di HP ini. Siapa pun yang memegang HP ini bisa melihat keuangan Anda. Menu Setup tetap meminta PIN.' :
+        'Kunci otomatis?\n\nAplikasi tidak meminta PIN bila dibuka lagi sebelum batas waktu yang dipilih. Lewat dari itu, PIN diminta kembali.';
+      var go = typeof window.kpConfirm === 'function' ? window.kpConfirm(msg, { okText: 'Ya, terapkan' }) : Promise.resolve(true);
+      go.then(function (ok) {
+        if (ok) { ls(MODE, v); seen(); if (typeof window.showSyncToast === 'function') window.showSyncToast('🔒 Pengaturan kunci aplikasi disimpan'); }
+        else sel.value = prev;
+        paint();
+      });
+    });
+  }
+  window.kpLock = { mode: mode, set: function (v) { ls(MODE, v); }, verify: pinOk };
+
+  function guardSetup() {
+    var ps = document.getElementById('page-setup');
+    if (ss(NOPIN) === '1' && ps && !ps.classList.contains('hidden') && typeof window.navTo === 'function') {
+      try { window.navTo('dashboard'); } catch (e) {}
+    }
+  }
+  function start() {
+    wrapNav();
+    ensureCard();
+    if (ss(PASSED) === 'true') seen();
+    guardSetup();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(start, 0); });
+  else setTimeout(start, 0);
+  window.addEventListener('load', function () { wrapNav(); ensureCard(); setTimeout(guardSetup, 300); });
+})();
+  </script>
+  <script>
 /* Kontrol Keuanganku: pengganti tampilan bawaan browser (drop down, kalender, centang, penggeser, unggah file) */
 (function () {
   if (window.__kpui) return;
