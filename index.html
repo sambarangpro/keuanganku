@@ -869,10 +869,11 @@
     '.kpkb-np .kpkb-k.ok{font-size:15px}',
     '.kpkb-np .kpkb-k.blank{visibility:hidden}',
     '@media (min-width:700px){.kpkb-k{height:52px}.kpkb-np .kpkb-k{height:54px}}',
-    'html.kpkb-open body{padding-bottom:var(--kpkb-h,0px)!important}',
-    'html.kpkb-open .fixed.inset-0:not(.kpkb),html.kpkb-open .kpd-ov{bottom:var(--kpkb-h,0px)!important}',
-    'html.kpkb-open #splash-screen{bottom:var(--kpkb-h,0px)!important;height:auto!important;overflow-y:auto!important}',
-    'html.kpkb-open .kpu-pop.sheet{bottom:var(--kpkb-h,0px)!important;max-height:calc(100vh - var(--kpkb-h,0px) - 40px)!important}',
+    'html.kpkb-open body{padding-bottom:calc(var(--kpkb-h,0px) + var(--kpkb-pb,0px))!important}',
+    'html.kpkb-open #splash-screen{height:auto!important;overflow-y:auto!important}',
+    'html.kpkb-open .kpu-pop.sheet{max-height:calc(100vh - var(--kpkb-h,0px) - 40px)!important}',
+    '.kpkb-caret{position:fixed;z-index:' + (Z - 1) + ';width:2px;border-radius:2px;background:var(--ui-brand,#2563eb);pointer-events:none;display:none;animation:kpkbBlink 1s steps(1) infinite}',
+    '@keyframes kpkbBlink{0%,55%{opacity:1}56%,100%{opacity:0}}',
     /* kartu pengaturan */
     '.kpkb-set{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}',
     '.kpkb-set .t{font-weight:700;font-size:14px;color:var(--ui-text,#101828);display:flex;align-items:center;gap:6px}',
@@ -892,7 +893,7 @@
   /* ---------- kolom yang memakai keyboard aplikasi ---------- */
   function eligible(el) {
     if (!el || el.nodeType !== 1 || !el.matches || !el.matches(ELIG)) return false;
-    if (el.readOnly || el.disabled || el.hasAttribute('data-kp-native') || el.closest('[data-kp-native]')) return false;
+    if ((el.readOnly && el.getAttribute('data-kpkb-ro') !== '1') || el.disabled || el.hasAttribute('data-kp-native') || el.closest('[data-kp-native]')) return false;
     if (el.classList.contains('kpu-nat')) return false;
     if (el.getAttribute('data-kpkb-off') === '1') return false;
     return true;
@@ -917,6 +918,19 @@
   function unprepAll() {
     var l = document.querySelectorAll('[data-kpkb-im]');
     for (var i = 0; i < l.length; i++) unprep(l[i]);
+    var r = document.querySelectorAll('[data-kpkb-ro]');
+    for (var j = 0; j < r.length; j++) unlock(r[j]);
+  }
+  /* readonly sementara saat kolom aktif: keyboard bawaan HP pasti tidak muncul */
+  function lock(el) {
+    if (!eligible(el) || el.readOnly) return;
+    el.setAttribute('data-kpkb-ro', '1');
+    el.readOnly = true;
+  }
+  function unlock(el) {
+    if (el.getAttribute('data-kpkb-ro') !== '1') return;
+    el.removeAttribute('data-kpkb-ro');
+    el.readOnly = false;
   }
 
   function kindOf(el) {
@@ -1106,9 +1120,15 @@
     requestAnimationFrame(function () {
       var r = f.getBoundingClientRect(), kh = kb.getBoundingClientRect().height;
       var limit = window.innerHeight - kh - 14;
-      if (r.bottom > limit || r.top < 56) {
-        try { f.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) { f.scrollIntoView(); }
+      for (var i = 0; i < lifted.length; i++) {
+        var lr = lifted[i].el.getBoundingClientRect();
+        if (lifted[i].el.contains(f) || !lr.height || lr.width < window.innerWidth * 0.5 || lr.top < window.innerHeight * 0.45) continue;
+        limit = Math.min(limit, lr.top - 14);
       }
+      if (r.bottom > limit || r.top < 56) {
+        try { f.scrollIntoView({ block: 'center' }); } catch (e) { f.scrollIntoView(); }
+      }
+      caretSoon();
     });
   }
   function autoShift() {
@@ -1125,7 +1145,7 @@
     build();
     var same = cur && cur.el === f;
     if (!same) {
-      if (cur) commit();
+      if (cur) { commit(); unlock(cur.el); }
       cur = { el: f, k: kindOf(f), start: f.value };
       if (cur.k.numType && f.getAttribute('type') === 'number') {
         f.setAttribute('data-kpkb-num', '1');
@@ -1136,10 +1156,90 @@
       autoShift();
       render();
     }
+    lock(f);
+    if (!same) { try { if (canSel(f)) f.setSelectionRange(f.value.length, f.value.length); } catch (e) {} }
+    if (!kb.classList.contains('in')) {
+      var pb = parseFloat(getComputedStyle(document.body).paddingBottom) || 0;
+      document.documentElement.style.setProperty('--kpkb-pb', pb + 'px');
+    }
     kb.classList.add('in');
     document.documentElement.classList.add('kpkb-open');
     measure();
+    lift();
     ensureVisible(f);
+    caretSoon();
+  }
+
+  /* ---------- elemen melayang di bawah (menu bawah, tombol, panel) ikut naik di atas keyboard ---------- */
+  var lifted = [];
+  function kbH() { return kb ? Math.round(kb.getBoundingClientRect().height) : 0; }
+  function lift() {
+    if (!kb || !kb.classList.contains('in')) return;
+    var h = kbH();
+    var l = document.querySelectorAll('.fixed,.kpd-ov,#splash-screen,.kpu-pop.sheet,.kpu-ov,[style*="fixed"]');
+    for (var i = 0; i < l.length; i++) {
+      var e = l[i];
+      if (e === kb || e.closest('.kpkb') || e.classList.contains('kpkb-caret')) continue;
+      var rec = null;
+      for (var j = 0; j < lifted.length; j++) if (lifted[j].el === e) { rec = lifted[j]; break; }
+      if (!rec) {
+        var cs = getComputedStyle(e);
+        if (cs.position !== 'fixed') continue;
+        var rr = e.getBoundingClientRect(), vh = window.innerHeight;
+        if (!rr.height) continue;
+        var full = rr.top <= 1 && rr.bottom >= vh - 1;
+        var low = rr.top > vh * 0.4 || e.matches('.kpd-ov,.kpu-pop.sheet,#splash-screen,.kpu-ov');
+        if (!full && !low) continue;
+        rec = { el: e, base: parseFloat(cs.bottom) || 0, v: e.style.getPropertyValue('bottom'), p: e.style.getPropertyPriority('bottom') };
+        lifted.push(rec);
+      }
+      var want = (rec.base + h) + 'px';
+      if (e.style.getPropertyValue('bottom') !== want) e.style.setProperty('bottom', want, 'important');
+    }
+  }
+  function unlift() {
+    for (var i = 0; i < lifted.length; i++) {
+      var r = lifted[i];
+      if (r.v) r.el.style.setProperty('bottom', r.v, r.p); else r.el.style.removeProperty('bottom');
+    }
+    lifted = [];
+  }
+  var liftQ = false;
+  function liftSoon() { if (liftQ) return; liftQ = true; requestAnimationFrame(function () { liftQ = false; lift(); }); }
+
+  /* ---------- kursor tiruan (kolom readonly tidak menampilkan kursor) ---------- */
+  var caretEl = null, cv = null, caretQ = false;
+  function caretSoon() { if (caretQ) return; caretQ = true; requestAnimationFrame(function () { caretQ = false; placeCaret(); }); }
+  function textW(txt, cs) {
+    cv = cv || document.createElement('canvas');
+    var c = cv.getContext('2d');
+    c.font = (cs.fontStyle || 'normal') + ' ' + (cs.fontWeight || '400') + ' ' + cs.fontSize + ' ' + cs.fontFamily;
+    var ls = parseFloat(cs.letterSpacing) || 0;
+    return c.measureText(txt).width + ls * txt.length;
+  }
+  function placeCaret() {
+    if (!caretEl) { caretEl = document.createElement('div'); caretEl.className = 'kpkb-caret'; document.body.appendChild(caretEl); }
+    var f = cur && cur.el;
+    if (!f || f.tagName === 'TEXTAREA' || !kb || !kb.classList.contains('in') || !f.isConnected) { caretEl.style.display = 'none'; return; }
+    var cs = getComputedStyle(f), r = f.getBoundingClientRect();
+    if (!r.width) { caretEl.style.display = 'none'; return; }
+    var v = f.value, pos = canSel(f) ? f.selectionEnd : v.length;
+    var pw = (f.getAttribute('type') || '') === 'password';
+    var before = pw ? new Array(pos + 1).join('•') : v.slice(0, pos);
+    var all = pw ? new Array(v.length + 1).join('•') : v;
+    var bl = parseFloat(cs.borderLeftWidth) || 0, br = parseFloat(cs.borderRightWidth) || 0;
+    var pl = parseFloat(cs.paddingLeft) || 0, pr = parseFloat(cs.paddingRight) || 0;
+    var inner = r.width - bl - br - pl - pr;
+    var x = r.left + bl + pl + textW(before, cs) - (f.scrollLeft || 0);
+    if (cs.textAlign === 'center') x += Math.max(0, (inner - textW(all, cs)) / 2);
+    else if (cs.textAlign === 'right' || cs.textAlign === 'end') x += Math.max(0, inner - textW(all, cs));
+    x = Math.min(Math.max(x, r.left + bl + pl - 1), r.right - br - pr + 1);
+    var fs = parseFloat(cs.fontSize) || 16, ch = Math.round(fs * 1.25);
+    caretEl.style.left = Math.round(x) + 'px';
+    caretEl.style.top = Math.round(r.top + r.height / 2 - ch / 2) + 'px';
+    caretEl.style.height = ch + 'px';
+    caretEl.style.display = (r.bottom < 0 || r.top > window.innerHeight) ? 'none' : 'block';
+    caretEl.style.animation = 'none'; void caretEl.offsetWidth; caretEl.style.animation = '';
   }
   function restoreNum(f) {
     if (f && f.getAttribute('data-kpkb-num') === '1') {
@@ -1159,10 +1259,12 @@
     }
   }
   function hide() {
-    if (cur) commit();
+    if (cur) { commit(); unlock(cur.el); }
     cur = null;
     if (kb) kb.classList.remove('in');
     document.documentElement.classList.remove('kpkb-open');
+    unlift();
+    if (caretEl) caretEl.style.display = 'none';
   }
   function finishCalc() {
     if (!calc || !cur) { calc = null; return; }
@@ -1175,6 +1277,7 @@
     var f = cur.el;
     hide();
     f.setAttribute('data-kpkb-off', '1');
+    unlock(f);
     unprep(f);
     try { f.blur(); f.focus(); } catch (e) {}
   }
@@ -1191,6 +1294,7 @@
     vib();
     var k = b.getAttribute('data-k');
     press(k);
+    caretSoon();
     if (k === 'BK') {
       rep = { t: setTimeout(function () { rep.i = setInterval(function () { press('BK'); }, 55); }, 420) };
     }
@@ -1256,6 +1360,7 @@
     else if (cur) { hideT = setTimeout(hide, 10); }
   }
   function onFocusOut(e) {
+    if (e.target && e.target.getAttribute && e.target.getAttribute('data-kpkb-ro') === '1') unlock(e.target);
     if (!cur || e.target !== cur.el) return;
     hideT = setTimeout(function () {
       var a = document.activeElement;
@@ -1265,7 +1370,11 @@
   function onPointerDown(e) {
     if (!active()) return;
     var f = e.target && e.target.closest ? e.target.closest(ELIG) : null;
-    if (f && eligible(f)) prep(f);
+    if (f && eligible(f)) {
+      prep(f); lock(f);
+      if (cur && cur.el === f) setTimeout(caretSoon, 0);
+      setTimeout(function () { if (document.activeElement !== f) unlock(f); }, 1200);
+    }
   }
 
   /* ---------- pengaturan di Setup ---------- */
@@ -1302,7 +1411,7 @@
     document.addEventListener('focusin', onFocusIn, true);
     document.addEventListener('focusout', onFocusOut, true);
     document.addEventListener('pointerdown', onPointerDown, true);
-    window.addEventListener('resize', function () { if (kb && cur) measure(); });
+    window.addEventListener('resize', function () { if (kb && cur) { measure(); lift(); caretSoon(); } });
     var mo = new MutationObserver(function (muts) {
       if (!active()) { if (!document.getElementById('kpkb-setup')) setupCard(); return; }
       for (var i = 0; i < muts.length; i++) {
@@ -1310,7 +1419,10 @@
         if (m.type === 'childList') {
           for (var j = 0; j < m.addedNodes.length; j++) {
             var n = m.addedNodes[j];
-            if (n.nodeType === 1 && !(n.classList && n.classList.contains('kpkb'))) prepAll(n);
+            if (n.nodeType === 1 && !(n.classList && n.classList.contains('kpkb')) && !(n.classList && n.classList.contains('kpkb-caret'))) {
+              prepAll(n);
+              if (n.classList && n.classList.contains('kpd-ov')) { var di = n.querySelectorAll(ELIG); for (var q = 0; q < di.length; q++) lock(di[q]); }
+            }
           }
           if (cur && !cur.el.isConnected) hide();
         } else if (m.type === 'attributes' && m.target.matches && m.target.matches(ELIG)) {
@@ -1318,8 +1430,11 @@
         }
       }
       if (!document.getElementById('kpkb-setup')) setupCard();
+      if (cur) { liftSoon(); caretSoon(); }
     });
-    mo.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['readonly', 'disabled', 'type'] });
+    mo.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['readonly', 'disabled', 'type', 'class'] });
+    window.addEventListener('scroll', function () { if (cur) caretSoon(); }, true);
+    document.addEventListener('selectionchange', function () { if (cur) caretSoon(); });
     var a = document.activeElement;
     if (active() && eligible(a)) { prep(a); show(a); }
   }
