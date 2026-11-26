@@ -612,6 +612,7 @@
       setAct(i, true);
     }
     function keyNav(e) {
+      if (q && document.activeElement !== q && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) { try { q.focus({ preventScroll: true }); } catch (x) {} return; }
       if (e.key === 'ArrowDown') { e.preventDefault(); step(1); }
       else if (e.key === 'ArrowUp') { e.preventDefault(); step(-1); }
       else if (e.key === 'Enter') {
@@ -643,7 +644,9 @@
       var top = cur.offsetTop - ls.clientHeight / 2 + cur.offsetHeight / 2;
       ls.scrollTop = Math.max(0, top);
     }
-    if (q && !o.sheet) setTimeout(function () { try { q.focus({ preventScroll: true }); } catch (e) {} }, 30);
+    var touchDev = false;
+    try { touchDev = (navigator.maxTouchPoints || 0) > 0 && window.matchMedia('(pointer: coarse)').matches; } catch (e) {}
+    if (q && !o.sheet && !touchDev) setTimeout(function () { try { q.focus({ preventScroll: true }); } catch (e) {} }, 30);
     else setTimeout(function () { try { (cur || o.pop).focus({ preventScroll: true }); } catch (e) {} }, 30);
     if (!q || o.sheet) o.pop.tabIndex = -1;
   }
