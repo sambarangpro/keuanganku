@@ -1416,6 +1416,297 @@
 })();
   </script>
   <script>
+/* Simulasi Beli Emas (Kalkulator): harga jual & buyback semua merek dari Galeri 24 (Pegadaian), diperbarui otomatis tiap jam */
+(function () {
+  if (window.__kpgold) return;
+  window.__kpgold = true;
+  var SRC = ['/harga-emas.json', 'https://raw.githubusercontent.com/sambarangpro/keuanganku/main/harga-emas.json'];
+  var LS = 'KEUANGANKU_GOLD_PRICES';
+  var MAIN = ['ANTAM', 'UBS', 'GALERI 24', 'LOTUS ARCHI', 'ANTAM MULIA RETRO', 'ANTAM NON PEGADAIAN', 'DINAR G24', 'BABY GALERI 24'];
+  var data = null, checkedAt = 0, loading = false, tab = 'dana';
+  function $(id) { return document.getElementById(id); }
+  function esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function rp(n) { try { return formatRp(Math.round(n || 0)); } catch (e) { return 'Rp ' + Math.round(n || 0).toLocaleString('id-ID'); } }
+  function num(v) { try { return kpParseNum(v) || 0; } catch (e) { return parseFloat(String(v).replace(/\./g, '').replace(',', '.')) || 0; } }
+  function gr(n) { return (Math.round(n * 1000) / 1000).toLocaleString('id-ID', { maximumFractionDigits: 3 }) + ' gr'; }
+  function pct(n) { return (Math.round(n * 10) / 10).toLocaleString('id-ID') + '%'; }
+  function title(s) { return String(s).toLowerCase().replace(/\b[a-z]/g, function (c) { return c.toUpperCase(); }).replace(/\bUbs\b/, 'UBS').replace(/\bG24\b/i, 'G24'); }
+
+  /* ---------- data ---------- */
+  function vendors() { return (data && data.vendors) || []; }
+  function buyable(v) { return v.items.filter(function (i) { return i.jual > 0; }); }
+  function buyVendors() { return vendors().filter(function (v) { return buyable(v).length; }); }
+  function vByName(n) { return vendors().filter(function (v) { return v.name === n; })[0]; }
+  function loadCache() { try { var c = JSON.parse(localStorage.getItem(LS) || 'null'); if (c && c.data && c.data.vendors) { data = c.data; checkedAt = c.at || 0; } } catch (e) {} }
+  async function fetchPrices(force) {
+    if (loading) return; loading = true; status();
+    for (var i = 0; i < SRC.length; i++) {
+      try {
+        var r = await fetch(SRC[i] + '?t=' + Date.now(), { cache: 'no-store' });
+        if (!r.ok) continue;
+        var j = await r.json();
+        if (j && j.vendors && j.vendors.length) {
+          if (!data || !data.updatedAt || String(j.updatedAt) >= String(data.updatedAt)) data = j;
+          checkedAt = Date.now();
+          try { localStorage.setItem(LS, JSON.stringify({ at: checkedAt, data: data })); } catch (e) {}
+          break;
+        }
+      } catch (e) {}
+    }
+    loading = false; render();
+  }
+
+  /* ---------- perhitungan ---------- */
+  // Dana -> gram: coba beberapa urutan keping (mulai dari keping terbesar yang terjangkau), ambil hasil gram terbanyak
+  function bestForBudget(v, budget) {
+    var P = buyable(v).slice().sort(function (a, b) { return b.g - a.g; });
+    var best = null;
+    for (var s = 0; s < P.length; s++) {
+      var left = budget, combo = [], g = 0, bb = 0;
+      for (var k = s; k < P.length; k++) {
+        var n = Math.floor(left / P[k].jual);
+        if (n > 0) { combo.push({ g: P[k].g, n: n, price: P[k].jual }); left -= n * P[k].jual; g += n * P[k].g; bb += n * (P[k].buyback || 0); }
+      }
+      if (g > 0 && (!best || g > best.g + 1e-9 || (Math.abs(g - best.g) < 1e-9 && left > best.left))) best = { g: g, left: left, cost: budget - left, combo: combo, bb: bb };
+    }
+    return best;
+  }
+  // Target gram -> biaya termurah (boleh sedikit lebih dari target bila keping tidak pas)
+  function bestForTarget(v, target) {
+    var P = buyable(v).filter(function (i) { return Math.abs(i.g * 100 - Math.round(i.g * 100)) < 1e-6; });
+    if (!P.length) return null;
+    var T = Math.round(target * 100), maxP = 0;
+    P.forEach(function (p) { maxP = Math.max(maxP, Math.round(p.g * 100)); });
+    var N = T + maxP; if (N > 210000) return null;
+    var cost = new Float64Array(N + 1), from = new Int32Array(N + 1);
+    for (var x = 1; x <= N; x++) cost[x] = Infinity;
+    for (x = 1; x <= N; x++) {
+      for (var k = 0; k < P.length; k++) {
+        var w = Math.round(P[k].g * 100);
+        if (w <= x && cost[x - w] + P[k].jual < cost[x]) { cost[x] = cost[x - w] + P[k].jual; from[x] = k; }
+      }
+    }
+    var bestX = -1;
+    for (x = T; x <= N; x++) if (cost[x] < Infinity && (bestX < 0 || cost[x] < cost[bestX] - 0.5)) bestX = x;
+    if (bestX < 0) return null;
+    var cnt = {}, bb = 0, y = bestX;
+    while (y > 0) { var p = P[from[y]]; cnt[p.g] = (cnt[p.g] || 0) + 1; bb += p.buyback || 0; y -= Math.round(p.g * 100); }
+    var combo = Object.keys(cnt).map(function (g) { var it = P.filter(function (p) { return String(p.g) === g; })[0]; return { g: Number(g), n: cnt[g], price: it.jual }; }).sort(function (a, b) { return b.g - a.g; });
+    return { g: bestX / 100, cost: cost[bestX], combo: combo, bb: bb };
+  }
+  function comboTxt(c) { return c.map(function (x) { return x.n + '× ' + gr(x.g); }).join(' + '); }
+
+  /* ---------- tampilan ---------- */
+  var css = '#calc-sub-emas{--kpg-gold:#b45309}' +
+    '.kpg-st{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:11.5px;color:var(--ui-muted,#667085)}' +
+    '.kpg-st b{color:var(--ui-text,#101828)}.kpg-st button{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:10px;border:1px solid var(--ui-border,#e5e7eb);font-weight:700;color:var(--ui-text,#101828);background:var(--ui-card,#fff)}' +
+    '.kpg-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}.kpg-tabs::-webkit-scrollbar{display:none}' +
+    '.kpg-tabs button{flex:none;padding:8px 13px;border-radius:999px;border:1px solid var(--ui-border,#e5e7eb);font-size:12px;font-weight:700;color:var(--ui-muted,#667085);background:var(--ui-card,#fff);white-space:nowrap}' +
+    '.kpg-tabs button.on{background:#f59e0b;border-color:#f59e0b;color:#fff}' +
+    '.kpg-rec{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:520px){.kpg-rec{grid-template-columns:1fr}}' +
+    '.kpg-card{border:1px solid var(--ui-border,#e5e7eb);border-radius:16px;padding:12px 14px;background:var(--ui-card,#fff)}' +
+    '.kpg-card.gold{background:linear-gradient(135deg,rgba(245,158,11,.14),rgba(250,204,21,.06));border-color:rgba(245,158,11,.4)}' +
+    '.kpg-k{font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--kpg-gold)}html.dark .kpg-k{color:#fbbf24}' +
+    '.kpg-v{font-size:16px;font-weight:800;color:var(--ui-text,#101828);margin-top:2px}.kpg-s{font-size:11.5px;color:var(--ui-muted,#667085);margin-top:2px;line-height:1.45}' +
+    '.kpg-f{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:520px){.kpg-f{grid-template-columns:1fr}}' +
+    '.kpg-f label{display:block;font-size:11px;font-weight:700;color:var(--ui-muted,#667085);margin-bottom:4px}' +
+    '.kpg-in{width:100%;padding:10px 12px;border:1px solid var(--ui-border-strong,#d0d5dd);border-radius:12px;font-size:14px;font-weight:700;background:var(--ui-card,#fff);color:var(--ui-text,#101828)}' +
+    '.kpg-t{width:100%;border-collapse:collapse;font-size:12px}.kpg-t th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--ui-muted,#667085);padding:7px 6px;border-bottom:1px solid var(--ui-border,#e5e7eb)}' +
+    '.kpg-t td{padding:8px 6px;border-bottom:1px solid var(--ui-border,#eef0f3);color:var(--ui-text,#101828);vertical-align:top}.kpg-t td.r,.kpg-t th.r{text-align:right;white-space:nowrap}' +
+    '.kpg-t tr.top td{background:rgba(245,158,11,.10)}.kpg-t .m{font-size:10.5px;color:var(--ui-muted,#667085)}' +
+    '.kpg-wrap{overflow-x:auto;border:1px solid var(--ui-border,#e5e7eb);border-radius:14px}' +
+    '.kpg-note{font-size:10.5px;line-height:1.5;color:var(--ui-muted,#667085)}.kpg-pos{color:#059669;font-weight:800}.kpg-neg{color:#e11d48;font-weight:800}';
+
+  function addCss() { if ($('kpgold-css')) return; var s = document.createElement('style'); s.id = 'kpgold-css'; s.textContent = css; document.head.appendChild(s); }
+  function build() {
+    var menu = document.querySelector('#calc-menu-grid .grid'), anyPanel = $('calc-sub-currency');
+    if (!menu || !anyPanel) return false;
+    if (!$('kpgold-menu')) {
+      var b = document.createElement('button');
+      b.id = 'kpgold-menu'; b.type = 'button';
+      b.className = 'p-5 bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl shadow-sm hover:border-primary transition-all text-left flex items-start gap-4 group';
+      b.innerHTML = '<div class="p-3 rounded-xl group-hover:scale-110 transition-transform" style="background:rgba(245,158,11,.15);color:#d97706"><span class="material-symbols-outlined text-2xl">diamond</span></div>' +
+        '<div><h3 class="font-bold text-sm text-on-surface group-hover:text-primary">Simulasi Beli Emas</h3><p class="text-[11px] text-gray-500 mt-1">Bandingkan harga emas batangan semua merek, hitung dapat berapa gram, nabung emas, dan untung rugi jual kembali.</p></div>';
+      b.onclick = function () { try { openCalcSub('calc-sub-emas'); } catch (e) {} open(); };
+      menu.insertBefore(b, menu.children[1] || null);
+    }
+    if (!$('calc-sub-emas')) {
+      var p = document.createElement('div');
+      p.id = 'calc-sub-emas';
+      p.className = 'calc-sub-item hidden bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl p-5 sm:p-6 space-y-4 shadow-sm';
+      anyPanel.parentNode.insertBefore(p, anyPanel);
+    }
+    return true;
+  }
+  function open() { addCss(); if (!data) loadCache(); render(); if (!checkedAt || Date.now() - checkedAt > 10 * 60000) fetchPrices(); }
+
+  function status() {
+    var el = $('kpg-status'); if (!el) return;
+    if (loading && !data) { el.innerHTML = '<span>Mengambil harga emas terbaru…</span>'; return; }
+    if (!data) { el.innerHTML = '<span>Harga belum tersedia. Periksa internet lalu coba lagi.</span><button type="button" onclick="kpGoldRefresh()"><span class="material-symbols-outlined" style="font-size:15px">refresh</span>Coba lagi</button>'; return; }
+    var a = vByName('ANTAM') || vendors()[0];
+    var cek = checkedAt ? new Date(checkedAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
+    el.innerHTML = '<span>Harga per <b>' + esc(a.date) + '</b> · sumber ' + esc(data.source || 'Galeri 24') + '</span><span>dicek ' + cek + (loading ? ' · memperbarui…' : '') + '</span>' +
+      '<button type="button" onclick="kpGoldRefresh()"><span class="material-symbols-outlined" style="font-size:15px">refresh</span>Perbarui</button>';
+  }
+
+  function recCards() {
+    var rows = [];
+    buyVendors().forEach(function (v) {
+      var one = v.items.filter(function (i) { return i.g === 1 && i.jual > 0; })[0];
+      if (one) rows.push({ v: v.name, jual: one.jual, bb: one.buyback, sp: one.buyback ? (one.jual - one.buyback) / one.jual * 100 : null });
+    });
+    if (!rows.length) return '';
+    var cheap = rows.slice().sort(function (a, b) { return a.jual - b.jual; })[0];
+    var sp = rows.filter(function (r) { return r.sp != null; }).sort(function (a, b) { return a.sp - b.sp; })[0];
+    var antam = rows.filter(function (r) { return r.v === 'ANTAM'; })[0];
+    return '<div class="kpg-rec">' +
+      '<div class="kpg-card gold"><div class="kpg-k">Termurah · keping 1 gr</div><div class="kpg-v">' + esc(title(cheap.v)) + ' ' + rp(cheap.jual) + '</div><div class="kpg-s">' +
+      (antam && antam.v !== cheap.v ? 'Lebih murah ' + rp(antam.jual - cheap.jual) + ' dibanding Antam (' + rp(antam.jual) + ').' : 'Harga jual per keping 1 gram.') + '</div></div>' +
+      (sp ? '<div class="kpg-card gold"><div class="kpg-k">Selisih jual–buyback terkecil</div><div class="kpg-v">' + esc(title(sp.v)) + ' ' + pct(sp.sp) + '</div><div class="kpg-s">Beli ' + rp(sp.jual) + ', dijual kembali ' + rp(sp.bb) + '. Makin kecil selisihnya, makin cepat balik modal.</div></div>' : '') +
+      '</div>';
+  }
+
+  function vendorSelect(id, val, onlyBuy) {
+    var L = onlyBuy ? buyVendors() : vendors();
+    var main = L.filter(function (v) { return MAIN.indexOf(v.name) >= 0; }), other = L.filter(function (v) { return MAIN.indexOf(v.name) < 0; });
+    var o = function (v) { return '<option value="' + esc(v.name) + '"' + (v.name === val ? ' selected' : '') + '>' + esc(title(v.name)) + '</option>'; };
+    return '<select id="' + id + '" class="kpg-in">' + '<optgroup label="Batangan investasi">' + main.map(o).join('') + '</optgroup>' + (other.length ? '<optgroup label="Edisi khusus">' + other.map(o).join('') + '</optgroup>' : '') + '</select>';
+  }
+  function pieceSelect(id, vname, val) {
+    var v = vByName(vname); if (!v) return '<select id="' + id + '" class="kpg-in"></select>';
+    var P = buyable(v);
+    if (val == null) { var one = P.filter(function (i) { return i.g === 1; })[0]; val = one ? 1 : (P[0] && P[0].g); }
+    return '<select id="' + id + '" class="kpg-in">' + P.map(function (i) { return '<option value="' + i.g + '"' + (i.g === val ? ' selected' : '') + '>' + gr(i.g) + ' · ' + rp(i.jual) + '</option>'; }).join('') + '</select>';
+  }
+  var st = { dana: '5.000.000', target: '10', nabung: '1.000.000', bulan: '12', naik: '0', nv: 'ANTAM', np: null, jv: 'ANTAM', jp: null, jq: '1', jb: '', dv: 'ANTAM' };
+  function moneyInput(id, v, ph) { return '<div style="position:relative"><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:700;color:#94a3b8">Rp</span><input id="' + id + '" type="text" inputmode="numeric" data-num class="kpg-in" style="padding-left:36px" value="' + esc(v) + '" placeholder="' + (ph || '0') + '"></div>'; }
+
+  function tabDana() {
+    var budget = num(st.dana), rows = [];
+    if (budget > 0) buyVendors().forEach(function (v) { var r = bestForBudget(v, budget); if (r) { r.v = v.name; rows.push(r); } });
+    rows.sort(function (a, b) { return b.g - a.g || b.left - a.left; });
+    var h = '<div class="kpg-f"><div><label>Dana yang tersedia</label>' + moneyInput('kpg-dana', st.dana) + '</div></div>';
+    if (!budget) return h + '<p class="kpg-note">Isi dana untuk melihat hasilnya.</p>';
+    if (!rows.length) return h + '<p class="kpg-note">Dana belum cukup untuk keping terkecil.</p>';
+    var top = rows[0];
+    h += '<div class="kpg-card gold"><div class="kpg-k">Gram terbanyak</div><div class="kpg-v">' + gr(top.g) + ' · ' + esc(title(top.v)) + '</div><div class="kpg-s">' + comboTxt(top.combo) + ' = ' + rp(top.cost) + (top.left > 0 ? ' · sisa ' + rp(top.left) : '') + '<br>Bila dijual kembali hari ini: ' + rp(top.bb) + '</div></div>';
+    h += '<div class="kpg-wrap"><table class="kpg-t"><tr><th>Merek</th><th class="r">Dapat</th><th class="r">Sisa dana</th><th class="r">Nilai buyback</th></tr>' + rows.slice(0, 12).map(function (r, i) {
+      return '<tr' + (i === 0 ? ' class="top"' : '') + '><td><b>' + esc(title(r.v)) + '</b><div class="m">' + comboTxt(r.combo) + '</div></td><td class="r"><b>' + gr(r.g) + '</b></td><td class="r">' + rp(r.left) + '</td><td class="r">' + (r.bb ? rp(r.bb) : '–') + '</td></tr>';
+    }).join('') + '</table></div>';
+    return h;
+  }
+  function tabTarget() {
+    var t = num(st.target), rows = [];
+    if (t > 0 && t <= 1000) buyVendors().forEach(function (v) { var r = bestForTarget(v, t); if (r) { r.v = v.name; rows.push(r); } });
+    rows.sort(function (a, b) { return a.cost - b.cost; });
+    var h = '<div class="kpg-f"><div><label>Target emas (gram)</label><input id="kpg-target" type="text" inputmode="decimal" class="kpg-in" value="' + esc(st.target) + '" placeholder="10"></div></div>';
+    if (!(t > 0)) return h + '<p class="kpg-note">Isi target gram, misalnya 10.</p>';
+    if (t > 1000) return h + '<p class="kpg-note">Maksimal 1.000 gram.</p>';
+    if (!rows.length) return h + '<p class="kpg-note">Tidak ada kombinasi keping yang cocok.</p>';
+    var top = rows[0];
+    h += '<div class="kpg-card gold"><div class="kpg-k">Biaya termurah</div><div class="kpg-v">' + rp(top.cost) + ' · ' + esc(title(top.v)) + '</div><div class="kpg-s">' + comboTxt(top.combo) + (top.g > t + 1e-9 ? ' (total ' + gr(top.g) + ', karena ukuran keping)' : '') + '<br>Bila dijual kembali hari ini: ' + rp(top.bb) + '</div></div>';
+    h += '<div class="kpg-wrap"><table class="kpg-t"><tr><th>Merek</th><th class="r">Biaya</th><th class="r">Per gram</th><th class="r">Selisih</th></tr>' + rows.slice(0, 12).map(function (r, i) {
+      return '<tr' + (i === 0 ? ' class="top"' : '') + '><td><b>' + esc(title(r.v)) + '</b><div class="m">' + comboTxt(r.combo) + '</div></td><td class="r"><b>' + rp(r.cost) + '</b></td><td class="r">' + rp(r.cost / r.g) + '</td><td class="r">' + (i === 0 ? '–' : '+' + rp(r.cost - top.cost)) + '</td></tr>';
+    }).join('') + '</table></div>';
+    return h;
+  }
+  function tabNabung() {
+    var v = vByName(st.nv) || buyVendors()[0]; if (!v) return '';
+    var P = buyable(v), g = st.np != null ? st.np : ((P.filter(function (i) { return i.g === 1; })[0] || P[0]).g);
+    var piece = P.filter(function (i) { return i.g === g; })[0] || P[0];
+    var dep = num(st.nabung), n = Math.min(600, Math.round(num(st.bulan))), r = num(st.naik) / 100;
+    var h = '<div class="kpg-f"><div><label>Merek</label>' + vendorSelect('kpg-nv', v.name, true) + '</div><div><label>Ukuran keping yang dibeli</label>' + pieceSelect('kpg-np', v.name, piece.g) + '</div>' +
+      '<div><label>Setoran per bulan</label>' + moneyInput('kpg-nabung', st.nabung) + '</div><div><label>Lama menabung (bulan)</label><input id="kpg-bulan" type="text" inputmode="numeric" class="kpg-in" value="' + esc(st.bulan) + '"></div>' +
+      '<div><label>Perkiraan kenaikan harga per tahun (%)</label><input id="kpg-naik" type="text" inputmode="decimal" class="kpg-in" value="' + esc(st.naik) + '"></div></div>';
+    if (!(dep > 0) || !(n > 0)) return h + '<p class="kpg-note">Isi setoran dan lama menabung.</p>';
+    var cash = 0, cnt = 0, firstAt = 0, spent = 0;
+    for (var m = 1; m <= n; m++) {
+      cash += dep;
+      var price = piece.jual * Math.pow(1 + r, m / 12);
+      while (cash >= price) { cash -= price; spent += price; cnt++; if (!firstAt) firstAt = m; }
+    }
+    var f = Math.pow(1 + r, n / 12), grams = cnt * piece.g, bbNow = cnt * (piece.buyback || 0) * f;
+    h += '<div class="kpg-rec"><div class="kpg-card gold"><div class="kpg-k">Emas terkumpul</div><div class="kpg-v">' + gr(grams) + '</div><div class="kpg-s">' + cnt + ' keping ' + gr(piece.g) + ' ' + esc(title(v.name)) + (firstAt ? '. Keping pertama terbeli di bulan ke-' + firstAt + '.' : '. Setoran belum cukup untuk satu keping.') + '</div></div>' +
+      '<div class="kpg-card"><div class="kpg-k">Total setoran</div><div class="kpg-v">' + rp(dep * n) + '</div><div class="kpg-s">Dibelikan emas ' + rp(spent) + (cash > 0 ? ', sisa tunai ' + rp(cash) : '') + '.<br>Nilai buyback di akhir: ' + (piece.buyback ? rp(bbNow) : '–') + '</div></div></div>';
+    h += '<p class="kpg-note">Emas dibeli setiap kali setoran cukup untuk satu keping. ' + (r ? 'Harga dihitung naik ' + pct(r * 100) + ' per tahun (perkiraan, bukan kepastian).' : 'Harga dianggap tetap seperti hari ini.') + '</p>';
+    return h;
+  }
+  function tabJual() {
+    var v = vByName(st.jv) || vendors()[0]; if (!v) return '';
+    var P = v.items.filter(function (i) { return i.buyback > 0 || i.jual > 0; });
+    var g = st.jp != null ? st.jp : ((P.filter(function (i) { return i.g === 1; })[0] || P[0]).g);
+    var piece = P.filter(function (i) { return i.g === g; })[0] || P[0];
+    var q = Math.max(1, Math.round(num(st.jq) || 1));
+    var buy = st.jb ? num(st.jb) : (piece.jual || 0);
+    var opts = P.map(function (i) { return '<option value="' + i.g + '"' + (i.g === piece.g ? ' selected' : '') + '>' + gr(i.g) + '</option>'; }).join('');
+    var h = '<div class="kpg-f"><div><label>Merek emas yang dimiliki</label>' + vendorSelect('kpg-jv', v.name, false) + '</div><div><label>Ukuran keping</label><select id="kpg-jp" class="kpg-in">' + opts + '</select></div>' +
+      '<div><label>Jumlah keping</label><input id="kpg-jq" type="text" inputmode="numeric" class="kpg-in" value="' + esc(st.jq) + '"></div><div><label>Harga beli dulu per keping</label>' + moneyInput('kpg-jb', st.jb, piece.jual ? Number(piece.jual).toLocaleString('id-ID') : '0') + '</div></div>';
+    if (!piece.buyback) return h + '<p class="kpg-note">Galeri 24 belum mencantumkan harga buyback untuk keping ini.</p>';
+    var totalBuy = buy * q, totalBb = piece.buyback * q, diff = totalBb - totalBuy, p = totalBuy ? diff / totalBuy * 100 : 0;
+    var need = piece.buyback ? (buy / piece.buyback - 1) * 100 : 0;
+    h += '<div class="kpg-rec"><div class="kpg-card gold"><div class="kpg-k">Dijual kembali hari ini</div><div class="kpg-v">' + rp(totalBb) + '</div><div class="kpg-s">Buyback ' + rp(piece.buyback) + ' per keping.</div></div>' +
+      '<div class="kpg-card"><div class="kpg-k">' + (diff >= 0 ? 'Untung' : 'Rugi') + '</div><div class="kpg-v ' + (diff >= 0 ? 'kpg-pos' : 'kpg-neg') + '">' + (diff >= 0 ? '+' : '−') + rp(Math.abs(diff)) + ' (' + pct(Math.abs(p)) + ')</div><div class="kpg-s">' +
+      (diff >= 0 ? 'Sudah melewati harga beli.' : 'Harga buyback perlu naik sekitar ' + pct(need) + ' agar balik modal.') + '</div></div></div>';
+    if (!st.jb) h += '<p class="kpg-note">Harga beli diisi otomatis dengan harga jual hari ini. Ganti dengan harga saat Anda membeli dulu.</p>';
+    return h;
+  }
+  function tabDaftar() {
+    var v = vByName(st.dv) || vendors()[0]; if (!v) return '';
+    var h = '<div class="kpg-f"><div><label>Merek</label>' + vendorSelect('kpg-dv', v.name, false) + '</div></div>';
+    h += '<div class="kpg-wrap"><table class="kpg-t"><tr><th>Berat</th><th class="r">Harga jual</th><th class="r">Buyback</th><th class="r">Per gram</th><th class="r">Selisih</th></tr>' + v.items.map(function (i) {
+      return '<tr><td><b>' + gr(i.g) + '</b></td><td class="r">' + (i.jual ? rp(i.jual) : '–') + '</td><td class="r">' + (i.buyback ? rp(i.buyback) : '–') + '</td><td class="r">' + (i.jual ? rp(i.jual / i.g) : '–') + '</td><td class="r">' + (i.jual && i.buyback ? pct((i.jual - i.buyback) / i.jual * 100) : '–') + '</td></tr>';
+    }).join('') + '</table></div><p class="kpg-note">Harga per ' + esc(v.date) + '. Selisih = beda harga jual dan buyback.</p>';
+    return h;
+  }
+  var TABS = [['dana', 'Dana → Gram'], ['target', 'Target Gram'], ['nabung', 'Nabung Emas'], ['jual', 'Jual Kembali'], ['daftar', 'Daftar Harga']];
+  function body() { return tab === 'target' ? tabTarget() : tab === 'nabung' ? tabNabung() : tab === 'jual' ? tabJual() : tab === 'daftar' ? tabDaftar() : tabDana(); }
+  function render() {
+    var p = $('calc-sub-emas'); if (!p) return;
+    if (!p.getAttribute('data-ready')) {
+      p.setAttribute('data-ready', '1');
+      p.innerHTML = '<h3 class="font-bold text-base flex items-center gap-2" style="color:#d97706"><span class="material-symbols-outlined">diamond</span> Simulasi Beli Emas</h3>' +
+        '<div id="kpg-status" class="kpg-st"></div><div id="kpg-rec"></div>' +
+        '<div class="kpg-tabs" id="kpg-tabs">' + TABS.map(function (t) { return '<button type="button" data-t="' + t[0] + '">' + t[1] + '</button>'; }).join('') + '</div>' +
+        '<div id="kpg-body" class="space-y-3"></div>' +
+        '<p class="kpg-note">Harga acuan dari Galeri 24 (PT Pegadaian Galeri 24) dan diperbarui otomatis tiap jam. Harga di butik, toko emas, atau aplikasi lain bisa berbeda. Perhitungan ini simulasi, bukan saran investasi. Belilah emas secara tunai dan pastikan barangnya diterima atau tercatat atas nama Anda.</p>';
+      $('kpg-tabs').addEventListener('click', function (e) { var b = e.target.closest('button[data-t]'); if (!b) return; tab = b.getAttribute('data-t'); paint(); });
+      p.addEventListener('input', onInput); p.addEventListener('change', onInput);
+    }
+    status();
+    $('kpg-rec').innerHTML = data ? recCards() : '';
+    paint();
+  }
+  function paint() {
+    Array.prototype.forEach.call(document.querySelectorAll('#kpg-tabs button'), function (b) { b.classList.toggle('on', b.getAttribute('data-t') === tab); });
+    var b = $('kpg-body'); if (!b) return;
+    b.innerHTML = data ? body() : '';
+  }
+  var timer = null;
+  function onInput(e) {
+    var t = e.target, id = t && t.id; if (!id || id.indexOf('kpg-') !== 0) return;
+    var key = id.slice(4), isSel = t.tagName === 'SELECT';
+    if (key === 'nv') { st.nv = t.value; st.np = null; }
+    else if (key === 'jv') { st.jv = t.value; st.jp = null; st.jb = ''; }
+    else if (key === 'np' || key === 'jp') { st[key] = Number(t.value); if (key === 'jp') st.jb = ''; }
+    else st[key] = t.value;
+    if (isSel && e.type === 'change') { paint(); return; }
+    if (e.type !== 'input') return;
+    clearTimeout(timer);
+    timer = setTimeout(function () {
+      var pos = t.selectionStart, keep = id;
+      paint();
+      var n = $(keep); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (er) {} }
+    }, 450);
+  }
+  window.kpGoldRefresh = function () { fetchPrices(true); };
+  window.kpGoldOpen = function () { try { openCalcSub('calc-sub-emas'); } catch (e) {} open(); };
+  function init() { addCss(); build(); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+  window.addEventListener('load', init);
+})();
+  </script>
+  <script>
 /* Kontrol Keuanganku: pengganti tampilan bawaan browser (drop down, kalender, centang, penggeser, unggah file) */
 (function () {
   if (window.__kpui) return;
