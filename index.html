@@ -334,6 +334,438 @@
 })();
   </script>
   <script>
+/* Transaksi Keuanganku: tambah kategori langsung dari form, utang tanpa uang masuk, pinjam antar rekening sendiri, keterangan tipe cashflow */
+(function () {
+  if (window.__kptx) return;
+  window.__kptx = true;
+  var ADD = '__kp_add__', NOACC = '__kp_noacc__', NA = '- not applicable -';
+  var CF_PINJAM = 'Pinjam Antar Rekening', CF_KEMBALI = 'Kembalikan Pinjaman Antar Rekening';
+  var CAT_PINJAM = 'Pinjaman Antar Rekening', CAT_KEMBALI = 'Pengembalian Pinjaman Antar Rekening';
+  var HELP = {
+    'Income': 'Uang masuk: gaji, hasil usaha, hadiah, dan sejenisnya.',
+    'Spending': 'Uang keluar untuk belanja dan kebutuhan sehari-hari.',
+    'Invest / Savings': 'Menyisihkan uang ke tabungan atau investasi.',
+    'Financial Goals': 'Menabung untuk impian, misalnya umroh, kurban, atau sekolah anak.',
+    'Cicilan / Utang Baru': 'Saat Anda meminjam uang, atau punya utang/cicilan/tagihan baru. Jumlahnya menambah total utang. Pilih "Tidak masuk ke rekening" bila barang dibeli dengan dicicil atau dibayari orang lain.',
+    'Bayar Cicilan / Utang': 'Saat Anda membayar utang, cicilan, atau tagihan. Sisa utang otomatis berkurang.',
+    'Piutang Baru': 'Saat Anda meminjamkan uang kepada orang lain.',
+    'Pelunasan Piutang': 'Saat orang lain mengembalikan uang yang Anda pinjamkan.',
+    'Transfer': 'Memindahkan saldo antar rekening Anda sendiri. Tidak dihitung sebagai pemasukan atau pengeluaran.',
+    'Dari Asset / Saving': 'Mengambil uang dari tabungan atau investasi kembali ke rekening.'
+  };
+  HELP[CF_PINJAM] = 'Memakai dulu uang satu rekening untuk rekening lain, dan nanti dikembalikan. "Dari Akun" = rekening yang meminjamkan, "Ke Akun" = rekening yang memakai. Sisa pinjaman tampil di Beranda.';
+  HELP[CF_KEMBALI] = 'Mengembalikan pinjaman antar rekening. Pilih pinjaman yang mau dikembalikan, sisa pinjamannya otomatis berkurang.';
+
+  function g() { try { return (typeof globalData !== 'undefined') ? globalData : window.globalData; } catch (e) { return window.globalData; } }
+  function $(id) { return document.getElementById(id); }
+  function esc(t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function rp(n) { try { return typeof formatRp === 'function' ? formatRp(n) : 'Rp ' + Number(n || 0).toLocaleString('id-ID'); } catch (e) { return 'Rp ' + Number(n || 0).toLocaleString('id-ID'); } }
+  function num(v) { try { return typeof kpParseNum === 'function' ? kpParseNum(v) : (parseFloat(String(v).replace(/\./g, '').replace(',', '.')) || 0); } catch (e) { return 0; } }
+  function save() { try { saveStorageData(); } catch (e) {} }
+  function opt(sel, value, label) { var o = document.createElement('option'); o.value = value; o.textContent = label; sel.appendChild(o); return o; }
+  function fillSel(sel, list) { sel.innerHTML = ''; for (var i = 0; i < list.length; i++) opt(sel, list[i], list[i]); }
+  function accounts() { return ((g() || {}).accounts || []).slice(); }
+
+  /* ---------- CSS ---------- */
+  var css = '.kptx-help{margin-top:6px;font-size:11.5px;line-height:1.5;color:var(--ui-muted,#667085)}' +
+    '.kptx-extra{margin-top:10px;padding:12px;border-radius:14px;background:var(--ui-brand-soft,rgba(37,99,235,.08));border:1px solid rgba(37,99,235,.18)}' +
+    '.kptx-extra label{display:block;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--ui-text,#101828);margin-bottom:6px}' +
+    '.kptx-extra p{font-size:11px;color:var(--ui-muted,#667085);margin-top:6px;line-height:1.5}' +
+    '.kptx-sel{display:flex;width:100%;padding:10px 12px;border:1px solid var(--ui-border-strong,#d0d5dd);border-radius:12px;font-size:13.5px;font-weight:600;background:var(--ui-card,#fff);color:var(--ui-text,#101828)}' +
+    '.kpf-f{margin-top:12px}.kpf-f label{display:block;font-size:12px;font-weight:700;color:inherit;margin-bottom:-6px}.kpf-f .kpd-in{margin-top:10px}' +
+    '.kpf-h{font-size:11px;color:#94a3b8;margin:4px 2px 0}' +
+    '#kptx-loans{margin-top:14px;background:var(--ui-card,#fff);border:1px solid var(--ui-border,#e4e7ec);border-radius:20px;padding:16px}' +
+    '#kptx-loans .t{display:flex;align-items:center;gap:8px;font-weight:800;font-size:14px;color:var(--ui-text,#101828)}' +
+    '#kptx-loans .t .material-symbols-outlined{font-size:20px;color:#d97706}' +
+    '#kptx-loans .d{font-size:11.5px;color:var(--ui-muted,#667085);margin-top:2px}' +
+    '#kptx-loans .r{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 12px;margin-top:10px;border-radius:14px;background:var(--ui-bg,#f4f6f9)}' +
+    '#kptx-loans .r b{font-size:13px;color:var(--ui-text,#101828)}#kptx-loans .r span{display:block;font-size:11.5px;color:var(--ui-muted,#667085)}' +
+    '#kptx-loans .r strong{display:block;font-size:14px;color:#d97706;font-variant-numeric:tabular-nums}' +
+    '#kptx-loans button{flex:none;border:0;border-radius:11px;padding:9px 12px;font-size:12px;font-weight:800;background:var(--ui-brand,#2563eb);color:#fff;cursor:pointer}';
+  function addCss() { if ($('kptx-css')) return; var st = document.createElement('style'); st.id = 'kptx-css'; st.textContent = css; document.head.appendChild(st); }
+
+  /* ---------- dialog isian beberapa kolom (memakai gaya dialog aplikasi) ---------- */
+  var KPD_CSS = '.kpd-ov{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(2,6,23,.62);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;transition:opacity .16s ease;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}.kpd-ov.in{opacity:1}.kpd-box{width:100%;max-width:440px;max-height:calc(100vh - 32px);display:flex;flex-direction:column;background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:24px;box-shadow:0 30px 70px -20px rgba(2,6,23,.55);transform:translateY(10px) scale(.98);transition:transform .18s ease;overflow:hidden}.kpd-ov.in .kpd-box{transform:none}html.dark .kpd-box{background:#0b1220;color:#f1f5f9;border-color:#1e293b}.kpd-hd{display:flex;align-items:flex-start;gap:14px;padding:20px 22px 6px}.kpd-ic{width:44px;height:44px;flex:none;border-radius:14px;display:grid;place-items:center;background:#eff6ff;color:#2563eb;border:1px solid #dbeafe}.kpd-ic .material-symbols-outlined{font-size:24px}html.dark .kpd-ic{background:rgba(37,99,235,.14);border-color:rgba(59,130,246,.3);color:#60a5fa}.kpd-ic.warn{background:#fffbeb;color:#d97706;border-color:#fde68a}html.dark .kpd-ic.warn{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.3);color:#fbbf24}.kpd-ic.danger{background:#fef2f2;color:#dc2626;border-color:#fecaca}html.dark .kpd-ic.danger{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.32);color:#f87171}.kpd-ic.ok{background:#ecfdf5;color:#059669;border-color:#a7f3d0}html.dark .kpd-ic.ok{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.3);color:#34d399}.kpd-tt{font-weight:800;font-size:16.5px;line-height:1.35;margin:2px 0 0;letter-spacing:-.01em}.kpd-sub{font-size:12px;color:#64748b;margin-top:2px}html.dark .kpd-sub{color:#94a3b8}.kpd-bd{padding:8px 22px 4px;overflow:auto}.kpd-msg{white-space:pre-line;font-size:14px;line-height:1.6;color:#334155;margin:0}html.dark .kpd-msg{color:#cbd5e1}.kpd-in{display:block;width:100%;box-sizing:border-box;margin:14px 0 4px;padding:13px 15px;font:600 15px/1.4 Inter,system-ui,sans-serif;color:#0f172a;background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:14px;outline:none;transition:border-color .15s,box-shadow .15s;-webkit-appearance:none;appearance:none}.kpd-in:focus{border-color:#2563eb;box-shadow:0 0 0 4px rgba(37,99,235,.15);background:#fff}html.dark .kpd-in{background:#020617;border-color:#334155;color:#f8fafc;color-scheme:dark}html.dark .kpd-in:focus{border-color:#3b82f6;background:#020617;box-shadow:0 0 0 4px rgba(59,130,246,.2)}.kpd-in::placeholder{color:#94a3b8}textarea.kpd-in{min-height:150px;font:500 12px/1.5 "JetBrains Mono",ui-monospace,monospace;resize:vertical}.kpd-pin{letter-spacing:.35em;text-align:center;font-size:20px}.kpd-hint{font-size:11.5px;color:#94a3b8;margin:4px 2px 0}.kpd-ft{display:flex;gap:10px;justify-content:flex-end;padding:16px 22px 20px}.kpd-btn{min-height:46px;padding:0 20px;border-radius:14px;font:800 14px Inter,system-ui,sans-serif;cursor:pointer;border:1px solid transparent;display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:filter .15s,background .15s,transform .1s}.kpd-btn:active{transform:scale(.97)}.kpd-btn .material-symbols-outlined{font-size:18px}.kpd-p{background:#2563eb;color:#fff;box-shadow:0 10px 22px -10px rgba(37,99,235,.7)}.kpd-p:hover{filter:brightness(1.08)}.kpd-p.danger{background:#dc2626;box-shadow:0 10px 22px -10px rgba(220,38,38,.7)}.kpd-g{background:#f1f5f9;color:#334155;border-color:#e2e8f0}.kpd-g:hover{background:#e2e8f0}html.dark .kpd-g{background:#1e293b;color:#e2e8f0;border-color:#334155}html.dark .kpd-g:hover{background:#273449}@media (max-width:640px){.kpd-ov{align-items:flex-end;padding:0}.kpd-box{max-width:none;border-radius:24px 24px 0 0;max-height:88vh;padding-bottom:env(safe-area-inset-bottom)}.kpd-ov .kpd-box{transform:translateY(40px)}.kpd-ov.in .kpd-box{transform:none}.kpd-ft{flex-direction:column-reverse}.kpd-btn{width:100%}.kpd-hd{padding-top:22px}}';
+  function kpdCss() { if ($('kpd-css')) return; var st = document.createElement('style'); st.id = 'kpd-css'; st.textContent = KPD_CSS; document.head.appendChild(st); }
+  function kpForm(o) {
+    kpdCss();
+    return new Promise(function (resolve) {
+      var ov = document.createElement('div');
+      ov.className = 'kpd-ov';
+      ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true');
+      var f = '';
+      o.fields.forEach(function (x, i) {
+        var id = 'kpf-' + i;
+        f += '<div class="kpf-f"><label for="' + id + '">' + esc(x.label) + (x.required ? '' : ' <span style="font-weight:500;opacity:.6">(opsional)</span>') + '</label>';
+        if (x.type === 'select') {
+          f += '<select id="' + id + '" class="kpd-in">' + x.options.map(function (p) { var v = Array.isArray(p) ? p[0] : p, l = Array.isArray(p) ? p[1] : p; return '<option value="' + esc(v) + '"' + (String(v) === String(x.value || '') ? ' selected' : '') + '>' + esc(l) + '</option>'; }).join('') + '</select>';
+        } else if (x.type === 'date') {
+          f += '<input id="' + id + '" class="kpd-in" type="date" value="' + esc(x.value || '') + '">';
+        } else if (x.type === 'money') {
+          f += '<input id="' + id + '" class="kpd-in" type="text" inputmode="numeric" data-num autocomplete="off" placeholder="' + esc(x.placeholder || '0') + '" value="' + esc(x.value || '') + '">';
+        } else {
+          f += '<input id="' + id + '" class="kpd-in" type="text" autocomplete="off" placeholder="' + esc(x.placeholder || '') + '" value="' + esc(x.value || '') + '">';
+        }
+        if (x.hint) f += '<div class="kpf-h">' + esc(x.hint) + '</div>';
+        f += '</div>';
+      });
+      ov.innerHTML = '<div class="kpd-box"><div class="kpd-hd"><div class="kpd-ic"><span class="material-symbols-outlined">' + (o.icon || 'add_circle') + '</span></div>' +
+        '<div style="min-width:0;flex:1"><div class="kpd-tt">' + esc(o.title) + '</div><div class="kpd-sub">' + esc(o.sub || 'Keuanganku PRO') + '</div></div></div>' +
+        '<div class="kpd-bd">' + (o.msg ? '<p class="kpd-msg">' + esc(o.msg) + '</p>' : '') + f + '<div class="kpf-h" id="kpf-err" style="color:#dc2626;display:none"></div></div>' +
+        '<div class="kpd-ft"><button type="button" class="kpd-btn kpd-g" data-a="no">Batal</button><button type="button" class="kpd-btn kpd-p" data-a="ok">' + esc(o.ok || 'Simpan') + '</button></div></div>';
+      document.body.appendChild(ov);
+      requestAnimationFrame(function () { ov.classList.add('in'); });
+      var done = false;
+      function close(val) {
+        if (done) return; done = true;
+        document.removeEventListener('keydown', onKey, true);
+        ov.classList.remove('in');
+        setTimeout(function () { ov.remove(); }, 160);
+        resolve(val);
+      }
+      function collect() {
+        var out = {};
+        for (var i = 0; i < o.fields.length; i++) {
+          var x = o.fields[i], el = $('kpf-' + i), v = el ? el.value : '';
+          if (x.type === 'money') v = num(v);
+          else v = String(v || '').trim();
+          if (x.required && !v) { var e = $('kpf-err'); e.textContent = x.label + ' wajib diisi.'; e.style.display = 'block'; return null; }
+          out[x.key] = v;
+        }
+        if (o.validate) { var m = o.validate(out); if (m) { var e2 = $('kpf-err'); e2.textContent = m; e2.style.display = 'block'; return null; } }
+        return out;
+      }
+      function onKey(e) {
+        if (!ov.isConnected) return;
+        if (document.querySelector('.kpu-pop')) return;
+        if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(null); }
+        else if (e.key === 'Enter' && e.target && e.target.tagName === 'INPUT') { e.preventDefault(); e.stopPropagation(); var v = collect(); if (v) close(v); }
+      }
+      document.addEventListener('keydown', onKey, true);
+      ov.addEventListener('click', function (e) {
+        var b = e.target.closest && e.target.closest('[data-a]');
+        if (!b) return;
+        if (b.getAttribute('data-a') === 'no') close(null);
+        else { var v = collect(); if (v) close(v); }
+      });
+      setTimeout(function () { var first = $('kpf-0'); if (first && first.tagName === 'INPUT') { try { first.focus(); } catch (e) {} } }, 80);
+    });
+  }
+  window.kpForm = kpForm;
+
+  /* ---------- pinjaman antar rekening ---------- */
+  function loans() {
+    var h = (g() || {}).recentHistory || [], m = {};
+    for (var i = 0; i < h.length; i++) {
+      var t = h[i];
+      if (!t || t.cashflow !== 'Transfer') continue;
+      var amt = Number(t.amount) || 0;
+      if (t.category === CAT_PINJAM) { var k = t.keAcc + '\u0001' + t.dariAcc; m[k] = (m[k] || 0) + amt; }
+      else if (t.category === CAT_KEMBALI) { var k2 = t.dariAcc + '\u0001' + t.keAcc; m[k2] = (m[k2] || 0) - amt; }
+    }
+    var out = [];
+    Object.keys(m).forEach(function (k) { if (m[k] > 0.5) { var p = k.split('\u0001'); out.push({ borrower: p[0], lender: p[1], amount: m[k] }); } });
+    out.sort(function (a, b) { return b.amount - a.amount; });
+    return out;
+  }
+  window.kpInternalLoans = loans;
+
+  function renderLoansCard() {
+    var grid = $('account-grid');
+    if (!grid || !grid.parentNode) return;
+    var card = $('kptx-loans'), L = loans();
+    if (!L.length) { if (card) card.remove(); return; }
+    if (!card) { card = document.createElement('div'); card.id = 'kptx-loans'; grid.parentNode.insertBefore(card, grid.nextSibling); }
+    var h = '<div class="t"><span class="material-symbols-outlined">sync_alt</span>Pinjaman Antar Rekening</div><div class="d">Uang yang dipakai dulu dari rekening lain dan belum dikembalikan.</div>';
+    L.forEach(function (x, i) {
+      h += '<div class="r"><div style="min-width:0"><b>' + esc(x.borrower) + '</b><span>meminjam dari ' + esc(x.lender) + '</span><strong>' + esc(rp(x.amount)) + '</strong></div><button type="button" data-i="' + i + '">Kembalikan</button></div>';
+    });
+    card.innerHTML = h;
+    card.onclick = function (e) {
+      var b = e.target.closest && e.target.closest('button[data-i]');
+      if (!b) return;
+      var x = L[+b.getAttribute('data-i')];
+      try { navTo('transaksi'); } catch (er) {}
+      setTimeout(function () {
+        var cf = $('tx-cashflow'); if (!cf) return;
+        cf.value = CF_KEMBALI;
+        applyCashflowLogic();
+        var cat = $('tx-category'), key = x.borrower + '\u0001' + x.lender;
+        for (var i = 0; i < cat.options.length; i++) if (cat.options[i].value === key) { cat.selectedIndex = i; cat.dispatchEvent(new Event('change', { bubbles: true })); break; }
+        try { $('tx-form').scrollIntoView({ block: 'start', behavior: 'smooth' }); } catch (er) {}
+      }, 120);
+    };
+  }
+
+  /* ---------- logika form transaksi ---------- */
+  var ADD_LABEL = {
+    'Income': ['Tambah kategori pemasukan baru', 'pemasukan'],
+    'Spending': ['Tambah kategori pengeluaran baru', 'pengeluaran'],
+    'Cicilan / Utang Baru': ['Tambah utang / cicilan baru', 'utang'],
+    'Bayar Cicilan / Utang': ['Tambah tagihan baru', 'tagihan'],
+    'Piutang Baru': ['Tambah piutang baru', 'piutang'],
+    'Invest / Savings': ['Tambah tabungan / investasi baru', 'invest'],
+    'Financial Goals': ['Tambah target impian baru', 'goal']
+  };
+  function helpEl() {
+    var cf = $('tx-cashflow'); if (!cf) return null;
+    var h = $('kptx-help');
+    if (!h) { h = document.createElement('p'); h.id = 'kptx-help'; h.className = 'kptx-help'; cf.parentNode.appendChild(h); }
+    return h;
+  }
+  function extraEl() {
+    var ke = $('tx-ke'); if (!ke) return null;
+    var x = $('kptx-noacc');
+    if (!x) {
+      x = document.createElement('div'); x.id = 'kptx-noacc'; x.className = 'kptx-extra'; x.style.display = 'none';
+      x.innerHTML = '<label for="kptx-noacc-cat">Catat juga sebagai pengeluaran</label><select id="kptx-noacc-cat" class="kptx-sel"></select>' +
+        '<p>Utang tetap tercatat, saldo rekening tidak berubah. Barang atau jasa yang dibeli ikut tercatat sebagai pengeluaran pada kategori ini.</p>';
+      ke.parentNode.appendChild(x);
+      x.querySelector('select').addEventListener('change', function () { this.setAttribute('data-chosen', '1'); });
+    }
+    return x;
+  }
+  var autoName = '';
+  function setAutoName(t) {
+    var n = $('tx-name'); if (!n) return;
+    if (!n.value || n.value === autoName) { n.value = t; autoName = t; }
+  }
+  function postLogic() {
+    var cfSel = $('tx-cashflow'), cat = $('tx-category'), dari = $('tx-dari'), ke = $('tx-ke');
+    if (!cfSel || !cat || !dari || !ke) return;
+    var cf = cfSel.value, G = g() || {};
+    var h = helpEl(); if (h) { h.textContent = HELP[cf] || ''; h.style.display = HELP[cf] ? '' : 'none'; }
+    var ex = extraEl(); if (ex) ex.style.display = 'none';
+    if (cf === CF_PINJAM) {
+      cat.innerHTML = ''; opt(cat, CAT_PINJAM, CAT_PINJAM); cat.disabled = true;
+      fillSel(dari, accounts()); fillSel(ke, accounts()); dari.disabled = false; ke.disabled = false;
+      if (ke.options.length > 1 && ke.value === dari.value) ke.selectedIndex = 1;
+      syncPinjamName();
+    } else if (cf === CF_KEMBALI) {
+      var L = loans();
+      cat.innerHTML = ''; cat.disabled = false;
+      if (L.length) L.forEach(function (x) { opt(cat, x.borrower + '\u0001' + x.lender, x.borrower + ' → ' + x.lender + ' (sisa ' + rp(x.amount) + ')'); });
+      else opt(cat, NA, 'Belum ada pinjaman antar rekening');
+      fillSel(dari, accounts()); fillSel(ke, accounts()); dari.disabled = false; ke.disabled = false;
+      applyKembaliPair(false);
+    } else {
+      if (ADD_LABEL[cf] && !cat.disabled) {
+        if (cat.options.length === 1 && cat.options[0].value === NA) cat.innerHTML = '';
+        opt(cat, ADD, '＋ ' + ADD_LABEL[cf][0] + '…');
+        if (cat.options.length === 1) { cat.innerHTML = ''; opt(cat, '', '— Belum ada, tambahkan dulu —').disabled = true; opt(cat, ADD, '＋ ' + ADD_LABEL[cf][0] + '…'); cat.selectedIndex = 0; }
+      }
+      if (cf === 'Cicilan / Utang Baru' && !ke.disabled) {
+        if (ke.options.length === 1 && ke.options[0].value === NA) ke.innerHTML = '';
+        opt(ke, NOACC, 'Tidak masuk ke rekening (barang dicicil / dibayari orang)');
+      }
+    }
+    if (cat.value === ADD && cat.options[0] && cat.options[0].value !== ADD) cat.selectedIndex = 0;
+  }
+  function syncPinjamName() {
+    var d = $('tx-dari'), k = $('tx-ke');
+    if (d && k && d.value && k.value) setAutoName('Pinjam dari ' + d.value + ' untuk ' + k.value);
+  }
+  function applyKembaliPair(setAmount) {
+    var cat = $('tx-category'), d = $('tx-dari'), k = $('tx-ke');
+    var v = cat.value || '';
+    if (v.indexOf('\u0001') < 0) return;
+    var p = v.split('\u0001');
+    d.value = p[0]; k.value = p[1];
+    setAutoName('Kembalikan pinjaman ke ' + p[1]);
+    if (setAmount) {
+      var L = loans(), a = $('tx-amount');
+      for (var i = 0; i < L.length; i++) if (L[i].borrower === p[0] && L[i].lender === p[1]) {
+        if (a && (!a.value || a.value === '0')) { a.value = String(Math.round(L[i].amount)); a.dispatchEvent(new Event('input', { bubbles: true })); }
+      }
+    }
+  }
+
+  async function addFlow(cf) {
+    var G = g(); if (!G) return null;
+    var name = null, res;
+    if (cf === 'Income' || cf === 'Spending' || cf === 'Bayar Cicilan / Utang') {
+      var key = cf === 'Income' ? 'incomes' : (cf === 'Spending' ? 'spendings' : 'bills');
+      res = await kpForm({ title: ADD_LABEL[cf][0], icon: 'add_circle', fields: [{ key: 'name', label: cf === 'Bayar Cicilan / Utang' ? 'Nama tagihan' : 'Nama kategori', required: true, placeholder: cf === 'Income' ? 'Contoh: Hasil Jualan' : (cf === 'Spending' ? 'Contoh: Jajan Anak' : 'Contoh: Listrik PLN') }],
+        validate: function (v) { return (G[key] || []).indexOf(v.name) >= 0 ? 'Nama tersebut sudah ada.' : ''; } });
+      if (!res) return null;
+      if (!G[key]) G[key] = [];
+      G[key].push(res.name); name = res.name;
+    } else if (cf === 'Cicilan / Utang Baru') {
+      var per = [['Bulanan', 'Setiap bulan'], ['Mingguan', 'Setiap minggu'], ['Setiap Hari', 'Setiap hari'], ['Tahunan', 'Setiap tahun']];
+      for (var d = 1; d <= 31; d++) per.push(['Setiap Tanggal ' + d, 'Setiap tanggal ' + d]);
+      res = await kpForm({ title: 'Tambah utang / cicilan baru', icon: 'request_quote', msg: 'Jumlah utangnya diambil dari kolom Nominal transaksi ini.',
+        fields: [
+          { key: 'name', label: 'Nama utang', required: true, placeholder: 'Contoh: Pinjaman Pak Ahmad, Cicilan Motor' },
+          { key: 'category', label: 'Jenis', type: 'select', value: 'Utang', required: true, options: [['Utang', 'Utang'], ['Cicilan', 'Cicilan'], ['Remberg', 'Rembers (talangan)']] },
+          { key: 'monthlyPay', label: 'Nominal pembayaran per periode', type: 'money', hint: 'Untuk pengingat jatuh tempo. Boleh dikosongkan.' },
+          { key: 'period', label: 'Bayar setiap', type: 'select', value: 'Bulanan', required: true, options: per }
+        ],
+        validate: function (v) { return (G.debtData && G.debtData[v.name]) || (G.receivablesData && G.receivablesData[v.name]) ? 'Nama tersebut sudah ada.' : ''; } });
+      if (!res) return null;
+      if (!G.debtData) G.debtData = {};
+      G.debtData[res.name] = { total: 0, paid: 0, monthlyPay: res.monthlyPay || 0, category: res.category, period: res.period };
+      name = res.name;
+    } else if (cf === 'Piutang Baru') {
+      res = await kpForm({ title: 'Tambah piutang baru', icon: 'handshake', msg: 'Jumlah piutangnya diambil dari kolom Nominal transaksi ini.',
+        fields: [
+          { key: 'name', label: 'Nama peminjam', required: true, placeholder: 'Contoh: Pinjaman ke Budi' },
+          { key: 'deadline', label: 'Janji dikembalikan', type: 'date' }
+        ],
+        validate: function (v) { return G.receivablesData && G.receivablesData[v.name] ? 'Nama tersebut sudah ada.' : ''; } });
+      if (!res) return null;
+      if (!G.receivablesData) G.receivablesData = {};
+      G.receivablesData[res.name] = { total: 0, deadline: res.deadline || '', paid: 0 };
+      name = res.name;
+    } else if (cf === 'Invest / Savings' || cf === 'Financial Goals') {
+      var ok = cf === 'Financial Goals' ? 'goalsData' : 'investData';
+      var y = new Date(); y.setFullYear(y.getFullYear() + 1);
+      res = await kpForm({ title: ADD_LABEL[cf][0], icon: cf === 'Financial Goals' ? 'flag' : 'savings',
+        fields: [
+          { key: 'name', label: cf === 'Financial Goals' ? 'Nama impian' : 'Nama tabungan / investasi', required: true, placeholder: cf === 'Financial Goals' ? 'Contoh: Umroh Sekeluarga' : 'Contoh: Tabungan Emas' },
+          { key: 'target', label: 'Target dana', type: 'money' },
+          { key: 'deadline', label: 'Tanggal target', type: 'date', value: y.toISOString().slice(0, 10) }
+        ],
+        validate: function (v) { return G[ok] && G[ok][v.name] ? 'Nama tersebut sudah ada.' : ''; } });
+      if (!res) return null;
+      if (!G[ok]) G[ok] = {};
+      G[ok][res.name] = { initial: 0, target: res.target || 0, deadline: res.deadline || '', durationMonths: 12, used: 0 };
+      name = res.name;
+    }
+    if (name) { save(); try { if (typeof showSyncToast === 'function') showSyncToast('✅ "' + name + '" ditambahkan'); } catch (e) {} }
+    return name;
+  }
+
+  function onCategoryChange() {
+    var cat = $('tx-category'), cfSel = $('tx-cashflow');
+    if (!cat || !cfSel) return;
+    var cf = cfSel.value;
+    if (cf === CF_KEMBALI) { applyKembaliPair(true); return; }
+    if (cat.value !== ADD) return;
+    var d = $('tx-dari'), k = $('tx-ke'), dv = d && d.value, kv = k && k.value;
+    cat.selectedIndex = 0;
+    addFlow(cf).then(function (name) {
+      applyCashflowLogic();
+      if (dv && d.querySelector('option[value="' + CSS.escape(dv) + '"]')) d.value = dv;
+      if (kv && k.querySelector('option[value="' + CSS.escape(kv) + '"]')) k.value = kv;
+      if (name) {
+        for (var i = 0; i < cat.options.length; i++) if (cat.options[i].value === name) { cat.selectedIndex = i; break; }
+      }
+      k.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+  }
+  function onKeChange() {
+    var ke = $('tx-ke'), cfSel = $('tx-cashflow'), ex = extraEl();
+    if (!ke || !cfSel || !ex) return;
+    if (cfSel.value === CF_PINJAM) { syncPinjamName(); return; }
+    var show = cfSel.value === 'Cicilan / Utang Baru' && ke.value === NOACC;
+    ex.style.display = show ? '' : 'none';
+    if (show) {
+      var s = $('kptx-noacc-cat'), prev = s.value, list = ((g() || {}).spendings || []);
+      s.innerHTML = '';
+      list.forEach(function (n) { opt(s, n, n); });
+      opt(s, '', 'Tidak perlu dicatat sebagai pengeluaran');
+      if (s.getAttribute('data-chosen') === '1' && s.querySelector('option[value="' + CSS.escape(prev) + '"]')) s.value = prev;
+      else s.selectedIndex = 0;
+    }
+  }
+
+  /* ---------- simpan transaksi ---------- */
+  function wrap() {
+    if (typeof window.applyCashflowLogic === 'function' && !window.applyCashflowLogic.__kptx) {
+      var origA = window.applyCashflowLogic;
+      var wa = function () { var r = origA.apply(this, arguments); try { postLogic(); } catch (e) { console.warn('kptx', e); } return r; };
+      wa.__kptx = true; window.applyCashflowLogic = wa;
+    }
+    if (typeof window.renderDashboard === 'function' && !window.renderDashboard.__kptx) {
+      var origD = window.renderDashboard;
+      var wd = function () { var r = origD.apply(this, arguments); try { renderLoansCard(); } catch (e) {} return r; };
+      wd.__kptx = true; window.renderDashboard = wd;
+    }
+    if (typeof window.submitTransaction === 'function' && !window.submitTransaction.__kptx) {
+      var origS = window.submitTransaction;
+      var ws = async function (e) {
+        if (e && e.preventDefault) e.preventDefault();
+        var cfSel = $('tx-cashflow'), cat = $('tx-category'), dari = $('tx-dari'), ke = $('tx-ke');
+        var cf = cfSel.value, G = g() || {};
+        var mode = cf === CF_PINJAM ? 'pinjam' : (cf === CF_KEMBALI ? 'kembali' : '');
+        var noacc = cf === 'Cicilan / Utang Baru' && ke.value === NOACC;
+        var spendCat = noacc ? ($('kptx-noacc-cat') || {}).value || '' : '';
+        if (cat.value === ADD || cat.value === '') { await kpAlert('Pilih kategori\n\nSilakan pilih kategori terlebih dahulu, atau tambahkan yang baru.'); return; }
+        var keep = { cf: cf, dari: dari.value, ke: ke.value, cat: cat.value };
+        if (mode) {
+          if (!dari.value || !ke.value || dari.value === NA || ke.value === NA) { await kpAlert('Pilih rekening\n\nPilih rekening yang meminjamkan (Dari Akun) dan rekening yang memakai (Ke Akun).'); return; }
+          if (dari.value === ke.value) { await kpAlert('Rekening sama\n\nRekening "Dari Akun" dan "Ke Akun" harus berbeda.'); return; }
+          cfSel.value = 'Transfer';
+          cat.disabled = false;
+          cat.innerHTML = ''; opt(cat, mode === 'pinjam' ? CAT_PINJAM : CAT_KEMBALI, '');
+          cat.selectedIndex = 0;
+        }
+        if (noacc) { var o = ke.options[ke.selectedIndex]; o.value = NA; }
+        var h = G.recentHistory || [], before = h.length, firstBefore = h[0];
+        var ret;
+        try { ret = await origS.call(this, e); } catch (err) { console.warn(err); }
+        G = g() || {}; h = G.recentHistory || [];
+        var added = h.length > before || (h[0] && h[0] !== firstBefore);
+        if (!added) {
+          cfSel.value = keep.cf;
+          applyCashflowLogic();
+          if (keep.cat && cat.querySelector('option[value="' + CSS.escape(keep.cat) + '"]')) cat.value = keep.cat;
+          if (dari.querySelector('option[value="' + CSS.escape(keep.dari) + '"]')) dari.value = keep.dari;
+          if (ke.querySelector('option[value="' + CSS.escape(keep.ke) + '"]')) ke.value = keep.ke;
+          onKeChange();
+          return ret;
+        }
+        var newOnes = h.slice(0, Math.max(1, h.length - before));
+        var main = null;
+        for (var i = 0; i < newOnes.length; i++) if (newOnes[i] && !newOnes[i].feeOf) { main = newOnes[i]; break; }
+        if (main) {
+          if (mode) main.internalLoan = mode;
+          if (noacc) {
+            main.noAccount = true;
+            if (spendCat) {
+              var st = { id: (typeof newTxId === 'function' ? newTxId() : 'tx_' + Date.now()), createdAt: (main.createdAt || Date.now()) + 2, dateTime: main.dateTime, rawDate: main.rawDate,
+                name: main.name, amount: main.amount, cashflow: 'Spending', category: spendCat, dariAcc: NA, keAcc: NA, fromDebt: main.id };
+              h.unshift(st);
+            }
+          }
+          if (mode || noacc) { save(); try { renderDashboard(); renderHistoryTable(); } catch (er) {} }
+        }
+        autoName = '';
+        return ret;
+      };
+      ws.__kptx = true; window.submitTransaction = ws;
+    }
+  }
+
+  function addCashflowOptions() {
+    var cf = $('tx-cashflow'); if (!cf || cf.querySelector('option[value="' + CF_PINJAM + '"]')) return;
+    var tf = cf.querySelector('option[value="Transfer"]');
+    var a = document.createElement('option'); a.value = CF_PINJAM; a.textContent = 'Pinjam Antar Rekening Sendiri';
+    var b = document.createElement('option'); b.value = CF_KEMBALI; b.textContent = 'Kembalikan Pinjaman Antar Rekening';
+    if (tf && tf.nextSibling) { cf.insertBefore(b, tf.nextSibling); cf.insertBefore(a, b); } else { cf.appendChild(a); cf.appendChild(b); }
+  }
+
+  var started = false;
+  function init() {
+    if (!$('tx-form') || typeof window.applyCashflowLogic !== 'function') return;
+    addCss();
+    addCashflowOptions();
+    wrap();
+    if (started) return;
+    started = true;
+    var cat = $('tx-category'), ke = $('tx-ke'), da = $('tx-dari');
+    cat.addEventListener('change', onCategoryChange);
+    ke.addEventListener('change', onKeChange);
+    da.addEventListener('change', function () { if ($('tx-cashflow').value === CF_PINJAM) syncPinjamName(); });
+    var nm = $('tx-name'); if (nm) nm.addEventListener('input', function () { if (nm.value !== autoName) autoName = ''; });
+    try { postLogic(); renderLoansCard(); } catch (e) {}
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(init, 0); });
+  else setTimeout(init, 0);
+  window.addEventListener('load', init);
+})();
+  </script>
+  <script>
 /* Kontrol Keuanganku: pengganti tampilan bawaan browser (drop down, kalender, centang, penggeser, unggah file) */
 (function () {
   if (window.__kpui) return;
