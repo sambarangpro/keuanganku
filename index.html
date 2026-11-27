@@ -1130,6 +1130,91 @@
 })();
   </script>
   <script>
+/* Lonceng pengingat Keuanganku: semua pengingat jatuh tempo & piutang dipindah dari Beranda ke ikon lonceng di atas */
+(function () {
+  if (window.__kpbell) return;
+  window.__kpbell = true;
+  function $(id) { return document.getElementById(id); }
+  var css = '#kpbell-btn{position:relative}' +
+    '#kpbell-badge{position:absolute;top:2px;right:1px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:#e11d48;color:#fff;font-size:10px;font-weight:800;line-height:17px;text-align:center;box-shadow:0 0 0 2px var(--ui-card,#fff);display:none}' +
+    '#kpbell-btn.kpbell-has #kpbell-badge{display:block}' +
+    '#kpbell-btn.kpbell-ring .material-symbols-outlined{animation:kpbell-ring 1.2s ease 2}' +
+    '@keyframes kpbell-ring{0%,100%{transform:rotate(0)}15%{transform:rotate(14deg)}30%{transform:rotate(-12deg)}45%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}75%{transform:rotate(2deg)}}' +
+    '#kpbell-ov{position:fixed;inset:0;z-index:9990;background:rgba(15,23,42,.45);opacity:0;pointer-events:none;transition:opacity .2s}' +
+    '#kpbell-ov.on{opacity:1;pointer-events:auto}' +
+    '#kpbell-sheet{position:fixed;z-index:9991;left:0;right:0;bottom:0;max-height:80vh;display:flex;flex-direction:column;background:var(--ui-surface,var(--ui-card,#f8fafc));border-radius:22px 22px 0 0;box-shadow:0 -10px 40px rgba(0,0,0,.2);transform:translateY(105%);transition:transform .25s ease;visibility:hidden}' +
+    '#kpbell-sheet.on{transform:none;visibility:visible}' +
+    '@media (min-width:640px){#kpbell-sheet{left:auto;right:16px;bottom:auto;top:70px;width:420px;max-height:70vh;border-radius:20px;transform:translateY(-8px);opacity:0;transition:opacity .18s,transform .18s}#kpbell-sheet.on{opacity:1;transform:none}}' +
+    '.kpbell-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 10px;border-bottom:1px solid var(--ui-border,#e5e7eb)}' +
+    '.kpbell-head b{font-size:15px;color:var(--ui-text,#101828)}.kpbell-head small{display:block;font-size:11.5px;color:var(--ui-muted,#667085);font-weight:500}' +
+    '.kpbell-x{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--ui-muted,#667085)}' +
+    '.kpbell-x:hover{background:var(--ui-card-2,#f1f5f9)}' +
+    '.kpbell-grab{width:40px;height:4px;border-radius:4px;background:var(--ui-border-strong,#d0d5dd);margin:8px auto 0}@media (min-width:640px){.kpbell-grab{display:none}}' +
+    '.kpbell-body{overflow-y:auto;padding:12px 14px calc(16px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px}' +
+    '.kpbell-empty{text-align:center;padding:26px 10px;color:var(--ui-muted,#667085);font-size:13px}.kpbell-empty .material-symbols-outlined{font-size:40px;color:#10b981;display:block;margin-bottom:6px}' +
+    '#kpbell-sheet #due-date-alert-container>div,#kpbell-sheet #receivable-alert-container>div{flex-wrap:wrap;row-gap:10px}#kpbell-sheet #due-date-alert-container>div>div:first-child,#kpbell-sheet #receivable-alert-container>div>div:first-child{flex:1 1 100%}#kpbell-sheet #due-date-alert-container>div>div:last-child,#kpbell-sheet #receivable-alert-container>div>div:last-child{flex:1 1 100%;justify-content:flex-end}' +
+    '#kpbell-sheet #due-date-alert-container:empty,#kpbell-sheet #receivable-alert-container:empty{display:none}';
+  var btn, badge, ov, sheet, body, empty, last = 0, moved = false;
+  function count() {
+    var n = 0;
+    ['due-date-alert-container', 'receivable-alert-container'].forEach(function (id) {
+      var c = $(id); if (!c) return;
+      Array.prototype.forEach.call(c.children, function (x) { if (!x.classList.contains('hidden') && getComputedStyle(x).display !== 'none') n++; });
+    });
+    return n;
+  }
+  function update() {
+    if (!btn) return;
+    var n = count();
+    badge.textContent = n > 9 ? '9+' : String(n);
+    btn.classList.toggle('kpbell-has', n > 0);
+    btn.title = n > 0 ? n + ' pengingat' : 'Pengingat';
+    empty.style.display = n > 0 ? 'none' : '';
+    if (n > last) { btn.classList.remove('kpbell-ring'); void btn.offsetWidth; btn.classList.add('kpbell-ring'); }
+    last = n;
+  }
+  function open() { update(); ov.classList.add('on'); sheet.classList.add('on'); }
+  function close() { ov.classList.remove('on'); sheet.classList.remove('on'); }
+  window.kpBellOpen = open; window.kpBellClose = close;
+  function build() {
+    if (btn) return true;
+    var sync = $('header-sync-btn'), a = $('due-date-alert-container'), b = $('receivable-alert-container');
+    if (!sync || !a || !b) return false;
+    var st = document.createElement('style'); st.id = 'kpbell-css'; st.textContent = css; document.head.appendChild(st);
+    btn = document.createElement('button');
+    btn.id = 'kpbell-btn'; btn.type = 'button';
+    btn.className = 'w-9 h-9 rounded-full hover:bg-surface-container transition-colors flex items-center justify-center cursor-pointer text-on-surface-variant hover:text-primary active:scale-95';
+    btn.innerHTML = '<span class="material-symbols-outlined text-[22px] text-on-surface-variant">notifications</span><span id="kpbell-badge"></span>';
+    sync.parentNode.insertBefore(btn, sync);
+    badge = $('kpbell-badge');
+    ov = document.createElement('div'); ov.id = 'kpbell-ov';
+    sheet = document.createElement('div'); sheet.id = 'kpbell-sheet';
+    sheet.setAttribute('role', 'dialog'); sheet.setAttribute('aria-label', 'Pengingat');
+    sheet.innerHTML = '<div class="kpbell-grab"></div><div class="kpbell-head"><div><b>Pengingat</b><small>Jatuh tempo utang, tagihan, dan cicilan piutang</small></div>' +
+      '<button type="button" class="kpbell-x" aria-label="Tutup"><span class="material-symbols-outlined">close</span></button></div>' +
+      '<div class="kpbell-body"><div class="kpbell-empty"><span class="material-symbols-outlined">task_alt</span>Tidak ada pengingat saat ini.</div></div>';
+    document.body.appendChild(ov); document.body.appendChild(sheet);
+    body = sheet.querySelector('.kpbell-body'); empty = sheet.querySelector('.kpbell-empty');
+    body.appendChild(a); body.appendChild(b); moved = true;
+    btn.addEventListener('click', function () { if (sheet.classList.contains('on')) close(); else open(); });
+    ov.addEventListener('click', close);
+    sheet.querySelector('.kpbell-x').addEventListener('click', close);
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && sheet.classList.contains('on')) close(); });
+    body.addEventListener('click', function (e) {
+      var t = e.target && e.target.closest ? e.target.closest('button') : null;
+      if (t && /quickPayEntry|navTo|openRecap|Recap/.test(t.getAttribute('onclick') || '')) setTimeout(close, 0);
+    });
+    var mo = new MutationObserver(function () { setTimeout(update, 0); });
+    mo.observe(a, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
+    mo.observe(b, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
+    update();
+    return true;
+  }
+  function init() { if (!build()) setTimeout(init, 300); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+  </script>
+  <script>
 /* Kontrol Keuanganku: pengganti tampilan bawaan browser (drop down, kalender, centang, penggeser, unggah file) */
 (function () {
   if (window.__kpui) return;
