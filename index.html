@@ -640,15 +640,26 @@
       G.debtData[res.name] = { total: 0, paid: 0, monthlyPay: res.monthlyPay || 0, category: res.category, period: res.period };
       name = res.name;
     } else if (cf === 'Piutang Baru') {
+      var txd = ($('tx-date') || {}).value || '';
+      var rper = [['', 'Tidak dicicil (dibayar sekaligus)']];
+      for (var rd = 1; rd <= 31; rd++) rper.push(['Setiap Tanggal ' + rd, 'Dicicil setiap tanggal ' + rd]);
+      rper.push(['Mingguan', 'Dicicil setiap minggu']);
       res = await kpForm({ title: 'Tambah piutang baru', icon: 'handshake', msg: 'Jumlah piutangnya diambil dari kolom Nominal transaksi ini.',
         fields: [
           { key: 'name', label: 'Nama peminjam', required: true, placeholder: 'Contoh: Pinjaman ke Budi' },
-          { key: 'deadline', label: 'Janji dikembalikan', type: 'date' }
+          { key: 'period', label: 'Cara pengembalian', type: 'select', value: '', options: rper },
+          { key: 'monthlyPay', label: 'Nominal cicilan yang disepakati', type: 'money', hint: 'Isi bila dicicil. Pengingat jatuh tempo muncul di Beranda.' },
+          { key: 'deadline', label: 'Janji lunas', type: 'date' }
         ],
-        validate: function (v) { return G.receivablesData && G.receivablesData[v.name] ? 'Nama tersebut sudah ada.' : ''; } });
+        validate: function (v) {
+          if (G.receivablesData && G.receivablesData[v.name]) return 'Nama tersebut sudah ada.';
+          if (v.period && !(v.monthlyPay > 0)) return 'Isi nominal cicilan yang disepakati.';
+          return '';
+        } });
       if (!res) return null;
       if (!G.receivablesData) G.receivablesData = {};
       G.receivablesData[res.name] = { total: 0, deadline: res.deadline || '', paid: 0 };
+      if (res.period && res.monthlyPay > 0) { G.receivablesData[res.name].monthlyPay = res.monthlyPay; G.receivablesData[res.name].period = res.period; G.receivablesData[res.name].startDate = txd || ''; }
       name = res.name;
     } else if (cf === 'Invest / Savings' || cf === 'Financial Goals') {
       var ok = cf === 'Financial Goals' ? 'goalsData' : 'investData';
@@ -886,6 +897,236 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(wrap, 0); });
   else setTimeout(wrap, 0);
   window.addEventListener('load', wrap);
+})();
+  </script>
+  <script>
+/* Cicilan Piutang Keuanganku: perjanjian cicilan, pengingat jatuh tempo, nominal otomatis, progres di rekap */
+(function () {
+  if (window.__kprecv) return;
+  window.__kprecv = true;
+  var BS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+  var BL = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+  function G() { try { return (typeof globalData !== 'undefined') ? globalData : window.globalData; } catch (e) { return window.globalData; } }
+  function $(id) { return document.getElementById(id); }
+  function esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function jsq(t) { return esc(String(t).replace(/\\/g, '\\\\').replace(/'/g, "\\'")); }
+  function rp(n) { try { return formatRp(n); } catch (e) { return 'Rp ' + Math.round(n || 0).toLocaleString('id-ID'); } }
+  function ymd(d) { return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+  function parse(s) { var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; }
+  function today0() { var d = new Date(); d.setHours(0, 0, 0, 0); return d; }
+  function fmtD(d) { return d.getDate() + ' ' + BS[d.getMonth()] + ' ' + d.getFullYear(); }
+  function save() { try { saveStorageData(); } catch (e) {} }
+
+  /* ---------- perhitungan jadwal ---------- */
+  function plan(k) {
+    var g = G() || {}, it = (g.receivablesData || {})[k];
+    if (!it) return null;
+    var amt = Number(it.monthlyPay) || 0;
+    var total = parseFloat(it.total) || 0, paid = parseFloat(it.paid) || 0, firstTx = '';
+    (g.recentHistory || []).forEach(function (t) {
+      if (!t || t.category !== k) return;
+      if (t.cashflow === 'Piutang Baru') { total += Number(t.amount) || 0; if (!firstTx || (t.rawDate && t.rawDate < firstTx)) firstTx = t.rawDate || ''; }
+      else if (t.cashflow === 'Pelunasan Piutang') paid += Number(t.amount) || 0;
+    });
+    var rest = total - paid;
+    var res = { name: k, item: it, amt: amt, total: total, paid: paid, rest: rest, lunas: total > 0 && rest <= 0.5 };
+    if (!(amt > 0) || !(total > 0)) return res;
+    var start = parse(it.startDate) || parse(firstTx) || today0();
+    var per = String(it.period || ('Setiap Tanggal ' + start.getDate()));
+    var count = Math.ceil(total / amt - 1e-9);
+    var dates = [], i, d;
+    if (per === 'Mingguan') {
+      for (i = 1; i <= count; i++) { d = new Date(start); d.setDate(d.getDate() + 7 * i); dates.push(d); }
+    } else {
+      var day = per.indexOf('Setiap Tanggal') === 0 ? parseInt(per.replace('Setiap Tanggal ', ''), 10) || start.getDate() : start.getDate();
+      var y = start.getFullYear(), m = start.getMonth(), guard = 0;
+      while (dates.length < count && guard++ < 600) {
+        var dim = new Date(y, m + 1, 0).getDate();
+        d = new Date(y, m, Math.min(day, dim));
+        if (d > start) dates.push(d);
+        m++; if (m > 11) { m = 0; y++; }
+      }
+    }
+    var t0 = today0(), dueN = 0;
+    dates.forEach(function (x) { if (x < t0) dueN++; });
+    var expected = Math.min(total, dueN * amt);
+    var paidN = Math.min(count, Math.floor(paid / amt + 1e-6));
+    var next = null, nextIdx = -1;
+    for (i = 0; i < dates.length; i++) {
+      if (dates[i] >= t0 && (i + 1) * amt > paid + 0.5) { next = dates[i]; nextIdx = i; break; }
+    }
+    res.period = per; res.start = start; res.count = count; res.dates = dates; res.dueN = dueN; res.paidN = paidN;
+    res.arrears = res.lunas ? 0 : Math.max(0, expected - paid);
+    res.next = res.lunas ? null : next;
+    res.nextAmt = res.lunas ? 0 : Math.min(amt, rest);
+    res.finish = dates[dates.length - 1] || null;
+    res.dueToday = !!(next && next.getTime() === t0.getTime());
+    return res;
+  }
+  window.kpReceivablePlan = plan;
+  function perLabel(p, start) {
+    if (p === 'Mingguan') return 'setiap minggu';
+    if (String(p).indexOf('Setiap Tanggal') === 0) return 'setiap tanggal ' + p.replace('Setiap Tanggal ', '');
+    return 'setiap bulan';
+  }
+
+  /* ---------- 1) pengingat di Beranda ---------- */
+  function dismissed(key) {
+    var ts = ''; try { ts = getLocalDateStr(); } catch (e) {}
+    try {
+      if (sessionStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + key) === 'true') return true;
+      if (localStorage.getItem('KEUANGANKU_DISMISSED_ALERT_' + key + '_' + ts) === 'true') return true;
+    } catch (e) {}
+    try { if (typeof isAlertDismissedForPeriod === 'function' && isAlertDismissedForPeriod(key)) return true; } catch (e) {}
+    return false;
+  }
+  function alertHtml(color, icon, title, body, k, amount, key) {
+    return '<div class="bg-' + color + '-50 p-4 rounded-2xl flex items-center justify-between gap-3 kprecv-alert">' +
+      '<div class="flex items-center gap-3 min-w-0"><div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-2xl">' + icon + '</span></div>' +
+      '<div class="min-w-0"><h4>' + esc(title) + '</h4><p>' + body + '</p></div></div>' +
+      '<div class="flex items-center gap-2 shrink-0"><button type="button" onclick="quickPayEntry(\'' + jsq(k) + '\', \'receivable\', ' + Math.round(amount) + ')">Catat Pembayaran</button>' +
+      '<button type="button" onclick="dismissDueAlert(\'' + jsq(key) + '\')" title="Tutup">✕</button></div></div>';
+  }
+  function addAlerts() {
+    var c = $('receivable-alert-container'), g = G() || {};
+    if (!c || !g.receivablesData) return;
+    try { if (typeof isUserAuthenticated === 'function' && !isUserAuthenticated()) return; } catch (e) {}
+    Array.prototype.slice.call(c.querySelectorAll('.kprecv-alert')).forEach(function (x) { x.remove(); });
+    var t0 = today0(), out = [];
+    Object.keys(g.receivablesData).forEach(function (k) {
+      var p = plan(k);
+      if (!p || !p.dates || p.lunas) return;
+      if (p.arrears > 0.5) {
+        var key = 'recl_' + k + '_' + ymd(p.dates[Math.max(0, p.dueN - 1)]);
+        if (!dismissed(key)) out.push(alertHtml('rose', 'running_with_errors', 'Cicilan piutang terlambat: ' + k,
+          'Seharusnya sudah membayar <b>' + rp(p.arrears) + '</b>. Sisa piutang ' + rp(p.rest) + '.', k, Math.min(p.arrears, p.rest), key));
+      } else if (p.next) {
+        var diff = Math.round((p.next - t0) / 86400000);
+        if (diff <= 3) {
+          var key2 = 'recd_' + k + '_' + ymd(p.next);
+          if (!dismissed(key2)) out.push(alertHtml(diff === 0 ? 'emerald' : 'blue', diff === 0 ? 'notification_important' : 'event_upcoming',
+            (diff === 0 ? 'Hari ini jadwal ' : (diff === 1 ? 'Besok jadwal ' : diff + ' hari lagi jadwal ')) + k + ' membayar cicilan',
+            'Cicilan ke-' + (p.paidN + 1) + ' dari ' + p.count + ': <b>' + rp(p.nextAmt) + '</b> (' + fmtD(p.next) + ').', k, p.nextAmt, key2));
+        }
+      }
+    });
+    if (out.length) c.insertAdjacentHTML('beforeend', out.join(''));
+  }
+
+  /* ---------- 2) progres di rekap piutang ---------- */
+  function addRecap() {
+    var g = G() || {}, keys = Object.keys(g.receivablesData || {});
+    keys.forEach(function (k, idx) {
+      var box = $('receivable-history-box-' + idx);
+      if (!box || !box.parentNode) return;
+      var old = box.parentNode.querySelector('.kprecv-prog'); if (old) old.remove();
+      var p = plan(k);
+      if (!p || !p.dates) return;
+      var pct = p.total > 0 ? Math.min(100, Math.round(p.paid / p.total * 100)) : 0;
+      var lines = '<div class="flex items-center justify-between"><b>Cicilan ' + rp(p.amt) + ' ' + perLabel(p.period) + '</b><span>' + p.paidN + ' dari ' + p.count + ' kali</span></div>' +
+        '<div class="kprecv-bar"><i style="width:' + pct + '%"></i></div>';
+      if (p.lunas) lines += '<div class="kprecv-ok">Lunas. Semua cicilan sudah diterima.</div>';
+      else {
+        if (p.arrears > 0.5) lines += '<div class="kprecv-late">Terlambat ' + rp(p.arrears) + '</div>';
+        if (p.next) lines += '<div>Berikutnya: <b>' + fmtD(p.next) + '</b> · ' + rp(p.nextAmt) + '</div>';
+        if (p.finish) lines += '<div>Perkiraan lunas: <b>' + BL[p.finish.getMonth()] + ' ' + p.finish.getFullYear() + '</b></div>';
+      }
+      var div = document.createElement('div');
+      div.className = 'kprecv-prog';
+      div.innerHTML = lines;
+      box.parentNode.insertBefore(div, box);
+    });
+  }
+
+  /* ---------- 3) pengaturan cicilan di Setup → Piutang ---------- */
+  function perOptions(sel) {
+    var o = '<option value="">Tidak dicicil</option>';
+    for (var d = 1; d <= 31; d++) o += '<option value="Setiap Tanggal ' + d + '"' + (sel === 'Setiap Tanggal ' + d ? ' selected' : '') + '>Setiap tanggal ' + d + '</option>';
+    o += '<option value="Mingguan"' + (sel === 'Mingguan' ? ' selected' : '') + '>Setiap minggu</option>';
+    return o;
+  }
+  function addSetup() {
+    var c = $('setup-receivables-list'), g = G() || {};
+    if (!c) return;
+    var keys = Object.keys(g.receivablesData || {});
+    var cards = Array.prototype.filter.call(c.children, function (x) { return x.getAttribute && x.getAttribute('data-nm') === '1'; });
+    keys.forEach(function (k, i) {
+      var card = cards[i]; if (!card || card.querySelector('.kprecv-setup')) return;
+      var it = g.receivablesData[k] || {};
+      var has = (Number(it.monthlyPay) || 0) > 0;
+      var div = document.createElement('div');
+      div.className = 'kprecv-setup';
+      div.innerHTML = '<div class="kprecv-st">Perjanjian cicilan</div><div class="grid grid-cols-1 sm:grid-cols-3 gap-3">' +
+        '<div><label>Nominal cicilan</label><div class="relative"><span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">Rp</span><input type="text" inputmode="numeric" data-num data-f="monthlyPay" value="' + (has ? Number(it.monthlyPay).toLocaleString('id-ID') : '') + '" placeholder="0" class="kprecv-in pl-9"></div></div>' +
+        '<div><label>Jadwal bayar</label><select data-f="period" class="kprecv-in">' + perOptions(has ? (it.period || '') : '') + '</select></div>' +
+        '<div><label>Mulai dihitung dari</label><input type="date" data-f="startDate" value="' + esc(it.startDate || '') + '" class="kprecv-in"></div></div>' +
+        '<span class="kprecv-hint">Isi bila peminjam sepakat mencicil. Pengingat jatuh tempo muncul di Beranda.</span>';
+      card.appendChild(div);
+      div.addEventListener('change', function (e) {
+        var f = e.target && e.target.getAttribute('data-f'); if (!f) return;
+        var item = (G().receivablesData || {})[k]; if (!item) return;
+        var v = e.target.value;
+        if (f === 'monthlyPay') item.monthlyPay = (typeof kpParseNum === 'function' ? kpParseNum(v) : parseFloat(String(v).replace(/\D/g, ''))) || 0;
+        else if (f === 'period') { item.period = v; if (!v) item.monthlyPay = 0; }
+        else item.startDate = v;
+        if (item.monthlyPay > 0 && !item.period) { var sd = parse(item.startDate) || today0(); item.period = 'Setiap Tanggal ' + sd.getDate(); var s2 = div.querySelector('[data-f=period]'); if (s2) s2.value = item.period; }
+        save();
+        try { checkReceivableAlerts(); } catch (er) {}
+      });
+    });
+  }
+
+  /* ---------- 4) nominal otomatis saat Pelunasan Piutang ---------- */
+  var autoAmt = '';
+  function fillAmount() {
+    var cf = $('tx-cashflow'), cat = $('tx-category'), a = $('tx-amount');
+    if (!cf || !cat || !a || cf.value !== 'Pelunasan Piutang') return;
+    var p = plan(cat.value);
+    if (!p || !p.dates || p.lunas) return;
+    var want = p.arrears > 0.5 ? Math.min(p.arrears, p.rest) : p.nextAmt;
+    if (!(want > 0)) return;
+    if (!a.value || a.value === '0' || a.value === autoAmt) {
+      a.value = String(Math.round(want));
+      a.dispatchEvent(new Event('input', { bubbles: true }));
+      autoAmt = a.value;
+    }
+  }
+
+  var css = '.kprecv-prog{margin-top:4px;padding:10px 12px;border-radius:12px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);font-size:11.5px;line-height:1.6;color:var(--ui-text,#101828)}' +
+    '.kprecv-prog span{color:var(--ui-muted,#667085);font-weight:700}' +
+    '.kprecv-bar{height:6px;border-radius:6px;background:rgba(100,116,139,.2);margin:6px 0;overflow:hidden}.kprecv-bar i{display:block;height:100%;background:#10b981;border-radius:6px}' +
+    '.kprecv-late{color:#e11d48;font-weight:800}.kprecv-ok{color:#059669;font-weight:800}' +
+    '.kprecv-setup{margin-top:10px;padding-top:10px;border-top:1px dashed var(--ui-border-strong,#d0d5dd)}' +
+    '.kprecv-st{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#059669;margin-bottom:8px}' +
+    '.kprecv-setup label{display:block;font-size:11px;font-weight:700;color:var(--ui-muted,#667085);margin-bottom:4px}' +
+    '.kprecv-in{width:100%;padding:9px 12px;border:1px solid var(--ui-border-strong,#d0d5dd);border-radius:12px;font-size:13px;font-weight:600;background:var(--ui-card,#fff);color:var(--ui-text,#101828)}' +
+    '.kprecv-hint{display:block;font-size:10.5px;color:#94a3b8;margin-top:6px}';
+  function addCss() { if ($('kprecv-css')) return; var st = document.createElement('style'); st.id = 'kprecv-css'; st.textContent = css; document.head.appendChild(st); }
+
+  function wrapFn(name, after) {
+    var f = window[name];
+    if (typeof f !== 'function' || f['__kprecv']) return;
+    var w = function () { var r = f.apply(this, arguments); try { after.apply(this, arguments); } catch (e) { console.warn('kprecv', e); } return r; };
+    w['__kprecv'] = true; window[name] = w;
+  }
+  var started = false;
+  function init() {
+    addCss();
+    wrapFn('checkReceivableAlerts', addAlerts);
+    wrapFn('renderReceivablesRecap', addRecap);
+    wrapFn('renderValuedCategoryList', function (objKey) { if (objKey === 'receivablesData') addSetup(); });
+    wrapFn('applyCashflowLogic', fillAmount);
+    if (started) return;
+    var cat = $('tx-category');
+    if (!cat) return;
+    started = true;
+    cat.addEventListener('change', fillAmount);
+    var a = $('tx-amount'); if (a) a.addEventListener('input', function () { if (a.value !== autoAmt) autoAmt = ''; });
+    try { addAlerts(); addSetup(); } catch (e) {}
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(init, 0); });
+  else setTimeout(init, 0);
+  window.addEventListener('load', function () { setTimeout(init, 50); });
 })();
   </script>
   <script>
