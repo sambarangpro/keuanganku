@@ -1352,6 +1352,64 @@
 })();
   </script>
   <script>
+/* Penjaga pergantian akun: data keuangan di perangkat ini terikat pada satu akun.
+   Bila perangkat masuk dengan akun lain (token & email berbeda), data akun sebelumnya
+   disimpan sebagai cadangan lokal lalu dikosongkan, agar tidak terkirim ke Cloud/Drive akun baru. */
+(function () {
+  if (window.__kpacct) return;
+  window.__kpacct = true;
+  var MK = 'KEUANGANKU_DATA_OWNER', DEMO = 'PRO-DEMO-IKLAN-2026';
+  function idOf(l) { return l && l.token ? { t: String(l.token).toUpperCase(), e: String(l.email || '').trim().toLowerCase() } : null; }
+  function getMark() { try { return JSON.parse(localStorage.getItem(MK) || 'null'); } catch (e) { return null; } }
+  function setMark(id) { try { if (id) localStorage.setItem(MK, JSON.stringify(id)); } catch (e) {} }
+  function isDemo() { try { return localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true'; } catch (e) { return false; } }
+  function same(a, b) { return a.t === b.t || (a.e && b.e && a.e === b.e); }
+  function fresh() {
+    try { return JSON.parse(JSON.stringify(DEFAULT_DATA)); } catch (e) { return { accounts: [], currentBalances: {}, recentHistory: [] }; }
+  }
+  function switchAccount(oldId, newLic) {
+    try {
+      var raw = localStorage.getItem('KEUANGANKU_DB_V21');
+      if (raw) localStorage.setItem('KEUANGANKU_DB_PREV_ACCOUNT', JSON.stringify({ owner: oldId, at: Date.now(), db: raw }));
+    } catch (e) {}
+    ['KEUANGANKU_DB_V21', 'KEUANGANKU_CLOUD_URL', 'KEUANGANKU_SYNCED_WITH', 'KEUANGANKU_USER_REAL_BACKUP', 'KEUANGANKU_SAVED_PIN',
+      'KEUANGANKU_REMEMBER_PIN', 'KEUANGANKU_BYODB_SHEET_ID', 'KEUANGANKU_BUDGET_ALLOCATION', 'KEUANGANKU_BIOMETRIC_ENABLED',
+      'KEUANGANKU_BIOMETRIC_CRED_ID', 'KEUANGANKU_DRIVE_COPY_AT', 'KEUANGANKU_RESTORE_PENDING', 'KEUANGANKU_CLOUD_SYNC_KEY_PENDING'
+    ].forEach(function (k) { try { localStorage.removeItem(k); } catch (e) {} });
+    try { globalData = fresh(); } catch (e) {}
+    try { if (typeof lastSyncTimestamp !== 'undefined') lastSyncTimestamp = 0; } catch (e) {}
+    var sid = newLic && newLic.spreadsheetId;
+    if (sid && sid !== 'null') {
+      try { localStorage.setItem('KEUANGANKU_BYODB_SHEET_ID', sid); } catch (e) {}
+      try { if (typeof enableDriveSyncIfNoCloud === 'function') enableDriveSyncIfNoCloud(sid); } catch (e) {}
+    }
+    try { localStorage.setItem('KEUANGANKU_DB_V21', JSON.stringify(globalData)); } catch (e) {}
+    window.__kpAccountSwitched = Date.now();
+    console.info('Keuanganku: perangkat berpindah akun, data akun sebelumnya dikosongkan dari tampilan.');
+  }
+  function guard(newLic) {
+    var nid = idOf(newLic);
+    if (!nid || nid.t === DEMO || isDemo()) return;
+    var mk = getMark();
+    if (mk && mk.t && mk.t !== DEMO && !same(mk, nid)) switchAccount(mk, newLic);
+    setMark(nid);
+  }
+  function init() {
+    var f = window.saveLicenseData;
+    if (typeof f === 'function' && !f.__kpacct) {
+      var w = function (newLic) { try { guard(newLic); } catch (e) { console.warn('kpacct', e); } return f.apply(this, arguments); };
+      w.__kpacct = true; window.saveLicenseData = w;
+    }
+    // Perangkat lama: tandai pemilik data dengan lisensi yang sedang aktif
+    if (!getMark() && !isDemo()) {
+      try { var l = (typeof getSavedLicense === 'function') ? getSavedLicense() : null; var id = idOf(l); if (id && id.t !== DEMO) setMark(id); } catch (e) {}
+    }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+  window.addEventListener('load', init);
+})();
+  </script>
+  <script>
 /* Kontrol Keuanganku: pengganti tampilan bawaan browser (drop down, kalender, centang, penggeser, unggah file) */
 (function () {
   if (window.__kpui) return;
@@ -18220,7 +18278,7 @@ async function fetchGoogleUserProfile(accessToken) {
 async function findExistingByodbSpreadsheet(accessToken) {
   if (!accessToken) return null;
   try {
-    let q = encodeURIComponent("name contains 'Database Keuanganku PRO' and mimeType = 'application/vnd.google-apps.spreadsheet' and trashed = false");
+    let q = encodeURIComponent("name contains 'Database Keuanganku PRO' and mimeType = 'application/vnd.google-apps.spreadsheet' and trashed = false and 'me' in owners");
     let res = await driveFetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name,createdTime)&orderBy=createdTime desc`, {
       headers: { 'Authorization': 'Bearer ' + accessToken }
     });
@@ -18338,8 +18396,10 @@ async function findBestByodbSpreadsheet(accessToken, preferredIds) {
   if (!accessToken) return null;
   let ids = [];
   (preferredIds || []).forEach(id => { id = String(id || '').trim(); if (id && id !== 'null' && id !== 'undefined' && ids.indexOf(id) === -1) ids.push(id); });
+  // File akun ini yang tercatat di server diutamakan; file lain hanya yang dimiliki akun ini (bukan yang dibagikan orang lain)
+  let firstPref = ids[0] || '', prefHit = null;
   try {
-    let q = encodeURIComponent("name contains 'Database Keuanganku PRO' and mimeType = 'application/vnd.google-apps.spreadsheet' and trashed = false");
+    let q = encodeURIComponent("name contains 'Database Keuanganku PRO' and mimeType = 'application/vnd.google-apps.spreadsheet' and trashed = false and 'me' in owners");
     let res = await driveFetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name,modifiedTime)&orderBy=modifiedTime desc&pageSize=20`, {
       headers: { 'Authorization': 'Bearer ' + accessToken }
     });
@@ -18360,11 +18420,13 @@ async function findBestByodbSpreadsheet(accessToken, preferredIds) {
       let upd = Number(doc.lastUpdated) || 0;
       let hasKey = !!getKeyFromCloudUrl(String(doc.cloudUrl || ''));
       window.__driveDiag.read.push(tx + 'tx' + (hasKey ? '+kunci' : '') + (upd ? '@' + new Date(upd).toISOString().slice(0, 10) : ''));
+      if (id === firstPref && tx > 0) prefHit = { id, tx, upd };
       if (!best || tx > best.tx || (tx === best.tx && upd > best.upd)) best = { id, tx, upd };
     } catch(e) { window.__driveDiag.read.push('gagal'); }
   }
   window.__driveDiag.pick = best ? (best.tx + 'tx') : 'tidak ada';
   // Tidak ada yang berisi data: pakai ID pilihan pertama (atau file pertama yang ditemukan)
+  if (prefHit) return prefHit.id;
   return best ? best.id : ids[0];
 }
 
