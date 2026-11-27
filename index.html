@@ -1776,6 +1776,152 @@
 })();
   </script>
   <script>
+/* Nilai aset emas (Rekapitulasi Aset & Emas) mengikuti harga buyback terbaru dari Galeri 24 */
+(function () {
+  if (window.__kpgoldval) return;
+  window.__kpgoldval = true;
+  var SRC = ['/harga-emas.json', 'https://raw.githubusercontent.com/sambarangpro/keuanganku/main/harga-emas.json'];
+  var LS = 'KEUANGANKU_GOLD_PRICES';
+  var BRANDS = [['ANTAM', 'Antam'], ['UBS', 'UBS'], ['GALERI 24', 'Galeri 24'], ['LOTUS ARCHI', 'Lotus Archi'], ['ANTAM MULIA RETRO', 'Antam Mulia Retro'], ['ANTAM NON PEGADAIAN', 'Antam (dibeli di luar Pegadaian)']];
+  function $(id) { return document.getElementById(id); }
+  function G() { try { return (typeof globalData !== 'undefined') ? globalData : window.globalData; } catch (e) { return window.globalData; } }
+  function esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function rp(n) { try { return formatRp(Math.round(n || 0)); } catch (e) { return 'Rp ' + Math.round(n || 0).toLocaleString('id-ID'); } }
+  function isDemo() { try { return localStorage.getItem('KEUANGANKU_IS_DEMO_MODE') === 'true'; } catch (e) { return false; } }
+  function cache() { try { var c = JSON.parse(localStorage.getItem(LS) || 'null'); return c && c.data && c.data.vendors ? c : null; } catch (e) { return null; } }
+  var busy = false;
+  async function prices() {
+    var c = cache();
+    if (c && Date.now() - (c.at || 0) < 30 * 60000) return c.data;
+    if (busy) return c && c.data; busy = true;
+    try {
+      for (var i = 0; i < SRC.length; i++) {
+        try {
+          var r = await fetch(SRC[i] + '?t=' + Date.now(), { cache: 'no-store' });
+          if (!r.ok) continue;
+          var j = await r.json();
+          if (j && j.vendors && j.vendors.length) { try { localStorage.setItem(LS, JSON.stringify({ at: Date.now(), data: j })); } catch (e) {} return j; }
+        } catch (e) {}
+      }
+    } finally { busy = false; }
+    return c && c.data;
+  }
+  function isGold(k, it) { return it && (it.type === 'Emas' || (!it.type && /emas|antam|logam mulia|gold/i.test(k))); }
+  function isGram(it) { return !it.unit || /^(gr|gram|g)$/i.test(String(it.unit).trim()); }
+  function guessBrand(k) {
+    var n = String(k).toLowerCase();
+    if (/retro/.test(n)) return 'ANTAM MULIA RETRO';
+    if (/ubs/.test(n)) return 'UBS';
+    if (/galeri|g24|pegadaian/.test(n)) return 'GALERI 24';
+    if (/lotus/.test(n)) return 'LOTUS ARCHI';
+    return 'ANTAM';
+  }
+  function autoOn(k, it) { return it.goldAuto !== false && !(it.goldAuto == null && /perhiasan|cincin|kalung|gelang|anting/i.test(k)); }
+  // harga buyback per gram: keping 1 gr, kalau tidak ada pakai keping terdekat >= 1 gr
+  function perGram(data, brand) {
+    var v = (data.vendors || []).filter(function (x) { return x.name === brand; })[0];
+    var pick = function (vv) {
+      if (!vv) return null;
+      var P = vv.items.filter(function (i) { return i.buyback > 0 && i.g >= 1; }).sort(function (a, b) { return a.g - b.g; });
+      return P.length ? { price: P[0].buyback / P[0].g, date: vv.date, brand: vv.name } : null;
+    };
+    return pick(v) || pick((data.vendors || []).filter(function (x) { return x.name === 'ANTAM'; })[0]);
+  }
+  async function update(force) {
+    var g = G();
+    if (!g || !g.nonMoneyAssets || isDemo()) return;
+    var keys = Object.keys(g.nonMoneyAssets).filter(function (k) { var it = g.nonMoneyAssets[k]; return isGold(k, it) && isGram(it) && autoOn(k, it); });
+    if (!keys.length) return;
+    var data = await prices(); if (!data) return;
+    var changed = false;
+    keys.forEach(function (k) {
+      var it = g.nonMoneyAssets[k], p = perGram(data, it.goldBrand || guessBrand(k)); if (!p) return;
+      var price = Math.round(p.price);
+      if (Number(it.estimatedPrice) !== price || it.goldPriceDate !== p.date || it.goldPriceBrand !== p.brand) {
+        it.estimatedPrice = price; it.goldPriceDate = p.date; it.goldPriceBrand = p.brand; changed = true;
+      }
+    });
+    if (changed) {
+      try { saveStorageData(); } catch (e) {}
+      refreshViews();
+    }
+  }
+  function refreshViews() {
+    try { if (typeof renderNonMoneyRecap === 'function') renderNonMoneyRecap(); } catch (e) {}
+    try { var d = $('page-dashboard'); if (d && !d.classList.contains('hidden') && typeof renderDashboard === 'function') renderDashboard(); } catch (e) {}
+    try { var s = $('setup-nonmoney-list'); if (s && s.offsetParent && typeof renderValuedCategoryList === 'function') renderValuedCategoryList('nonMoneyAssets', 'setup-nonmoney-list', ['qty', 'estimatedPrice', 'type', 'unit']); } catch (e) {}
+  }
+  function brandName(b) { var f = BRANDS.filter(function (x) { return x[0] === b; })[0]; return f ? f[1] : b; }
+
+  /* Rekapitulasi: keterangan sumber harga di kartu emas */
+  function addRecapNotes() {
+    var c = $('nonmoney-recap-grid'), g = G(); if (!c || !g || !g.nonMoneyAssets) return;
+    var keys = Object.keys(g.nonMoneyAssets);
+    Array.prototype.forEach.call(c.children, function (card, i) {
+      var k = keys[i], it = k && g.nonMoneyAssets[k]; if (!it || card.querySelector('.kpgv-note')) return;
+      if (!isGold(k, it) || !isGram(it)) return;
+      var d = document.createElement('div'); d.className = 'kpgv-note';
+      d.innerHTML = autoOn(k, it) && it.goldPriceDate
+        ? '<span class="material-symbols-outlined">sync</span>Nilai mengikuti harga buyback ' + esc(brandName(it.goldPriceBrand)) + ' per ' + esc(it.goldPriceDate) + ' (Galeri 24)'
+        : '<span class="material-symbols-outlined">edit</span>Harga diisi manual di Setup';
+      card.appendChild(d);
+    });
+  }
+  /* Setup: pilihan harga otomatis & merek pada kartu aset emas */
+  function addSetup() {
+    var c = $('setup-nonmoney-list'), g = G(); if (!c || !g || !g.nonMoneyAssets) return;
+    var keys = Object.keys(g.nonMoneyAssets);
+    var cards = Array.prototype.filter.call(c.children, function (x) { return x.getAttribute && x.getAttribute('data-nm') === '1'; });
+    keys.forEach(function (k, i) {
+      var card = cards[i], it = g.nonMoneyAssets[k]; if (!card || !it || card.querySelector('.kpgv-setup')) return;
+      if (!isGold(k, it) || !isGram(it)) return;
+      var on = autoOn(k, it), b = it.goldBrand || guessBrand(k);
+      var d = document.createElement('div'); d.className = 'kpgv-setup';
+      d.innerHTML = '<label class="kpgv-chk"><input type="checkbox" data-f="auto"' + (on ? ' checked' : '') + '> Ikuti harga emas otomatis (buyback)</label>' +
+        '<select data-f="brand" class="kpgv-sel"' + (on ? '' : ' disabled') + '>' + BRANDS.map(function (x) { return '<option value="' + x[0] + '"' + (x[0] === b ? ' selected' : '') + '>' + esc(x[1]) + '</option>'; }).join('') + '</select>' +
+        '<span class="kpgv-hint">' + (on ? 'Harga per gram diperbarui otomatis dari Galeri 24, tidak perlu diisi manual.' : 'Isi harga per gram sendiri di kolom di atas.') + '</span>';
+      card.appendChild(d);
+      if (on) { var ep = card.querySelector('input[onchange*="\'estimatedPrice\'"]'); if (ep) { ep.disabled = true; ep.title = 'Diperbarui otomatis dari harga emas terbaru'; ep.style.opacity = '.7'; } }
+      d.addEventListener('change', function (e) {
+        var f = e.target.getAttribute('data-f'), item = (G().nonMoneyAssets || {})[k]; if (!item) return;
+        if (f === 'auto') item.goldAuto = !!e.target.checked;
+        if (f === 'brand') item.goldBrand = e.target.value;
+        if (f === 'auto' && !e.target.checked) { delete item.goldPriceDate; delete item.goldPriceBrand; }
+        try { saveStorageData(); } catch (er) {}
+        var re = function () { try { renderValuedCategoryList('nonMoneyAssets', 'setup-nonmoney-list', ['qty', 'estimatedPrice', 'type', 'unit']); } catch (er) {} };
+        if (item.goldAuto !== false) update(true).then(re); else re();
+      });
+    });
+  }
+  var css = '.kpgv-note{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--ui-muted,#667085);border-top:1px dashed var(--ui-border-strong,#d0d5dd);padding-top:8px}.kpgv-note .material-symbols-outlined{font-size:14px;color:#d97706}' +
+    '.kpgv-setup{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--ui-border-strong,#d0d5dd)}' +
+    '.kpgv-chk{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--ui-text,#101828)}.kpgv-chk input{width:16px;height:16px;accent-color:#f59e0b}' +
+    '.kpgv-sel{padding:7px 10px;border:1px solid var(--ui-border-strong,#d0d5dd);border-radius:10px;font-size:12px;font-weight:600;background:var(--ui-card,#fff);color:var(--ui-text,#101828)}.kpgv-sel:disabled{opacity:.5}' +
+    '.kpgv-hint{flex-basis:100%;font-size:10.5px;color:#94a3b8}';
+  function wrapFn(name, after) {
+    var f = window[name];
+    if (typeof f !== 'function' || f.__kpgoldval) return;
+    var w = function () { var r = f.apply(this, arguments); try { after.apply(this, arguments); } catch (e) { console.warn('kpgoldval', e); } return r; };
+    for (var _k in f) w[_k] = f[_k];
+    w.__kpgoldval = true; window[name] = w;
+  }
+  var timer = null;
+  function init() {
+    if (!$('kpgoldval-css')) { var s = document.createElement('style'); s.id = 'kpgoldval-css'; s.textContent = css; document.head.appendChild(s); }
+    wrapFn('renderNonMoneyRecap', addRecapNotes);
+    wrapFn('renderValuedCategoryList', function (objKey) { if (objKey === 'nonMoneyAssets') addSetup(); });
+    if (!timer) {
+      setTimeout(function () { update(); }, 4000);
+      timer = setInterval(function () { update(); }, 30 * 60000);
+      document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') update(); });
+    }
+  }
+  window.kpGoldValueUpdate = function () { return update(true); };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(init, 0); }); else setTimeout(init, 0);
+  window.addEventListener('load', function () { setTimeout(init, 70); });
+})();
+  </script>
+  <script>
 /* Kontrol Keuanganku: pengganti tampilan bawaan browser (drop down, kalender, centang, penggeser, unggah file) */
 (function () {
   if (window.__kpui) return;
