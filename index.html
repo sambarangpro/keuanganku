@@ -1298,6 +1298,36 @@
     if (ps[0]) ps[0].textContent = 'Amankan akun uji coba dengan PIN Pribadi';
     if (ps[1]) ps[1].innerHTML = 'Akun ini masih memakai kode bawaan dari pendaftaran uji coba, sehingga <b>sinkronisasi cloud antar-perangkat belum aktif</b>. Buat <b>PIN Pribadi</b> di menu Setup agar data lebih aman dan bisa dibuka di perangkat lain.';
   }
+  function fixSetup(l) {
+    var L = lic(l);
+    if (!L || !L.isTrial || L.pinStatus === 'PIN_CHANGED') return;
+    var t = document.getElementById('setup-pass-title'), bd = document.getElementById('setup-pass-badge'), tx = document.getElementById('setup-pass-info-text');
+    if (t) t.textContent = 'Buat PIN Pribadi';
+    if (bd) bd.textContent = 'MASIH KODE BAWAAN';
+    if (tx) tx.innerHTML = 'Akun uji coba Anda masih masuk dengan kode bawaan dari pendaftaran. Tentukan <b>PIN Pribadi</b> di bawah ini agar lebih mudah masuk, dan sinkronisasi cloud antar-perangkat langsung aktif.';
+  }
+  function fixLicense(l) {
+    var L = lic(l);
+    var sec = document.getElementById('setup-license-badge'); sec = sec && sec.closest('section');
+    if (!sec || !L || !L.isTrial) return;
+    var h = sec.querySelector('h2'), sub = h && h.parentNode.querySelector('p');
+    if (h) h.textContent = 'Akun Uji Coba Keuanganku PRO';
+    if (sub) sub.textContent = 'Uji coba gratis 30 hari, belum termasuk lisensi berbayar';
+    var days = '';
+    try { var ms = new Date(L.trialEndsAt).getTime() - Date.now(); days = ms > 0 ? ' · SISA ' + Math.ceil(ms / 86400000) + ' HARI' : ' · BERAKHIR'; } catch (e) {}
+    var bd = document.getElementById('setup-license-badge');
+    if (bd) { bd.className = 'px-3 py-1 bg-amber-500/10 text-amber-300 border border-amber-500/30 text-[10px] font-extrabold rounded-full flex items-center gap-1.5 shadow-sm'; bd.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span> UJI COBA' + days; }
+    var tk = document.getElementById('setup-license-token');
+    if (tk) {
+      var lab = tk.parentNode.querySelector('p'); if (lab && lab !== tk) lab.textContent = 'Kode Akun Uji Coba';
+      tk.textContent = String(L.token || '-').replace(/^([A-Za-z0-9]+-).*(-[A-Za-z0-9]+)$/, '$1••••-••••$2');
+      tk.classList.remove('select-all'); tk.title = 'Kode akun uji coba, bukan lisensi berbayar';
+    }
+    var ow = document.getElementById('setup-license-owner');
+    if (ow) { var lb2 = ow.parentNode.querySelector('p'); if (lb2 && lb2 !== ow) lb2.textContent = 'Pemilik Akun'; }
+    var ps = document.getElementById('setup-license-pin-status');
+    if (ps && L.pinStatus !== 'PIN_CHANGED') ps.innerHTML = '<span class="material-symbols-outlined text-sm">key</span> Kode Bawaan (belum ada PIN Pribadi)';
+  }
   function init() {
     if (!document.getElementById('kptoken-css')) { var st = document.createElement('style'); st.id = 'kptoken-css'; st.textContent = css; document.head.appendChild(st); }
     var f = window.updateTokenSecurityBanner;
@@ -1305,7 +1335,17 @@
       var w = function (l) { var r = f.apply(this, arguments); try { fix(l); } catch (e) {} return r; };
       w.__kptoken = true; window.updateTokenSecurityBanner = w;
     }
-    try { fix(null); } catch (e) {}
+    var g = window.renderSetupPasswordCard;
+    if (typeof g === 'function' && !g.__kptoken) {
+      var w2 = function (l) { var r = g.apply(this, arguments); try { fixSetup(l); } catch (e) {} return r; };
+      w2.__kptoken = true; window.renderSetupPasswordCard = w2;
+    }
+    var u = window.updateSetupLicenseDisplay;
+    if (typeof u === 'function' && !u.__kptoken) {
+      var w3 = function (l) { var r = u.apply(this, arguments); try { fixLicense(l); } catch (e) {} return r; };
+      w3.__kptoken = true; window.updateSetupLicenseDisplay = w3;
+    }
+    try { fix(null); fixSetup(null); fixLicense(null); } catch (e) {}
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(init, 0); }); else setTimeout(init, 0);
   window.addEventListener('load', function () { setTimeout(init, 60); });
@@ -7580,8 +7620,9 @@
       }
 
       let isFirstTime = (lic.pinStatus !== 'PIN_CHANGED');
+      let kpTrial = !!lic.isTrial; let kpTokMask = String(lic.token || '').replace(/^([A-Za-z0-9]+-).*(-[A-Za-z0-9]+)$/, '$1••••-••••$2');
       let confirmMsg = isFirstTime 
-        ? `🔥 KONFIRMASI BUAT PIN & HANGUSKAN TOKEN:\n\n1. Token lisensi Anda (${lic.token}) akan HANGUS dan tidak bisa dipakai lagi oleh orang lain.\n2. PIN baru Anda (${newPin}) akan menjadi kunci masuk aplikasi dan otorisasi perangkat baru.\n3. Fitur Sinkronisasi Cloud Multi-Perangkat akan langsung TERBUKA.\n\nApakah Anda yakin ingin memproses ini sekarang?`
+        ? kpTrial ? `Konfirmasi Buat PIN Pribadi:\n\n1. Mulai sekarang Anda masuk ke aplikasi dengan PIN ${newPin}.\n2. Kode masuk bawaan dari pendaftaran uji coba tidak berlaku lagi.\n3. Sinkronisasi Cloud antar-perangkat langsung aktif.\n\nLanjutkan sekarang?` : `🔥 KONFIRMASI BUAT PIN & HANGUSKAN TOKEN:\n\n1. Token lisensi Anda (${kpTokMask}) akan HANGUS dan tidak bisa dipakai lagi oleh orang lain.\n2. PIN baru Anda (${newPin}) akan menjadi kunci masuk aplikasi dan otorisasi perangkat baru.\n3. Fitur Sinkronisasi Cloud Multi-Perangkat akan langsung TERBUKA.\n\nApakah Anda yakin ingin memproses ini sekarang?`
         : `Konfirmasi Perubahan PIN Pribadi:\n\nUbah PIN Pribadi menjadi: ${newPin}?`;
 
       if (!await kpConfirm(confirmMsg)) return;
@@ -7592,7 +7633,7 @@
       let btn = document.getElementById('btn-save-personal-pin');
       let origHtml = btn ? btn.innerHTML : '';
       if (btn) {
-        btn.innerHTML = `<span class="material-symbols-outlined text-sm animate-spin">sync</span> MENGHANGUSKAN TOKEN...`;
+        btn.innerHTML = `<span class="material-symbols-outlined text-sm animate-spin">sync</span> ${lic.isTrial ? 'MENYIMPAN PIN...' : 'MENGHANGUSKAN TOKEN...'}`;
         btn.disabled = true;
       }
 
@@ -7616,14 +7657,15 @@
 
           pinInput.value = '';
           playSuccessSound();
-          showSyncToast("🎉 PIN Pribadi Aktif! Token Bawaan Hangus & Cloud Sync Terbuka!");
+          showSyncToast(lic.isTrial ? "🎉 PIN Pribadi aktif! Sinkronisasi Cloud terbuka." : "🎉 PIN Pribadi Aktif! Token Bawaan Hangus & Cloud Sync Terbuka!");
 
           updateSetupLicenseDisplay(lic);
           updateTokenSecurityBanner(lic);
           updateCloudSyncLockUI(lic);
           renderSetupPasswordCard(lic);
 
-          await kpAlert(`🎉 SELAMAT!\n\nPIN Pribadi Anda berhasil dibuat (${newPin}).\n\n✓ Token bawaan (${lic.token}) telah HANGUS di server master dan tidak dapat dibagikan secara ilegal.\n✓ Fitur Sinkronisasi Cloud Multi-Perangkat sekarang TERBUKA!`);
+          if (lic.isTrial) await kpAlert(`🎉 PIN Pribadi berhasil dibuat.\n\n✓ Mulai sekarang masuk ke aplikasi dengan PIN ini.\n✓ Sinkronisasi Cloud antar-perangkat sekarang aktif.`);
+          else await kpAlert(`🎉 SELAMAT!\n\nPIN Pribadi Anda berhasil dibuat (${newPin}).\n\n✓ Token bawaan (${kpTokMask}) telah HANGUS di server master dan tidak dapat dibagikan secara ilegal.\n✓ Fitur Sinkronisasi Cloud Multi-Perangkat sekarang TERBUKA!`);
         } else {
           await kpAlert("Gagal memproses PIN: " + (res.message || "Terjadi kesalahan server."));
         }
