@@ -800,6 +800,95 @@
 })();
   </script>
   <script>
+/* Kalkulator Pembagian Anggaran (khusus pemilik): tarik cicilan aktif dari data utang, rencana tersimpan ke database & ikut sinkron */
+(function () {
+  if (window.__kpalloc) return;
+  window.__kpalloc = true;
+  var LS = 'KEUANGANKU_BUDGET_ALLOCATION';
+  function G() { try { return (typeof globalData !== 'undefined') ? globalData : window.globalData; } catch (e) { return window.globalData; } }
+  function toast(t) { try { if (typeof showSyncToast === 'function') showSyncToast(t); } catch (e) {} }
+  function rp(n) { try { return formatRp(n); } catch (e) { return 'Rp ' + Math.round(n || 0).toLocaleString('id-ID'); } }
+  /* setoran per bulan sesuai jadwal bayar */
+  function monthlyOf(item) {
+    var a = Number(item.monthlyPay) || 0, p = String(item.period || 'Bulanan');
+    if (p === 'Mingguan') return a * 52 / 12;
+    if (p === 'Setiap Hari') return a * 30;
+    if (p === 'Tahunan') return a / 12;
+    return a;
+  }
+  /* sisa utang: nilai awal di Setup + utang baru - pembayaran */
+  function restOf(name, item) {
+    var total = parseFloat(item.total) || 0, paid = parseFloat(item.paid) || 0;
+    ((G() || {}).recentHistory || []).forEach(function (t) {
+      if (!t || t.category !== name) return;
+      if (t.cashflow === 'Cicilan / Utang Baru') total += Number(t.amount) || 0;
+      else if (t.cashflow === 'Bayar Cicilan / Utang') paid += Number(t.amount) || 0;
+    });
+    return total - paid;
+  }
+
+  function pullDebts() {
+    var g = G() || {}, debts = g.debtData || {};
+    var names = [], noPay = [], total = 0;
+    Object.keys(debts).forEach(function (k) {
+      var it = debts[k] || {}, rest = restOf(k, it);
+      if (rest <= 0.5) return;
+      var m = Math.min(monthlyOf(it), rest);
+      if (m > 0) { total += m; names.push(k); } else noPay.push(k);
+    });
+    if (!names.length) {
+      var msg = noPay.length
+        ? 'Nominal cicilan belum diisi\n\nAda ' + noPay.length + ' utang aktif (' + noPay.slice(0, 3).join(', ') + (noPay.length > 3 ? ', …' : '') + ') tetapi "Nominal Pembayaran"-nya masih kosong. Isi dulu di Setup → Database → Utang.'
+        : 'Tidak ada cicilan aktif\n\nSemua utang sudah lunas atau belum ada utang yang dicatat.';
+      return (window.kpAlert || window.alert)(msg);
+    }
+    total = Math.round(total);
+    var income = getAllocIncome();
+    var pct = income > 0 ? Math.round((total / income) * 1000) / 10 : 0;
+    var item = budgetAllocItems.find(function (i) { var n = String(i.name || '').toLowerCase(); return i.id === 'pos_cicilan' || n.indexOf('cicilan') >= 0 || n.indexOf('utang') >= 0; });
+    if (item) { item.amount = total; item.pct = pct; }
+    else budgetAllocItems.unshift({ id: 'pos_cicilan_' + Date.now(), name: 'Cicilan & Utang Aktif', icon: 'credit_card', color: '#f43f5e', amount: total, pct: pct });
+    renderBudgetAllocList();
+    toast('✓ ' + names.length + ' cicilan aktif ditarik, total ' + rp(total) + '/bulan' + (noPay.length ? ' (' + noPay.length + ' utang belum ada nominal cicilannya)' : ''));
+  }
+
+  function saveAlloc() {
+    var payload = { income: getAllocIncome(), items: budgetAllocItems, savedAt: new Date().toISOString() };
+    try { localStorage.setItem(LS, JSON.stringify(payload)); } catch (e) {}
+    var g = G();
+    if (g) { g.budgetAllocation = payload; try { saveStorageData(); } catch (e) {} }
+    try { if (typeof playSuccessSound === 'function') playSuccessSound(); } catch (e) {}
+    toast('✓ Rencana pembagian anggaran disimpan & ikut sinkron');
+  }
+
+  function wrap() {
+    if (typeof window.autoPullActiveDebtsToAlloc === 'function' && !window.autoPullActiveDebtsToAlloc.__kp) {
+      pullDebts.__kp = true; window.autoPullActiveDebtsToAlloc = pullDebts;
+    }
+    if (typeof window.saveBudgetAllocToStorage === 'function' && !window.saveBudgetAllocToStorage.__kp) {
+      saveAlloc.__kp = true; window.saveBudgetAllocToStorage = saveAlloc;
+    }
+    if (typeof window.initBudgetAllocator === 'function' && !window.initBudgetAllocator.__kp) {
+      var orig = window.initBudgetAllocator;
+      var w = function () {
+        try {
+          var g = G(), cloud = g && g.budgetAllocation, local = null;
+          try { local = JSON.parse(localStorage.getItem(LS) || 'null'); } catch (e) {}
+          if (cloud && Array.isArray(cloud.items) && cloud.items.length && (!local || String(cloud.savedAt || '') > String(local.savedAt || ''))) {
+            localStorage.setItem(LS, JSON.stringify(cloud));
+          }
+        } catch (e) {}
+        return orig.apply(this, arguments);
+      };
+      w.__kp = true; window.initBudgetAllocator = w;
+    }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(wrap, 0); });
+  else setTimeout(wrap, 0);
+  window.addEventListener('load', wrap);
+})();
+  </script>
+  <script>
 /* Kontrol Keuanganku: pengganti tampilan bawaan browser (drop down, kalender, centang, penggeser, unggah file) */
 (function () {
   if (window.__kpui) return;
