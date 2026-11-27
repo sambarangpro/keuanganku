@@ -365,6 +365,39 @@
   function opt(sel, value, label) { var o = document.createElement('option'); o.value = value; o.textContent = label; sel.appendChild(o); return o; }
   function fillSel(sel, list) { sel.innerHTML = ''; for (var i = 0; i < list.length; i++) opt(sel, list[i], list[i]); }
   function accounts() { return ((g() || {}).accounts || []).slice(); }
+  /* sisa utang / piutang: nilai awal di Setup + transaksi baru - pembayaran */
+  function balanceOf(kind, k) {
+    var G = g() || {}, item = ((kind === 'debt' ? G.debtData : G.receivablesData) || {})[k];
+    if (!item) return null;
+    var total = parseFloat(item.total) || 0, paid = parseFloat(item.paid) || 0;
+    var cfNew = kind === 'debt' ? 'Cicilan / Utang Baru' : 'Piutang Baru', cfPay = kind === 'debt' ? 'Bayar Cicilan / Utang' : 'Pelunasan Piutang';
+    (G.recentHistory || []).forEach(function (t) {
+      if (!t || t.category !== k) return;
+      if (t.cashflow === cfNew) total += Number(t.amount) || 0;
+      else if (t.cashflow === cfPay) paid += Number(t.amount) || 0;
+    });
+    return { total: total, paid: paid, rest: total - paid };
+  }
+  function tidyOptions(cat, cf) {
+    var kind = (cf === 'Bayar Cicilan / Utang' || cf === 'Cicilan / Utang Baru') ? 'debt' : ((cf === 'Pelunasan Piutang' || cf === 'Piutang Baru') ? 'recv' : '');
+    if (!kind || cat.disabled) return;
+    var hideLunas = cf === 'Bayar Cicilan / Utang' || cf === 'Pelunasan Piutang';
+    var opts = Array.prototype.slice.call(cat.options);
+    opts.forEach(function (o) {
+      var b = balanceOf(kind, o.value);
+      if (!b) return;
+      if (hideLunas) {
+        if (b.rest <= 0.5) o.remove();
+        else o.textContent = o.value + ' (sisa ' + rp(b.rest) + ')';
+      } else if (b.total > 0 && b.rest <= 0.5) {
+        o.textContent = o.value + ' · Lunas';
+      }
+    });
+    if (hideLunas && !cat.options.length) {
+      opt(cat, '', cf === 'Pelunasan Piutang' ? '— Tidak ada piutang yang belum lunas —' : '— Tidak ada utang yang belum lunas —').disabled = true;
+    }
+    if (cat.selectedIndex < 0) cat.selectedIndex = 0;
+  }
 
   /* ---------- CSS ---------- */
   var css = '.kptx-help{margin-top:6px;font-size:11.5px;line-height:1.5;color:var(--ui-muted,#667085)}' +
@@ -549,6 +582,7 @@
       fillSel(dari, accounts()); fillSel(ke, accounts()); dari.disabled = false; ke.disabled = false;
       applyKembaliPair(false);
     } else {
+      tidyOptions(cat, cf);
       if (ADD_LABEL[cf] && !cat.disabled) {
         if (cat.options.length === 1 && cat.options[0].value === NA) cat.innerHTML = '';
         opt(cat, ADD, '＋ ' + ADD_LABEL[cf][0] + '…');
