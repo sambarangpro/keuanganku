@@ -1273,6 +1273,45 @@
 })();
   </script>
   <script>
+/* Banner PIN Pribadi: kalimat khusus akun uji coba + warna terbaca di tema terang */
+(function () {
+  if (window.__kptoken) return;
+  window.__kptoken = true;
+  var css = 'html:not(.dark) #token-security-warning-banner{background:#fffbeb!important;border-color:#fcd34d!important;color:#92400e!important}' +
+    'html:not(.dark) #token-security-warning-banner p.font-bold{color:#78350f!important}' +
+    'html:not(.dark) #token-security-warning-banner p.font-bold + p{color:#92400e!important}' +
+    'html:not(.dark) #token-security-warning-banner p b{color:#78350f!important}' +
+    'html:not(.dark) #token-security-warning-banner .material-symbols-outlined.text-amber-400{color:#d97706!important}' +
+    'html:not(.dark) #token-security-warning-banner > div:first-child > div:first-child{background:#fef3c7!important;border-color:#fcd34d!important}' +
+    'html:not(.dark) #token-security-warning-banner button[title="Tutup Notifikasi"]{background:#fef3c7!important;color:#92400e!important}' +
+    'html:not(.dark) #token-security-warning-banner button[title="Tutup Notifikasi"]:hover{background:#fde68a!important}';
+  function lic(l) {
+    var s = null; try { s = (typeof getSavedLicense === 'function') ? getSavedLicense() : null; } catch (e) {}
+    return (l && typeof l.isTrial === 'boolean') ? l : (s || l || {});
+  }
+  function fix(l) {
+    var b = document.getElementById('token-security-warning-banner');
+    if (!b || b.classList.contains('hidden') || !b.innerHTML) return;
+    var L = lic(l);
+    if (!L || !L.isTrial) return;
+    var ps = b.querySelectorAll('p');
+    if (ps[0]) ps[0].textContent = 'Amankan akun uji coba dengan PIN Pribadi';
+    if (ps[1]) ps[1].innerHTML = 'Akun ini masih memakai kode bawaan dari pendaftaran uji coba, sehingga <b>sinkronisasi cloud antar-perangkat belum aktif</b>. Buat <b>PIN Pribadi</b> di menu Setup agar data lebih aman dan bisa dibuka di perangkat lain.';
+  }
+  function init() {
+    if (!document.getElementById('kptoken-css')) { var st = document.createElement('style'); st.id = 'kptoken-css'; st.textContent = css; document.head.appendChild(st); }
+    var f = window.updateTokenSecurityBanner;
+    if (typeof f === 'function' && !f.__kptoken) {
+      var w = function (l) { var r = f.apply(this, arguments); try { fix(l); } catch (e) {} return r; };
+      w.__kptoken = true; window.updateTokenSecurityBanner = w;
+    }
+    try { fix(null); } catch (e) {}
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(init, 0); }); else setTimeout(init, 0);
+  window.addEventListener('load', function () { setTimeout(init, 60); });
+})();
+  </script>
+  <script>
 /* Kontrol Keuanganku: pengganti tampilan bawaan browser (drop down, kalender, centang, penggeser, unggah file) */
 (function () {
   if (window.__kpui) return;
