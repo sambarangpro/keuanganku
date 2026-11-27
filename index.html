@@ -1215,6 +1215,64 @@
 })();
   </script>
   <script>
+/* Rekapitulasi ringkas di Beranda (mode pengguna 3 menu): ikon + keterangan, di bawah Saldo Per Akun */
+(function () {
+  if (window.__kprekap) return;
+  window.__kprekap = true;
+  function $(id) { return document.getElementById(id); }
+  var S = '#dashboard-rekap-slot.kprk ';
+  var css =
+    S + '#rekap-content{background:var(--ui-card,#fff);border:1px solid var(--ui-border,#e5e7eb);border-radius:20px;box-shadow:var(--ui-shadow);padding:14px 10px 10px;gap:0}' +
+    S + '#rekap-content>div:first-child{padding:0 6px 10px}' +
+    S + '#rekap-content>div:first-child h2{font-size:15px!important;line-height:1.3}' +
+    S + '#rekap-content>div:first-child p{display:none}' +
+    S + '#rekap-content>.grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px 2px;margin-top:0}' +
+    '@media (min-width:640px){' + S + '#rekap-content>.grid{grid-template-columns:repeat(9,minmax(0,1fr))}}' +
+    S + '#rekap-content>.grid>div{background:transparent!important;border:0!important;box-shadow:none!important;padding:4px 2px!important;border-radius:14px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:flex-start!important;text-align:center!important;gap:6px}' +
+    S + '#rekap-content>.grid>div:active{background:var(--ui-card-2,#f1f5f9)!important}' +
+    '@media (hover:hover){' + S + '#rekap-content>.grid>div:hover{background:var(--ui-card-2,#f1f5f9)!important}}' +
+    S + '#rekap-content>.grid>div>div:first-child{justify-content:center!important}' +
+    S + '#rekap-content>.grid>div>div:first-child>.material-symbols-outlined{display:none!important}' +
+    S + '#rekap-content>.grid>div>div:first-child>div{width:44px!important;height:44px!important;border-radius:15px!important;transform:none!important}' +
+    S + '#rekap-content>.grid>div>div:first-child>div .material-symbols-outlined{font-size:24px!important}' +
+    S + '#rekap-content>.grid>div>div:last-child{margin-top:0!important}' +
+    S + '#rekap-content>.grid>div h4{font-size:10.5px!important;font-weight:600!important;line-height:1.25!important;color:var(--ui-text,#101828)!important;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}' +
+    S + '#rekap-content>.grid>div p{display:none!important}';
+  function apply() {
+    var slot = $('dashboard-rekap-slot'), grid = $('account-grid');
+    if (!slot || !grid) return;
+    var sec = grid.closest('section');
+    if (!$('kprekap-css')) { var st = document.createElement('style'); st.id = 'kprekap-css'; st.textContent = css; document.head.appendChild(st); }
+    var user = !slot.classList.contains('hidden') && slot.querySelector('#rekap-content');
+    if (user) {
+      if (sec && sec.nextElementSibling !== slot) sec.parentNode.insertBefore(slot, sec.nextElementSibling);
+      slot.classList.add('kprk');
+      Array.prototype.forEach.call(slot.querySelectorAll('#rekap-content>.grid>div[onclick]'), function (c) {
+        var m = /openRecapModal\('([a-z]+)'\)/.exec(c.getAttribute('onclick') || ''), h = c.querySelector('h4');
+        if (!m || !h) return;
+        if (!h.getAttribute('data-full')) h.setAttribute('data-full', h.textContent);
+        
+        c.title = h.getAttribute('data-full');
+      });
+    } else {
+      slot.classList.remove('kprk');
+      Array.prototype.forEach.call(document.querySelectorAll('#rekap-content h4[data-full]'), function (h) { h.textContent = h.getAttribute('data-full'); });
+    }
+  }
+  window.kpRekapCompact = apply;
+  function wrap() {
+    var f = window.applyNavigationConfig;
+    if (typeof f === 'function' && !f.__kprekap) {
+      var w = function () { var r = f.apply(this, arguments); try { apply(); } catch (e) {} return r; };
+      w.__kprekap = true; window.applyNavigationConfig = w;
+    }
+    apply();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(wrap, 0); }); else setTimeout(wrap, 0);
+  window.addEventListener('load', function () { setTimeout(wrap, 60); });
+})();
+  </script>
+  <script>
 /* Kontrol Keuanganku: pengganti tampilan bawaan browser (drop down, kalender, centang, penggeser, unggah file) */
 (function () {
   if (window.__kpui) return;
