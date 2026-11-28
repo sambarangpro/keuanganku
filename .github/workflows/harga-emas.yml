@@ -1,4 +1,4 @@
-# Ambil harga emas dari Galeri 24 tiap jam untuk Simulasi Beli Emas
+# Ambil harga emas (Galeri 24) dan perak (Logam Mulia + harga dunia) tiap jam untuk Keuanganku PRO
 name: Harga Emas
 
 on:
@@ -16,12 +16,16 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Siapkan browser untuk halaman Logam Mulia
+        run: |
+          npm i --no-save --no-package-lock playwright@1.49.1
+          npx playwright install --with-deps chromium
       - name: Ambil harga terbaru
         run: node scripts/harga-emas.mjs
       - name: Simpan bila berubah
