@@ -1530,7 +1530,7 @@
       b.id = 'kpgold-menu'; b.type = 'button';
       b.className = 'p-5 bg-white dark:bg-slate-800 border border-outline-variant rounded-2xl shadow-sm hover:border-primary transition-all text-left flex items-start gap-4 group';
       b.innerHTML = '<div class="p-3 rounded-xl group-hover:scale-110 transition-transform" style="background:rgba(245,158,11,.15);color:#d97706"><span class="material-symbols-outlined text-2xl">diamond</span></div>' +
-        '<div><h3 class="font-bold text-sm text-on-surface group-hover:text-primary">Simulasi Beli Emas</h3><p class="text-[11px] text-gray-500 mt-1">Bandingkan harga emas batangan semua merek, hitung dapat berapa gram, nabung emas, dan untung rugi jual kembali.</p></div>';
+        '<div><h3 class="font-bold text-sm text-on-surface group-hover:text-primary">Simulasi Beli Emas & Perak</h3><p class="text-[11px] text-gray-500 mt-1">Bandingkan harga emas batangan semua merek dan harga perak, hitung dapat berapa gram, nabung emas, dan untung rugi jual kembali.</p></div>';
       b.onclick = function () { try { openCalcSub('calc-sub-emas'); } catch (e) {} open(); };
       menu.insertBefore(b, menu.children[1] || null);
     }
@@ -1583,7 +1583,7 @@
     if (val == null) { var one = P.filter(function (i) { return i.g === 1; })[0]; val = one ? 1 : (P[0] && P[0].g); }
     return '<select id="' + id + '" class="kpg-in">' + P.map(function (i) { return '<option value="' + i.g + '"' + (i.g === val ? ' selected' : '') + '>' + gr(i.g) + ' · ' + rp(i.jual) + '</option>'; }).join('') + '</select>';
   }
-  var st = { sv: null, ex: false, dana: '5.000.000', target: '10', nabung: '1.000.000', bulan: '12', naik: '0', nv: 'ANTAM', np: null, jv: 'ANTAM', jp: null, jq: '1', jb: '', dv: 'ANTAM' };
+  var st = { pdana: '5.000.000', pgram: '', sv: null, ex: false, dana: '5.000.000', target: '10', nabung: '1.000.000', bulan: '12', naik: '0', nv: 'ANTAM', np: null, jv: 'ANTAM', jp: null, jq: '1', jb: '', dv: 'ANTAM' };
   function moneyInput(id, v, ph) { return '<div style="position:relative"><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:700;color:#94a3b8">Rp</span><input id="' + id + '" type="text" inputmode="numeric" data-num class="kpg-in" style="padding-left:36px" value="' + esc(v) + '" placeholder="' + (ph || '0') + '"></div>'; }
 
   function tabDana() {
@@ -1726,17 +1726,36 @@
       }, 120);
     }, 150);
   };
-  var TABS = [['tabungan', 'Tabungan Saya'], ['dana', 'Dana → Gram'], ['target', 'Target Gram'], ['nabung', 'Nabung Emas'], ['jual', 'Jual Kembali'], ['daftar', 'Daftar Harga']];
-  function body() { return tab === 'tabungan' ? tabTabungan() : tab === 'target' ? tabTarget() : tab === 'nabung' ? tabNabung() : tab === 'jual' ? tabJual() : tab === 'daftar' ? tabDaftar() : tabDana(); }
+  /* ---------- perak ---------- */
+  function tabPerak() {
+    var p = (data && data.perak) || {}, lm = p.logamMulia, du = p.dunia;
+    if (!lm && !du) return '<p class="kpg-note">Harga perak belum tersedia. Coba perbarui beberapa saat lagi.</p>';
+    var beli = lm && lm.beliPerGram, dunia = du && du.perGram;
+    var h = '<div class="kpg-rec">' +
+      (beli ? '<div class="kpg-card gold"><div class="kpg-k">Harga beli perak Antam</div><div class="kpg-v">' + rp(beli) + ' /gr</div><div class="kpg-s">Logam Mulia · ' + esc(lm.date) + '</div></div>' : '') +
+      (dunia ? '<div class="kpg-card"><div class="kpg-k">Harga perak dunia</div><div class="kpg-v">' + rp(dunia) + ' /gr</div><div class="kpg-s">US$' + (Math.round(du.usdPerOunce * 100) / 100).toLocaleString('id-ID') + '/ons × kurs ' + rp(du.kursIdr) + ' · ' + esc(fmtDate(du.date)) + '. Belum termasuk pajak dan ongkos cetak.</div></div>' : '') +
+      '</div>';
+    if (beli && dunia) h += '<p class="kpg-note">Harga beli Antam ' + pct((beli / dunia - 1) * 100) + ' di atas harga perak dunia. Selisih ini wajar karena sudah termasuk PPN dan ongkos produksi, dan menjadi gambaran berapa harga perlu naik agar balik modal.</p>';
+    var buy = beli || dunia, sell = dunia || beli;
+    var d = num(st.pdana), g = num(st.pgram);
+    h += '<div class="kpg-f"><div><label>Dana untuk beli perak</label>' + moneyInput('kpg-pdana', st.pdana) + '</div><div><label>Perak yang dimiliki (gram)</label><input id="kpg-pgram" type="text" inputmode="decimal" class="kpg-in" value="' + esc(st.pgram) + '" placeholder="0"></div></div>';
+    h += '<div class="kpg-rec">';
+    if (d > 0) h += '<div class="kpg-card gold"><div class="kpg-k">Dapat perak sekitar</div><div class="kpg-v">' + gr(d / buy) + '</div><div class="kpg-s">Dengan harga ' + (beli ? 'beli Antam ' : 'perak dunia ') + rp(buy) + '/gr.' + (beli ? ' Antam menjual perak per batang (misalnya 250 gr dan 500 gr).' : ' Harga di toko atau aplikasi lebih tinggi karena sudah termasuk PPN dan ongkos cetak, jadi gram yang didapat akan lebih sedikit.') + '</div></div>';
+    if (g > 0) h += '<div class="kpg-card"><div class="kpg-k">Nilai perak Anda</div><div class="kpg-v">' + rp(g * sell) + '</div><div class="kpg-s">' + gr(g) + ' × ' + rp(sell) + '/gr (' + (dunia ? 'harga perak dunia' : 'harga beli Antam') + ').' + (g >= 595 ? ' <b>Sudah mencapai nisab zakat perak (595 gr).</b>' : ' Nisab zakat perak 595 gr.') + '</div></div>';
+    h += '</div>';
+    return h;
+  }
+  var TABS = [['tabungan', 'Tabungan Saya'], ['dana', 'Dana → Gram'], ['target', 'Target Gram'], ['nabung', 'Nabung Emas'], ['jual', 'Jual Kembali'], ['daftar', 'Daftar Harga'], ['perak', 'Perak']];
+  function body() { return tab === 'perak' ? tabPerak() : tab === 'tabungan' ? tabTabungan() : tab === 'target' ? tabTarget() : tab === 'nabung' ? tabNabung() : tab === 'jual' ? tabJual() : tab === 'daftar' ? tabDaftar() : tabDana(); }
   function render() {
     var p = $('calc-sub-emas'); if (!p) return;
     if (!p.getAttribute('data-ready')) {
       p.setAttribute('data-ready', '1');
-      p.innerHTML = '<h3 class="font-bold text-base flex items-center gap-2" style="color:#d97706"><span class="material-symbols-outlined">diamond</span> Simulasi Beli Emas</h3>' +
+      p.innerHTML = '<h3 class="font-bold text-base flex items-center gap-2" style="color:#d97706"><span class="material-symbols-outlined">diamond</span> Simulasi Beli Emas & Perak</h3>' +
         '<div id="kpg-status" class="kpg-st"></div><div id="kpg-rec"></div>' +
         '<div class="kpg-tabs" id="kpg-tabs">' + TABS.map(function (t) { return '<button type="button" data-t="' + t[0] + '">' + t[1] + '</button>'; }).join('') + '</div>' +
         '<div id="kpg-body" class="space-y-3"></div>' +
-        '<p class="kpg-note">Harga acuan dari Galeri 24 (PT Pegadaian Galeri 24) dan diperbarui otomatis tiap jam. Harga di butik, toko emas, atau aplikasi lain bisa berbeda. Perhitungan ini simulasi, bukan saran investasi. Belilah emas secara tunai dan pastikan barangnya diterima atau tercatat atas nama Anda.</p>';
+        '<p class="kpg-note">Harga emas dari Galeri 24 (PT Pegadaian Galeri 24), harga perak dari harga perak dunia, diperbarui otomatis tiap jam. Harga di butik, toko emas, atau aplikasi lain bisa berbeda. Perhitungan ini simulasi, bukan saran investasi. Belilah emas secara tunai dan pastikan barangnya diterima atau tercatat atas nama Anda.</p>';
       $('kpg-tabs').addEventListener('click', function (e) { var b = e.target.closest('button[data-t]'); if (!b) return; tab = b.getAttribute('data-t'); paint(); });
       p.addEventListener('input', onInput); p.addEventListener('change', onInput);
     }
@@ -1807,6 +1826,16 @@
     return c && c.data;
   }
   function isGold(k, it) { return it && (it.type === 'Emas' || (!it.type && /emas|antam|logam mulia|gold/i.test(k))); }
+  function isSilver(k, it) { return it && (it.type === 'Perak' || (!it.type && /perak|silver/i.test(k))); }
+  function isMetal(k, it) { return isGold(k, it) || isSilver(k, it); }
+  // perak: nilai jual kembali paling dekat dengan harga perak dunia; bila tidak ada, harga beli Antam
+  function perGramSilver(data) {
+    var p = data.perak || {};
+    if (p.dunia && p.dunia.perGram > 0) return { price: p.dunia.perGram, date: fmtIso(p.dunia.date), brand: 'PERAK_DUNIA' };
+    if (p.logamMulia && p.logamMulia.beliPerGram > 0) return { price: p.logamMulia.beliPerGram, date: p.logamMulia.date, brand: 'PERAK_ANTAM' };
+    return null;
+  }
+  function fmtIso(s) { var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s || ''); if (!m) return s || ''; return Number(m[3]) + ' ' + ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'][Number(m[2]) - 1] + ' ' + m[1]; }
   function isGram(it) { return !it.unit || /^(gr|gram|g)$/i.test(String(it.unit).trim()); }
   function guessBrand(k) {
     var n = String(k).toLowerCase();
@@ -1816,7 +1845,7 @@
     if (/lotus/.test(n)) return 'LOTUS ARCHI';
     return 'ANTAM';
   }
-  function autoOn(k, it) { return it.goldAuto !== false && !(it.goldAuto == null && /perhiasan|cincin|kalung|gelang|anting/i.test(k)); }
+  function autoOn(k, it) { return it.goldAuto !== false && !(it.goldAuto == null && /perhiasan|cincin|kalung|gelang|anting|aksesoris/i.test(k)); }
   // harga buyback per gram: keping 1 gr, kalau tidak ada pakai keping terdekat >= 1 gr
   function perGram(data, brand) {
     var v = (data.vendors || []).filter(function (x) { return x.name === brand; })[0];
@@ -1830,12 +1859,12 @@
   async function update(force) {
     var g = G();
     if (!g || !g.nonMoneyAssets || isDemo()) return;
-    var keys = Object.keys(g.nonMoneyAssets).filter(function (k) { var it = g.nonMoneyAssets[k]; return isGold(k, it) && isGram(it) && autoOn(k, it); });
+    var keys = Object.keys(g.nonMoneyAssets).filter(function (k) { var it = g.nonMoneyAssets[k]; return isMetal(k, it) && isGram(it) && autoOn(k, it); });
     if (!keys.length) return;
     var data = await prices(); if (!data) return;
     var changed = false;
     keys.forEach(function (k) {
-      var it = g.nonMoneyAssets[k], p = perGram(data, it.goldBrand || guessBrand(k)); if (!p) return;
+      var it = g.nonMoneyAssets[k], p = isSilver(k, it) ? perGramSilver(data) : perGram(data, it.goldBrand || guessBrand(k)); if (!p) return;
       var price = Math.round(p.price);
       if (Number(it.estimatedPrice) !== price || it.goldPriceDate !== p.date || it.goldPriceBrand !== p.brand) {
         it.estimatedPrice = price; it.goldPriceDate = p.date; it.goldPriceBrand = p.brand; changed = true;
@@ -1851,6 +1880,11 @@
     try { var d = $('page-dashboard'); if (d && !d.classList.contains('hidden') && typeof renderDashboard === 'function') renderDashboard(); } catch (e) {}
     try { var s = $('setup-nonmoney-list'); if (s && s.offsetParent && typeof renderValuedCategoryList === 'function') renderValuedCategoryList('nonMoneyAssets', 'setup-nonmoney-list', ['qty', 'estimatedPrice', 'type', 'unit']); } catch (e) {}
   }
+  function srcText(it) {
+    if (it.goldPriceBrand === 'PERAK_DUNIA') return 'Nilai mengikuti harga perak dunia per ' + esc(it.goldPriceDate) + ' (dikonversi ke rupiah, belum termasuk pajak)';
+    if (it.goldPriceBrand === 'PERAK_ANTAM') return 'Nilai mengikuti harga beli perak Antam per ' + esc(it.goldPriceDate) + ' (Logam Mulia)';
+    return 'Nilai mengikuti harga buyback ' + esc(brandName(it.goldPriceBrand)) + ' per ' + esc(it.goldPriceDate) + ' (Galeri 24)';
+  }
   function brandName(b) { var f = BRANDS.filter(function (x) { return x[0] === b; })[0]; return f ? f[1] : b; }
 
   /* Rekapitulasi: keterangan sumber harga di kartu emas */
@@ -1859,10 +1893,10 @@
     var keys = Object.keys(g.nonMoneyAssets);
     Array.prototype.forEach.call(c.children, function (card, i) {
       var k = keys[i], it = k && g.nonMoneyAssets[k]; if (!it || card.querySelector('.kpgv-note')) return;
-      if (!isGold(k, it) || !isGram(it)) return;
+      if (!isMetal(k, it) || !isGram(it)) return;
       var d = document.createElement('div'); d.className = 'kpgv-note';
       d.innerHTML = autoOn(k, it) && it.goldPriceDate
-        ? '<span class="material-symbols-outlined">sync</span>Nilai mengikuti harga buyback ' + esc(brandName(it.goldPriceBrand)) + ' per ' + esc(it.goldPriceDate) + ' (Galeri 24)'
+        ? '<span class="material-symbols-outlined">sync</span>' + srcText(it)
         : '<span class="material-symbols-outlined">edit</span>Harga diisi manual di Setup';
       card.appendChild(d);
     });
@@ -1874,12 +1908,12 @@
     var cards = Array.prototype.filter.call(c.children, function (x) { return x.getAttribute && x.getAttribute('data-nm') === '1'; });
     keys.forEach(function (k, i) {
       var card = cards[i], it = g.nonMoneyAssets[k]; if (!card || !it || card.querySelector('.kpgv-setup')) return;
-      if (!isGold(k, it) || !isGram(it)) return;
-      var on = autoOn(k, it), b = it.goldBrand || guessBrand(k);
+      if (!isMetal(k, it) || !isGram(it)) return;
+      var on = autoOn(k, it), b = it.goldBrand || guessBrand(k), silver = isSilver(k, it);
       var d = document.createElement('div'); d.className = 'kpgv-setup';
-      d.innerHTML = '<label class="kpgv-chk"><input type="checkbox" data-f="auto"' + (on ? ' checked' : '') + '> Ikuti harga emas otomatis (buyback)</label>' +
-        '<select data-f="brand" class="kpgv-sel"' + (on ? '' : ' disabled') + '>' + BRANDS.map(function (x) { return '<option value="' + x[0] + '"' + (x[0] === b ? ' selected' : '') + '>' + esc(x[1]) + '</option>'; }).join('') + '</select>' +
-        '<span class="kpgv-hint">' + (on ? 'Harga per gram diperbarui otomatis dari Galeri 24, tidak perlu diisi manual.' : 'Isi harga per gram sendiri di kolom di atas.') + '</span>';
+      d.innerHTML = '<label class="kpgv-chk"><input type="checkbox" data-f="auto"' + (on ? ' checked' : '') + '> ' + (silver ? 'Ikuti harga perak otomatis' : 'Ikuti harga emas otomatis (buyback)') + '</label>' +
+        (silver ? '' : '<select data-f="brand" class="kpgv-sel"' + (on ? '' : ' disabled') + '>' + BRANDS.map(function (x) { return '<option value="' + x[0] + '"' + (x[0] === b ? ' selected' : '') + '>' + esc(x[1]) + '</option>'; }).join('') + '</select>') +
+        '<span class="kpgv-hint">' + (on ? (silver ? 'Harga per gram mengikuti harga perak dunia (dikonversi ke rupiah), tidak perlu diisi manual.' : 'Harga per gram diperbarui otomatis dari Galeri 24, tidak perlu diisi manual.') : 'Isi harga per gram sendiri di kolom di atas.') + '</span>';
       card.appendChild(d);
       if (on) { var ep = card.querySelector('input[onchange*="\'estimatedPrice\'"]'); if (ep) { ep.disabled = true; ep.title = 'Diperbarui otomatis dari harga emas terbaru'; ep.style.opacity = '.7'; } }
       d.addEventListener('change', function (e) {
