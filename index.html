@@ -7248,9 +7248,10 @@
           <h3 class="font-bold text-base text-primary flex items-center gap-2"><span class="material-symbols-outlined">currency_exchange</span> Konversi Mata Uang (Real-time)</h3>
           <div class="space-y-3 text-xs">
             <div><label class="font-bold text-gray-500">Nominal</label><input type="text" id="calc-curr-amount" placeholder="Contoh: 1.000.000" oninput="formatInputNominal(this)" class="w-full p-2.5 border rounded-xl font-mono-data font-bold mt-1 bg-surface outline-none"></div>
-            <div class="grid grid-cols-2 gap-3">
-              <div><label class="font-bold text-gray-500">Dari Kurs</label><select id="calc-curr-from" class="w-full p-2.5 border rounded-xl font-bold mt-1 bg-surface outline-none cursor-pointer"><option value="IDR" selected>IDR - Rupiah</option><option value="USD">USD - Dolar AS</option><option value="EUR">EUR - Euro</option><option value="SAR">SAR - Riyal Arab</option><option value="MYR">MYR - Ringgit</option><option value="SGD">SGD - Dolar Singapur</option><option value="JPY">JPY - Yen Jepang</option><option value="KRW">KRW - Won Korea</option></select></div>
-              <div><label class="font-bold text-gray-500">Ke Kurs</label><select id="calc-curr-to" class="w-full p-2.5 border rounded-xl font-bold mt-1 bg-surface outline-none cursor-pointer"><option value="USD" selected>USD - Dolar AS</option><option value="IDR">IDR - Rupiah</option><option value="EUR">EUR - Euro</option><option value="SAR">SAR - Riyal Arab</option><option value="MYR">MYR - Ringgit</option><option value="SGD">SGD - Dolar Singapur</option><option value="JPY">JPY - Yen Jepang</option><option value="KRW">KRW - Won Korea</option></select></div>
+            <div class="grid gap-2 items-end" style="grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)">
+              <div><label class="font-bold text-gray-500">Dari Kurs</label><select id="calc-curr-from" onchange="kpCurrChanged()" class="w-full p-2.5 border rounded-xl font-bold mt-1 bg-surface outline-none cursor-pointer"><option value="IDR" selected>IDR - Rupiah</option><option value="USD">USD - Dolar AS</option><option value="EUR">EUR - Euro</option><option value="SAR">SAR - Riyal Arab</option><option value="MYR">MYR - Ringgit</option><option value="SGD">SGD - Dolar Singapur</option><option value="JPY">JPY - Yen Jepang</option><option value="KRW">KRW - Won Korea</option></select></div>
+              <button type="button" id="calc-curr-swap" onclick="swapCurrency()" title="Tukar mata uang" aria-label="Tukar mata uang" class="w-10 h-10 mb-0.5 flex items-center justify-center rounded-full border border-outline-variant bg-surface text-primary hover:bg-blue-50 dark:hover:bg-slate-700 active:scale-90 transition-transform"><span class="material-symbols-outlined text-[22px]" id="calc-curr-swap-ic" style="transition:transform .25s">swap_horiz</span></button>
+              <div><label class="font-bold text-gray-500">Ke Kurs</label><select id="calc-curr-to" onchange="kpCurrChanged()" class="w-full p-2.5 border rounded-xl font-bold mt-1 bg-surface outline-none cursor-pointer"><option value="USD" selected>USD - Dolar AS</option><option value="IDR">IDR - Rupiah</option><option value="EUR">EUR - Euro</option><option value="SAR">SAR - Riyal Arab</option><option value="MYR">MYR - Ringgit</option><option value="SGD">SGD - Dolar Singapur</option><option value="JPY">JPY - Yen Jepang</option><option value="KRW">KRW - Won Korea</option></select></div>
             </div>
             <button onclick="calculateCurrency()" class="w-full py-3 bg-primary text-white font-bold rounded-xl shadow mt-2 hover:brightness-110">Konversi Sekarang</button>
             <div id="calc-curr-loading" class="hidden text-center py-4 text-primary font-bold text-[11px] animate-pulse">Mengambil data kurs pasar saat ini...</div>
@@ -13834,20 +13835,42 @@ function formatReadableSheets(ss, parsed) {
     }
 
     // KALKULATOR MATA UANG
-    async function calculateCurrency() {
+    const kpCurrCache = {};
+    function swapCurrency() {
+      const f = document.getElementById('calc-curr-from'), t = document.getElementById('calc-curr-to');
+      const a = f.value; f.value = t.value; t.value = a;
+      const ic = document.getElementById('calc-curr-swap-ic');
+      if (ic) { ic.dataset.r = ((+ic.dataset.r || 0) + 180) % 360; ic.style.transform = 'rotate(' + ic.dataset.r + 'deg)'; }
+      kpCurrChanged();
+    }
+    function kpCurrChanged() {
+      const box = document.getElementById('calc-curr-result');
+      const amt = parseFloat((document.getElementById('calc-curr-amount').value || '').replace(/\./g, '')) || 0;
+      if (box && !box.classList.contains('hidden') && amt > 0) calculateCurrency(true);
+    }
+    async function calculateCurrency(silent) {
       let rawVal = document.getElementById('calc-curr-amount').value.replace(/\./g, ''); let amount = parseFloat(rawVal) || 0;
-      if (amount <= 0) { await kpAlert('Masukkan nominal yang akan dikonversi!'); return; }
+      if (amount <= 0) { if (!silent) await kpAlert('Masukkan nominal yang akan dikonversi!'); return; }
       let fromCur = document.getElementById('calc-curr-from').value; let toCur = document.getElementById('calc-curr-to').value;
       let resultBox = document.getElementById('calc-curr-result'); let loadingBox = document.getElementById('calc-curr-loading');
-      resultBox.classList.add('hidden'); loadingBox.classList.remove('hidden');
+      if (fromCur === toCur) {
+        document.getElementById('calc-curr-label-from').textContent = `${amount.toLocaleString('id-ID')} ${fromCur} SAMA DENGAN:`;
+        document.getElementById('calc-curr-val-to').textContent = `${amount.toLocaleString('id-ID', { maximumFractionDigits: 2 })} ${toCur}`;
+        document.getElementById('calc-curr-rate-info').textContent = 'Mata uang asal dan tujuan sama.';
+        loadingBox.classList.add('hidden'); resultBox.classList.remove('hidden'); return;
+      }
+      const cached = kpCurrCache[fromCur] && (Date.now() - kpCurrCache[fromCur].at < 10 * 60 * 1000) ? kpCurrCache[fromCur].data : null;
+      if (!cached) { resultBox.classList.add('hidden'); loadingBox.classList.remove('hidden'); }
       try {
-        let response = await fetch(`https://open.er-api.com/v6/latest/${fromCur}`); let data = await response.json();
+        let data = cached;
+        if (!data) { let response = await fetch(`https://open.er-api.com/v6/latest/${fromCur}`); data = await response.json(); if (data && data.rates) kpCurrCache[fromCur] = { at: Date.now(), data: data }; }
         if (data && data.rates && data.rates[toCur]) {
           let rate = data.rates[toCur]; let converted = amount * rate;
           document.getElementById('calc-curr-label-from').textContent = `${amount.toLocaleString('id-ID')} ${fromCur} SAMA DENGAN:`;
           let finalString = converted.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
           document.getElementById('calc-curr-val-to').textContent = `${finalString} ${toCur}`;
-          document.getElementById('calc-curr-rate-info').textContent = `*Kurs Real-time (1 ${fromCur} = ${rate.toLocaleString('id-ID')} ${toCur}) diperbarui: ${new Date(data.time_last_update_utc).toLocaleString('id-ID')}`;
+          const fmtR = r => r.toLocaleString('id-ID', { maximumFractionDigits: r < 1 ? 6 : 2 });
+          document.getElementById('calc-curr-rate-info').textContent = `*Kurs Real-time: 1 ${fromCur} = ${fmtR(rate)} ${toCur} · 1 ${toCur} = ${fmtR(1 / rate)} ${fromCur}. Diperbarui: ${new Date(data.time_last_update_utc).toLocaleString('id-ID')}`;
           loadingBox.classList.add('hidden'); resultBox.classList.remove('hidden');
         } else throw new Error("Gagal");
       } catch (e) { loadingBox.classList.add('hidden'); await kpAlert("Gagal mengambil kurs. Pastikan terhubung internet."); }
