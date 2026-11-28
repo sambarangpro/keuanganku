@@ -17396,15 +17396,18 @@ function formatReadableSheets(ss, parsed) {
         return; 
       } 
       
+      // Bangun semua baris sekaligus (dulu innerHTML += per baris membuat layar macet saat transaksi banyak)
+      let rowsHtml = [], idxOf = new Map();
+      historyList.forEach((t, i) => idxOf.set(t, i));
       filteredList.forEach((tx) => { 
         let badgeColor = "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300"; 
         if (tx.cashflow === 'Income') badgeColor = "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300"; 
         if (tx.cashflow === 'Spending') badgeColor = "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300"; 
-        let originalIdx = globalData.recentHistory.indexOf(tx); 
+        let originalIdx = idxOf.has(tx) ? idxOf.get(tx) : -1; 
         let attCount = (tx.attachments && Array.isArray(tx.attachments)) ? tx.attachments.length : 0;
         let attBtn = attCount > 0 ? `<button type="button" onclick="openReceiptViewerModal(${originalIdx})" class="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 bg-blue-50 dark:bg-blue-950/80 text-blue-600 dark:text-blue-300 border border-blue-200 dark:border-blue-800 rounded-lg font-bold hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors shadow-2xs cursor-pointer mt-1"><span class="material-symbols-outlined text-xs">receipt_long</span> ${attCount} Bukti</button>` : '';
         
-        tbody.innerHTML += `
+        rowsHtml.push(`
           <tr class="hover:bg-surface-container-low transition-colors hidden-action-row">
             <td class="p-3 font-mono-data text-[11px] text-gray-500">${escapeHtml(tx.dateTime) || '-'}</td>
             <td class="p-3">
@@ -17422,8 +17425,9 @@ function formatReadableSheets(ss, parsed) {
                 <button onclick="deleteTransaction(${originalIdx})" class="delete-action-btn p-1 rounded hover:bg-red-100 text-gray-300 hover:text-error transition-colors" title="Hapus Transaksi"><span class="material-symbols-outlined text-sm">delete</span></button>
               </div>
             </td>
-          </tr>`; 
+          </tr>`); 
       }); 
+      tbody.innerHTML = rowsHtml.join(''); 
     }
     
     function openEditModal(idx) { 
