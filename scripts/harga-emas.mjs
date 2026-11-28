@@ -41,8 +41,9 @@ async function perakLogamMulia() {
   let pw;
   try { pw = await import('playwright'); } catch (e) { console.log('Playwright tidak tersedia, perak Logam Mulia dilewati.'); return null; }
   const browser = await pw.chromium.launch();
+  let page = null;
   try {
-    const page = await browser.newPage({ userAgent: UA, locale: 'id-ID' });
+    page = await browser.newPage({ userAgent: UA, locale: 'id-ID', timezoneId: 'Asia/Jakarta' });
     await page.goto('https://logammulia.com/harga-hari-ini/perak', { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForFunction(() => /Perak Fisik[\s\S]{0,40}Rp\s?[\d.,]+\s*\/gr/.test(document.body.innerText), null, { timeout: 45000 });
     const t = (await page.evaluate(() => document.body.innerText)).replace(/\s+/g, ' ');
@@ -50,7 +51,12 @@ async function perakLogamMulia() {
     const d = /Terakhir diperbarui\s+(.+?)\s*\|\s*([\d:.]+)\s*WIB/.exec(t);
     if (!m) return null;
     return { source: 'Logam Mulia (ANTAM)', sourceUrl: 'https://logammulia.com/harga-hari-ini/perak', beliPerGram: angka(m[1]), date: d ? d[1].trim() + ' ' + d[2] + ' WIB' : '' };
-  } catch (e) { console.log('Perak Logam Mulia gagal: ' + e.message); return null; }
+  } catch (e) {
+    let info = '';
+    try { info = ' | judul: ' + (await page.title()) + ' | isi: ' + (await page.evaluate(() => document.body.innerText)).replace(/\s+/g, ' ').slice(0, 300); } catch (er) {}
+    console.log('Perak Logam Mulia gagal: ' + e.message.split('\n')[0] + info);
+    return null;
+  }
   finally { await browser.close(); }
 }
 
