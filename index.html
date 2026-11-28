@@ -1742,8 +1742,8 @@
     var a = g.nonMoneyAssets[name];
     var v = vByName(brand), bb = 0;
     if (v) { var P = v.items.filter(function (i) { return i.buyback > 0 && i.g >= 1; }).sort(function (x, y) { return x.g - y.g; }); if (P[0]) bb = Math.round(P[0].buyback / P[0].g); }
-    if (a) { a.qty = Math.round(((parseFloat(a.qty) || 0) + grams) * 1000) / 1000; if (!a.type) a.type = 'Emas'; }
-    else g.nonMoneyAssets[name] = { qty: grams, estimatedPrice: bb || Math.round(res.cost / grams), type: 'Emas', unit: 'Gram', goldBrand: brand };
+    if (a) { a.qty = Math.round(((parseFloat(a.qty) || 0) + grams) * 1000) / 1000; if (!a.type) a.type = 'Emas'; a.buyTotal = (parseFloat(a.buyTotal) || 0) + res.cost; if (!a.buyDate) a.buyDate = res.date || todayStr(); }
+    else g.nonMoneyAssets[name] = { qty: grams, estimatedPrice: bb || Math.round(res.cost / grams), type: 'Emas', unit: 'Gram', goldBrand: brand, buyTotal: res.cost, buyDate: res.date || todayStr() };
     try { saveStorageData(); } catch (e) {}
     try { if (typeof kpGoldValueUpdate === 'function') kpGoldValueUpdate(); } catch (e) {}
     try { showSyncToast('Pembelian ' + gr(grams) + ' emas tercatat di Aset & Emas'); } catch (e) {}
@@ -1894,6 +1894,13 @@
   }
   function autoOn(k, it) { return it.goldAuto !== false && !(it.goldAuto == null && /perhiasan|cincin|kalung|gelang|anting|aksesoris/i.test(k)); }
   // harga buyback per gram: keping 1 gr, kalau tidak ada pakai keping terdekat >= 1 gr
+  function buyNow(data, brand) {
+    var v = (data.vendors || []).filter(function (x) { return x.name === brand; })[0];
+    if (!v) v = (data.vendors || []).filter(function (x) { return x.name === 'ANTAM'; })[0];
+    if (!v) return 0;
+    var P = v.items.filter(function (i) { return i.jual > 0 && i.g >= 1; }).sort(function (a, b) { return a.g - b.g; });
+    return P.length ? Math.round(P[0].jual / P[0].g) : 0;
+  }
   function perGram(data, brand) {
     var v = (data.vendors || []).filter(function (x) { return x.name === brand; })[0];
     var pick = function (vv) {
@@ -1919,8 +1926,9 @@
     keys.forEach(function (k) {
       var it = g.nonMoneyAssets[k], p = isSilver(k, it) ? perGramSilver(data) : perGram(data, it.goldBrand || guessBrand(k)); if (!p) return;
       var price = Math.round(p.price);
-      if (Number(it.estimatedPrice) !== price || it.goldPriceDate !== p.date || it.goldPriceBrand !== p.brand) {
-        it.estimatedPrice = price; it.goldPriceDate = p.date; it.goldPriceBrand = p.brand; changed = true;
+      var bn = isSilver(k, it) ? Math.round(((data.perak || {}).logamMulia || {}).beliPerGram || 0) : buyNow(data, p.brand);
+      if (Number(it.estimatedPrice) !== price || it.goldPriceDate !== p.date || it.goldPriceBrand !== p.brand || Number(it.goldBuyNow || 0) !== bn) {
+        it.estimatedPrice = price; it.goldPriceDate = p.date; it.goldPriceBrand = p.brand; it.goldBuyNow = bn || null; changed = true;
       }
     });
     if (changed) {
@@ -1967,7 +1975,28 @@
         ? '<span class="material-symbols-outlined">sync</span>' + srcText(it)
         : '<span class="material-symbols-outlined">edit</span>Harga diisi manual di Setup';
       card.appendChild(d);
+      card.appendChild(priceTable(k, it));
     });
+  }
+  /* Rekap: harga saat dibeli vs harga hari ini */
+  function priceTable(k, it) {
+    var q = parseFloat(it.qty) || 0, bt = parseFloat(it.buyTotal) || 0, sell = parseFloat(it.estimatedPrice) || 0, bn = parseFloat(it.goldBuyNow) || 0;
+    var t = document.createElement('div'); t.className = 'kpgv-pt';
+    var row = function (a, b, c) { return '<div class="kpgv-r"><span>' + a + '</span><b>' + b + '</b>' + (c ? '<em>' + c + '</em>' : '') + '</div>'; };
+    var h = row('Harga saat dibeli', bt > 0 && q > 0 ? rp(bt / q) + '/gr' : '–', bt > 0 ? 'total ' + rp(bt) + (it.buyDate ? ' · ' + esc(fmtIso(it.buyDate)) : '') : 'isi di Setup');
+    var auto = autoOn(k, it) && it.goldPriceDate;
+    if (auto) {
+      h += row('Harga beli hari ini', bn > 0 ? rp(bn) + '/gr' : '–', bn > 0 ? (isSilver(k, it) ? 'Logam Mulia' : esc(brandName(it.goldPriceBrand || ''))) : (isSilver(k, it) ? 'harga toko belum tersedia' : ''));
+      h += row('Harga jual kembali hari ini', sell > 0 ? rp(sell) + '/gr' : '–', sell > 0 && q > 0 ? 'nilai ' + rp(sell * q) : '');
+    } else {
+      h += row('Taksiran harga sekarang', sell > 0 ? rp(sell) + '/gr' : '–', 'diisi manual' + (sell > 0 && q > 0 ? ' · nilai ' + rp(sell * q) : ''));
+    }
+    if (bt > 0 && sell > 0 && q > 0) {
+      var diff = sell * q - bt, p = diff / bt * 100;
+      h += '<div class="kpgv-r kpgv-tot"><span>' + (diff >= 0 ? 'Untung' : 'Rugi') + (auto ? ' jika dijual hari ini' : ' (taksiran)') + '</span><b class="' + (diff >= 0 ? 'kpgv-pos' : 'kpgv-neg') + '">' + (diff >= 0 ? '+' : '−') + rp(Math.abs(diff)) + ' (' + (Math.round(Math.abs(p) * 10) / 10).toLocaleString('id-ID') + '%)</b></div>';
+    }
+    t.innerHTML = h;
+    return t;
   }
   /* Setup: pilihan harga otomatis & merek pada kartu aset emas */
   function addSetup() {
@@ -1982,12 +2011,18 @@
       d.innerHTML = '<label class="kpgv-chk"><input type="checkbox" data-f="auto"' + (on ? ' checked' : '') + '> ' + (silver ? 'Ikuti harga perak otomatis' : 'Ikuti harga emas otomatis (buyback)') + '</label>' +
         (silver ? '' : '<select data-f="brand" class="kpgv-sel"' + (on ? '' : ' disabled') + '>' + BRANDS.map(function (x) { return '<option value="' + x[0] + '"' + (x[0] === b ? ' selected' : '') + '>' + esc(x[1]) + '</option>'; }).join('') + '</select>') +
         '<span class="kpgv-hint">' + (on ? (silver ? 'Harga per gram mengikuti harga perak dunia (dikonversi ke rupiah), tidak perlu diisi manual.' : 'Harga per gram diperbarui otomatis dari Galeri 24, tidak perlu diisi manual.') : 'Isi harga per gram sendiri di kolom di atas.') + '</span>';
+      var bt = parseFloat(it.buyTotal) || 0;
+      d.insertAdjacentHTML('beforeend', '<div class="kpgv-buy"><label>Total harga saat dibeli (semua gram)</label><div class="kpgv-in"><span>Rp</span><input type="text" inputmode="numeric" data-num data-f="buyTotal" value="' + (bt ? bt.toLocaleString('id-ID') : '') + '" placeholder="0"></div>' +
+        '<label>Tanggal beli</label><input type="date" class="kpgv-date" data-f="buyDate" value="' + esc(it.buyDate || '') + '"></div>' +
+        '<span class="kpgv-hint">Dipakai untuk menampilkan harga saat dibeli dan untung/rugi di Rekapitulasi.</span>');
       card.appendChild(d);
       if (on) { var ep = card.querySelector('input[onchange*="\'estimatedPrice\'"]'); if (ep) { ep.disabled = true; ep.title = 'Diperbarui otomatis dari harga emas terbaru'; ep.style.opacity = '.7'; } }
       d.addEventListener('change', function (e) {
         var f = e.target.getAttribute('data-f'), item = (G().nonMoneyAssets || {})[k]; if (!item) return;
         if (f === 'auto') item.goldAuto = !!e.target.checked;
         if (f === 'brand') item.goldBrand = e.target.value;
+        if (f === 'buyTotal') { item.buyTotal = (typeof kpParseNum === 'function' ? kpParseNum(e.target.value) : parseFloat(String(e.target.value).replace(/\D/g, ''))) || 0; try { saveStorageData(); } catch (er) {} return; }
+        if (f === 'buyDate') { item.buyDate = e.target.value; try { saveStorageData(); } catch (er) {} return; }
         if (f === 'auto' && !e.target.checked) { delete item.goldPriceDate; delete item.goldPriceBrand; }
         try { saveStorageData(); } catch (er) {}
         var re = function () { try { renderValuedCategoryList('nonMoneyAssets', 'setup-nonmoney-list', ['qty', 'estimatedPrice', 'type', 'unit']); } catch (er) {} };
@@ -1999,7 +2034,12 @@
     '.kpgv-setup{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--ui-border-strong,#d0d5dd)}' +
     '.kpgv-chk{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--ui-text,#101828)}.kpgv-chk input{width:16px;height:16px;accent-color:#f59e0b}' +
     '.kpgv-sel{padding:7px 10px;border:1px solid var(--ui-border-strong,#d0d5dd);border-radius:10px;font-size:12px;font-weight:600;background:var(--ui-card,#fff);color:var(--ui-text,#101828)}.kpgv-sel:disabled{opacity:.5}' +
-    '.kpgv-hint{flex-basis:100%;font-size:10.5px;color:#94a3b8}';
+    '.kpgv-hint{flex-basis:100%;font-size:10.5px;color:#94a3b8}' +
+    '.kpgv-pt{margin-top:8px;border:1px solid var(--ui-border,#e5e7eb);border-radius:12px;padding:8px 10px;display:grid;gap:5px;background:var(--ui-card,#fff)}' +
+    '.kpgv-r{display:grid;grid-template-columns:1fr auto;column-gap:10px;font-size:11px;color:var(--ui-muted,#667085);align-items:baseline}.kpgv-r b{color:var(--ui-text,#101828);font-weight:700;text-align:right}.kpgv-r em{grid-column:1 / -1;font-style:normal;font-size:10px;color:#94a3b8;margin-top:-2px}' +
+    '.kpgv-tot{border-top:1px dashed var(--ui-border-strong,#d0d5dd);padding-top:6px;margin-top:2px}.kpgv-pos{color:#059669!important}.kpgv-neg{color:#e11d48!important}' +
+    '.kpgv-buy{flex-basis:100%;display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;align-items:end}.kpgv-buy label{font-size:11px;font-weight:700;color:var(--ui-muted,#667085)}.kpgv-buy label:nth-of-type(1){grid-column:1;grid-row:1}.kpgv-buy label:nth-of-type(2){grid-column:2;grid-row:1}' +
+    '.kpgv-in{position:relative}.kpgv-in span{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:700;color:#94a3b8}.kpgv-in input,.kpgv-date{width:100%;padding:8px 10px;border:1px solid var(--ui-border-strong,#d0d5dd);border-radius:10px;font-size:12.5px;font-weight:600;background:var(--ui-card,#fff);color:var(--ui-text,#101828)}.kpgv-in input{padding-left:32px}';
   function wrapFn(name, after) {
     var f = window[name];
     if (typeof f !== 'function' || f.__kpgoldval) return;
