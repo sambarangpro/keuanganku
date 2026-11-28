@@ -2527,6 +2527,7 @@
     buy: { l: 'Lihat paket lisensi', i: 'shopping_cart', run: function () { window.open('/katalog#harga', '_blank', 'noopener'); } },
     guide: { l: 'Buka panduan lengkap', i: 'menu_book', run: function () { window.open('https://keuanganku.pro/poster-panduan-penggunaan.html', '_blank', 'noopener'); } },
     install: { l: 'Cara pasang di layar utama', i: 'install_mobile', run: function () { answer('instal'); } },
+    upgrade: { l: 'Naik paket', i: 'upgrade', run: function () { openUpgrade(); } },
     report: { l: 'Laporkan ke tim', i: 'support_agent', run: function () { openReport(); } },
     check: { l: 'Cek akun saya', i: 'health_and_safety', run: function () { showDiag(); } }
   };
@@ -2601,17 +2602,17 @@
       e: 'telah dinonaktifkan oleh Developer|sedang diblokir oleh developer|Lisensi ini telah dinonaktifkan',
       a: '<p>Lisensi hanya dinonaktifkan bila ada indikasi dipakai bersama di luar batas atau ada masalah pembayaran. Data Anda tetap aman di Google Drive Anda.</p><p>Kirim laporan agar tim memeriksa dan mengaktifkan kembali bila memang keliru.</p>',
       act: ['report'] },
-    { id: 'upgrade', c: 'lisensi', t: 'Mau tambah perangkat / naik paket',
-      k: 'upgrade|naik paket|tambah perangkat|tambah kuota|kuota tambah|paket keluarga|paket umkm|paket master|ganti paket',
-      a: '<p>Semua paket berisi fitur yang sama, bedanya hanya jumlah perangkat: Personal 3, Keluarga 5, UMKM 8, Master 12.</p><p>Untuk naik paket dari lisensi yang sudah ada, kirim laporan kategori <b>Lisensi & Pembayaran</b> agar tim membantu menghitung selisihnya.</p>',
-      act: ['buy', 'report'] },
+    { id: 'upgrade', c: 'lisensi', t: 'Naik paket / tambah perangkat',
+      k: 'upgrade|naik paket|tambah perangkat|tambah kuota|kuota tambah|paket keluarga|paket umkm|paket master|ganti paket|upgrade paket',
+      a: '<p>Bisa, cukup <b>bayar selisih harganya</b>. Kode lisensi dan semua data tetap, tidak perlu aktivasi ulang.</p><ol><li>Ketuk <b>Naik paket</b> di bawah, pilih paket tujuan.</li><li>Saat checkout, isi Gmail aktivasi dengan <b>Gmail lisensi Anda</b>.</li><li>Kuota perangkat naik otomatis beberapa menit setelah bayar. Tutup lalu buka lagi aplikasinya.</li></ol>',
+      act: ['upgrade'] },
 
     /* ===== PERANGKAT ===== */
     { id: 'kuota-penuh', c: 'perangkat', t: 'Kuota perangkat penuh',
       k: 'kuota penuh|perangkat penuh|batas perangkat|maksimal perangkat|tidak bisa tambah perangkat|device penuh|limit perangkat',
       e: 'Batas kuota perangkat telah penuh',
       a: '<ol><li>Buka aplikasi di salah satu perangkat yang masih masuk.</li><li><b>Setup › Akun & Lisensi › Daftar Perangkat Terhubung</b>, lalu ketuk <b>Keluarkan</b> pada perangkat lama yang tidak dipakai.</li><li>Ulangi masuk di perangkat baru.</li></ol><p>Tidak ada perangkat yang bisa dibuka sama sekali (semua hilang/rusak)? Kirim laporan agar tim mengosongkan daftar perangkat.</p>',
-      act: ['devices', 'report'] },
+      act: ['devices', 'upgrade'] },
     { id: 'perangkat-baru', c: 'perangkat', t: 'Pakai di HP / laptop lain',
       k: 'perangkat lain|hp lain|laptop lain|pc lain|komputer|tablet|perangkat baru|tambah hp|pakai di laptop|buka di laptop|multi perangkat|dua hp|istri|suami',
       a: '<p>Dua cara:</p><ol><li><b>Masuk dengan Akun Google</b> (Gmail pembelian) di perangkat baru. Data langsung tersambung.</li><li>Atau <b>Tautkan via Barcode</b>: di perangkat baru pilih <b>Perangkat Baru</b> sampai barcode muncul, lalu di HP utama buka <b>Setup › Akun & Lisensi › Scan Barcode QR</b>.</li></ol><p>Setiap perangkat memakai 1 kuota sesuai paket.</p>',
@@ -2882,14 +2883,14 @@
     var n = myReports().length, unread = myReports().filter(function (r) { return r.unread; }).length;
     var hd = ov && ov.querySelector('.kph-hd'); if (!hd) return;
     hd.innerHTML = (view !== 'chat' ? '<button type="button" class="kph-ib" data-go="chat" aria-label="Kembali"><span class="material-symbols-outlined">arrow_back</span></button>' : '') +
-      '<b>' + (view === 'form' ? 'Laporkan ke tim' : view === 'rep' ? 'Laporan saya' : 'Pusat Bantuan') + '</b>' +
+      '<b>' + (view === 'form' ? 'Laporkan ke tim' : view === 'rep' ? 'Laporan saya' : view === 'upgrade' ? 'Naik paket' : 'Pusat Bantuan') + '</b>' +
       (view === 'chat' && n ? '<button type="button" class="kph-ib" data-go="rep" aria-label="Laporan saya" title="Laporan saya"><span class="material-symbols-outlined">inbox</span>' + (unread ? '<i>' + unread + '</i>' : '') + '</button>' : '') +
       '<button type="button" class="kph-ib" data-x="1" aria-label="Tutup"><span class="material-symbols-outlined">close</span></button>';
   }
   function go(v) {
     view = v; header();
     $('kph-in').style.display = v === 'chat' ? '' : 'none';
-    if (v === 'chat') renderChat(); else if (v === 'rep') showReports(); else openReport();
+    if (v === 'chat') renderChat(); else if (v === 'rep') showReports(); else if (v === 'upgrade') openUpgrade(); else openReport();
   }
   function open(topic) {
     css(); wrapAlert();
@@ -3101,6 +3102,43 @@
     bd.innerHTML = html; bd.scrollTop = 0;
   }
 
+  /* ---------- naik paket ---------- */
+  var PAKET = [[3, 'Personal', 59000], [5, 'Keluarga / Pasutri', 109000], [8, 'Bisnis UMKM', 179000], [12, 'Master / Multi-Cabang', 289000]];
+  var UPG_URL = { '3-5': 'https://lynk.id/sambarang/ojkl01625v0j', '3-8': 'https://lynk.id/sambarang/mzd6ok71j5r7', '3-12': 'https://lynk.id/sambarang/o0kg52201mxl', '5-8': 'https://lynk.id/sambarang/m17lx88q155g', '5-12': 'https://lynk.id/sambarang/n8n3yll9yd2p', '8-12': 'https://lynk.id/sambarang/g8oegddm2ldj' };
+  function curMax() { var l = lic() || {}; return parseInt(l.maxDevices, 10) || 0; }
+  function canUpgrade() { var l = lic(); if (!l || !l.token || l.isTrial || l.isOwner) return false; try { if (typeof isDemoContext === 'function' && isDemoContext()) return false; } catch (e) {} var m = curMax(); return m > 0 && m < 12; }
+  function rpx(n) { return 'Rp' + Math.round(n).toLocaleString('id-ID'); }
+  function openUpgrade() {
+    if (!ov) open();
+    view = 'upgrade'; header(); $('kph-in').style.display = 'none';
+    var hd = ov.querySelector('.kph-hd b'); if (hd) hd.textContent = 'Naik paket';
+    var l = lic() || {}, bd = $('kph-bd'), m = curMax();
+    if (!l.token || l.isTrial) { bd.innerHTML = '<div class="kph-m b"><p>Akun ini masih uji coba. Pilih paket langsung; data uji coba tersambung otomatis bila memakai Gmail yang sama.</p>' + actsHtml(['buy']) + '</div>'; return; }
+    var cur = PAKET.filter(function (p) { return p[0] === m; })[0];
+    var html = '<div class="kph-m b" style="max-width:100%"><p>Paket Anda sekarang: <b>' + esc(cur ? cur[1] : m + ' perangkat') + '</b> (' + m + ' perangkat).</p><p>Bayar selisihnya saja. Kode lisensi dan data tetap.</p></div>';
+    var opts = PAKET.filter(function (p) { return p[0] > m; });
+    if (!opts.length) html += '<p class="kph-mut" style="text-align:center">Anda sudah di paket tertinggi.</p>';
+    opts.forEach(function (p) {
+      var diff = cur ? p[2] - cur[2] : 0, url = UPG_URL[m + '-' + p[0]];
+      html += '<div class="kph-rp" style="display:flex;align-items:center;gap:10px"><div style="flex:1;min-width:0"><div style="font-weight:800;font-size:14px">' + esc(p[1]) + '</div><div class="kph-mut" style="font-size:12px">' + p[0] + ' perangkat' + (diff ? ' · tambah ' + rpx(diff) : '') + '</div></div>' +
+        (url ? '<a class="kph-a" style="text-decoration:none" href="' + esc(url) + '" target="_blank" rel="noopener"><span class="material-symbols-outlined">upgrade</span>Upgrade</a>' : '<button type="button" class="kph-a" data-act="report">Minta upgrade</button>') + '</div>';
+    });
+    html += '<p class="kph-note">Saat checkout, isi <b>Alamat Gmail untuk aktivasi lisensi</b> dengan <b>' + esc(l.email || 'Gmail lisensi Anda') + '</b>. Kuota naik otomatis beberapa menit setelah bayar; tutup lalu buka lagi aplikasinya.</p>';
+    bd.innerHTML = html; bd.scrollTop = 0;
+  }
+  function mountUpgrade() {
+    var q = $('setup-license-quota'); if (!q) return;
+    var b = $('kph-upg-btn');
+    if (!b) {
+      b = document.createElement('button'); b.type = 'button'; b.id = 'kph-upg-btn';
+      b.style.cssText = 'margin-top:6px;display:inline-flex;align-items:center;gap:4px;border:1px solid rgba(147,197,253,.35);background:transparent;color:#93c5fd;font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:999px;cursor:pointer';
+      b.innerHTML = '<span class="material-symbols-outlined" style="font-size:15px">upgrade</span>Naik paket';
+      b.onclick = function () { window.kpHelpOpen('__upgrade'); };
+      q.parentNode.appendChild(b);
+    }
+    b.style.display = canUpgrade() ? 'inline-flex' : 'none';
+  }
+
   /* ---------- titik masuk ---------- */
   function mount() {
     css();
@@ -3122,9 +3160,10 @@
       s.innerHTML = '<button type="button" class="kph-link" style="color:#bfdbfe" onclick="kpHelpOpen()">Butuh bantuan?</button>';
       bp.appendChild(s);
     }
+    try { mountUpgrade(); } catch (e) {}
     badge();
   }
-  window.kpHelpOpen = function (topic) { try { open(topic && typeof topic === 'string' ? topic : null); } catch (e) { console.warn('kphelp', e); } };
+  window.kpHelpOpen = function (topic) { try { if (topic === '__upgrade') { open(null); openUpgrade(); return; } open(topic && typeof topic === 'string' ? topic : null); } catch (e) { console.warn('kphelp', e); } };
   window.kpHelpClose = close;
   window.kpHelpSearch = function (q) { return search(q).slice(0, 3).map(function (x) { return x.a.id + ':' + Math.round(x.s); }); };
   function start() {
@@ -3132,6 +3171,7 @@
     try { if (sessionStorage.getItem('KP_HELP_UPDATED') === '1') { sessionStorage.removeItem('KP_HELP_UPDATED'); setTimeout(function () { toast('✓ Aplikasi sudah versi terbaru'); }, 2500); } } catch (e) {}
     /* cek balasan laporan sesekali (hanya bila pernah melapor) */
     setTimeout(function () { if (myReports().length) refreshReports(true); }, 8000);
+    setInterval(function () { try { mountUpgrade(); } catch (e) {} }, 4000);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(start, 700); });
   else setTimeout(start, 700);
