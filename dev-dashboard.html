@@ -6084,5 +6084,167 @@ Copyright © 2026 Sambarang Production`;
       }, 3000);
     }
   </script>
+<script>
+/* Dev Portal: tab Laporan Bantuan (laporan dari Pusat Bantuan aplikasi) */
+(function () {
+  if (window.__devReports) return;
+  window.__devReports = true;
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function pass() { try { return typeof currentAdminPassword !== 'undefined' ? currentAdminPassword : ''; } catch (e) { return ''; } }
+  function toast(t, m) { try { showToast(t, m); } catch (e) { console.log(m); } }
+  function when(t) { if (!t) return '-'; try { var d = new Date(t); return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) + ' ' + d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }); } catch (e) { return '-'; } }
+  var cache = [], filt = 'aktif', q = '', open = {};
+  var TPL = [
+    ['Lisensi dipindah', 'Assalamu\'alaikum, lisensi Anda sudah kami pindahkan ke Gmail yang benar. Silakan buka keuanganku.pro lalu pilih "Masuk dengan Akun Google" memakai Gmail tersebut. Data akan langsung tersambung.'],
+    ['Perangkat dikosongkan', 'Assalamu\'alaikum, daftar perangkat lisensi Anda sudah kami kosongkan. Silakan masuk ulang dengan Akun Google di perangkat yang ingin dipakai.'],
+    ['Lisensi aktif', 'Assalamu\'alaikum, lisensi Anda sudah aktif. Silakan masuk dengan Akun Google memakai Gmail saat pembelian. Jika masih terkendala, balas laporan ini lewat Pusat Bantuan.'],
+    ['Perbarui aplikasi', 'Assalamu\'alaikum, kendala ini sudah diperbaiki di versi terbaru. Buka Setup > Pusat Bantuan > Cek otomatis > "Perbarui aplikasi sekarang", lalu coba lagi.'],
+    ['Butuh info', 'Assalamu\'alaikum, terima kasih laporannya. Agar bisa kami bantu, mohon kirim laporan baru berisi: nama pembeli, paket, dan waktu pembayaran.']
+  ];
+
+  function mountUi() {
+    if ($('tab-btn-reports')) return true;
+    var settingsBtn = $('tab-btn-settings'), settingsTab = $('tab-content-settings');
+    if (!settingsBtn || !settingsTab) return false;
+    var b = document.createElement('button');
+    b.id = 'tab-btn-reports'; b.type = 'button';
+    b.className = 'px-4 py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition-all';
+    b.innerHTML = '<span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">support_agent</span><span>Laporan Bantuan (<span id="tab-report-count">0</span>)</span><span id="tab-report-new" class="hidden ml-1 px-1.5 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-black"></span></span>';
+    b.onclick = function () { window.switchTab('reports'); };
+    settingsBtn.parentNode.insertBefore(b, settingsBtn);
+    var c = document.createElement('div');
+    c.id = 'tab-content-reports'; c.className = 'hidden p-4 sm:p-6 space-y-4';
+    c.innerHTML =
+      '<div class="flex flex-col md:flex-row md:items-center justify-between gap-3">' +
+      '<div><h3 class="text-white font-extrabold text-base flex items-center gap-2"><span class="material-symbols-outlined text-blue-400">support_agent</span>Laporan dari Pusat Bantuan</h3>' +
+      '<p class="text-xs text-slate-400 mt-1">Laporan yang tidak terselesaikan oleh bot. Balasan muncul di aplikasi pengguna (Pusat Bantuan › Laporan saya) dan dikirim ke emailnya.</p></div>' +
+      '<div class="flex items-center gap-2"><input id="rep-search" type="text" placeholder="Cari ID, judul, email, pembeli..." class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white w-56 outline-none focus:border-blue-500">' +
+      '<button type="button" id="rep-refresh" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white flex items-center gap-1"><span class="material-symbols-outlined text-sm" id="rep-refresh-ic">refresh</span>Muat ulang</button></div></div>' +
+      '<div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="rep-filters"></div>' +
+      '<div id="rep-list" class="space-y-3"></div>';
+    settingsTab.parentNode.insertBefore(c, settingsTab.nextSibling);
+    $('rep-search').oninput = function () { q = this.value.trim().toLowerCase(); render(); };
+    $('rep-refresh').onclick = function () { load(false); };
+    c.addEventListener('click', onClick);
+    return true;
+  }
+
+  function wrapSwitch() {
+    var f = window.switchTab;
+    if (typeof f !== 'function' || f.__rep) return;
+    var w = function (tab) {
+      var btn = $('tab-btn-reports'), ct = $('tab-content-reports');
+      if (tab === 'reports') {
+        f.call(this, '__none__');
+        window.currentActiveTab = 'reports';
+        if (ct) ct.classList.remove('hidden');
+        if (btn) btn.className = 'px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-blue-600 text-white shadow-md shadow-blue-500/20';
+        render(); load(true);
+        return;
+      }
+      if (ct) ct.classList.add('hidden');
+      if (btn) btn.className = 'px-4 py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition-all';
+      return f.apply(this, arguments);
+    };
+    for (var k in f) w[k] = f[k];
+    w.__rep = true; window.switchTab = w;
+  }
+  function wrapLoad() {
+    var f = window.loadDashboardData;
+    if (typeof f !== 'function' || f.__rep) return;
+    var w = async function () { var r = await f.apply(this, arguments); try { load(true); } catch (e) {} return r; };
+    for (var k in f) w[k] = f[k];
+    w.__rep = true; window.loadDashboardData = w;
+  }
+
+  var loading = false;
+  async function load(silent) {
+    if (!pass() || loading) return;
+    loading = true;
+    var ic = $('rep-refresh-ic'); if (ic && !silent) ic.classList.add('animate-spin');
+    try {
+      var res = await callDevApi({ action: 'admin_get_reports', adminPassword: pass() });
+      if (res && res.success) { cache = res.reports || []; counts(); render(); }
+      else if (!silent) toast('error', (res && res.message) || 'Gagal memuat laporan.');
+    } catch (e) { if (!silent) toast('error', 'Gagal memuat laporan: ' + e.message); }
+    loading = false;
+    if (ic) ic.classList.remove('animate-spin');
+  }
+  function counts() {
+    var n = cache.length, baru = cache.filter(function (r) { return r.status === 'baru'; }).length;
+    var a = $('tab-report-count'); if (a) a.textContent = n;
+    var b = $('tab-report-new'); if (b) { b.textContent = baru + ' baru'; b.classList.toggle('hidden', !baru); }
+  }
+  function render() {
+    var fl = $('rep-filters'), ls = $('rep-list'); if (!fl || !ls) return;
+    var c = { aktif: 0, baru: 0, proses: 0, selesai: 0 };
+    cache.forEach(function (r) { c[r.status] = (c[r.status] || 0) + 1; if (r.status !== 'selesai') c.aktif++; });
+    var F = [['aktif', 'Perlu ditangani', 'inbox'], ['baru', 'Baru', 'fiber_new'], ['proses', 'Sedang ditangani', 'pending'], ['selesai', 'Selesai', 'task_alt']];
+    fl.innerHTML = F.map(function (x) {
+      var on = filt === x[0];
+      return '<button type="button" data-f="' + x[0] + '" class="text-left p-3 rounded-2xl border ' + (on ? 'border-blue-500 bg-blue-600/15' : 'border-slate-800 bg-slate-950/60 hover:border-slate-600') + '"><span class="flex items-center gap-1.5 text-[11px] font-bold ' + (on ? 'text-blue-300' : 'text-slate-400') + '"><span class="material-symbols-outlined text-sm">' + x[2] + '</span>' + x[1] + '</span><span class="block text-xl font-black text-white mt-1">' + (c[x[0]] || 0) + '</span></button>';
+    }).join('');
+    var L = cache.filter(function (r) {
+      if (filt === 'aktif' && r.status === 'selesai') return false;
+      if (filt !== 'aktif' && r.status !== filt) return false;
+      if (q && [r.id, r.subject, r.message, r.email, r.buyer, r.token, r.category].join(' ').toLowerCase().indexOf(q) < 0) return false;
+      return true;
+    });
+    if (!pass()) { ls.innerHTML = '<div class="p-6 text-center text-sm text-slate-400 border border-slate-800 rounded-2xl">Masuk Dev Portal dulu.</div>'; return; }
+    if (!L.length) { ls.innerHTML = '<div class="p-8 text-center text-sm text-slate-400 border border-dashed border-slate-700 rounded-2xl">' + (cache.length ? 'Tidak ada laporan di filter ini.' : 'Belum ada laporan masuk. Bot sedang bekerja dengan baik 👍') + '</div>'; return; }
+    var ST = { baru: ['Baru', 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40'], proses: ['Sedang ditangani', 'bg-amber-500/20 text-amber-300 border-amber-500/40'], selesai: ['Selesai', 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'] };
+    ls.innerHTML = L.map(function (r) {
+      var st = ST[r.status] || ST.baru, isOpen = !!open[r.id];
+      var diag = '';
+      if (r.diag) { try { var d = JSON.parse(r.diag); diag = esc(JSON.stringify(d, null, 2)); } catch (e) { diag = esc(r.diag); } }
+      return '<div class="border border-slate-800 bg-slate-950/60 rounded-2xl p-4" data-id="' + esc(r.id) + '">' +
+        '<div class="flex flex-wrap items-start gap-2"><div class="min-w-0 flex-1"><div class="text-white font-extrabold text-sm break-words">' + esc(r.subject) + '</div>' +
+        '<div class="text-[11px] text-slate-400 mt-1 flex flex-wrap gap-x-3 gap-y-1"><span class="font-mono text-slate-300">' + esc(r.id) + '</span><span>' + esc(when(r.time)) + '</span><span>' + esc(r.category) + '</span>' +
+        (r.email ? '<span>✉ ' + esc(r.email) + '</span>' : '') + (r.buyer ? '<span>👤 ' + esc(r.buyer) + '</span>' : '') + (r.token ? '<span class="font-mono">🔑 ' + esc(r.token) + '</span>' : '') + '</div></div>' +
+        '<span class="px-2.5 py-1 rounded-full text-[10px] font-black border ' + st[1] + '">' + st[0] + '</span></div>' +
+        '<div class="mt-3 text-[13px] leading-relaxed text-slate-200 whitespace-pre-wrap break-words bg-slate-900 border border-slate-800 rounded-xl p-3">' + esc(r.message) + '</div>' +
+        (diag ? '<button type="button" data-a="diag" class="mt-2 text-[11px] font-bold text-blue-300 hover:underline">' + (isOpen ? 'Sembunyikan' : 'Lihat') + ' data diagnosa</button>' + (isOpen ? '<pre class="mt-2 text-[10.5px] leading-snug text-slate-300 bg-black/40 border border-slate-800 rounded-xl p-3 overflow-auto max-h-72">' + diag + '</pre>' : '') : '') +
+        (r.reply ? '<div class="mt-3 text-[12.5px] text-emerald-200 bg-emerald-900/20 border border-emerald-800/50 rounded-xl p-3 whitespace-pre-wrap"><b>Balasan terkirim' + (r.repliedAt ? ' · ' + esc(when(r.repliedAt)) : '') + ':</b>\n' + esc(r.reply) + '</div>' : '') +
+        '<div class="mt-3 flex flex-wrap gap-1.5">' + TPL.map(function (t, i) { return '<button type="button" data-tpl="' + i + '" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[10.5px] font-bold text-slate-300">' + esc(t[0]) + '</button>'; }).join('') +
+        (r.token ? '<button type="button" data-a="lic" class="px-2.5 py-1 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 text-[10.5px] font-bold text-blue-200">Buka lisensinya</button>' : '') + '</div>' +
+        '<textarea data-reply rows="3" placeholder="Tulis balasan untuk pengguna..." class="mt-2 w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-[13px] text-white outline-none focus:border-blue-500"></textarea>' +
+        '<div class="mt-2 flex flex-wrap items-center gap-2"><select data-status class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">' +
+        ['baru', 'proses', 'selesai'].map(function (s) { return '<option value="' + s + '"' + (s === (r.status === 'baru' ? 'selesai' : r.status) ? ' selected' : '') + '>' + ST[s][0] + '</option>'; }).join('') + '</select>' +
+        '<label class="flex items-center gap-1.5 text-[11px] text-slate-400"><input type="checkbox" data-notify checked> Kirim juga ke email</label>' +
+        '<button type="button" data-a="save" class="ml-auto px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-xs font-bold text-white">Simpan & kirim</button></div></div>';
+    }).join('');
+  }
+  async function onClick(e) {
+    var b = e.target.closest('[data-f]');
+    if (b) { filt = b.getAttribute('data-f'); render(); return; }
+    var card = e.target.closest('[data-id]'); if (!card) return;
+    var id = card.getAttribute('data-id'), r = cache.filter(function (x) { return x.id === id; })[0]; if (!r) return;
+    if ((b = e.target.closest('[data-tpl]'))) { var ta = card.querySelector('[data-reply]'); ta.value = TPL[+b.getAttribute('data-tpl')][1]; ta.focus(); return; }
+    if (!(b = e.target.closest('[data-a]'))) return;
+    var a = b.getAttribute('data-a');
+    if (a === 'diag') { open[id] = !open[id]; render(); return; }
+    if (a === 'lic') { window.switchTab('tokens'); var s = $('filter-search'); if (s) { s.value = r.token; try { filterTokensTable(); } catch (e2) {} } return; }
+    if (a === 'save') {
+      var reply = card.querySelector('[data-reply]').value.trim(), status = card.querySelector('[data-status]').value, notify = card.querySelector('[data-notify]').checked;
+      b.disabled = true; b.textContent = 'Menyimpan...';
+      try {
+        var payload = { action: 'admin_update_report', adminPassword: pass(), id: id, status: status, notify: notify };
+        if (reply) payload.reply = reply;
+        var res = await callDevApi(payload);
+        if (res && res.success) { toast('success', res.message || 'Tersimpan'); r.status = status; if (reply) { r.reply = reply; r.repliedAt = Date.now(); } counts(); render(); }
+        else { toast('error', (res && res.message) || 'Gagal menyimpan'); b.disabled = false; b.textContent = 'Simpan & kirim'; }
+      } catch (err) { toast('error', 'Gagal: ' + err.message); b.disabled = false; b.textContent = 'Simpan & kirim'; }
+    }
+  }
+  function start() {
+    if (!mountUi()) return setTimeout(start, 800);
+    wrapSwitch(); wrapLoad();
+    setTimeout(function () { load(true); }, 1500);
+    setInterval(function () { if (document.visibilityState === 'visible') load(true); }, 120000);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+})();
+</script>
 </body>
 </html>

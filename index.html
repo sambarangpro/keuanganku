@@ -2461,6 +2461,738 @@
 })();
   </script>
   <script>
+/* Pusat Bantuan Keuanganku: bot penjawab otomatis (tanpa AI, tetap jalan offline), cek kondisi akun, tombol perbaikan, dan laporan ke Dev Portal */
+(function () {
+  if (window.__kphelp) return;
+  window.__kphelp = true;
+  var VERSION = 'v1.0';
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function G() { try { return (typeof globalData !== 'undefined') ? globalData : window.globalData; } catch (e) { return window.globalData; } }
+  function lic() { try { return typeof getSavedLicense === 'function' ? getSavedLicense() : null; } catch (e) { return null; } }
+  function ls(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function toast(t) { try { if (typeof showSyncToast === 'function') showSyncToast(t); } catch (e) {} }
+  function when(t) { try { var d = new Date(t); return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) + ' ' + d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } }
+  function apiUrl() { try { if (typeof DEFAULT_MASTER_LICENSE_URL !== 'undefined' && DEFAULT_MASTER_LICENSE_URL) return DEFAULT_MASTER_LICENSE_URL; } catch (e) {} try { return getMasterLicenseServerUrl(); } catch (e) { return ''; } }
+  function isOwner() { var l = lic(); return !!(l && l.isOwner === true); }
+
+  /* ---------- catatan pesan & galat terakhir (untuk diagnosa, tanpa data keuangan) ---------- */
+  function pushLog(kind, msg) {
+    try {
+      var L = JSON.parse(sessionStorage.getItem('KP_HELP_LOG') || '[]');
+      L.push({ k: kind, m: String(msg || '').slice(0, 300), t: Date.now() });
+      while (L.length > 12) L.shift();
+      sessionStorage.setItem('KP_HELP_LOG', JSON.stringify(L));
+    } catch (e) {}
+  }
+  function getLog() { try { return JSON.parse(sessionStorage.getItem('KP_HELP_LOG') || '[]'); } catch (e) { return []; } }
+  window.addEventListener('error', function (e) { pushLog('err', (e && e.message) || 'error'); });
+  window.addEventListener('unhandledrejection', function (e) { var r = e && e.reason; pushLog('err', (r && (r.message || r)) || 'rejection'); });
+  function wrapAlert() {
+    ['kpAlert', 'kpConfirm'].forEach(function (n) {
+      var f = window[n];
+      if (typeof f !== 'function' || f.__kphelp) return;
+      var w = function (msg) { pushLog(n === 'kpAlert' ? 'msg' : 'ask', msg); return f.apply(this, arguments); };
+      for (var _k in f) w[_k] = f[_k];
+      w.__kphelp = true; window[n] = w;
+    });
+  }
+
+  /* ---------- aksi perbaikan ---------- */
+  function goSetup(cat, sub) {
+    try { if (typeof navTo === 'function') navTo('setup'); } catch (e) {}
+    setTimeout(function () {
+      try { if (sub && typeof switchSetupSubtab === 'function') switchSetupSubtab(sub); } catch (e) {}
+      try { if (cat && typeof switchSetupCategory === 'function') switchSetupCategory(cat); } catch (e) {}
+      var lock = $('setup-lock-card');
+      if (lock && !lock.classList.contains('hidden')) { try { $('setup-pass-input').focus(); } catch (e) {} toast('Buka Setup dulu dengan PIN atau kode lisensi'); }
+    }, 250);
+  }
+  var ACT = {
+    google: { l: 'Masuk dengan Akun Google', i: 'login', run: function () { close(); try { handleGoogleSignIn(); } catch (e) {} } },
+    setupAkun: { l: 'Buka Setup › Akun & Lisensi', i: 'manage_accounts', run: function () { close(); goSetup('account', 'pengaturan'); } },
+    devices: { l: 'Lihat perangkat terhubung', i: 'devices', run: function () { close(); goSetup('account', 'pengaturan'); setTimeout(function () { try { loadConnectedDevices(true); } catch (e) {} }, 500); } },
+    setupData: { l: 'Buka Setup › Data & Cadangan', i: 'cloud_sync', run: function () { close(); goSetup('database', 'pengaturan'); } },
+    setupFitur: { l: 'Buka Setup › Fitur & Notifikasi', i: 'tune', run: function () { close(); goSetup('features', 'pengaturan'); } },
+    setupDb: { l: 'Buka Setup › Database (akun & kategori)', i: 'database', run: function () { close(); goSetup(null, 'database'); } },
+    syncUp: { l: 'Kirim data ke Google Drive sekarang', i: 'cloud_upload', run: function () { try { syncByodbNow(true); toast('Mengirim data ke Google Drive...'); } catch (e) { toast('Hubungkan Akun Google dulu'); } } },
+    syncDown: { l: 'Tarik data terbaru dari Google Drive', i: 'cloud_download', run: function () { try { pullByodbNow(true); toast('Menarik data dari Google Drive...'); } catch (e) { toast('Hubungkan Akun Google dulu'); } } },
+    backup: { l: 'Unduh cadangan (.json)', i: 'download', run: function () { close(); try { openManualBackupModal('export'); } catch (e) { goSetup('database', 'pengaturan'); } } },
+    restore: { l: 'Pulihkan dari file cadangan', i: 'upload_file', run: function () { close(); try { openManualBackupModal('import'); } catch (e) { goSetup('database', 'pengaturan'); } } },
+    showQr: { l: 'Tampilkan barcode di perangkat ini', i: 'qr_code_2', run: function () { close(); try { openPairDeviceModal(); } catch (e) { goSetup('account', 'pengaturan'); } } },
+    scanQr: { l: 'Scan barcode dari HP utama', i: 'photo_camera', run: function () { close(); try { openPrimaryDeviceScannerModal(); } catch (e) { goSetup('account', 'pengaturan'); } } },
+    notif: { l: 'Aktifkan notifikasi pengingat', i: 'notifications_active', run: function () { try { requestNotificationPermissionInteractive(); } catch (e) { goSetup('features', 'pengaturan'); } } },
+    bio: { l: 'Atur sidik jari / Face ID', i: 'fingerprint', run: function () { close(); goSetup('account', 'pengaturan'); } },
+    update: { l: 'Perbarui aplikasi sekarang', i: 'system_update', run: function () { updateApp(); } },
+    buy: { l: 'Lihat paket lisensi', i: 'shopping_cart', run: function () { window.open('/katalog#harga', '_blank', 'noopener'); } },
+    guide: { l: 'Buka panduan lengkap', i: 'menu_book', run: function () { window.open('https://keuanganku.pro/poster-panduan-penggunaan.html', '_blank', 'noopener'); } },
+    install: { l: 'Cara pasang di layar utama', i: 'install_mobile', run: function () { answer('instal'); } },
+    report: { l: 'Kirim laporan ke tim', i: 'support_agent', run: function () { openReport(); } },
+    check: { l: 'Jalankan cek otomatis', i: 'health_and_safety', run: function () { showDiag(true); } }
+  };
+  function updateApp() {
+    toast('Memeriksa versi terbaru...');
+    var done = function () { try { sessionStorage.setItem('KP_HELP_UPDATED', '1'); } catch (e) {} location.reload(); };
+    try {
+      if (navigator.serviceWorker && navigator.serviceWorker.getRegistration) {
+        navigator.serviceWorker.getRegistration().then(function (r) {
+          if (!r) return done();
+          r.update().then(function () { if (r.waiting) r.waiting.postMessage({ action: 'skipWaiting' }); setTimeout(done, 800); }).catch(done);
+        }).catch(done);
+        return;
+      }
+    } catch (e) {}
+    done();
+  }
+
+  /* ---------- basis pengetahuan ---------- */
+  var CATS = [
+    ['masuk', 'Masuk & PIN', 'lock_open'], ['lisensi', 'Lisensi & Pembayaran', 'verified'], ['perangkat', 'Perangkat', 'devices'],
+    ['data', 'Sinkron & Data', 'cloud_sync'], ['aplikasi', 'Instal & Tampilan', 'install_mobile'], ['fitur', 'Cara Pakai Fitur', 'lightbulb']
+  ];
+  var KB = [
+    /* ===== MASUK & PIN ===== */
+    { id: 'lupa-pin', c: 'masuk', t: 'Lupa PIN',
+      k: 'lupa pin|pin lupa|tidak ingat pin|ga ingat pin|reset pin|pin hilang|lupa password|lupa kata sandi|lupa sandi',
+      a: '<p>Tenang, data Anda aman. Ada dua cara masuk tanpa PIN:</p><ol><li><b>Masuk dengan Akun Google</b> di layar masuk, pakai <b>Gmail yang sama</b> dengan saat membeli. Aplikasi langsung terbuka tanpa PIN.</li><li>Atau ketik <b>kode lisensi</b> (PRO-XXXX-...) dari email pembelian di kolom PIN.</li></ol><p>Lalu buat PIN baru: <b>Setup › Akun & Lisensi › Ubah Password & PIN Akses</b>. Untuk membuka Setup, masukkan kode lisensi dari email.</p>',
+      act: ['google', 'setupAkun'] },
+    { id: 'pin-salah', c: 'masuk', t: 'PIN selalu dibilang salah',
+      k: 'pin salah|pin tidak bisa|pin ditolak|password salah|salah pin|pin pribadi salah|tidak bisa masuk pin',
+      e: 'PIN Pribadi salah|PIN / Password Salah|PIN salah! Masukkan PIN pribadi',
+      a: '<ol><li>Pastikan yang diketik adalah <b>PIN pribadi</b> yang Anda buat sendiri, bukan kode lisensi lama. Setelah PIN dibuat, kode lisensi bawaan tidak berlaku lagi untuk masuk.</li><li>Cek huruf/angka: gunakan tombol <b>Gunakan Keyboard</b> bila PIN Anda berisi huruf.</li><li>Masih gagal? Pilih <b>Masuk dengan Akun Google</b> (Gmail pembelian), lalu buat PIN baru di Setup.</li></ol>',
+      act: ['google'] },
+    { id: 'buat-pin', c: 'masuk', t: 'Membuat atau mengganti PIN',
+      k: 'ganti pin|ubah pin|buat pin|pin baru|atur pin|token bawaan|token hangus|password baru',
+      a: '<ol><li>Buka <b>Setup › Akun & Lisensi › Ubah Password & PIN Akses</b>.</li><li>Ketik PIN baru 6 digit (contoh pola: 482916), lalu <b>Simpan PIN Baru</b>.</li><li>Setelah PIN disimpan, kode lisensi bawaan otomatis tidak berlaku untuk masuk, dan sinkron antar-perangkat terbuka.</li></ol><p>Gunakan PIN yang mudah Anda ingat tapi sulit ditebak orang lain.</p>',
+      act: ['setupAkun'] },
+    { id: 'biometrik', c: 'masuk', t: 'Sidik jari / Face ID tidak muncul atau gagal',
+      k: 'sidik jari|fingerprint|face id|faceid|biometrik|windows hello|sensor|tidak muncul sidik',
+      a: '<ol><li>Aktifkan dulu di <b>Setup › Akun & Lisensi › Kunci Biometrik</b>, lalu ketuk <b>Aktifkan Kunci Biometrik</b>.</li><li>Sidik jari/Face ID harus sudah terdaftar di pengaturan HP Anda.</li><li>Biometrik tersimpan per perangkat. Di HP baru atau setelah hapus data browser, aktifkan lagi.</li><li>Di iPhone, buka lewat ikon di layar utama (Safari). Beberapa browser lain tidak mendukung.</li></ol><p>Jika sensor gagal, Anda tetap bisa masuk dengan PIN.</p>',
+      act: ['bio'] },
+    { id: 'google-gagal', c: 'masuk', t: 'Tidak bisa masuk dengan Google',
+      k: 'google gagal|login google|masuk google|tidak bisa login|popup google|pop up|jendela google|akun google tidak|google error|adblock|brave|gsi|tidak dapat diverifikasi|izin email',
+      e: 'Akun Google tidak dapat diverifikasi|SDK Google Identity Services|Gagal masuk dengan Google|Gagal membuka dialog Google',
+      a: '<ol><li>Pastikan internet aktif, lalu coba lagi.</li><li>Saat jendela Google muncul, <b>centang semua izin</b> (termasuk email dan Google Drive). Tanpa izin email, akun tidak bisa diverifikasi.</li><li>Matikan pemblokir iklan / Brave Shields untuk keuanganku.pro.</li><li>Izinkan <b>pop-up</b> untuk keuanganku.pro di pengaturan browser.</li><li>iPhone: jika dibuka dari layar utama, aplikasi akan berpindah ke halaman Google lalu kembali sendiri. Tunggu sampai selesai.</li><li>Jangan buka aplikasi dari file di komputer. Selalu lewat <b>https://keuanganku.pro</b>.</li></ol>',
+      act: ['google', 'update'] },
+    { id: 'email-beda', c: 'masuk', t: 'Sudah beli, tapi masuk Google malah jadi uji coba',
+      k: 'jadi uji coba|malah trial|masih trial|sudah beli tapi trial|email beda|gmail beda|gmail lain|akun lain|lisensi tidak terbaca|tidak terdeteksi lisensi',
+      a: '<p>Biasanya karena Gmail yang dipakai masuk <b>berbeda</b> dengan Gmail yang diisi saat checkout.</p><ol><li>Cek email bukti pembelian: lihat Gmail yang tertulis di sana.</li><li>Keluar, lalu <b>Masuk dengan Akun Google</b> memakai Gmail tersebut.</li><li>Data uji coba ikut tersambung bila Gmail-nya sama.</li></ol><p>Jika saat checkout Anda salah ketik Gmail, kirim laporan agar tim memindahkan lisensi ke Gmail yang benar.</p>',
+      act: ['google', 'report'] },
+
+    /* ===== LISENSI & PEMBAYARAN ===== */
+    { id: 'lisensi-belum', c: 'lisensi', t: 'Sudah bayar, lisensi belum masuk',
+      k: 'sudah bayar|sudah transfer|lisensi belum|belum masuk|belum dapat lisensi|kode lisensi tidak ada|email tidak masuk|tidak dapat email|belum aktif|aktivasi gagal|bayar tapi',
+      a: '<ol><li>Lisensi dikirim otomatis ke <b>Gmail yang diisi saat checkout</b>, biasanya dalam 1–5 menit. Cek juga folder <b>Spam</b> dan <b>Promosi</b>.</li><li>Sebenarnya Anda <b>tidak wajib menunggu email</b>: buka keuanganku.pro lalu <b>Masuk dengan Akun Google</b> memakai Gmail tersebut. Aplikasi langsung aktif.</li><li>Sudah 30 menit dan tetap belum aktif, atau Gmail salah ketik? Kirim laporan beserta nama & waktu pembayaran.</li></ol>',
+      act: ['google', 'report'] },
+    { id: 'salah-email', c: 'lisensi', t: 'Salah ketik Gmail saat checkout',
+      k: 'salah email|salah gmail|typo email|email salah|ganti email lisensi|pindah email|ubah gmail',
+      a: '<p>Lisensi terikat ke Gmail saat checkout. Pemindahan Gmail perlu diproses tim.</p><ol><li>Kirim laporan kategori <b>Lisensi & Pembayaran</b>.</li><li>Tulis: nama pembeli, paket, waktu bayar, Gmail yang salah, dan Gmail yang benar.</li></ol><p>Balasan akan muncul di <b>Laporan saya</b> di Pusat Bantuan ini.</p>',
+      act: ['report'] },
+    { id: 'uji-coba', c: 'lisensi', t: 'Uji coba gratis 30 hari',
+      k: 'uji coba|trial|coba gratis|30 hari|masa uji|trial habis|uji coba berakhir|mode lihat saja|tidak bisa mencatat',
+      a: '<ul><li>Masuk dengan Akun Google untuk mencoba semua fitur gratis 30 hari.</li><li>Setelah habis, aplikasi masuk <b>mode lihat saja</b>: data tetap aman, tapi tidak bisa menambah transaksi.</li><li>Beli paket dengan <b>Gmail yang sama</b> agar semua data uji coba langsung tersambung, tanpa mengulang.</li></ul>',
+      act: ['buy'] },
+    { id: 'kode-lisensi', c: 'lisensi', t: 'Di mana kode lisensi saya?',
+      k: 'kode lisensi|token|token lisensi|kode token|pro-|nomor lisensi|lisensi saya dimana',
+      a: '<ul><li>Kode lisensi (PRO-XXXX-...) ada di <b>email pembelian</b> yang dikirim ke Gmail checkout.</li><li>Kode ini dipakai untuk membuka Setup dan sebagai kunci cadangan bila lupa PIN. Simpan baik-baik dan jangan dibagikan.</li><li>Akun uji coba belum punya kode lisensi.</li></ul>',
+      act: ['setupAkun'] },
+    { id: 'nonaktif', c: 'lisensi', t: 'Lisensi dinonaktifkan atau diblokir',
+      k: 'lisensi dinonaktifkan|lisensi diblokir|diblokir|dinonaktifkan|blocked|akun nonaktif',
+      e: 'telah dinonaktifkan oleh Developer|sedang diblokir oleh developer|Lisensi ini telah dinonaktifkan',
+      a: '<p>Lisensi hanya dinonaktifkan bila ada indikasi dipakai bersama di luar batas atau ada masalah pembayaran. Data Anda tetap aman di Google Drive Anda.</p><p>Kirim laporan agar tim memeriksa dan mengaktifkan kembali bila memang keliru.</p>',
+      act: ['report'] },
+    { id: 'upgrade', c: 'lisensi', t: 'Mau tambah perangkat / naik paket',
+      k: 'upgrade|naik paket|tambah perangkat|tambah kuota|kuota tambah|paket keluarga|paket umkm|paket master|ganti paket',
+      a: '<p>Semua paket berisi fitur yang sama, bedanya hanya jumlah perangkat: Personal 3, Keluarga 5, UMKM 8, Master 12.</p><p>Untuk naik paket dari lisensi yang sudah ada, kirim laporan kategori <b>Lisensi & Pembayaran</b> agar tim membantu menghitung selisihnya.</p>',
+      act: ['buy', 'report'] },
+
+    /* ===== PERANGKAT ===== */
+    { id: 'kuota-penuh', c: 'perangkat', t: 'Kuota perangkat penuh',
+      k: 'kuota penuh|perangkat penuh|batas perangkat|maksimal perangkat|tidak bisa tambah perangkat|device penuh|limit perangkat',
+      e: 'Batas kuota perangkat telah penuh',
+      a: '<ol><li>Buka aplikasi di salah satu perangkat yang masih masuk.</li><li><b>Setup › Akun & Lisensi › Daftar Perangkat Terhubung</b>, lalu ketuk <b>Keluarkan</b> pada perangkat lama yang tidak dipakai.</li><li>Ulangi masuk di perangkat baru.</li></ol><p>Tidak ada perangkat yang bisa dibuka sama sekali (semua hilang/rusak)? Kirim laporan agar tim mengosongkan daftar perangkat.</p>',
+      act: ['devices', 'report'] },
+    { id: 'perangkat-baru', c: 'perangkat', t: 'Pakai di HP / laptop lain',
+      k: 'perangkat lain|hp lain|laptop lain|pc lain|komputer|tablet|perangkat baru|tambah hp|pakai di laptop|buka di laptop|multi perangkat|dua hp|istri|suami',
+      a: '<p>Dua cara:</p><ol><li><b>Masuk dengan Akun Google</b> (Gmail pembelian) di perangkat baru. Data langsung tersambung.</li><li>Atau <b>Tautkan via Barcode</b>: di perangkat baru pilih <b>Perangkat Baru</b> sampai barcode muncul, lalu di HP utama buka <b>Setup › Akun & Lisensi › Scan Barcode QR</b>.</li></ol><p>Setiap perangkat memakai 1 kuota sesuai paket.</p>',
+      act: ['scanQr', 'devices'] },
+    { id: 'ganti-hp', c: 'perangkat', t: 'Ganti HP atau HP hilang',
+      k: 'ganti hp|hp hilang|hp rusak|hp baru|hp dicuri|laptop hilang|reset hp|factory reset|hp diganti',
+      a: '<ol><li>Di HP baru: buka keuanganku.pro, <b>Masuk dengan Akun Google</b> (Gmail pembelian). Data ditarik dari Google Drive.</li><li>Keluarkan HP lama: <b>Setup › Akun & Lisensi › Daftar Perangkat</b> › <b>Keluarkan</b>, agar kuota kembali dan HP lama tidak bisa membuka data.</li></ol>',
+      act: ['google', 'devices'] },
+    { id: 'dikeluarkan', c: 'perangkat', t: 'Perangkat ini pernah dikeluarkan',
+      k: 'dikeluarkan|ter-kick|kick|perangkat dikeluarkan|tidak terdaftar|belum terdaftar|keluar sendiri|logout sendiri|tiba tiba keluar',
+      e: 'pernah dikeluarkan dari lisensi|belum/tidak lagi terdaftar|tidak terdaftar di lisensi|HP ini belum terdaftar',
+      a: '<ol><li>Perangkat ini dikeluarkan dari daftar (oleh Anda atau anggota lain). Masuk ulang dengan Akun Google.</li><li>Bila muncul "permintaan masuk kembali", <b>setujui dari perangkat lain</b> yang masih terhubung (Setup › Akun & Lisensi).</li><li>Atau tautkan lewat barcode dari HP utama.</li></ol>',
+      act: ['google', 'scanQr'] },
+    { id: 'barcode', c: 'perangkat', t: 'Barcode / QR gagal dipakai',
+      k: 'barcode|qr|scan|kedaluwarsa|kadaluarsa|barcode sudah dipakai|scan gagal|kamera|pairing|tautkan',
+      e: 'Barcode sudah kedaluwarsa|Barcode ini sudah dipakai|Sesi barcode sudah dipakai|perlu dimuat ulang (versi lama)|PIN di HP utama tidak cocok',
+      a: '<ol><li>Barcode berlaku singkat. Ketuk <b>Muat Ulang Barcode</b> di perangkat baru, lalu scan lagi.</li><li>Scan dari menu <b>Setup › Akun & Lisensi › Scan Barcode QR</b> di HP utama, bukan dari kamera biasa.</li><li>Jika HP utama diminta memuat ulang: tutup lalu buka kembali aplikasinya, kemudian scan ulang.</li><li>Izinkan akses kamera bila diminta.</li></ol>',
+      act: ['scanQr', 'update'] },
+
+    /* ===== SINKRON & DATA ===== */
+    { id: 'tidak-sinkron', c: 'data', t: 'Data di dua perangkat berbeda',
+      k: 'tidak sinkron|tidak singkron|gak sinkron|beda data|data berbeda|data tidak sama|tidak update|tidak muncul di hp lain|sinkronisasi|sync|singkron|data tidak masuk',
+      a: '<ol><li>Pastikan kedua perangkat masuk dengan <b>Akun Google yang sama</b> (Setup › Akun & Lisensi).</li><li>Di perangkat yang datanya lengkap: <b>Kirim data ke Google Drive</b>.</li><li>Di perangkat lain: <b>Tarik data terbaru dari Google Drive</b>.</li><li>Ikon awan di atas harus <b>hijau</b>. Abu-abu berarti belum terhubung, kuning berarti perlu dicoba lagi.</li></ol>',
+      act: ['syncUp', 'syncDown', 'setupAkun'] },
+    { id: 'ikon-awan', c: 'data', t: 'Arti ikon awan di atas',
+      k: 'ikon awan|awan abu|awan kuning|awan hijau|cloud off|cloud|ikon cloud|tanda awan|coba lagi',
+      a: '<ul><li><b>Hijau</b>: data sudah tersimpan di Google Drive Anda.</li><li><b>Berputar biru</b>: sedang menyinkronkan.</li><li><b>Kuning</b>: gagal terhubung sementara (biasanya internet). Ketuk ikon untuk mencoba lagi.</li><li><b>Abu-abu</b>: belum terhubung ke Google Drive. Hubungkan di Setup › Akun & Lisensi.</li></ul>',
+      act: ['syncUp', 'setupAkun'] },
+    { id: 'data-hilang', c: 'data', t: 'Data saya hilang / kosong',
+      k: 'data hilang|data kosong|transaksi hilang|saldo hilang|hilang semua|kosong semua|terhapus|hapus cache|hapus riwayat|clear data|data lenyap|kembali nol',
+      a: '<p>Data utama tersimpan di <b>Google Drive Anda</b>, jadi biasanya bisa dikembalikan:</p><ol><li><b>Masuk dengan Akun Google</b> yang sama, lalu <b>Tarik data terbaru dari Google Drive</b>.</li><li>Punya file cadangan (.json)? Gunakan <b>Pulihkan dari file cadangan</b>.</li><li>Jangan menekan "Kirim ke Drive" dari perangkat yang datanya kosong sebelum data kembali.</li></ol>',
+      act: ['google', 'syncDown', 'restore'] },
+    { id: 'akun-tercampur', c: 'data', t: 'Muncul data milik akun lain',
+      k: 'data orang lain|data akun lain|tercampur|data tertukar|bukan data saya|data campur|akun ganda',
+      a: '<ol><li>Terjadi bila satu browser dipakai bergantian oleh dua akun. Versi terbaru sudah memisahkannya otomatis.</li><li>Perbarui aplikasi, lalu <b>keluar</b> dan <b>masuk lagi dengan Akun Google yang benar</b>.</li><li>Tarik data terbaru dari Google Drive akun tersebut.</li></ol><p>Data akun sebelumnya disimpan sebagai cadangan di perangkat, tidak terhapus.</p>',
+      act: ['update', 'google'] },
+    { id: 'offline', c: 'data', t: 'Bisa dipakai tanpa internet?',
+      k: 'offline|tanpa internet|tidak ada sinyal|sinyal|kuota habis|internet mati',
+      a: '<p>Bisa. Setelah aplikasi pernah dibuka dengan internet, Anda tetap bisa melihat dan mencatat saat offline. Data disimpan di perangkat lalu dikirim ke Google Drive otomatis saat internet kembali (ikon awan jadi hijau).</p><p>Yang perlu internet: masuk pertama kali, menambah perangkat, dan sinkron.</p>',
+      act: [] },
+    { id: 'cadangan', c: 'data', t: 'Cadangan & pulihkan data (.json)',
+      k: 'backup|cadangan|export|ekspor|import|impor|pulihkan|restore|unduh data|simpan file',
+      a: '<ul><li><b>Setup › Data & Cadangan › Cadangkan File (.json)</b> untuk menyimpan salinan ke perangkat.</li><li><b>Pulihkan File (.json)</b> untuk mengembalikan dari salinan.</li><li>Lakukan cadangan sesekali, misalnya tiap akhir bulan.</li></ul>',
+      act: ['backup', 'restore'] },
+    { id: 'data-dimana', c: 'data', t: 'Di mana data saya disimpan? Aman?',
+      k: 'data disimpan|disimpan dimana|keamanan data|aman|privasi|server|google sheet|spreadsheet|database keuanganku|siapa bisa lihat',
+      a: '<ul><li>Data keuangan tersimpan di <b>Google Drive milik Anda sendiri</b>, dalam file "Database Keuanganku PRO". Tim kami tidak menyimpan data keuangan Anda.</li><li>Aplikasi hanya diberi izin ke file yang dibuatnya sendiri, bukan seluruh Drive Anda.</li><li><b>Jangan hapus atau ganti nama</b> file tersebut agar sinkron tetap berjalan.</li></ul>',
+      act: ['setupAkun'] },
+    { id: 'hapus-muncul', c: 'data', t: 'Transaksi yang dihapus muncul lagi',
+      k: 'muncul lagi|hidup lagi|kembali lagi|terhapus muncul|hapus tidak hilang|transaksi dobel|double|ganda|duplikat transaksi',
+      a: '<ol><li>Perbarui aplikasi di <b>semua</b> perangkat.</li><li>Hapus transaksi di satu perangkat, tunggu ikon awan hijau.</li><li>Di perangkat lain, <b>Tarik data terbaru dari Google Drive</b>.</li></ol>',
+      act: ['update', 'syncDown'] },
+
+    /* ===== INSTAL & TAMPILAN ===== */
+    { id: 'instal', c: 'aplikasi', t: 'Pasang di layar utama (seperti aplikasi)',
+      k: 'instal|install|pasang|layar utama|home screen|ikon aplikasi|download aplikasi|play store|app store|unduh aplikasi|apk',
+      a: '<p>Keuanganku tidak perlu Play Store. Pasang langsung dari browser:</p><ul><li><b>Android (Chrome)</b>: buka keuanganku.pro › menu ⋮ › <b>Tambahkan ke layar utama / Instal aplikasi</b>.</li><li><b>iPhone/iPad (Safari)</b>: tombol Bagikan ⬆ › <b>Tambah ke Layar Utama</b>.</li><li><b>Laptop/PC (Chrome/Edge)</b>: ikon instal ⊕ di ujung kanan kolom alamat.</li></ul>',
+      act: [] },
+    { id: 'update', c: 'aplikasi', t: 'Tampilan lama / fitur baru tidak muncul',
+      k: 'versi lama|update|perbarui|fitur baru tidak ada|tidak berubah|refresh|muat ulang|tampilan lama|error|eror|bug|aneh',
+      a: '<p>Aplikasi menyimpan salinan agar bisa offline, kadang versi lama masih terpakai.</p><ol><li>Ketuk <b>Perbarui aplikasi sekarang</b> di bawah.</li><li>Atau tutup aplikasi sepenuhnya lalu buka lagi.</li></ol><p>Data Anda tidak terhapus.</p>',
+      act: ['update'] },
+    { id: 'lambat', c: 'aplikasi', t: 'Aplikasi lambat atau macet',
+      k: 'lambat|lemot|macet|freeze|hang|nge-lag|lag|berat|loading lama|tidak merespon|stuck',
+      a: '<ol><li>Perbarui aplikasi ke versi terbaru (ada perbaikan kecepatan di menu Transaksi).</li><li>Tutup tab/aplikasi lain yang berat.</li><li>Pastikan memori HP tidak penuh.</li><li>Masih macet di menu tertentu? Kirim laporan dan sebutkan menunya.</li></ol>',
+      act: ['update', 'report'] },
+    { id: 'notifikasi', c: 'aplikasi', t: 'Pengingat / notifikasi tidak muncul',
+      k: 'notifikasi|notif|pemberitahuan|pengingat tidak muncul|alarm|tidak diingatkan|reminder',
+      a: '<ol><li><b>Setup › Fitur & Notifikasi › Aktifkan Izin</b>, lalu pilih <b>Izinkan</b>.</li><li>Pastikan tanggal jatuh tempo tagihan/utang sudah diisi.</li><li>Pengingat juga selalu tampil di <b>ikon lonceng</b> di atas saat aplikasi dibuka.</li><li>iPhone: notifikasi hanya bekerja bila aplikasi dipasang di layar utama.</li></ol>',
+      act: ['notif', 'install'] },
+    { id: 'tema', c: 'aplikasi', t: 'Mode gelap / terang',
+      k: 'mode gelap|dark mode|mode terang|light mode|tema|warna|gelap|terang',
+      a: '<p>Ketuk ikon <b>bulan/matahari</b> di bagian atas untuk berganti mode gelap dan terang.</p>',
+      act: [] },
+
+    /* ===== CARA PAKAI FITUR ===== */
+    { id: 'tambah-akun', c: 'fitur', t: 'Menambah rekening / dompet',
+      k: 'tambah rekening|tambah akun bank|tambah dompet|rekening baru|dompet baru|e-wallet|gopay|ovo|dana|kas tunai|akun bank',
+      a: '<ol><li>Buka <b>Setup</b>, pilih tab <b>Database</b>.</li><li>Di bagian Akun Bank / Dompet, ketuk <b>Tambah Akun Bank / Dompet</b>.</li><li>Isi nama (misal BSI, GoPay, Uang Tunai) dan saldo awalnya.</li></ol>',
+      act: ['setupDb'] },
+    { id: 'catat', c: 'fitur', t: 'Mencatat transaksi & transfer',
+      k: 'catat transaksi|cara catat|input transaksi|pemasukan|pengeluaran|transfer|pindah saldo|tarik tunai|setor',
+      a: '<ol><li>Buka menu <b>Transaksi</b>.</li><li>Pilih jenis: Pemasukan, Pengeluaran, Transfer, Tabungan, atau Bayar Cicilan/Utang.</li><li>Isi nama, nominal, kategori, dan akun asal/tujuan, lalu simpan. Saldo akun langsung berubah.</li><li><b>Transfer</b> dipakai untuk memindah uang antar akun sendiri (misal tarik tunai dari bank ke dompet), tidak dihitung sebagai pengeluaran.</li></ol>',
+      act: [] },
+    { id: 'edit-hapus', c: 'fitur', t: 'Mengubah atau menghapus transaksi',
+      k: 'edit transaksi|ubah transaksi|hapus transaksi|salah input|salah catat|koreksi|batal transaksi',
+      a: '<ol><li>Buka <b>Transaksi</b>, gulir ke Riwayat.</li><li>Ketuk ikon <b>pensil</b> untuk mengubah, atau ikon <b>tempat sampah</b> untuk menghapus.</li><li>Saldo akun otomatis menyesuaikan.</li></ol>',
+      act: [] },
+    { id: 'anggaran', c: 'fitur', t: 'Anggaran bulanan & tanda OVER',
+      k: 'anggaran|budget|over|melebihi|batas belanja|limit kategori|kategori baru|tambah kategori',
+      a: '<ul><li>Atur batas per kategori di <b>Setup › Database</b> (kategori pengeluaran).</li><li>Rekap Anggaran menampilkan sisa tiap pos. Tanda <b>OVER</b> berarti belanja kategori itu melebihi batas bulan ini.</li><li>Kategori baru juga bisa dibuat langsung dari form Transaksi (pilihan "+ Tambah").</li></ul>',
+      act: ['setupDb'] },
+    { id: 'utang-piutang', c: 'fitur', t: 'Utang, piutang & cicilan',
+      k: 'utang|hutang|piutang|cicilan|pinjam|meminjamkan|bayar cicilan|tagihan|tempo|jatuh tempo',
+      a: '<ul><li><b>Utang</b>: catat lewat Transaksi jenis <b>Bayar Cicilan / Utang</b> › "+ Tambah utang baru". Isi total, cicilan per bulan, dan tanggal bayar.</li><li><b>Piutang</b> (uang Anda dipinjam orang): pilih "+ Tambah piutang baru", bisa diatur per cicilan.</li><li>Jadwal jatuh tempo muncul otomatis di <b>ikon lonceng</b>.</li><li>Rekap lengkap ada di Rekapitulasi › Utang & Cicilan / Piutang.</li></ul>',
+      act: [] },
+    { id: 'tabungan', c: 'fitur', t: 'Sinking fund & target impian',
+      k: 'sinking fund|tabungan|target|impian|goal|umroh|kurban|dana darurat|menabung|setoran',
+      a: '<ul><li><b>Sinking fund</b>: tabungan bertahap untuk pengeluaran yang pasti datang (kurban, biaya sekolah, pajak kendaraan).</li><li><b>Target & impian</b>: isi nominal dan tanggal target, aplikasi menghitung setoran per bulan.</li><li>Setor lewat Transaksi jenis Tabungan ke pos yang dipilih.</li></ul>',
+      act: [] },
+    { id: 'emas', c: 'fitur', t: 'Aset emas & perak',
+      k: 'emas|perak|logam mulia|antam|galeri 24|harga emas|buyback|aset|investasi emas',
+      a: '<ul><li>Catat emas/perak di <b>Rekapitulasi › Aset & Emas</b> (jumlah gram, harga saat dibeli, tanggal).</li><li>Nilainya mengikuti <b>harga jual kembali (buyback) terbaru</b> otomatis, lengkap dengan untung/ruginya.</li><li>Untuk perhiasan, nilai bisa diisi manual.</li></ul>',
+      act: [] },
+    { id: 'laporan', c: 'fitur', t: 'Laporan arus kas',
+      k: 'laporan|arus kas|cashflow|grafik|rekap bulanan|analisis|pemasukan bulan|pengeluaran bulan',
+      a: '<p>Buka <b>Rekapitulasi › Arus Kas</b>, pilih bulan untuk melihat total pemasukan, pengeluaran, tagihan, sisa uang, dan grafik per kategori.</p>',
+      act: [] },
+    { id: 'kontak', c: 'lisensi', t: 'Menghubungi tim Keuanganku',
+      k: 'hubungi|kontak|cs|customer service|admin|developer|whatsapp|wa|telepon|komplain|keluhan|minta tolong|bantu saya',
+      a: '<p>Hampir semua kendala bisa langsung diselesaikan di Pusat Bantuan ini. Jika belum, kirim laporan: tim akan membalas dan balasannya muncul di <b>Laporan saya</b>.</p>',
+      act: ['report'] }
+  ];
+
+  /* ---------- pencocokan pertanyaan ---------- */
+  var SYN = [
+    [/\b(gak|ga|nggak|ngga|enggak|engga|tdk|tak)\b/g, 'tidak'], [/\b(gk)\b/g, 'tidak'], [/\b(hp|handphone|ponsel|smartphone)\b/g, 'hp'],
+    [/\b(singkron|sinkronisasi|syncron|sinkron)\b/g, 'sinkron'], [/\b(sync)\b/g, 'sinkron'], [/\b(lisen|licence|license)\b/g, 'lisensi'],
+    [/\b(pasword|passwod|password|sandi)\b/g, 'password'], [/\b(gmail|e-mail|surel)\b/g, 'email'], [/\b(ilang)\b/g, 'hilang'],
+    [/\b(udah|sdh|dah)\b/g, 'sudah'], [/\b(blm|belom)\b/g, 'belum'], [/\b(gimana|bgmn|gmn|bagaimana caranya)\b/g, 'bagaimana'],
+    [/\b(trf|tf)\b/g, 'transfer'], [/\b(apk|aplikasinya)\b/g, 'aplikasi'], [/\b(lemot|lelet)\b/g, 'lambat'], [/\b(dompetnya|wallet)\b/g, 'dompet']
+  ];
+  function norm(s) {
+    s = ' ' + String(s || '').toLowerCase().replace(/[^\p{L}\p{N}\s-]+/gu, ' ').replace(/\s+/g, ' ') + ' ';
+    SYN.forEach(function (p) { s = s.replace(p[0], p[1]); });
+    return s.replace(/\s+/g, ' ').trim();
+  }
+  function lev1(a, b) {
+    if (Math.abs(a.length - b.length) > 1) return false;
+    var i = 0, j = 0, ed = 0;
+    while (i < a.length && j < b.length) {
+      if (a[i] === b[j]) { i++; j++; continue; }
+      if (++ed > 1) return false;
+      if (a.length > b.length) i++; else if (a.length < b.length) j++; else { i++; j++; }
+    }
+    return ed + (a.length - i) + (b.length - j) <= 1;
+  }
+  var STOP = { yang: 1, dan: 1, di: 1, ke: 1, dari: 1, ini: 1, itu: 1, saya: 1, aku: 1, kok: 1, kenapa: 1, mengapa: 1, bagaimana: 1, cara: 1, apa: 1, apakah: 1, bisa: 1, mau: 1, ingin: 1, dengan: 1, untuk: 1, ada: 1, sudah: 1, tolong: 1, mohon: 1, min: 1, kak: 1, gan: 1, sih: 1, ya: 1, nya: 1, lagi: 1, jadi: 1, pak: 1, bu: 1, the: 1 };
+  function score(q, art) {
+    var nq = ' ' + norm(q) + ' ', s = 0;
+    if (art.e) art.e.split('|').forEach(function (p) { if (String(q).toLowerCase().indexOf(p.toLowerCase()) >= 0) s += 50; });
+    var words = nq.trim().split(' ').filter(function (w) { return w.length > 1 && !STOP[w]; });
+    art.k.split('|').forEach(function (ph) {
+      var np = norm(ph);
+      if (!np) return;
+      if (nq.indexOf(' ' + np + ' ') >= 0) { s += 6 + np.split(' ').length * 4; return; }
+      var pw = np.split(' '), hit = 0;
+      pw.forEach(function (w) {
+        if (words.indexOf(w) >= 0) hit++;
+        else if (w.length >= 5 && words.some(function (x) { return x.length >= 5 && (lev1(x, w) || x.indexOf(w) === 0 || w.indexOf(x) === 0); })) hit += 0.8;
+      });
+      if (pw.length > 1 && hit >= pw.length - 0.2) s += 4 + pw.length * 2;
+      else if (hit > 0) s += hit * (pw.length === 1 ? 3 : 1.2);
+    });
+    var tn = norm(art.t).split(' ');
+    tn.forEach(function (w) { if (w.length > 3 && !STOP[w] && words.indexOf(w) >= 0) s += 1.5; });
+    return s;
+  }
+  function search(q) {
+    return KB.map(function (a) { return { a: a, s: score(q, a) }; }).filter(function (x) { return x.s >= 3; }).sort(function (x, y) { return y.s - x.s; });
+  }
+
+  /* ---------- diagnosa ---------- */
+  function syncState() {
+    var ic = $('header-sync-icon'), t = ic ? ic.textContent.trim() : '';
+    if (t === 'cloud_done') return 'synced';
+    if (t === 'progress_activity') return 'syncing';
+    if (t === 'cloud_sync') return 'error';
+    if (t === 'cloud_off') return 'off';
+    return 'unknown';
+  }
+  function diagnose() {
+    var l = lic() || {}, g = G() || {}, out = [], info = {};
+    var online = navigator.onLine !== false;
+    var demo = false; try { demo = typeof isDemoContext === 'function' && isDemoContext(); } catch (e) {}
+    var gUser = null; try { gUser = JSON.parse(ls('KEUANGANKU_GOOGLE_USER') || 'null'); } catch (e) {}
+    var sheet = !!ls('KEUANGANKU_BYODB_SHEET_ID'), ss = syncState();
+    var kicked = !!ls('KEUANGANKU_DEVICE_KICKED');
+    var standalone = false; try { standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; } catch (e) {}
+    var notif = 'unsupported'; try { if ('Notification' in window) notif = Notification.permission; } catch (e) {}
+    var trialDays = null, trialExpired = false;
+    if (l.isTrial && l.trialEndsAt) { var ms = new Date(l.trialEndsAt).getTime() - Date.now(); trialDays = Math.max(0, Math.ceil(ms / 86400000)); trialExpired = ms <= 0; }
+    var txn = (g.recentHistory || []).length;
+    var dev = ''; try { dev = detectDeviceName(); } catch (e) {}
+    info = {
+      versi: VERSION, perangkat: dev, online: online, terpasang: standalone, lisensi: l.token ? (l.isTrial ? 'uji coba' : 'resmi') : 'belum masuk',
+      token: l.token ? ('••••' + String(l.token).slice(-4)) : '-', email: l.email || (gUser && gUser.email) || '-', pin: l.pinStatus || '-',
+      ujiCobaSisaHari: trialDays, google: !!gUser, driveDb: sheet, sinkron: ss, dikeluarkan: kicked, demo: demo, notifikasi: notif,
+      jumlahTransaksi: txn, terakhirDiubah: g.lastUpdated ? new Date(g.lastUpdated).toISOString() : '-', deviceId: (ls('KEUANGANKU_DEVICE_ID') || '').slice(-8)
+    };
+    if (!online) out.push({ s: 'warn', t: 'Perangkat sedang offline', d: 'Pencatatan tetap bisa. Sinkron ke Google Drive menunggu internet kembali.', a: [] });
+    if (!l.token) out.push({ s: 'warn', t: 'Belum masuk ke akun', d: 'Masuk dengan Akun Google untuk uji coba gratis atau memakai lisensi Anda.', a: ['google'] });
+    if (trialExpired) out.push({ s: 'bad', t: 'Masa uji coba sudah berakhir', d: 'Data tetap aman. Beli paket dengan Gmail yang sama agar data langsung tersambung.', a: ['buy'] });
+    else if (trialDays !== null && trialDays <= 5) out.push({ s: 'warn', t: 'Uji coba tersisa ' + trialDays + ' hari', d: 'Beli paket dengan Gmail ' + (l.email || 'yang sama') + ' agar data tidak perlu dipindah.', a: ['buy'] });
+    if (kicked) out.push({ s: 'bad', t: 'Perangkat ini pernah dikeluarkan', d: 'Masuk ulang dengan Akun Google, lalu setujui dari perangkat lain bila diminta.', a: ['google'] });
+    if (demo) out.push({ s: 'warn', t: 'Mode Demo sedang aktif', d: 'Yang tampil adalah data contoh. Kembalikan data asli di Setup › Fitur & Notifikasi.', a: ['setupFitur'] });
+    if (l.token && !demo) {
+      if (!gUser || !sheet) out.push({ s: 'warn', t: 'Belum terhubung ke Google Drive', d: 'Data baru tersimpan di perangkat ini saja. Hubungkan Akun Google agar aman & sinkron.', a: ['google'] });
+      else if (ss === 'error') out.push({ s: 'warn', t: 'Sinkron terakhir gagal', d: 'Biasanya karena internet putus sebentar. Coba kirim ulang.', a: ['syncUp'] });
+      else if (ss === 'off') out.push({ s: 'warn', t: 'Sinkron Google Drive belum aktif', d: 'Ketuk tombol di bawah untuk menyambungkan kembali.', a: ['google', 'syncUp'] });
+      if (!l.isTrial && l.pinStatus && l.pinStatus !== 'PIN_CHANGED') out.push({ s: 'info', t: 'Masih memakai kode lisensi bawaan', d: 'Buat PIN pribadi agar lebih aman dan sinkron antar-perangkat terbuka.', a: ['setupAkun'] });
+    }
+    if (!standalone) out.push({ s: 'info', t: 'Belum dipasang di layar utama', d: 'Dipasang di layar utama terasa seperti aplikasi biasa, lebih cepat dibuka, dan notifikasi lebih andal.', a: ['install'] });
+    if (notif === 'default') out.push({ s: 'info', t: 'Notifikasi pengingat belum diizinkan', d: 'Izinkan agar diingatkan saat tagihan atau cicilan jatuh tempo.', a: ['notif'] });
+    var log = getLog().filter(function (x) { return x.k === 'msg'; });
+    var last = log.length ? log[log.length - 1] : null;
+    if (last && Date.now() - last.t < 20 * 60 * 1000) {
+      var r = search(last.m)[0];
+      if (r && r.s >= 20) out.unshift({ s: 'warn', t: 'Pesan terakhir: "' + last.m.slice(0, 90) + (last.m.length > 90 ? '…' : '') + '"', d: 'Ini kemungkinan solusinya: ' + r.a.t + '.', art: r.a.id, a: [] });
+    }
+    return { info: info, issues: out, log: getLog() };
+  }
+
+  /* ---------- tampilan ---------- */
+  var ov = null, chat = null;
+  function css() {
+    if ($('kphelp-css')) return;
+    var s = document.createElement('style'); s.id = 'kphelp-css';
+    s.textContent = [
+      '.kph-ov{position:fixed;inset:0;z-index:100005;background:rgba(15,23,42,.55);display:flex;align-items:flex-end;justify-content:center;opacity:0;transition:opacity .18s;font-family:inherit}',
+      '.kph-ov.in{opacity:1}@media(min-width:700px){.kph-ov{align-items:center;padding:20px}}',
+      '.kph{width:100%;max-width:560px;height:92vh;height:92dvh;display:flex;flex-direction:column;background:#f8fafc;border-radius:22px 22px 0 0;overflow:hidden;box-shadow:0 -12px 40px rgba(0,0,0,.3);transform:translateY(30px);transition:transform .2s}',
+      '@media(min-width:700px){.kph{border-radius:22px;height:min(760px,90vh)}}.kph-ov.in .kph{transform:none}',
+      'html.dark .kph{background:#0f172a;color:#e2e8f0}',
+      '.kph-hd{display:flex;align-items:center;gap:12px;padding:14px 16px;background:linear-gradient(135deg,#0b1736,#1e3a8a 60%,#2563eb);color:#fff}',
+      '.kph-av{width:40px;height:40px;border-radius:14px;background:rgba(255,255,255,.16);display:grid;place-items:center;flex:none}.kph-av span{font-size:24px}',
+      '.kph-hd b{display:block;font-size:15.5px;font-weight:800}.kph-hd small{display:block;font-size:11.5px;color:#bfdbfe;font-weight:600}',
+      '.kph-x{margin-left:auto;border:0;background:rgba(255,255,255,.14);color:#fff;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;cursor:pointer}',
+      '.kph-tabs{display:flex;gap:6px;padding:10px 12px;background:#fff;border-bottom:1px solid #e2e8f0}html.dark .kph-tabs{background:#111827;border-color:#1f2937}',
+      '.kph-tab{flex:1;border:0;background:#f1f5f9;color:#475569;font-weight:800;font-size:12px;padding:8px 6px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px}',
+      '.kph-tab span{font-size:17px}.kph-tab.on{background:#2563eb;color:#fff}html.dark .kph-tab{background:#1e293b;color:#cbd5e1}html.dark .kph-tab.on{background:#2563eb;color:#fff}',
+      '.kph-tab .dot{min-width:16px;height:16px;border-radius:999px;background:#ef4444;color:#fff;font-size:10px;display:inline-grid;place-items:center;padding:0 4px}',
+      '.kph-bd{flex:1;overflow:auto;padding:14px 14px 8px;scroll-behavior:smooth}',
+      '.kph-m{max-width:88%;margin:0 0 10px;padding:10px 13px;border-radius:16px;font-size:13.5px;line-height:1.55;word-wrap:break-word}',
+      '.kph-m.b{background:#fff;border:1px solid #e2e8f0;border-top-left-radius:6px;color:#1e293b}html.dark .kph-m.b{background:#1e293b;border-color:#334155;color:#e2e8f0}',
+      '.kph-m.u{margin-left:auto;background:#2563eb;color:#fff;border-top-right-radius:6px}',
+      '.kph-m p{margin:0 0 6px}.kph-m p:last-child{margin:0}.kph-m ol,.kph-m ul{margin:4px 0 6px;padding-left:20px}.kph-m ol{list-style:decimal}.kph-m ul{list-style:disc}.kph-m li{margin:3px 0}',
+      '.kph-m h5{margin:0 0 6px;font-size:14px;font-weight:800;color:#1d4ed8}html.dark .kph-m h5{color:#93c5fd}',
+      '.kph-acts{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 2px}',
+      '.kph-a{display:inline-flex;align-items:center;gap:5px;border:1px solid #bfdbfe;background:#eff6ff;color:#1d4ed8;font-weight:800;font-size:12px;padding:7px 10px;border-radius:10px;cursor:pointer;text-align:left}',
+      '.kph-a span{font-size:16px}html.dark .kph-a{background:rgba(37,99,235,.15);border-color:#1e40af;color:#bfdbfe}',
+      '.kph-chips{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 12px}',
+      '.kph-c{border:1px solid #e2e8f0;background:#fff;color:#334155;border-radius:999px;padding:7px 12px;font-size:12.5px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px}',
+      '.kph-c span{font-size:16px;color:#2563eb}html.dark .kph-c{background:#1e293b;border-color:#334155;color:#e2e8f0}',
+      '.kph-fb{display:flex;gap:6px;margin-top:8px}.kph-fb button{flex:1;border:1px solid #e2e8f0;background:#f8fafc;border-radius:10px;padding:7px;font-weight:800;font-size:12px;cursor:pointer;color:#334155}',
+      'html.dark .kph-fb button{background:#0f172a;border-color:#334155;color:#e2e8f0}',
+      '.kph-in{display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));background:#fff;border-top:1px solid #e2e8f0}html.dark .kph-in{background:#111827;border-color:#1f2937}',
+      '.kph-in input{flex:1;min-width:0;border:1px solid #cbd5e1;border-radius:14px;padding:11px 13px;font-size:14px;outline:none;background:#fff;color:#0f172a}html.dark .kph-in input{background:#0f172a;border-color:#334155;color:#f1f5f9}',
+      '.kph-in button{border:0;background:#2563eb;color:#fff;border-radius:14px;width:46px;display:grid;place-items:center;cursor:pointer}',
+      '.kph-dg{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:12px;margin-bottom:10px}html.dark .kph-dg{background:#1e293b;border-color:#334155}',
+      '.kph-dg h6{margin:0 0 8px;font-size:13px;font-weight:800;display:flex;align-items:center;gap:6px}',
+      '.kph-is{border-radius:12px;padding:10px 11px;margin:6px 0;font-size:12.5px;line-height:1.45;border:1px solid}',
+      '.kph-is b{display:block;font-size:13px;margin-bottom:2px}',
+      '.kph-is.bad{background:#fef2f2;border-color:#fecaca;color:#7f1d1d}.kph-is.warn{background:#fffbeb;border-color:#fde68a;color:#78350f}.kph-is.info{background:#eff6ff;border-color:#bfdbfe;color:#1e3a8a}.kph-is.ok{background:#f0fdf4;border-color:#bbf7d0;color:#14532d}',
+      'html.dark .kph-is.bad{background:rgba(127,29,29,.25);color:#fecaca;border-color:#7f1d1d}html.dark .kph-is.warn{background:rgba(120,53,15,.25);color:#fde68a;border-color:#78350f}html.dark .kph-is.info{background:rgba(30,58,138,.3);color:#bfdbfe;border-color:#1e3a8a}html.dark .kph-is.ok{background:rgba(20,83,45,.3);color:#bbf7d0;border-color:#14532d}',
+      '.kph-kv{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:11.5px;color:#64748b;margin-top:8px}.kph-kv b{color:#0f172a;font-weight:700;word-break:break-all}html.dark .kph-kv b{color:#e2e8f0}',
+      '.kph-f label{display:block;font-size:12px;font-weight:800;color:#475569;margin:10px 0 4px}html.dark .kph-f label{color:#cbd5e1}',
+      '.kph-f .kpu-btn{width:100%;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:12px;padding:10px 12px;background:#fff;font-size:13.5px}html.dark .kph-f .kpu-btn{background:#0f172a;border-color:#334155;color:#f1f5f9}',
+      '.kph-f input:not([type=checkbox]),.kph-f select,.kph-f textarea{width:100%;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:12px;padding:10px 12px;font-size:13.5px;background:#fff;color:#0f172a;font-family:inherit;outline:none}',
+      'html.dark .kph-f input:not([type=checkbox]),html.dark .kph-f select,html.dark .kph-f textarea{background:#0f172a;border-color:#334155;color:#f1f5f9}',
+      '.kph-f textarea{min-height:110px;resize:vertical}',
+      '.kph-btn{width:100%;border:0;background:#2563eb;color:#fff;font-weight:800;font-size:14px;padding:12px;border-radius:14px;cursor:pointer;margin-top:12px}.kph-btn:disabled{opacity:.6}',
+      '.kph-btn.g{background:#e2e8f0;color:#334155}html.dark .kph-btn.g{background:#334155;color:#e2e8f0}',
+      '.kph-rp{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:11px 12px;margin-bottom:8px;font-size:12.5px}html.dark .kph-rp{background:#1e293b;border-color:#334155}',
+      '.kph-rp .h{display:flex;gap:6px;align-items:center;font-weight:800;font-size:13.5px}.kph-st{font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px;margin-left:auto;white-space:nowrap}',
+      '.kph-st.baru{background:#e0e7ff;color:#3730a3}.kph-st.proses{background:#fef3c7;color:#92400e}.kph-st.selesai{background:#dcfce7;color:#166534}.kph-st.antre{background:#f1f5f9;color:#475569}',
+      '.kph-rp .r{margin-top:8px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:8px 10px;color:#14532d;white-space:pre-wrap}html.dark .kph-rp .r{background:rgba(20,83,45,.3);border-color:#14532d;color:#bbf7d0}',
+      '.kph-mut{font-size:11px;color:#94a3b8;font-weight:600}',
+      '.kph-typing{display:inline-flex;gap:4px}.kph-typing i{width:6px;height:6px;border-radius:50%;background:#94a3b8;animation:kphb 1s infinite}.kph-typing i:nth-child(2){animation-delay:.15s}.kph-typing i:nth-child(3){animation-delay:.3s}',
+      '@keyframes kphb{0%,80%,100%{opacity:.3;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}',
+      '.kph-entry{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:18px;border:1px solid #bfdbfe;background:linear-gradient(135deg,#eff6ff,#fff);cursor:pointer;text-align:left;width:100%}',
+      'html.dark .kph-entry{background:linear-gradient(135deg,rgba(37,99,235,.18),#0f172a);border-color:#1e3a8a}',
+      '.kph-entry .i{width:42px;height:42px;border-radius:14px;background:#2563eb;color:#fff;display:grid;place-items:center;flex:none}',
+      '.kph-entry b{display:block;font-size:14.5px;font-weight:800;color:#0f172a}html.dark .kph-entry b{color:#f1f5f9}.kph-entry small{display:block;font-size:12px;color:#64748b;margin-top:2px;line-height:1.4}',
+      '.kph-link{display:inline-flex;align-items:center;gap:4px;border:0;background:transparent;color:inherit;font-weight:700;font-size:12px;cursor:pointer;text-decoration:underline;opacity:.9;padding:4px}'
+    ].join('');
+    document.head.appendChild(s);
+  }
+  var tab = 'chat';
+  function open(topic) {
+    css(); wrapAlert();
+    if (ov) { if (topic) answer(topic); return; }
+    ov = document.createElement('div'); ov.className = 'kph-ov';
+    ov.innerHTML = '<div class="kph" role="dialog" aria-modal="true" aria-label="Pusat Bantuan"><div class="kph-hd"><div class="kph-av"><span class="material-symbols-outlined">support_agent</span></div><div><b>Pusat Bantuan</b><small>Asisten Keuanganku · menjawab otomatis 24 jam</small></div><button type="button" class="kph-x" aria-label="Tutup"><span class="material-symbols-outlined">close</span></button></div>' +
+      '<div class="kph-tabs"><button type="button" class="kph-tab on" data-tab="chat"><span class="material-symbols-outlined">forum</span>Tanya</button><button type="button" class="kph-tab" data-tab="diag"><span class="material-symbols-outlined">health_and_safety</span>Cek otomatis</button><button type="button" class="kph-tab" data-tab="rep"><span class="material-symbols-outlined">inbox</span>Laporan saya<span class="dot" id="kph-dot" style="display:none"></span></button></div>' +
+      '<div class="kph-bd" id="kph-bd"></div><div class="kph-in" id="kph-in"><input type="text" id="kph-q" placeholder="Ketik masalah Anda, misal: lupa PIN" autocomplete="off" enterkeyhint="send"><button type="button" id="kph-send" aria-label="Kirim"><span class="material-symbols-outlined">send</span></button></div></div>';
+    document.body.appendChild(ov);
+    requestAnimationFrame(function () { ov.classList.add('in'); });
+    ov.addEventListener('click', onClick);
+    $('kph-q').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); ask(); } });
+    $('kph-send').addEventListener('click', ask);
+    document.addEventListener('keydown', onKey, true);
+    chat = [];
+    renderChat(true);
+    if (topic) answer(topic);
+    refreshReports(true);
+  }
+  function onKey(e) { if (e.key === 'Escape' && ov && !document.querySelector('.kpd-ov')) { e.preventDefault(); close(); } }
+  function close() {
+    if (!ov) return;
+    var o = ov; ov = null; o.classList.remove('in'); setTimeout(function () { o.remove(); }, 180);
+    document.removeEventListener('keydown', onKey, true);
+  }
+  function setTab(t) {
+    tab = t;
+    if (!ov) return;
+    ov.querySelectorAll('.kph-tab').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-tab') === t); });
+    $('kph-in').style.display = t === 'chat' ? '' : 'none';
+    if (t === 'chat') renderChat(false); else if (t === 'diag') showDiag(false); else showReports();
+  }
+  function onClick(e) {
+    if (e.target === ov || e.target.closest('.kph-x')) { close(); return; }
+    var b;
+    if ((b = e.target.closest('[data-tab]'))) { setTab(b.getAttribute('data-tab')); return; }
+    if ((b = e.target.closest('[data-act]'))) { var a = ACT[b.getAttribute('data-act')]; if (a) a.run(); return; }
+    if ((b = e.target.closest('[data-art]'))) { answer(b.getAttribute('data-art'), true); return; }
+    if ((b = e.target.closest('[data-cat]'))) { showCat(b.getAttribute('data-cat')); return; }
+    if ((b = e.target.closest('[data-fb]'))) { feedback(b.getAttribute('data-fb'), b.getAttribute('data-id')); return; }
+  }
+
+  /* ---------- obrolan ---------- */
+  function bot(html, extra) { chat.push({ w: 'b', h: html, x: extra || '' }); }
+  function user(txt) { chat.push({ w: 'u', h: esc(txt) }); }
+  function name() { var l = lic(), g = null; try { g = JSON.parse(ls('KEUANGANKU_GOOGLE_USER') || 'null'); } catch (e) {} var n = (g && (g.name || g.given_name)) || (l && l.buyerName) || ''; n = String(n).split(' ')[0]; return n && n.length < 20 ? n : ''; }
+  function chips() {
+    return '<div class="kph-chips">' + CATS.map(function (c) { return '<button type="button" class="kph-c" data-cat="' + c[0] + '"><span class="material-symbols-outlined">' + c[2] + '</span>' + c[1] + '</button>'; }).join('') +
+      '<button type="button" class="kph-c" data-act="check"><span class="material-symbols-outlined">health_and_safety</span>Cek akun saya</button></div>';
+  }
+  function renderChat(first) {
+    if (tab !== 'chat' || !ov) return;
+    if (first && !chat.length) {
+      var n = name(), d = diagnose(), top = d.issues.filter(function (x) { return x.s !== 'info'; });
+      bot('<p>Assalamu\'alaikum' + (n ? ' ' + esc(n) : '') + '! 👋 Saya asisten Keuanganku. Ceritakan kendalanya, atau pilih topik di bawah.</p>' +
+        (top.length ? '<p>Saya juga melihat <b>' + top.length + ' hal</b> di akun ini yang mungkin perlu dicek. <button type="button" class="kph-link" data-tab="diag">Lihat hasil cek otomatis</button></p>' : ''), chips());
+    }
+    var bd = $('kph-bd');
+    bd.innerHTML = chat.map(function (m) { return '<div class="kph-m ' + m.w + '">' + m.h + '</div>' + (m.x || ''); }).join('');
+    bd.scrollTop = bd.scrollHeight;
+  }
+  function actsHtml(ids) {
+    ids = (ids || []).filter(function (x) { return ACT[x]; });
+    if (!ids.length) return '';
+    return '<div class="kph-acts">' + ids.map(function (id) { return '<button type="button" class="kph-a" data-act="' + id + '"><span class="material-symbols-outlined">' + ACT[id].i + '</span>' + esc(ACT[id].l) + '</button>'; }).join('') + '</div>';
+  }
+  function findArt(id) { for (var i = 0; i < KB.length; i++) if (KB[i].id === id) return KB[i]; return null; }
+  var lastQ = '', alts = [];
+  function answer(id, fromClick) {
+    var a = findArt(id); if (!a) return;
+    if (tab !== 'chat') setTab('chat');
+    if (fromClick) user(a.t);
+    bot('<h5>' + esc(a.t) + '</h5>' + a.a + actsHtml(a.act) +
+      '<div class="kph-fb"><button type="button" data-fb="ok" data-id="' + a.id + '">👍 Sudah beres</button><button type="button" data-fb="no" data-id="' + a.id + '">Belum, masih ada kendala</button></div>');
+    renderChat(false);
+    track(a.id);
+  }
+  function typing(cb) {
+    var bd = $('kph-bd'); if (!bd) return cb();
+    var t = document.createElement('div'); t.className = 'kph-m b'; t.innerHTML = '<span class="kph-typing"><i></i><i></i><i></i></span>';
+    bd.appendChild(t); bd.scrollTop = bd.scrollHeight;
+    setTimeout(function () { t.remove(); cb(); }, 450);
+  }
+  function ask() {
+    var inp = $('kph-q'), q = (inp.value || '').trim(); if (!q) return;
+    inp.value = ''; user(q); renderChat(false); lastQ = q;
+    typing(function () {
+      var r = search(q);
+      if (/^(halo|hai|hi|assalamu|selamat|pagi|siang|sore|malam|p)\b/i.test(q) && (!r.length || r[0].s < 6)) {
+        bot('<p>Wa\'alaikumussalam / halo! 😊 Silakan ceritakan kendalanya, misalnya "data tidak sinkron" atau "lupa PIN".</p>', chips()); renderChat(false); return;
+      }
+      if (/^(terima ?kasih|makasih|thanks|tq|oke|ok|sip|mantap)\b/i.test(q) && (!r.length || r[0].s < 6)) {
+        bot('<p>Sama-sama! Semoga lancar. Kalau ada kendala lain, tanya saja kapan pun.</p>'); renderChat(false); return;
+      }
+      if (!r.length) {
+        bot('<p>Maaf, saya belum menemukan jawaban yang pas untuk itu. Coba pilih topik terdekat, atau jalankan cek otomatis:</p>', chips() + '<div class="kph-acts" style="margin-bottom:10px">' + actsHtml(['check', 'report']).replace('<div class="kph-acts">', '').replace(/<\/div>$/, '') + '</div>');
+        renderChat(false); track('-:' + q.slice(0, 60)); return;
+      }
+      alts = r.slice(1, 4).map(function (x) { return x.a.id; });
+      answer(r[0].a.id, false);
+      if (r.length > 1 && r[1].s >= r[0].s * 0.6) {
+        bot('<p>Mungkin juga terkait:</p>', '<div class="kph-chips">' + r.slice(1, 4).map(function (x) { return '<button type="button" class="kph-c" data-art="' + x.a.id + '">' + esc(x.a.t) + '</button>'; }).join('') + '</div>');
+        renderChat(false);
+      }
+    });
+  }
+  function showCat(c) {
+    var cat = CATS.filter(function (x) { return x[0] === c; })[0]; if (!cat) return;
+    user(cat[1]);
+    var list = KB.filter(function (a) { return a.c === c; });
+    bot('<p>Pilih yang paling sesuai:</p>', '<div class="kph-chips">' + list.map(function (a) { return '<button type="button" class="kph-c" data-art="' + a.id + '">' + esc(a.t) + '</button>'; }).join('') + '</div>');
+    renderChat(false);
+  }
+  function feedback(v, id) {
+    if (v === 'ok') { user('Sudah beres 👍'); bot('<p>Alhamdulillah! Senang bisa membantu. 😊</p>'); track('ok:' + id); renderChat(false); return; }
+    user('Belum, masih ada kendala');
+    var a = findArt(id), others = alts.filter(function (x) { return x !== id; });
+    var html = '<p>Baik. Sebelum lapor ke tim, coba dua langkah cepat ini:</p><ol><li>Perbarui aplikasi ke versi terbaru.</li><li>Jalankan cek otomatis untuk melihat kondisi akun Anda.</li></ol><p>Jika tetap belum beres, kirim laporan. Data diagnosa ikut terlampir otomatis, jadi Anda tidak perlu menjelaskan teknisnya.</p>';
+    bot(html, actsHtml(['update', 'check', 'report']) + (others.length ? '<div class="kph-chips">' + others.map(function (x) { var o = findArt(x); return o ? '<button type="button" class="kph-c" data-art="' + o.id + '">' + esc(o.t) + '</button>' : ''; }).join('') + '</div>' : ''));
+    track('no:' + id);
+    renderChat(false);
+    window.__kphReportCat = a ? a.c : '';
+    window.__kphReportArt = a ? a.t : '';
+  }
+  function track(k) { try { var s = JSON.parse(localStorage.getItem('KP_HELP_STATS') || '{}'); s[k] = (s[k] || 0) + 1; localStorage.setItem('KP_HELP_STATS', JSON.stringify(s)); } catch (e) {} }
+
+  /* ---------- cek otomatis ---------- */
+  function showDiag(fromChat) {
+    if (tab !== 'diag') { tab = 'diag'; if (ov) { ov.querySelectorAll('.kph-tab').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-tab') === 'diag'); }); $('kph-in').style.display = 'none'; } }
+    var d = diagnose(), I = d.info, bd = $('kph-bd'); if (!bd) return;
+    var issues = d.issues;
+    var html = '<div class="kph-dg"><h6><span class="material-symbols-outlined" style="color:#2563eb">health_and_safety</span>Hasil cek otomatis</h6>';
+    if (!issues.length) html += '<div class="kph-is ok"><b>Semua terlihat normal ✓</b>Lisensi, koneksi, dan sinkron tidak bermasalah.</div>';
+    issues.forEach(function (x) {
+      html += '<div class="kph-is ' + x.s + '"><b>' + esc(x.t) + '</b>' + esc(x.d) + (x.art ? '<div class="kph-acts"><button type="button" class="kph-a" data-art="' + x.art + '"><span class="material-symbols-outlined">lightbulb</span>Lihat solusinya</button></div>' : '') + actsHtml(x.a) + '</div>';
+    });
+    html += '</div><div class="kph-dg"><h6><span class="material-symbols-outlined" style="color:#64748b">info</span>Data perangkat ini</h6><div class="kph-kv">' +
+      kv('Versi aplikasi', I.versi) + kv('Perangkat', I.perangkat) + kv('Internet', I.online ? 'Terhubung' : 'Offline') + kv('Status', I.lisensi) +
+      (I.ujiCobaSisaHari !== null ? kv('Sisa uji coba', I.ujiCobaSisaHari + ' hari') : '') + kv('Email', I.email) + kv('Google Drive', I.google && I.driveDb ? 'Terhubung' : 'Belum') +
+      kv('Sinkron', ({ synced: 'Tersinkron', syncing: 'Sedang sinkron', error: 'Gagal, perlu dicoba lagi', off: 'Nonaktif', unknown: '-' })[I.sinkron]) +
+      kv('Dipasang di layar utama', I.terpasang ? 'Ya' : 'Belum') + kv('Jumlah transaksi', I.jumlahTransaksi) + '</div>' +
+      '<p class="kph-mut" style="margin:10px 0 0">Data ini tidak berisi nominal atau isi transaksi Anda.</p></div>' +
+      '<div class="kph-acts">' + actsHtml(['update', 'report']).replace('<div class="kph-acts">', '').replace(/<\/div>$/, '') + '</div>';
+    bd.innerHTML = html; bd.scrollTop = 0;
+  }
+  function kv(k, v) { return '<span>' + esc(k) + '</span><b>' + esc(v == null || v === '' ? '-' : v) + '</b>'; }
+
+  /* ---------- laporan ---------- */
+  function myReports() { try { return JSON.parse(localStorage.getItem('KP_HELP_REPORTS') || '[]'); } catch (e) { return []; } }
+  function saveReports(L) { try { localStorage.setItem('KP_HELP_REPORTS', JSON.stringify(L.slice(0, 30))); } catch (e) {} }
+  async function post(payload) {
+    var url = apiUrl(); if (!url) throw new Error('Server belum siap');
+    var ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var to = setTimeout(function () { try { ctl && ctl.abort(); } catch (e) {} }, 20000);
+    try {
+      var r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload), redirect: 'follow', signal: ctl ? ctl.signal : undefined });
+      return await r.json();
+    } finally { clearTimeout(to); }
+  }
+  var CATNAME = { masuk: 'Masuk & PIN', lisensi: 'Lisensi & Pembayaran', perangkat: 'Perangkat', data: 'Sinkron & Data', aplikasi: 'Instal & Tampilan', fitur: 'Cara pakai fitur', lain: 'Lainnya' };
+  function openReport() {
+    if (!ov) open();
+    tab = 'rep'; ov.querySelectorAll('.kph-tab').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-tab') === 'rep'); }); $('kph-in').style.display = 'none';
+    var l = lic() || {}, g = null; try { g = JSON.parse(ls('KEUANGANKU_GOOGLE_USER') || 'null'); } catch (e) {}
+    var em = l.email || (g && g.email) || '';
+    var cat = window.__kphReportCat || '';
+    var bd = $('kph-bd');
+    bd.innerHTML = '<div class="kph-dg kph-f"><h6><span class="material-symbols-outlined" style="color:#2563eb">support_agent</span>Kirim laporan ke tim</h6>' +
+      '<p class="kph-mut" style="margin:0">Laporan masuk ke tim Keuanganku. Balasan muncul di tab <b>Laporan saya</b> (cek berkala).</p>' +
+      '<label for="kph-r-cat">Topik</label><select id="kph-r-cat">' + Object.keys(CATNAME).map(function (k) { return '<option value="' + k + '"' + (k === cat ? ' selected' : '') + '>' + CATNAME[k] + '</option>'; }).join('') + '</select>' +
+      '<label for="kph-r-sub">Judul singkat</label><input id="kph-r-sub" maxlength="100" placeholder="Contoh: Sudah bayar paket Keluarga, lisensi belum aktif" value="' + esc(window.__kphReportArt || '') + '">' +
+      '<label for="kph-r-msg">Ceritakan kendalanya</label><textarea id="kph-r-msg" maxlength="2000" placeholder="Apa yang Anda lakukan, apa yang muncul, sejak kapan. Untuk pembayaran: nama pembeli, paket, dan waktu bayar."></textarea>' +
+      '<label for="kph-r-em">Email untuk balasan</label><input id="kph-r-em" type="email" maxlength="120" placeholder="nama@gmail.com" value="' + esc(em) + '">' +
+      '<label style="display:flex;gap:8px;align-items:flex-start;font-weight:600;margin-top:12px"><input type="checkbox" id="kph-r-dg" checked style="margin-top:2px;flex:none"> <span>Sertakan data diagnosa (versi, status lisensi & sinkron, perangkat, pesan galat terakhir). Tanpa nominal atau isi transaksi.</span></label>' +
+      '<div id="kph-r-err" class="kph-is bad" style="display:none"></div>' +
+      '<button type="button" class="kph-btn" id="kph-r-send">Kirim laporan</button><button type="button" class="kph-btn g" data-tab="rep">Batal</button></div>';
+    bd.scrollTop = 0;
+    $('kph-r-send').onclick = sendReport;
+  }
+  async function sendReport() {
+    var cat = $('kph-r-cat').value, sub = $('kph-r-sub').value.trim(), msg = $('kph-r-msg').value.trim(), em = $('kph-r-em').value.trim(), withDg = $('kph-r-dg').checked;
+    var err = $('kph-r-err');
+    function fail(t) { err.textContent = t; err.style.display = 'block'; }
+    if (sub.length < 5) return fail('Isi judul singkat (minimal 5 huruf).');
+    if (msg.length < 15) return fail('Ceritakan kendalanya sedikit lebih jelas (minimal 15 huruf).');
+    if (em && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) return fail('Format email belum benar.');
+    err.style.display = 'none';
+    var btn = $('kph-r-send'); btn.disabled = true; btn.textContent = 'Mengirim...';
+    var l = lic() || {}, d = withDg ? diagnose() : null;
+    var payload = {
+      action: 'submit_report', category: CATNAME[cat] || cat, subject: sub, message: msg, email: em,
+      deviceId: ls('KEUANGANKU_DEVICE_ID') || '', token: l.token || '',
+      diag: d ? JSON.stringify({ info: d.info, issues: d.issues.map(function (x) { return x.t; }), log: d.log.slice(-8), ua: navigator.userAgent.slice(0, 180), url: location.pathname }) : ''
+    };
+    var rec = { id: '', key: '', subject: sub, category: CATNAME[cat], createdAt: Date.now(), status: 'antre', reply: '' };
+    try {
+      var res = await post(payload);
+      if (!res || !res.success) throw new Error((res && res.message) || 'Gagal');
+      rec.id = res.reportId; rec.key = res.reportKey; rec.status = 'baru';
+      var L = myReports(); L.unshift(rec); saveReports(L);
+      toast('✓ Laporan terkirim. Nomor: ' + rec.id);
+      window.__kphReportCat = ''; window.__kphReportArt = '';
+      showReports('<div class="kph-is ok"><b>Laporan terkirim ✓</b>Nomor laporan <b style="display:inline">' + esc(rec.id) + '</b>. Balasan akan muncul di sini' + (em ? ' dan dikirim ke ' + esc(em) : '') + '.</div>');
+    } catch (e) {
+      /* simpan dulu, kirim otomatis saat online */
+      rec.payload = payload; rec.status = 'antre';
+      var L2 = myReports(); L2.unshift(rec); saveReports(L2);
+      showReports('<div class="kph-is warn"><b>Laporan disimpan di perangkat</b>Belum bisa terkirim sekarang (' + esc(navigator.onLine === false ? 'offline' : (e.message || 'server sibuk')) + '). Akan dikirim otomatis saat Pusat Bantuan dibuka lagi dengan internet.</div>');
+    }
+  }
+  async function flushQueue() {
+    var L = myReports(), changed = false;
+    for (var i = 0; i < L.length; i++) {
+      var r = L[i]; if (!r.payload || navigator.onLine === false) continue;
+      try { var res = await post(r.payload); if (res && res.success) { r.id = res.reportId; r.key = res.reportKey; r.status = 'baru'; delete r.payload; changed = true; } } catch (e) {}
+    }
+    if (changed) saveReports(L);
+  }
+  async function refreshReports(silent) {
+    try {
+      await flushQueue();
+      var L = myReports(), q = L.filter(function (r) { return r.id && r.key; }).map(function (r) { return { id: r.id, key: r.key }; });
+      if (!q.length || navigator.onLine === false) return badge();
+      var res = await post({ action: 'check_reports', reports: q });
+      if (res && res.success && Array.isArray(res.reports)) {
+        res.reports.forEach(function (x) {
+          var r = L.filter(function (y) { return y.id === x.id; })[0]; if (!r) return;
+          if (x.reply && x.reply !== r.reply) r.unread = true;
+          r.status = x.status || r.status; r.reply = x.reply || ''; r.repliedAt = x.repliedAt || r.repliedAt;
+        });
+        saveReports(L);
+      }
+    } catch (e) {}
+    badge();
+    if (!silent && tab === 'rep' && ov) showReports();
+  }
+  function badge() {
+    var n = myReports().filter(function (r) { return r.unread; }).length, d = $('kph-dot');
+    if (d) { d.textContent = n; d.style.display = n ? '' : 'none'; }
+    var e = document.querySelectorAll('.kph-entry-dot'); e.forEach(function (x) { x.textContent = n ? n + ' balasan baru' : ''; x.style.display = n ? '' : 'none'; });
+  }
+  function renderReportList(top) {
+    var bd = $('kph-bd'); if (!bd) return;
+    var L = myReports();
+    var html = (top || '') + '<button type="button" class="kph-btn" data-act="report" style="margin:0 0 12px"><span class="material-symbols-outlined" style="vertical-align:-4px;font-size:18px">add</span> Buat laporan baru</button>';
+    if (!L.length) html += '<div class="kph-dg" style="text-align:center;color:#64748b;font-size:13px">Belum ada laporan.<br>Sebagian besar kendala bisa selesai lewat tab <b>Tanya</b> dan <b>Cek otomatis</b>.</div>';
+    L.forEach(function (r) {
+      var st = r.status || 'baru', lab = { baru: 'Terkirim', proses: 'Sedang ditangani', selesai: 'Selesai', antre: 'Menunggu internet' }[st] || st;
+      html += '<div class="kph-rp"><div class="h"><span style="min-width:0;word-break:break-word">' + esc(r.subject) + '</span><span class="kph-st ' + esc(st) + '">' + esc(lab) + '</span></div>' +
+        '<div class="kph-mut" style="margin-top:3px">' + esc(r.category || '') + (r.id ? ' · No. ' + esc(r.id) : '') + ' · ' + esc(when(r.createdAt)) + '</div>' +
+        (r.reply ? '<div class="r"><b>Balasan tim' + (r.repliedAt ? ' · ' + esc(when(r.repliedAt)) : '') + ':</b>\n' + esc(r.reply) + '</div>' : '') + '</div>';
+      r.unread = false;
+    });
+    saveReports(L); badge();
+    var y = bd.scrollTop; bd.innerHTML = html; bd.scrollTop = top ? 0 : y;
+  }
+  function showReports(top) {
+    renderReportList(top);
+    refreshReports(true).then(function () { if (tab === 'rep' && ov && !$('kph-r-msg')) renderReportList(top); });
+  }
+
+  /* ---------- titik masuk ---------- */
+  function entryHtml() {
+    return '<button type="button" class="kph-entry" onclick="kpHelpOpen()"><span class="i"><span class="material-symbols-outlined">support_agent</span></span><span style="flex:1;min-width:0"><b>Pusat Bantuan</b><small>Ada kendala? Tanya asisten otomatis, cek kondisi akun, atau kirim laporan ke tim.</small><small class="kph-entry-dot" style="display:none;color:#dc2626;font-weight:800"></small></span><span class="material-symbols-outlined" style="color:#94a3b8">chevron_right</span></button>';
+  }
+  function mount() {
+    css();
+    var host = $('setup-unlocked-content');
+    if (host && !$('kph-setup-entry')) {
+      var w = document.createElement('div'); w.id = 'kph-setup-entry'; w.style.maxWidth = '980px'; w.style.margin = '0 auto'; w.style.width = '100%';
+      w.innerHTML = entryHtml();
+      host.insertBefore(w, host.firstChild);
+    }
+    var lock = $('setup-lock-card');
+    if (lock && !$('kph-lock-link')) {
+      var p = document.createElement('div'); p.id = 'kph-lock-link'; p.style.textAlign = 'center';
+      p.innerHTML = '<button type="button" class="kph-link" style="color:#2563eb" onclick="kpHelpOpen(\'lupa-pin\')"><span class="material-symbols-outlined" style="font-size:16px">help</span>Lupa PIN atau ada kendala? Buka Pusat Bantuan</button>';
+      lock.appendChild(p);
+    }
+    var bp = $('bumper-pin-section');
+    if (bp && !$('kph-splash-link')) {
+      var s = document.createElement('div'); s.id = 'kph-splash-link'; s.style.textAlign = 'center'; s.style.marginTop = '6px';
+      s.innerHTML = '<button type="button" class="kph-link" style="color:#bfdbfe" onclick="kpHelpOpen()"><span class="material-symbols-outlined" style="font-size:16px">help</span>Butuh bantuan? Lupa PIN?</button>';
+      bp.appendChild(s);
+    }
+    badge();
+  }
+  window.kpHelpOpen = function (topic) { try { open(topic && typeof topic === 'string' ? topic : null); } catch (e) { console.warn('kphelp', e); } };
+  window.kpHelpClose = close;
+  window.kpHelpSearch = function (q) { return search(q).slice(0, 3).map(function (x) { return x.a.id + ':' + Math.round(x.s); }); };
+  function start() {
+    try { mount(); wrapAlert(); } catch (e) { console.warn('kphelp', e); }
+    try { if (sessionStorage.getItem('KP_HELP_UPDATED') === '1') { sessionStorage.removeItem('KP_HELP_UPDATED'); setTimeout(function () { toast('✓ Aplikasi sudah versi terbaru'); }, 2500); } } catch (e) {}
+    /* cek balasan laporan sesekali (hanya bila pernah melapor) */
+    setTimeout(function () { if (myReports().length) refreshReports(true); }, 8000);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(start, 700); });
+  else setTimeout(start, 700);
+  window.addEventListener('load', function () { setTimeout(start, 1200); });
+  window.addEventListener('online', function () { if (myReports().some(function (r) { return r.payload; })) flushQueue(); });
+})();
+  </script>
+  <script>
 /* Kontrol Keuanganku: pengganti tampilan bawaan browser (drop down, kalender, centang, penggeser, unggah file) */
 (function () {
   if (window.__kpui) return;
