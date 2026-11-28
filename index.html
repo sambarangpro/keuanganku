@@ -1697,11 +1697,58 @@
     var h = '<div class="kpg-f"><div><label>Tabungan untuk beli emas</label><select id="kpg-sv" class="kpg-in">' + o + '</select></div>' +
       (hasEmas ? '' : '<div style="display:flex;align-items:flex-end"><button type="button" class="kpg-btn" onclick="kpGoldCreateSaving()"><span class="material-symbols-outlined" style="font-size:17px">add</span>Buat tabungan "Tabungan Emas"</button></div>') + '</div>';
     if (!cur) return h + '<p class="kpg-note">Buat atau pilih tabungan khusus emas. Setiap kali menyisihkan uang, catat di menu Transaksi dengan jenis <b>Invest / Savings</b> dan kategori tabungan ini. Saldonya langsung terbaca di sini.</p>';
-    h += '<div class="kpg-rec"><div class="kpg-card"><div class="kpg-k">Sudah ditabung</div><div class="kpg-v">' + rp(cur.sisa) + '</div><div class="kpg-s">' + cur.n + ' kali setoran' + (cur.last ? ' · terakhir ' + esc(fmtDate(cur.last)) : '') + '</div></div>' +
+    h += '<div class="kpg-rec"><div class="kpg-card"><div class="kpg-k">Saldo tabungan</div><div class="kpg-v">' + rp(cur.sisa) + '</div><div class="kpg-s">' + cur.n + ' kali setoran' + (cur.last ? ' · terakhir ' + esc(fmtDate(cur.last)) : '') + '</div></div>' +
       '<div class="kpg-card" style="display:flex;align-items:center"><button type="button" class="kpg-btn" style="width:100%" onclick="kpGoldDeposit()"><span class="material-symbols-outlined" style="font-size:17px">add_card</span>Catat setoran baru</button></div></div>';
-    if (!(cur.sisa > 0)) return h + '<p class="kpg-note">Belum ada saldo di tabungan ini. Catat setoran lewat tombol di atas.</p>';
-    return h + exToggle() + danaResult(cur.sisa, 'Jika dibeli hari ini');
+    if (!(cur.sisa > 0)) return h + '<p class="kpg-note">Belum ada saldo di tabungan ini. Catat setoran lewat tombol di atas.</p>' + historyHtml(cur);
+    return h + exToggle() + danaResult(cur.sisa, 'Jika dibeli hari ini') +
+      '<button type="button" class="kpg-btn" style="width:100%;background:#059669" onclick="kpGoldBuy()"><span class="material-symbols-outlined" style="font-size:17px">shopping_bag</span>Catat pembelian emas dari tabungan ini</button>' + historyHtml(cur);
   }
+  function historyHtml(cur) {
+    var it = ((G() || {})[cur.obj] || {})[cur.key] || {}, L = it.goldPurchases || [];
+    if (!L.length) return '';
+    return '<div class="kpg-wrap"><table class="kpg-t"><tr><th>Riwayat pembelian</th><th class="r">Emas</th><th class="r">Dibayar</th></tr>' + L.slice().reverse().map(function (p) {
+      return '<tr><td><b>' + esc(title(p.brand || '')) + '</b><div class="m">' + esc(fmtDate(p.date)) + ' · masuk ke aset "' + esc(p.asset) + '"</div></td><td class="r">' + gr(p.g) + '</td><td class="r">' + rp(p.cost) + '</td></tr>';
+    }).join('') + '</table></div>';
+  }
+  function todayStr() { try { return getLocalDateStr(); } catch (e) { var d = new Date(); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); } }
+  window.kpGoldBuy = async function () {
+    var cur = pickSaving(savings()); if (!cur || typeof kpForm !== 'function') return;
+    var rows = [];
+    simVendors().forEach(function (v) { var r = bestForBudget(v, cur.sisa); if (r) { r.v = v.name; rows.push(r); } });
+    rows.sort(function (a, b) { return b.g - a.g || b.left - a.left; });
+    var top = rows[0] || { v: 'ANTAM', g: 0, cost: 0 };
+    var brands = simVendors().map(function (v) { return [v.name, title(v.name)]; });
+    var res = await kpForm({ title: 'Catat pembelian emas', icon: 'shopping_bag', ok: 'Simpan pembelian',
+      msg: 'Uang diambil dari "' + cur.key + '" (saldo ' + rp(cur.sisa) + ') dan emasnya dicatat di Aset & Emas. Isian sudah diisi sesuai hasil simulasi, ubah bila berbeda.',
+      fields: [
+        { key: 'brand', label: 'Merek', type: 'select', value: top.v, options: brands, required: true },
+        { key: 'g', label: 'Total berat emas (gram)', value: String(top.g || '').replace('.', ','), placeholder: 'Contoh: 2,5', required: true },
+        { key: 'cost', label: 'Total yang dibayar', type: 'money', value: top.cost ? Number(Math.round(top.cost)).toLocaleString('id-ID') : '', required: true },
+        { key: 'date', label: 'Tanggal beli', type: 'date', value: todayStr() },
+        { key: 'asset', label: 'Simpan ke aset bernama', placeholder: 'Kosongkan: Emas + nama merek' }
+      ],
+      validate: function (v) {
+        if (!(num(v.g) > 0)) return 'Isi berat emas.';
+        if (!(v.cost > 0)) return 'Isi total yang dibayar.';
+        if (v.cost > cur.sisa + 0.5) return 'Melebihi saldo tabungan (' + rp(cur.sisa) + ').';
+        return '';
+      } });
+    if (!res) return;
+    var g = G(), grams = num(res.g), brand = res.brand || top.v, name = (res.asset || '').trim() || ('Emas ' + title(brand));
+    var sv = g[cur.obj][cur.key];
+    sv.used = (parseFloat(sv.used) || 0) + res.cost;
+    (sv.goldPurchases = sv.goldPurchases || []).push({ date: res.date || todayStr(), brand: brand, g: grams, cost: res.cost, asset: name });
+    if (!g.nonMoneyAssets) g.nonMoneyAssets = {};
+    var a = g.nonMoneyAssets[name];
+    var v = vByName(brand), bb = 0;
+    if (v) { var P = v.items.filter(function (i) { return i.buyback > 0 && i.g >= 1; }).sort(function (x, y) { return x.g - y.g; }); if (P[0]) bb = Math.round(P[0].buyback / P[0].g); }
+    if (a) { a.qty = Math.round(((parseFloat(a.qty) || 0) + grams) * 1000) / 1000; if (!a.type) a.type = 'Emas'; }
+    else g.nonMoneyAssets[name] = { qty: grams, estimatedPrice: bb || Math.round(res.cost / grams), type: 'Emas', unit: 'Gram', goldBrand: brand };
+    try { saveStorageData(); } catch (e) {}
+    try { if (typeof kpGoldValueUpdate === 'function') kpGoldValueUpdate(); } catch (e) {}
+    try { showSyncToast('Pembelian ' + gr(grams) + ' emas tercatat di Aset & Emas'); } catch (e) {}
+    paint();
+  };
   function fmtDate(s) { var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s || ''); if (!m) return s; return Number(m[3]) + ' ' + ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'][Number(m[2]) - 1] + ' ' + m[1]; }
   window.kpGoldCreateSaving = function () {
     var g = G(); if (!g) return;
@@ -1858,11 +1905,17 @@
   }
   async function update(force) {
     var g = G();
-    if (!g || !g.nonMoneyAssets || isDemo()) return;
-    var keys = Object.keys(g.nonMoneyAssets).filter(function (k) { var it = g.nonMoneyAssets[k]; return isMetal(k, it) && isGram(it) && autoOn(k, it); });
-    if (!keys.length) return;
+    if (!g || isDemo()) return;
+    var keys = Object.keys(g.nonMoneyAssets || {}).filter(function (k) { var it = g.nonMoneyAssets[k]; return isMetal(k, it) && isGram(it) && autoOn(k, it); });
+    var zakatAuto = g.zakatGoldAuto !== false;
+    if (!keys.length && !zakatAuto) return;
     var data = await prices(); if (!data) return;
     var changed = false;
+    // harga emas acuan nisab zakat = buyback Antam per gram
+    if (zakatAuto) {
+      var z = perGram(data, 'ANTAM');
+      if (z && (Math.round(z.price) !== Number(g.zakatGoldPrice) || g.zakatGoldPriceDate !== z.date)) { g.zakatGoldPrice = Math.round(z.price); g.zakatGoldPriceDate = z.date; changed = true; }
+    }
     keys.forEach(function (k) {
       var it = g.nonMoneyAssets[k], p = isSilver(k, it) ? perGramSilver(data) : perGram(data, it.goldBrand || guessBrand(k)); if (!p) return;
       var price = Math.round(p.price);
@@ -1875,7 +1928,22 @@
       refreshViews();
     }
   }
+  /* Setup zakat: harga emas acuan ikut otomatis */
+  function addZakatToggle() {
+    var inp = $('setup-zakat-gold-price'), g = G(); if (!inp || !g) return;
+    var on = g.zakatGoldAuto !== false, box = $('kpgv-zakat');
+    if (!box) { box = document.createElement('div'); box.id = 'kpgv-zakat'; box.className = 'kpgv-setup'; inp.closest('div').parentNode.appendChild(box); }
+    box.innerHTML = '<label class="kpgv-chk"><input type="checkbox" id="kpgv-zakat-auto"' + (on ? ' checked' : '') + '> Ikuti harga emas otomatis</label>' +
+      '<span class="kpgv-hint">' + (on ? 'Memakai harga buyback Antam per gram' + (g.zakatGoldPriceDate ? ' (' + esc(g.zakatGoldPriceDate) + ', Galeri 24)' : '') + '. Diperbarui otomatis.' : 'Harga diisi manual.') + '</span>';
+    inp.disabled = on; inp.style.opacity = on ? '.7' : '';
+    $('kpgv-zakat-auto').onchange = function () {
+      g.zakatGoldAuto = !!this.checked;
+      try { saveStorageData(); } catch (e) {}
+      if (g.zakatGoldAuto) update(true).then(function () { try { renderSetupView(); } catch (e) {} addZakatToggle(); }); else addZakatToggle();
+    };
+  }
   function refreshViews() {
+    try { addZakatToggle(); } catch (e) {}
     try { if (typeof renderNonMoneyRecap === 'function') renderNonMoneyRecap(); } catch (e) {}
     try { var d = $('page-dashboard'); if (d && !d.classList.contains('hidden') && typeof renderDashboard === 'function') renderDashboard(); } catch (e) {}
     try { var s = $('setup-nonmoney-list'); if (s && s.offsetParent && typeof renderValuedCategoryList === 'function') renderValuedCategoryList('nonMoneyAssets', 'setup-nonmoney-list', ['qty', 'estimatedPrice', 'type', 'unit']); } catch (e) {}
@@ -1943,6 +2011,27 @@
   function init() {
     if (!$('kpgoldval-css')) { var s = document.createElement('style'); s.id = 'kpgoldval-css'; s.textContent = css; document.head.appendChild(s); }
     wrapFn('renderNonMoneyRecap', addRecapNotes);
+    wrapFn('renderSetupView', addZakatToggle);
+    // isi manual harga emas acuan = matikan otomatis
+    var uz = window.updateZakatGoldPrice;
+    if (typeof uz === 'function' && !uz.__kpgoldval) {
+      var wz = function () { var g = G(); if (g) g.zakatGoldAuto = false; return uz.apply(this, arguments); };
+      for (var _a in uz) wz[_a] = uz[_a]; wz.__kpgoldval = true; window.updateZakatGoldPrice = wz;
+    }
+    var pz = window.promptUpdateGoldPrice;
+    if (typeof pz === 'function' && !pz.__kpgoldval) {
+      var wp = async function () {
+        var g = G();
+        if (g && g.zakatGoldAuto !== false) {
+          var ok = true;
+          try { ok = await kpConfirm('Harga emas acuan zakat saat ini mengikuti harga buyback Antam terbaru secara otomatis.\n\nIsi manual dan matikan pembaruan otomatis?'); } catch (e) {}
+          if (!ok) return;
+          g.zakatGoldAuto = false;
+        }
+        return pz.apply(this, arguments);
+      };
+      for (var _b in pz) wp[_b] = pz[_b]; wp.__kpgoldval = true; window.promptUpdateGoldPrice = wp;
+    }
     wrapFn('renderValuedCategoryList', function (objKey) { if (objKey === 'nonMoneyAssets') addSetup(); });
     if (!timer) {
       setTimeout(function () { update(); }, 4000);
