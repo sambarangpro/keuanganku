@@ -1,93 +1,93 @@
 {
  "source": "Galeri 24 (PT Pegadaian Galeri 24)",
  "sourceUrl": "https://galeri24.co.id/harga-emas",
- "updatedAt": "2026-11-27T14:41:23.731Z",
+ "updatedAt": "2026-11-28T07:45:48.772Z",
  "vendors": [
   {
    "name": "GALERI 24",
-   "date": "Jumat, 27 November 2026",
+   "date": "Sabtu, 28 November 2026",
    "items": [
     {
      "g": 0.5,
-     "jual": 1230000,
-     "buyback": 1100000
+     "jual": 1244000,
+     "buyback": 1114000
     },
     {
      "g": 1,
-     "jual": 2344000,
-     "buyback": 2205000
+     "jual": 2372000,
+     "buyback": 2233000
     },
     {
      "g": 2,
-     "jual": 4633000,
-     "buyback": 4402000
+     "jual": 4686000,
+     "buyback": 4457000
     },
     {
      "g": 5,
-     "jual": 11497000,
-     "buyback": 11005000
+     "jual": 11630000,
+     "buyback": 11143000
     },
     {
      "g": 10,
-     "jual": 22932000,
-     "buyback": 22011000
+     "jual": 23196000,
+     "buyback": 22287000
     },
     {
      "g": 25,
-     "jual": 57023000,
-     "buyback": 54756000
+     "jual": 57678000,
+     "buyback": 55445000
     },
     {
      "g": 50,
-     "jual": 113954000,
-     "buyback": 109513000
+     "jual": 115267000,
+     "buyback": 110890000
     },
     {
      "g": 100,
-     "jual": 227795000,
-     "buyback": 219027000
+     "jual": 230418000,
+     "buyback": 221780000
     },
     {
      "g": 250,
-     "jual": 568088000,
-     "buyback": 544857000
+     "jual": 574630000,
+     "buyback": 551706000
     },
     {
      "g": 500,
-     "jual": 1136175000,
-     "buyback": 1089715000
+     "jual": 1149259000,
+     "buyback": 1103412000
     },
     {
      "g": 1000,
-     "jual": 2272350000,
-     "buyback": 2179430000
+     "jual": 2298517000,
+     "buyback": 2206825000
     }
    ]
   },
   {
    "name": "DINAR G24",
-   "date": "Jumat, 27 November 2026",
+   "date": "Sabtu, 28 November 2026",
    "items": [
     {
      "g": 1.06,
-     "jual": 2399000,
-     "buyback": 2306000
+     "jual": 2432000,
+     "buyback": 2341000
     },
     {
      "g": 2.13,
-     "jual": 4775000,
-     "buyback": 4634000
+     "jual": 4842000,
+     "buyback": 4704000
     },
     {
      "g": 4.25,
-     "jual": 9439000,
-     "buyback": 9247000
+     "jual": 9570000,
+     "buyback": 9387000
     }
    ]
   },
   {
    "name": "BABY GALERI 24",
-   "date": "Jumat, 27 November 2026",
+   "date": "Sabtu, 28 November 2026",
    "items": [
     {
      "g": 0.001,
@@ -96,201 +96,201 @@
     },
     {
      "g": 0.02,
-     "jual": 102000,
-     "buyback": 64000
+     "jual": 103000,
+     "buyback": 65000
     },
     {
      "g": 0.05,
-     "jual": 194000,
-     "buyback": 139000
+     "jual": 197000,
+     "buyback": 141000
     },
     {
      "g": 0.1,
-     "jual": 310000,
-     "buyback": 236000
+     "jual": 314000,
+     "buyback": 239000
     },
     {
      "g": 0.2,
-     "jual": 596000,
-     "buyback": 450000
+     "jual": 604000,
+     "buyback": 457000
     },
     {
      "g": 0.25,
-     "jual": 993000,
+     "jual": 1008000,
      "buyback": null
     },
     {
      "g": 0.3,
-     "jual": 844000,
-     "buyback": 675000
+     "jual": 855000,
+     "buyback": 686000
     },
     {
      "g": 0.4,
-     "jual": 1086000,
-     "buyback": 901000
+     "jual": 1102000,
+     "buyback": 914000
     },
     {
      "g": 0.5,
-     "jual": 1305000,
-     "buyback": 1115000
+     "jual": 1322000,
+     "buyback": 1132000
     }
    ]
   },
   {
    "name": "ANTAM",
-   "date": "Jumat, 27 November 2026",
+   "date": "Sabtu, 28 November 2026",
    "items": [
     {
      "g": 0.5,
-     "jual": 1321000,
-     "buyback": 1090000
+     "jual": 1327000,
+     "buyback": 1104000
     },
     {
      "g": 1,
-     "jual": 2539000,
-     "buyback": 2181000
+     "jual": 2552000,
+     "buyback": 2208000
     },
     {
      "g": 2,
-     "jual": 5017000,
-     "buyback": 4362000
+     "jual": 5043000,
+     "buyback": 4417000
     },
     {
      "g": 3,
-     "jual": 7499000,
-     "buyback": 6544000
+     "jual": 7539000,
+     "buyback": 6626000
     },
     {
      "g": 5,
-     "jual": 12465000,
-     "buyback": 10907000
+     "jual": 12531000,
+     "buyback": 11044000
     },
     {
      "g": 10,
-     "jual": 24873000,
-     "buyback": 21814000
+     "jual": 25005000,
+     "buyback": 22089000
     },
     {
      "g": 25,
-     "jual": 62055000,
-     "buyback": 54268000
+     "jual": 62384000,
+     "buyback": 54950000
     },
     {
      "g": 50,
-     "jual": 124028000,
-     "buyback": 108536000
+     "jual": 124688000,
+     "buyback": 109901000
     },
     {
      "g": 100,
-     "jual": 247977000,
-     "buyback": 217073000
+     "jual": 249297000,
+     "buyback": 219802000
     }
    ]
   },
   {
    "name": "UBS",
-   "date": "Jumat, 27 November 2026",
+   "date": "Sabtu, 28 November 2026",
    "items": [
     {
      "g": 0.5,
-     "jual": 1280000,
-     "buyback": 1090000
+     "jual": 1295000,
+     "buyback": 1104000
     },
     {
      "g": 1,
-     "jual": 2367000,
-     "buyback": 2181000
+     "jual": 2395000,
+     "buyback": 2208000
     },
     {
      "g": 2,
-     "jual": 4698000,
-     "buyback": 4362000
+     "jual": 4752000,
+     "buyback": 4417000
     },
     {
      "g": 5,
-     "jual": 11610000,
-     "buyback": 10907000
+     "jual": 11743000,
+     "buyback": 11044000
     },
     {
      "g": 10,
-     "jual": 23097000,
-     "buyback": 21814000
+     "jual": 23362000,
+     "buyback": 22089000
     },
     {
      "g": 25,
-     "jual": 57628000,
-     "buyback": 54268000
+     "jual": 58291000,
+     "buyback": 54950000
     },
     {
      "g": 50,
-     "jual": 115018000,
-     "buyback": 108536000
+     "jual": 116343000,
+     "buyback": 109901000
     },
     {
      "g": 100,
-     "jual": 229946000,
-     "buyback": 217073000
+     "jual": 232593000,
+     "buyback": 219802000
     },
     {
      "g": 250,
-     "jual": 574693000,
-     "buyback": 541070000
+     "jual": 581312000,
+     "buyback": 547871000
     },
     {
      "g": 500,
-     "jual": 1148038000,
-     "buyback": 1082140000
+     "jual": 1161258000,
+     "buyback": 1095742000
     }
    ]
   },
   {
    "name": "ANTAM MULIA RETRO",
-   "date": "Jumat, 27 November 2026",
+   "date": "Sabtu, 28 November 2026",
    "items": [
     {
      "g": 0.5,
-     "jual": 1264000,
-     "buyback": 1090000
+     "jual": 1280000,
+     "buyback": 1104000
     },
     {
      "g": 1,
-     "jual": 2350000,
-     "buyback": 2181000
+     "jual": 2376000,
+     "buyback": 2208000
     },
     {
      "g": 2,
-     "jual": 4622000,
-     "buyback": 4362000
+     "jual": 4675000,
+     "buyback": 4417000
     },
     {
      "g": 3,
-     "jual": 6845000,
-     "buyback": 6544000
+     "jual": 6923000,
+     "buyback": 6626000
     },
     {
      "g": 5,
-     "jual": 11474000,
-     "buyback": 10907000
+     "jual": 11607000,
+     "buyback": 11044000
     },
     {
      "g": 10,
-     "jual": 22847000,
-     "buyback": 21814000
+     "jual": 23111000,
+     "buyback": 22089000
     },
     {
      "g": 25,
-     "jual": 56978000,
-     "buyback": 54268000
+     "jual": 57634000,
+     "buyback": 54950000
     },
     {
      "g": 50,
-     "jual": 113898000,
-     "buyback": 108536000
+     "jual": 115209000,
+     "buyback": 109901000
     },
     {
      "g": 100,
-     "jual": 227572000,
-     "buyback": 217073000
+     "jual": 230192000,
+     "buyback": 219802000
     }
    ]
   },
@@ -327,348 +327,353 @@
   },
   {
    "name": "ANTAM NON PEGADAIAN",
-   "date": "Jumat, 27 November 2026",
+   "date": "Sabtu, 28 November 2026",
    "items": [
     {
      "g": 0.5,
-     "jual": 1264000,
-     "buyback": 1039000
+     "jual": 1280000,
+     "buyback": 1052000
     },
     {
      "g": 1,
-     "jual": 2350000,
-     "buyback": 2078000
+     "jual": 2376000,
+     "buyback": 2104000
     },
     {
      "g": 2,
-     "jual": 4622000,
-     "buyback": 4156000
+     "jual": 4675000,
+     "buyback": 4208000
     },
     {
      "g": 3,
-     "jual": 6845000,
-     "buyback": 6234000
+     "jual": 6923000,
+     "buyback": 6312000
     },
     {
      "g": 5,
-     "jual": 11474000,
-     "buyback": 10390000
+     "jual": 11607000,
+     "buyback": 10521000
     },
     {
      "g": 10,
-     "jual": 22847000,
-     "buyback": 20781000
+     "jual": 23111000,
+     "buyback": 21042000
     },
     {
      "g": 25,
-     "jual": 56978000,
-     "buyback": 51953000
+     "jual": 57634000,
+     "buyback": 52606000
     },
     {
      "g": 50,
-     "jual": 113898000,
-     "buyback": 103907000
+     "jual": 115209000,
+     "buyback": 105213000
     },
     {
      "g": 100,
-     "jual": 227572000,
-     "buyback": 207815000
+     "jual": 230192000,
+     "buyback": 210427000
     }
    ]
   },
   {
    "name": "LOTUS ARCHI",
-   "date": "Jumat, 27 November 2026",
+   "date": "Sabtu, 28 November 2026",
    "items": [
     {
      "g": 1,
      "jual": 2312000,
-     "buyback": 2175000
+     "buyback": 2208000
     },
     {
      "g": 5,
      "jual": 11352000,
-     "buyback": 10879000
+     "buyback": 11044000
     },
     {
      "g": 10,
      "jual": 22646000,
-     "buyback": 21759000
+     "buyback": 22089000
     },
     {
      "g": 25,
      "jual": 56336000,
-     "buyback": 54131000
+     "buyback": 54950000
     },
     {
      "g": 50,
      "jual": 112591000,
-     "buyback": 108262000
+     "buyback": 109901000
     },
     {
      "g": 100,
      "jual": 225101000,
-     "buyback": 216525000
+     "buyback": 219802000
     }
    ]
   },
   {
    "name": "UBS DISNEY",
-   "date": "Kamis, 26 November 2026",
+   "date": "Sabtu, 28 November 2026",
    "items": [
     {
      "g": 0.1,
-     "jual": 315000,
+     "jual": 319000,
      "buyback": null
     },
     {
      "g": 0.5,
-     "jual": 1279000,
-     "buyback": 1087000
+     "jual": 1297000,
+     "buyback": 1104000
     },
     {
      "g": 2,
-     "jual": 4696000,
-     "buyback": 4351000
+     "jual": 4762000,
+     "buyback": 4417000
     },
     {
      "g": 5,
-     "jual": 11549000,
-     "buyback": 10879000
+     "jual": 11709000,
+     "buyback": 11044000
     },
     {
      "g": 10,
-     "jual": 22940000,
-     "buyback": 21759000
+     "jual": 23258000,
+     "buyback": 22089000
     }
    ]
   },
   {
    "name": "UBS ELSA",
-   "date": "Jumat, 27 November 2026",
+   "date": "Sabtu, 28 November 2026",
    "items": [
     {
      "g": 2,
-     "jual": 4696000,
-     "buyback": 4351000
+     "jual": 4762000,
+     "buyback": 4417000
     },
     {
      "g": 5,
-     "jual": 11549000,
-     "buyback": 10879000
+     "jual": 11709000,
+     "buyback": 11044000
     },
     {
      "g": 10,
-     "jual": 22940000,
-     "buyback": 21759000
+     "jual": 23258000,
+     "buyback": 22089000
     }
    ]
   },
   {
    "name": "UBS ANNA",
-   "date": "Jumat, 27 November 2026",
+   "date": "Sabtu, 28 November 2026",
    "items": [
     {
      "g": 2,
-     "jual": 4696000,
-     "buyback": 4351000
+     "jual": 4762000,
+     "buyback": 4417000
     },
     {
      "g": 5,
-     "jual": 11549000,
-     "buyback": 10879000
+     "jual": 11709000,
+     "buyback": 11044000
     },
     {
      "g": 10,
-     "jual": 22940000,
-     "buyback": 21759000
+     "jual": 23258000,
+     "buyback": 22089000
     }
    ]
   },
   {
    "name": "UBS MICKEY FULLBODY",
-   "date": "Jumat, 27 November 2026",
+   "date": "Sabtu, 28 November 2026",
    "items": [
     {
      "g": 2,
-     "jual": 4696000,
-     "buyback": 4351000
+     "jual": 4762000,
+     "buyback": 4417000
     },
     {
      "g": 5,
-     "jual": 11549000,
-     "buyback": 10879000
+     "jual": 11709000,
+     "buyback": 11044000
     },
     {
      "g": 10,
-     "jual": 22940000,
-     "buyback": 21759000
+     "jual": 23258000,
+     "buyback": 22089000
     }
    ]
   },
   {
    "name": "LOTUS ARCHI GIFT",
-   "date": "Jumat, 27 November 2026",
+   "date": "Sabtu, 28 November 2026",
    "items": [
+    {
+     "g": 0.1,
+     "jual": 322000,
+     "buyback": null
+    },
     {
      "g": 0.5,
      "jual": 1259000,
-     "buyback": 1087000
+     "buyback": 1104000
     }
    ]
   },
   {
    "name": "UBS HELLO KITTY",
-   "date": "Jumat, 27 November 2026",
+   "date": "Sabtu, 28 November 2026",
    "items": [
     {
      "g": 2,
-     "jual": 4696000,
-     "buyback": 4351000
+     "jual": 4762000,
+     "buyback": 4417000
     }
    ]
   },
   {
    "name": "BABY SERIES TUMBUHAN",
-   "date": "Jumat, 27 November 2026",
+   "date": "Sabtu, 28 November 2026",
    "items": [
     {
      "g": 1.5,
-     "jual": 4177000,
+     "jual": 4235000,
      "buyback": null
     }
    ]
   },
   {
    "name": "BABY SERIES INVESTASI",
-   "date": "Jumat, 27 November 2026",
+   "date": "Sabtu, 28 November 2026",
    "items": [
     {
      "g": 1.5,
-     "jual": 4177000,
+     "jual": 4235000,
      "buyback": null
     }
    ]
   },
   {
    "name": "BATIK SERIES",
-   "date": "Jumat, 27 November 2026",
+   "date": "Sabtu, 28 November 2026",
    "items": [
     {
      "g": 0.02,
-     "jual": 101000,
+     "jual": 102000,
      "buyback": null
     },
     {
      "g": 0.04,
-     "jual": 241000,
+     "jual": 244000,
      "buyback": null
     },
     {
      "g": 0.05,
-     "jual": 284000,
+     "jual": 289000,
      "buyback": null
     },
     {
      "g": 0.1,
-     "jual": 462000,
+     "jual": 467000,
      "buyback": null
     },
     {
      "g": 0.5,
-     "jual": 1302000,
+     "jual": 1319000,
      "buyback": null
     },
     {
      "g": 2,
-     "jual": 4930000,
-     "buyback": 4362000
+     "jual": 4989000,
+     "buyback": 4417000
     },
     {
      "g": 2.2,
-     "jual": 6259000,
+     "jual": 6334000,
      "buyback": null
     },
     {
      "g": 4.2,
-     "jual": 10752000,
+     "jual": 10884000,
      "buyback": null
     },
     {
      "g": 5,
-     "jual": 11903000,
-     "buyback": 10907000
+     "jual": 12049000,
+     "buyback": 11044000
     },
     {
      "g": 10,
-     "jual": 23467000,
-     "buyback": 21814000
+     "jual": 23759000,
+     "buyback": 22089000
     }
    ]
   },
   {
    "name": "SENTRA BUYBACK",
-   "date": "Jumat, 27 November 2026",
+   "date": "Sabtu, 28 November 2026",
    "items": [
     {
      "g": 0.5,
      "jual": null,
-     "buyback": 1039000
+     "buyback": 1052000
     },
     {
      "g": 1,
      "jual": null,
-     "buyback": 2078000
+     "buyback": 2104000
     },
     {
      "g": 2,
      "jual": null,
-     "buyback": 4156000
+     "buyback": 4208000
     },
     {
      "g": 3,
      "jual": null,
-     "buyback": 6234000
+     "buyback": 6312000
     },
     {
      "g": 5,
      "jual": null,
-     "buyback": 10390000
+     "buyback": 10521000
     },
     {
      "g": 10,
      "jual": null,
-     "buyback": 20781000
+     "buyback": 21042000
     },
     {
      "g": 25,
      "jual": null,
-     "buyback": 51953000
+     "buyback": 52606000
     },
     {
      "g": 50,
      "jual": null,
-     "buyback": 103907000
+     "buyback": 105213000
     },
     {
      "g": 100,
      "jual": null,
-     "buyback": 207815000
+     "buyback": 210427000
     },
     {
      "g": 250,
      "jual": null,
-     "buyback": 519538000
+     "buyback": 526068000
     },
     {
      "g": 500,
      "jual": null,
-     "buyback": 1039076000
+     "buyback": 1052137000
     },
     {
      "g": 1000,
      "jual": null,
-     "buyback": 2078152000
+     "buyback": 2104274000
     }
    ]
   }
