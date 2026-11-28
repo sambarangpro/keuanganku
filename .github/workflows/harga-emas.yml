@@ -1,4 +1,5 @@
-# Ambil harga emas (Galeri 24) dan perak (Logam Mulia + harga dunia) tiap jam untuk Keuanganku PRO
+# Ambil harga emas (Galeri 24) dan harga perak dunia tiap jam untuk Keuanganku PRO
+# Catatan: logammulia.com menolak akses dari server GitHub, jadi harga perak memakai harga perak dunia.
 name: Harga Emas
 
 on:
@@ -16,16 +17,12 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Siapkan browser untuk halaman Logam Mulia
-        run: |
-          npm i --no-save --no-package-lock playwright@1.49.1
-          npx playwright install --with-deps chromium
       - name: Ambil harga terbaru
         run: node scripts/harga-emas.mjs
       - name: Simpan bila berubah
