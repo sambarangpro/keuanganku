@@ -1,7 +1,7 @@
 {
  "source": "Galeri 24 (PT Pegadaian Galeri 24)",
  "sourceUrl": "https://galeri24.co.id/harga-emas",
- "updatedAt": "2026-11-28T07:45:48.772Z",
+ "updatedAt": "2026-11-28T10:50:35.179Z",
  "vendors": [
   {
    "name": "GALERI 24",
@@ -677,5 +677,15 @@
     }
    ]
   }
- ]
+ ],
+ "perak": {
+  "logamMulia": null,
+  "dunia": {
+   "source": "Harga perak dunia (XAG/USD) x kurs USD/IDR",
+   "usdPerOunce": 43.23,
+   "kursIdr": 18322.056993,
+   "perGram": 25465,
+   "date": "2026-11-28"
+  }
+ }
 }
