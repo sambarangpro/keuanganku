@@ -2085,6 +2085,382 @@
 })();
   </script>
   <script>
+/* Draf & template untuk Kalkulator HPP Cetak/Sablon dan Kalkulator Modal Usaha (banyak draf per kalkulator, ikut sinkron) */
+(function () {
+  if (window.__kpdraft) return;
+  window.__kpdraft = true;
+  function $(id) { return document.getElementById(id); }
+  function G() { try { return (typeof globalData !== 'undefined') ? globalData : window.globalData; } catch (e) { return window.globalData; } }
+  function toast(t) { try { if (typeof showSyncToast === 'function') showSyncToast(t); } catch (e) {} }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function num(v) { return parseFloat(String(v || '').replace(/\./g, '').replace(',', '.')) || 0; }
+  function rp(n) { return 'Rp ' + Math.round(n || 0).toLocaleString('id-ID'); }
+  function when(t) {
+    try {
+      var d = new Date(t), now = new Date();
+      var hm = d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+      if (d.toDateString() === now.toDateString()) return 'hari ini ' + hm;
+      return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: d.getFullYear() === now.getFullYear() ? undefined : 'numeric' }) + ' ' + hm;
+    } catch (e) { return ''; }
+  }
+  function uid() { return 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  async function ask(msg, ok) { try { if (typeof kpConfirm === 'function') return await kpConfirm(msg, { okText: ok || 'Ya' }); } catch (e) {} return confirm(msg); }
+
+  /* ---------- definisi tiap kalkulator ---------- */
+  var CALC = {
+    hpp: {
+      panel: 'calc-sub-hpp', title: 'Kalkulator HPP', color: '#059669',
+      collect: function () {
+        var p = $('calc-sub-hpp'), f = {};
+        p.querySelectorAll('input[id],select[id]').forEach(function (el) { if (el.id.indexOf('kpdr') !== 0) f[el.id] = el.value; });
+        var v = $('hpp-form-vendor');
+        return { mode: v && !v.classList.contains('hidden') ? 'vendor' : 'mandiri', f: f };
+      },
+      apply: function (d) {
+        d = d || {};
+        var f = d.f || {};
+        Object.keys(f).forEach(function (id) { var el = $(id); if (el && el.closest('#calc-sub-hpp')) el.value = f[id]; });
+        try { setHPPMode(d.mode === 'mandiri' ? 'mandiri' : 'vendor'); } catch (e) {}
+        try { toggleHPPCalcMode(); } catch (e) {}
+        var r = $('calc-hpp-result'); if (r) r.classList.add('hidden');
+      },
+      summary: function (d) {
+        var f = (d && d.f) || {}, m = d && d.mode === 'mandiri';
+        var name = m ? f['hpp-m-name'] : f['hpp-v-name'], qty = m ? f['hpp-m-qty'] : f['hpp-v-qty'];
+        var s = (m ? 'Produksi mandiri' : 'Order vendor') + (qty ? ' · ' + qty + ' pcs' : '');
+        if (name) s = name + ' · ' + s;
+        if (f['hpp-calc-mode'] === 'cari_margin' && f['hpp-target-harga']) s += ' · jual Rp ' + f['hpp-target-harga'];
+        else if (f['hpp-margin-pct']) s += ' · margin ' + f['hpp-margin-pct'] + '%';
+        return s;
+      },
+      isEmpty: function (d) {
+        var f = (d && d.f) || {};
+        return !['hpp-v-name', 'hpp-v-harga', 'hpp-v-ongkir', 'hpp-v-pack', 'hpp-m-name', 'hpp-m-kaos', 'hpp-m-dtf', 'hpp-m-op', 'hpp-m-pack', 'hpp-target-harga'].some(function (k) { return String(f[k] || '').trim(); });
+      }
+    },
+    mu: {
+      panel: 'calc-sub-modal-usaha', title: 'Kalkulator Modal Usaha', color: '#ea580c',
+      collect: function () {
+        function rows(sel) {
+          return Array.prototype.map.call(document.querySelectorAll(sel), function (r) {
+            var i = r.querySelectorAll('input'); return [i[0] ? i[0].value : '', i[1] ? i[1].value : ''];
+          });
+        }
+        return { capex: rows('#capex-container .capex-row'), opex: rows('#opex-container .opex-row'), qty: ($('mu-qty') || {}).value || '', harga: ($('mu-hargajual') || {}).value || '' };
+      },
+      apply: function (d) {
+        d = d || {};
+        function fill(cont, add, list) {
+          var c = $(cont); if (!c) return;
+          c.innerHTML = '';
+          (list && list.length ? list : [['', '']]).forEach(function (row) {
+            try { add(); } catch (e) { return; }
+            var r = c.lastElementChild; if (!r) return;
+            var i = r.querySelectorAll('input');
+            if (i[0]) i[0].value = row[0] || '';
+            if (i[1]) i[1].value = row[1] || '';
+          });
+        }
+        fill('capex-container', window.addCapExRow || function () { addCapExRow(); }, d.capex);
+        fill('opex-container', window.addOpExRow || function () { addOpExRow(); }, d.opex);
+        if ($('mu-qty')) $('mu-qty').value = d.qty != null && d.qty !== '' ? d.qty : '100';
+        if ($('mu-hargajual')) $('mu-hargajual').value = d.harga || '';
+        var r = $('calc-mu-result'); if (r) r.classList.add('hidden');
+      },
+      summary: function (d) {
+        var a = 0, k = 0;
+        (d.capex || []).forEach(function (r) { a += num(r[1]); });
+        (d.opex || []).forEach(function (r) { k += num(r[1]); });
+        var s = 'Modal ' + rp(a + k) + ' (aset ' + rp(a) + ', kerja ' + rp(k) + ')';
+        if (d.harga) s += ' · jual Rp ' + d.harga + (d.qty ? ' × ' + d.qty : '');
+        return s;
+      },
+      isEmpty: function (d) {
+        return !(d.capex || []).concat(d.opex || []).some(function (r) { return String(r[0] || '').trim() || String(r[1] || '').trim(); }) && !String(d.harga || '').trim();
+      }
+    }
+  };
+
+  /* ---------- penyimpanan ---------- */
+  function store(k) {
+    var g = G(); if (!g) return [];
+    if (!g.calcDrafts || typeof g.calcDrafts !== 'object') g.calcDrafts = {};
+    if (!Array.isArray(g.calcDrafts[k])) g.calcDrafts[k] = [];
+    return g.calcDrafts[k];
+  }
+  var saveT = null;
+  function persist(now) {
+    clearTimeout(saveT);
+    var go = function () { try { if (typeof saveStorageData === 'function') saveStorageData(); } catch (e) {} };
+    if (now) go(); else saveT = setTimeout(go, 1500);
+  }
+  function activeId(k, v) {
+    var key = 'KP_DRAFT_ACTIVE_' + k;
+    if (v === undefined) { try { return localStorage.getItem(key) || ''; } catch (e) { return ''; } }
+    try { if (v) localStorage.setItem(key, v); else localStorage.removeItem(key); } catch (e) {}
+  }
+  function scratch(k, v) {
+    var key = 'KP_DRAFT_SCRATCH_' + k;
+    if (v === undefined) { try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch (e) { return null; } }
+    try { if (v) localStorage.setItem(key, JSON.stringify(v)); else localStorage.removeItem(key); } catch (e) {}
+  }
+  function findDraft(k, id) { var L = store(k); for (var i = 0; i < L.length; i++) if (L[i].id === id) return L[i]; return null; }
+  var defaults = {};
+
+  /* ---------- tampilan ---------- */
+  function css() {
+    if ($('kpdr-css')) return;
+    var s = document.createElement('style'); s.id = 'kpdr-css';
+    s.textContent = [
+      '.kpdr-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 12px;border:1px solid #e2e8f0;border-radius:14px;background:#f8fafc}',
+      'html.dark .kpdr-bar{background:#0f172a;border-color:#334155}',
+      '.kpdr-info{flex:1;min-width:150px;display:flex;align-items:center;gap:8px}',
+      '.kpdr-info .material-symbols-outlined{font-size:20px;color:var(--kpdr-c)}',
+      '.kpdr-nm{font-size:12.5px;font-weight:800;color:#0f172a;line-height:1.25;word-break:break-word}html.dark .kpdr-nm{color:#f1f5f9}',
+      '.kpdr-st{font-size:10.5px;color:#64748b;font-weight:600;margin-top:1px}',
+      '.kpdr-btns{display:flex;gap:6px;flex-wrap:wrap}',
+      '.kpdr-b{display:inline-flex;align-items:center;gap:4px;border:1px solid #cbd5e1;background:#fff;color:#334155;font-weight:800;font-size:11px;padding:7px 10px;border-radius:10px;cursor:pointer;line-height:1}',
+      '.kpdr-b .material-symbols-outlined{font-size:16px}',
+      'html.dark .kpdr-b{background:#1e293b;border-color:#475569;color:#e2e8f0}',
+      '.kpdr-b.p{background:var(--kpdr-c);border-color:var(--kpdr-c);color:#fff}',
+      '.kpdr-b .n{background:rgba(100,116,139,.15);border-radius:999px;padding:1px 6px;font-size:10px}',
+      '.kpdr-ov{position:fixed;inset:0;z-index:100000;background:rgba(15,23,42,.5);display:flex;align-items:flex-end;justify-content:center;opacity:0;transition:opacity .16s}',
+      '.kpdr-ov.in{opacity:1}',
+      '@media(min-width:640px){.kpdr-ov{align-items:center}}',
+      '.kpdr-sh{width:100%;max-width:520px;max-height:86vh;display:flex;flex-direction:column;background:#fff;border-radius:22px 22px 0 0;box-shadow:0 -10px 40px rgba(0,0,0,.25);transform:translateY(24px);transition:transform .18s}',
+      '@media(min-width:640px){.kpdr-sh{border-radius:22px}}',
+      '.kpdr-ov.in .kpdr-sh{transform:none}',
+      'html.dark .kpdr-sh{background:#1e293b;color:#e2e8f0}',
+      '.kpdr-hd{display:flex;align-items:center;gap:10px;padding:16px 18px 10px}',
+      '.kpdr-hd h4{flex:1;margin:0;font-size:16px;font-weight:800;color:#0f172a}html.dark .kpdr-hd h4{color:#f8fafc}',
+      '.kpdr-hd p{margin:2px 0 0;font-size:11.5px;color:#64748b;font-weight:600}',
+      '.kpdr-x{border:0;background:transparent;color:#64748b;cursor:pointer;padding:4px;display:flex}',
+      '.kpdr-tabs{display:flex;gap:6px;padding:0 18px 10px}',
+      '.kpdr-tab{flex:1;border:1px solid #e2e8f0;background:#f8fafc;border-radius:10px;padding:7px;font-size:11.5px;font-weight:800;color:#64748b;cursor:pointer}',
+      'html.dark .kpdr-tab{background:#0f172a;border-color:#334155}',
+      '.kpdr-tab.on{background:var(--kpdr-c);border-color:var(--kpdr-c);color:#fff}',
+      '.kpdr-ls{overflow:auto;padding:0 18px 18px;display:flex;flex-direction:column;gap:8px}',
+      '.kpdr-it{border:1px solid #e2e8f0;border-radius:14px;padding:11px 12px}',
+      'html.dark .kpdr-it{border-color:#334155}',
+      '.kpdr-it.act{border-color:var(--kpdr-c);box-shadow:0 0 0 1px var(--kpdr-c) inset}',
+      '.kpdr-it .t{display:flex;align-items:center;gap:6px;font-size:13.5px;font-weight:800;color:#0f172a}html.dark .kpdr-it .t{color:#f1f5f9}',
+      '.kpdr-tg{font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:999px;background:#fef3c7;color:#92400e;white-space:nowrap}',
+      '.kpdr-tg.a{background:#dcfce7;color:#166534}',
+      '.kpdr-it .s{font-size:11.5px;color:#475569;margin-top:3px;line-height:1.4}html.dark .kpdr-it .s{color:#cbd5e1}',
+      '.kpdr-it .c{font-size:11.5px;color:#64748b;margin-top:4px;line-height:1.4;font-style:italic;white-space:pre-wrap}',
+      '.kpdr-it .m{font-size:10px;color:#94a3b8;margin-top:5px;font-weight:600}',
+      '.kpdr-it .a{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}',
+      '.kpdr-it .a .kpdr-b{padding:6px 9px}',
+      '.kpdr-it .a .kpdr-b.d{color:#dc2626;border-color:#fecaca}',
+      '.kpdr-em{text-align:center;color:#64748b;font-size:12.5px;padding:26px 10px;line-height:1.5}',
+      '.kpdr-q{margin:0 18px 10px;width:calc(100% - 36px);box-sizing:border-box;border:1px solid #e2e8f0;border-radius:10px;padding:8px 10px;font-size:12.5px;background:#fff;color:inherit;outline:none}',
+      'html.dark .kpdr-q{background:#0f172a;border-color:#334155}'
+    ].join('');
+    document.head.appendChild(s);
+  }
+
+  function renderBar(k) {
+    var C = CALC[k], p = $(C.panel); if (!p) return;
+    var bar = $('kpdr-bar-' + k);
+    if (!bar) {
+      bar = document.createElement('div'); bar.id = 'kpdr-bar-' + k; bar.className = 'kpdr-bar';
+      bar.style.setProperty('--kpdr-c', C.color);
+      var h = p.querySelector('h3'); if (h && h.nextSibling) p.insertBefore(bar, h.nextSibling); else p.insertBefore(bar, p.firstChild);
+      bar.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-kpdr]'); if (!b) return;
+        var a = b.getAttribute('data-kpdr');
+        if (a === 'save') saveNow(k); else if (a === 'list') openList(k); else if (a === 'new') newBlank(k);
+      });
+    }
+    var id = activeId(k), d = id ? findDraft(k, id) : null, n = store(k).length;
+    var nm = d ? esc(d.name) : 'Belum disimpan';
+    var st = d ? (d.tpl ? 'Template · ' : 'Draf · ') + 'tersimpan otomatis ' + when(d.updatedAt) : 'Isian tetap ada walau pindah menu. Simpan agar bisa dibuka lagi.';
+    bar.innerHTML = '<div class="kpdr-info"><span class="material-symbols-outlined">' + (d ? (d.tpl ? 'star' : 'description') : 'edit_note') + '</span><div style="min-width:0"><div class="kpdr-nm">' + nm + '</div><div class="kpdr-st">' + st + '</div></div></div>' +
+      '<div class="kpdr-btns">' +
+      '<button type="button" class="kpdr-b" data-kpdr="new" title="Mulai hitungan baru"><span class="material-symbols-outlined">add</span>Baru</button>' +
+      '<button type="button" class="kpdr-b" data-kpdr="list"><span class="material-symbols-outlined">folder_open</span>Draf <span class="n">' + n + '</span></button>' +
+      '<button type="button" class="kpdr-b p" data-kpdr="save"><span class="material-symbols-outlined">save</span>' + (d ? 'Simpan' : 'Simpan draf') + '</button>' +
+      '</div>';
+  }
+
+  /* ---------- aksi ---------- */
+  var loading = false;
+  function load(k, data) {
+    loading = true;
+    try { CALC[k].apply(JSON.parse(JSON.stringify(data || defaults[k] || {}))); } catch (e) { console.warn('kpdraft', e); }
+    setTimeout(function () { loading = false; }, 50);
+  }
+  var autoT = {};
+  function onEdit(k) {
+    if (loading) return;
+    clearTimeout(autoT[k]);
+    autoT[k] = setTimeout(function () {
+      var data = CALC[k].collect(), id = activeId(k), d = id ? findDraft(k, id) : null;
+      if (d) { d.data = data; d.updatedAt = Date.now(); persist(false); }
+      else scratch(k, data);
+      renderBar(k);
+    }, 700);
+  }
+  async function saveNow(k) {
+    var C = CALC[k], data = C.collect(), id = activeId(k), d = id ? findDraft(k, id) : null;
+    if (d) {
+      d.data = data; d.updatedAt = Date.now(); persist(true); renderBar(k);
+      toast('✓ "' + d.name + '" disimpan'); return;
+    }
+    if (C.isEmpty(data)) { try { await kpAlert('Isi dulu hitungannya, lalu simpan sebagai draf.'); } catch (e) {} return; }
+    if (typeof kpForm !== 'function') return;
+    var res = await kpForm({
+      title: 'Simpan draf', icon: 'save', ok: 'Simpan', sub: C.title,
+      fields: [
+        { key: 'name', label: 'Nama draf', required: true, placeholder: k === 'hpp' ? 'Contoh: Kaos DTF A3 - harga reseller' : 'Contoh: Rencana usaha sablon 2027', value: suggestName(k, data) },
+        { key: 'note', label: 'Catatan', placeholder: 'Contoh: harga bahan per Nov 2026' },
+        { key: 'tpl', label: 'Jenis', type: 'select', value: 'draf', options: [['draf', 'Draf / perencanaan'], ['tpl', '★ Template harga (patokan yang sering dipakai)']] }
+      ]
+    });
+    if (!res) return;
+    var nd = { id: uid(), name: res.name, note: res.note || '', tpl: res.tpl === 'tpl', createdAt: Date.now(), updatedAt: Date.now(), data: data };
+    store(k).unshift(nd); activeId(k, nd.id); scratch(k, null); persist(true); renderBar(k);
+    toast('✓ ' + (nd.tpl ? 'Template' : 'Draf') + ' "' + nd.name + '" disimpan & ikut sinkron');
+  }
+  function suggestName(k, data) {
+    if (k === 'hpp') { var f = data.f || {}; return (data.mode === 'mandiri' ? f['hpp-m-name'] : f['hpp-v-name']) || ''; }
+    return '';
+  }
+  async function newBlank(k) {
+    var id = activeId(k), d = id ? findDraft(k, id) : null;
+    if (!d) {
+      var cur = CALC[k].collect();
+      if (!CALC[k].isEmpty(cur) && !(await ask('Isian sekarang belum disimpan sebagai draf. Kosongkan dan mulai hitungan baru?', 'Kosongkan'))) return;
+    } else { d.data = CALC[k].collect(); d.updatedAt = Date.now(); persist(true); }
+    activeId(k, ''); scratch(k, null); load(k, null); renderBar(k);
+  }
+  function openDraft(k, id, asCopy) {
+    var d = findDraft(k, id); if (!d) return;
+    var cur = activeId(k), c = cur ? findDraft(k, cur) : null;
+    if (c && c.id !== id) { c.data = CALC[k].collect(); c.updatedAt = Date.now(); persist(false); }
+    if (asCopy) { activeId(k, ''); load(k, d.data); scratch(k, CALC[k].collect()); toast('Template "' + d.name + '" dipakai. Simpan bila ingin disimpan sebagai draf baru.'); }
+    else { activeId(k, id); load(k, d.data); toast('Membuka "' + d.name + '"'); }
+    renderBar(k);
+    try { $(CALC[k].panel).scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+  }
+
+  /* ---------- daftar draf ---------- */
+  function openList(k) {
+    css();
+    var C = CALC[k], tab = 'all', q = '';
+    var ov = document.createElement('div'); ov.className = 'kpdr-ov'; ov.style.setProperty('--kpdr-c', C.color);
+    ov.innerHTML = '<div class="kpdr-sh" role="dialog" aria-modal="true"><div class="kpdr-hd"><div style="flex:1;min-width:0"><h4>Draf ' + esc(C.title) + '</h4><p>Ketuk Buka untuk melanjutkan. Template ★ bisa dipakai berulang tanpa mengubah aslinya.</p></div><button type="button" class="kpdr-x" data-x="1" aria-label="Tutup"><span class="material-symbols-outlined">close</span></button></div>' +
+      '<div class="kpdr-tabs"><button type="button" class="kpdr-tab on" data-t="all">Semua</button><button type="button" class="kpdr-tab" data-t="draf">Draf</button><button type="button" class="kpdr-tab" data-t="tpl">★ Template</button></div>' +
+      '<input class="kpdr-q" type="search" placeholder="Cari nama atau catatan..." autocomplete="off"><div class="kpdr-ls"></div></div>';
+    document.body.appendChild(ov);
+    requestAnimationFrame(function () { ov.classList.add('in'); });
+    var ls = ov.querySelector('.kpdr-ls');
+    function close() { ov.classList.remove('in'); setTimeout(function () { ov.remove(); }, 160); document.removeEventListener('keydown', onKey, true); }
+    function onKey(e) { if (e.key === 'Escape' && !document.querySelector('.kpd-ov')) { e.preventDefault(); close(); } }
+    document.addEventListener('keydown', onKey, true);
+    function paint() {
+      var act = activeId(k), L = store(k).slice();
+      L.sort(function (a, b) { return (b.tpl - a.tpl) || (b.updatedAt - a.updatedAt); });
+      L = L.filter(function (d) {
+        if (tab === 'draf' && d.tpl) return false; if (tab === 'tpl' && !d.tpl) return false;
+        if (q && (d.name + ' ' + (d.note || '')).toLowerCase().indexOf(q) < 0) return false; return true;
+      });
+      if (!L.length) { ls.innerHTML = '<div class="kpdr-em">' + (store(k).length ? 'Tidak ada yang cocok.' : 'Belum ada draf.<br>Isi kalkulator, lalu tekan <b>Simpan draf</b>.') + '</div>'; return; }
+      ls.innerHTML = L.map(function (d) {
+        var s = ''; try { s = C.summary(d.data || {}); } catch (e) {}
+        return '<div class="kpdr-it' + (d.id === act ? ' act' : '') + '" data-id="' + esc(d.id) + '"><div class="t"><span style="flex:1;min-width:0;word-break:break-word">' + esc(d.name) + '</span>' +
+          (d.id === act ? '<span class="kpdr-tg a">Sedang dibuka</span>' : '') + (d.tpl ? '<span class="kpdr-tg">★ Template</span>' : '') + '</div>' +
+          (s ? '<div class="s">' + esc(s) + '</div>' : '') + (d.note ? '<div class="c">' + esc(d.note) + '</div>' : '') +
+          '<div class="m">Diubah ' + esc(when(d.updatedAt)) + '</div><div class="a">' +
+          (d.tpl ? '<button type="button" class="kpdr-b p" data-a="use"><span class="material-symbols-outlined">content_copy</span>Pakai template</button><button type="button" class="kpdr-b" data-a="open"><span class="material-symbols-outlined">edit</span>Ubah template</button>'
+            : '<button type="button" class="kpdr-b p" data-a="open"><span class="material-symbols-outlined">open_in_new</span>Buka</button><button type="button" class="kpdr-b" data-a="dup"><span class="material-symbols-outlined">content_copy</span>Duplikat</button>') +
+          '<button type="button" class="kpdr-b" data-a="edit"><span class="material-symbols-outlined">edit_note</span>Nama & catatan</button>' +
+          '<button type="button" class="kpdr-b d" data-a="del"><span class="material-symbols-outlined">delete</span>Hapus</button></div></div>';
+      }).join('');
+    }
+    ov.querySelector('.kpdr-q').addEventListener('input', function () { q = this.value.trim().toLowerCase(); paint(); });
+    ov.addEventListener('click', async function (e) {
+      if (e.target === ov || e.target.closest('[data-x]')) { close(); return; }
+      var t = e.target.closest('[data-t]');
+      if (t) { tab = t.getAttribute('data-t'); ov.querySelectorAll('.kpdr-tab').forEach(function (x) { x.classList.toggle('on', x === t); }); paint(); return; }
+      var b = e.target.closest('[data-a]'); if (!b) return;
+      var it = b.closest('[data-id]'), id = it && it.getAttribute('data-id'), d = findDraft(k, id); if (!d) return;
+      var a = b.getAttribute('data-a');
+      if (a === 'open') { close(); openDraft(k, id, false); }
+      else if (a === 'use') { close(); openDraft(k, id, true); }
+      else if (a === 'dup') {
+        var nd = JSON.parse(JSON.stringify(d)); nd.id = uid(); nd.name = d.name + ' (salinan)'; nd.tpl = false; nd.createdAt = nd.updatedAt = Date.now();
+        var L = store(k), i = L.indexOf(d); L.splice(i + 1, 0, nd); persist(true); renderBar(k); paint(); toast('Salinan "' + d.name + '" dibuat');
+      }
+      else if (a === 'edit') {
+        var res = await kpForm({ title: 'Nama & catatan', icon: 'edit_note', sub: C.title, ok: 'Simpan', fields: [
+          { key: 'name', label: 'Nama', required: true, value: d.name },
+          { key: 'note', label: 'Catatan', value: d.note || '' },
+          { key: 'tpl', label: 'Jenis', type: 'select', value: d.tpl ? 'tpl' : 'draf', options: [['draf', 'Draf / perencanaan'], ['tpl', '★ Template harga']] }
+        ] });
+        if (!res) return;
+        d.name = res.name; d.note = res.note || ''; d.tpl = res.tpl === 'tpl'; d.updatedAt = Date.now(); persist(true); renderBar(k); paint();
+      }
+      else if (a === 'del') {
+        if (!(await ask('Hapus "' + d.name + '"? Draf yang dihapus tidak bisa dikembalikan.', 'Hapus'))) return;
+        var L2 = store(k); L2.splice(L2.indexOf(d), 1);
+        if (activeId(k) === id) { activeId(k, ''); scratch(k, CALC[k].collect()); }
+        persist(true); renderBar(k); paint(); toast('"' + d.name + '" dihapus');
+      }
+    });
+    paint();
+  }
+
+  /* ---------- pasang ---------- */
+  function setup(k) {
+    var C = CALC[k], p = $(C.panel); if (!p || p.__kpdr) return;
+    p.__kpdr = true;
+    css();
+    try { defaults[k] = C.collect(); } catch (e) {}
+    p.addEventListener('input', function (e) { if (!e.target.closest('.kpdr-bar')) onEdit(k); }, true);
+    p.addEventListener('change', function (e) { if (!e.target.closest('.kpdr-bar')) onEdit(k); }, true);
+    p.addEventListener('click', function (e) {
+      if (e.target.closest('.kpdr-bar')) return;
+      if (e.target.closest('[onclick*="addCapExRow"],[onclick*="addOpExRow"],[onclick*="setHPPMode"],[onclick*="remove()"]')) setTimeout(function () { onEdit(k); }, 30);
+    }, true);
+    restore(k);
+  }
+  function restore(k) {
+    var id = activeId(k), d = id ? findDraft(k, id) : null;
+    if (id && !d) activeId(k, '');
+    if (d) load(k, d.data);
+    else { var s = scratch(k); if (s) load(k, s); }
+    renderBar(k);
+  }
+  function init() { setup('hpp'); setup('mu'); }
+  function wrapOpen() {
+    var f = window.openCalcSub;
+    if (typeof f !== 'function' || f.__kpdraft) return;
+    var w = function (subId) {
+      var r = f.apply(this, arguments);
+      try {
+        init();
+        if (subId === 'calc-sub-hpp') restoreIfIdle('hpp');
+        if (subId === 'calc-sub-modal-usaha') restoreIfIdle('mu');
+      } catch (e) { console.warn('kpdraft', e); }
+      return r;
+    };
+    for (var _k in f) w[_k] = f[_k];
+    w.__kpdraft = true; window.openCalcSub = w;
+  }
+  /* saat panel dibuka lagi: segarkan dari data terbaru (misalnya setelah sinkron dari perangkat lain) */
+  function restoreIfIdle(k) {
+    var id = activeId(k), d = id ? findDraft(k, id) : null;
+    if (d) { var cur = JSON.stringify(CALC[k].collect()); if (cur !== JSON.stringify(d.data)) load(k, d.data); }
+    renderBar(k);
+  }
+  function start() { try { init(); wrapOpen(); } catch (e) { console.warn('kpdraft', e); } }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(start, 600); });
+  else setTimeout(start, 600);
+  window.addEventListener('load', function () { setTimeout(start, 900); });
+})();
+  </script>
+  <script>
 /* Kontrol Keuanganku: pengganti tampilan bawaan browser (drop down, kalender, centang, penggeser, unggah file) */
 (function () {
   if (window.__kpui) return;
