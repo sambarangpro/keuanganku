@@ -2527,8 +2527,8 @@
     buy: { l: 'Lihat paket lisensi', i: 'shopping_cart', run: function () { window.open('/katalog#harga', '_blank', 'noopener'); } },
     guide: { l: 'Buka panduan lengkap', i: 'menu_book', run: function () { window.open('https://keuanganku.pro/poster-panduan-penggunaan.html', '_blank', 'noopener'); } },
     install: { l: 'Cara pasang di layar utama', i: 'install_mobile', run: function () { answer('instal'); } },
-    report: { l: 'Kirim laporan ke tim', i: 'support_agent', run: function () { openReport(); } },
-    check: { l: 'Jalankan cek otomatis', i: 'health_and_safety', run: function () { showDiag(true); } }
+    report: { l: 'Laporkan ke tim', i: 'support_agent', run: function () { openReport(); } },
+    check: { l: 'Cek akun saya', i: 'health_and_safety', run: function () { showDiag(); } }
   };
   function updateApp() {
     toast('Memeriksa versi terbaru...');
@@ -2825,89 +2825,88 @@
     return { info: info, issues: out, log: getLog() };
   }
 
-  /* ---------- tampilan ---------- */
-  var ov = null, chat = null;
+  /* ---------- tampilan (sederhana) ---------- */
+  var ov = null, chat = [], view = 'chat', lastArt = null;
   function css() {
     if ($('kphelp-css')) return;
     var s = document.createElement('style'); s.id = 'kphelp-css';
     s.textContent = [
-      '.kph-ov{position:fixed;inset:0;z-index:100005;background:rgba(15,23,42,.55);display:flex;align-items:flex-end;justify-content:center;opacity:0;transition:opacity .18s;font-family:inherit}',
+      '.kph-ov{position:fixed;inset:0;z-index:100005;background:rgba(15,23,42,.5);display:flex;align-items:flex-end;justify-content:center;opacity:0;transition:opacity .18s;font-family:inherit}',
       '.kph-ov.in{opacity:1}@media(min-width:700px){.kph-ov{align-items:center;padding:20px}}',
-      '.kph{width:100%;max-width:560px;height:92vh;height:92dvh;display:flex;flex-direction:column;background:#f8fafc;border-radius:22px 22px 0 0;overflow:hidden;box-shadow:0 -12px 40px rgba(0,0,0,.3);transform:translateY(30px);transition:transform .2s}',
-      '@media(min-width:700px){.kph{border-radius:22px;height:min(760px,90vh)}}.kph-ov.in .kph{transform:none}',
+      '.kph{width:100%;max-width:520px;height:88vh;height:88dvh;display:flex;flex-direction:column;background:#fff;border-radius:20px 20px 0 0;overflow:hidden;box-shadow:0 -10px 30px rgba(0,0,0,.25);transform:translateY(30px);transition:transform .2s}',
+      '@media(min-width:700px){.kph{border-radius:20px;height:min(680px,88vh)}}.kph-ov.in .kph{transform:none}',
       'html.dark .kph{background:#0f172a;color:#e2e8f0}',
-      '.kph-hd{display:flex;align-items:center;gap:12px;padding:14px 16px;background:linear-gradient(135deg,#0b1736,#1e3a8a 60%,#2563eb);color:#fff}',
-      '.kph-av{width:40px;height:40px;border-radius:14px;background:rgba(255,255,255,.16);display:grid;place-items:center;flex:none}.kph-av span{font-size:24px}',
-      '.kph-hd b{display:block;font-size:15.5px;font-weight:800}.kph-hd small{display:block;font-size:11.5px;color:#bfdbfe;font-weight:600}',
-      '.kph-x{margin-left:auto;border:0;background:rgba(255,255,255,.14);color:#fff;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;cursor:pointer}',
-      '.kph-tabs{display:flex;gap:6px;padding:10px 12px;background:#fff;border-bottom:1px solid #e2e8f0}html.dark .kph-tabs{background:#111827;border-color:#1f2937}',
-      '.kph-tab{flex:1;border:0;background:#f1f5f9;color:#475569;font-weight:800;font-size:12px;padding:8px 6px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px}',
-      '.kph-tab span{font-size:17px}.kph-tab.on{background:#2563eb;color:#fff}html.dark .kph-tab{background:#1e293b;color:#cbd5e1}html.dark .kph-tab.on{background:#2563eb;color:#fff}',
-      '.kph-tab .dot{min-width:16px;height:16px;border-radius:999px;background:#ef4444;color:#fff;font-size:10px;display:inline-grid;place-items:center;padding:0 4px}',
-      '.kph-bd{flex:1;overflow:auto;padding:14px 14px 8px;scroll-behavior:smooth}',
-      '.kph-m{max-width:88%;margin:0 0 10px;padding:10px 13px;border-radius:16px;font-size:13.5px;line-height:1.55;word-wrap:break-word}',
-      '.kph-m.b{background:#fff;border:1px solid #e2e8f0;border-top-left-radius:6px;color:#1e293b}html.dark .kph-m.b{background:#1e293b;border-color:#334155;color:#e2e8f0}',
-      '.kph-m.u{margin-left:auto;background:#2563eb;color:#fff;border-top-right-radius:6px}',
+      '.kph-hd{display:flex;align-items:center;gap:6px;padding:12px 12px 12px 16px;border-bottom:1px solid #e2e8f0}html.dark .kph-hd{border-color:#1e293b}',
+      '.kph-hd b{flex:1;font-size:15px;font-weight:800;color:#0f172a}html.dark .kph-hd b{color:#f1f5f9}',
+      '.kph-ib{position:relative;border:0;background:transparent;color:#64748b;width:36px;height:36px;border-radius:10px;display:grid;place-items:center;cursor:pointer}.kph-ib:hover{background:#f1f5f9}html.dark .kph-ib:hover{background:#1e293b}',
+      '.kph-ib i{position:absolute;top:4px;right:4px;min-width:15px;height:15px;border-radius:999px;background:#ef4444;color:#fff;font:800 9px/15px sans-serif;font-style:normal;text-align:center;padding:0 3px}',
+      '.kph-bd{flex:1;overflow:auto;padding:14px;background:#f8fafc}html.dark .kph-bd{background:#0b1220}',
+      '.kph-m{max-width:90%;margin:0 0 10px;padding:10px 12px;border-radius:14px;font-size:13.5px;line-height:1.55;word-wrap:break-word}',
+      '.kph-m.b{background:#fff;border:1px solid #e2e8f0;color:#1e293b}html.dark .kph-m.b{background:#1e293b;border-color:#334155;color:#e2e8f0}',
+      '.kph-m.u{margin-left:auto;background:#2563eb;color:#fff}',
       '.kph-m p{margin:0 0 6px}.kph-m p:last-child{margin:0}.kph-m ol,.kph-m ul{margin:4px 0 6px;padding-left:20px}.kph-m ol{list-style:decimal}.kph-m ul{list-style:disc}.kph-m li{margin:3px 0}',
-      '.kph-m h5{margin:0 0 6px;font-size:14px;font-weight:800;color:#1d4ed8}html.dark .kph-m h5{color:#93c5fd}',
-      '.kph-acts{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 2px}',
-      '.kph-a{display:inline-flex;align-items:center;gap:5px;border:1px solid #bfdbfe;background:#eff6ff;color:#1d4ed8;font-weight:800;font-size:12px;padding:7px 10px;border-radius:10px;cursor:pointer;text-align:left}',
-      '.kph-a span{font-size:16px}html.dark .kph-a{background:rgba(37,99,235,.15);border-color:#1e40af;color:#bfdbfe}',
-      '.kph-chips{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 12px}',
-      '.kph-c{border:1px solid #e2e8f0;background:#fff;color:#334155;border-radius:999px;padding:7px 12px;font-size:12.5px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px}',
-      '.kph-c span{font-size:16px;color:#2563eb}html.dark .kph-c{background:#1e293b;border-color:#334155;color:#e2e8f0}',
-      '.kph-fb{display:flex;gap:6px;margin-top:8px}.kph-fb button{flex:1;border:1px solid #e2e8f0;background:#f8fafc;border-radius:10px;padding:7px;font-weight:800;font-size:12px;cursor:pointer;color:#334155}',
-      'html.dark .kph-fb button{background:#0f172a;border-color:#334155;color:#e2e8f0}',
-      '.kph-in{display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));background:#fff;border-top:1px solid #e2e8f0}html.dark .kph-in{background:#111827;border-color:#1f2937}',
-      '.kph-in input{flex:1;min-width:0;border:1px solid #cbd5e1;border-radius:14px;padding:11px 13px;font-size:14px;outline:none;background:#fff;color:#0f172a}html.dark .kph-in input{background:#0f172a;border-color:#334155;color:#f1f5f9}',
-      '.kph-in button{border:0;background:#2563eb;color:#fff;border-radius:14px;width:46px;display:grid;place-items:center;cursor:pointer}',
-      '.kph-dg{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:12px;margin-bottom:10px}html.dark .kph-dg{background:#1e293b;border-color:#334155}',
-      '.kph-dg h6{margin:0 0 8px;font-size:13px;font-weight:800;display:flex;align-items:center;gap:6px}',
-      '.kph-is{border-radius:12px;padding:10px 11px;margin:6px 0;font-size:12.5px;line-height:1.45;border:1px solid}',
-      '.kph-is b{display:block;font-size:13px;margin-bottom:2px}',
-      '.kph-is.bad{background:#fef2f2;border-color:#fecaca;color:#7f1d1d}.kph-is.warn{background:#fffbeb;border-color:#fde68a;color:#78350f}.kph-is.info{background:#eff6ff;border-color:#bfdbfe;color:#1e3a8a}.kph-is.ok{background:#f0fdf4;border-color:#bbf7d0;color:#14532d}',
-      'html.dark .kph-is.bad{background:rgba(127,29,29,.25);color:#fecaca;border-color:#7f1d1d}html.dark .kph-is.warn{background:rgba(120,53,15,.25);color:#fde68a;border-color:#78350f}html.dark .kph-is.info{background:rgba(30,58,138,.3);color:#bfdbfe;border-color:#1e3a8a}html.dark .kph-is.ok{background:rgba(20,83,45,.3);color:#bbf7d0;border-color:#14532d}',
-      '.kph-kv{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:11.5px;color:#64748b;margin-top:8px}.kph-kv b{color:#0f172a;font-weight:700;word-break:break-all}html.dark .kph-kv b{color:#e2e8f0}',
-      '.kph-f label{display:block;font-size:12px;font-weight:800;color:#475569;margin:10px 0 4px}html.dark .kph-f label{color:#cbd5e1}',
-      '.kph-f .kpu-btn{width:100%;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:12px;padding:10px 12px;background:#fff;font-size:13.5px}html.dark .kph-f .kpu-btn{background:#0f172a;border-color:#334155;color:#f1f5f9}',
-      '.kph-f input:not([type=checkbox]),.kph-f select,.kph-f textarea{width:100%;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:12px;padding:10px 12px;font-size:13.5px;background:#fff;color:#0f172a;font-family:inherit;outline:none}',
-      'html.dark .kph-f input:not([type=checkbox]),html.dark .kph-f select,html.dark .kph-f textarea{background:#0f172a;border-color:#334155;color:#f1f5f9}',
-      '.kph-f textarea{min-height:110px;resize:vertical}',
-      '.kph-btn{width:100%;border:0;background:#2563eb;color:#fff;font-weight:800;font-size:14px;padding:12px;border-radius:14px;cursor:pointer;margin-top:12px}.kph-btn:disabled{opacity:.6}',
-      '.kph-btn.g{background:#e2e8f0;color:#334155}html.dark .kph-btn.g{background:#334155;color:#e2e8f0}',
+      '.kph-m h5{margin:0 0 6px;font-size:14px;font-weight:800}',
+      '.kph-acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}',
+      '.kph-a{display:inline-flex;align-items:center;gap:4px;border:1px solid #cbd5e1;background:#fff;color:#1d4ed8;font-weight:700;font-size:12px;padding:6px 10px;border-radius:999px;cursor:pointer}',
+      '.kph-a span{font-size:15px}html.dark .kph-a{background:#0f172a;border-color:#334155;color:#93c5fd}',
+      '.kph-chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}',
+      '.kph-c{border:1px solid #e2e8f0;background:#fff;color:#334155;border-radius:999px;padding:6px 11px;font-size:12.5px;font-weight:600;cursor:pointer}',
+      'html.dark .kph-c{background:#1e293b;border-color:#334155;color:#e2e8f0}',
+      '.kph-fb{display:flex;gap:14px;margin-top:8px;font-size:12px}.kph-fb button{border:0;background:none;padding:0;color:#64748b;font-weight:700;cursor:pointer;text-decoration:underline}',
+      '.kph-iss{margin:6px 0 0;padding:8px 10px;border-radius:10px;background:#fffbeb;color:#78350f;font-size:12.5px}.kph-iss.bad{background:#fef2f2;color:#7f1d1d}.kph-iss.info{background:#eff6ff;color:#1e3a8a}',
+      'html.dark .kph-iss{background:rgba(120,53,15,.3);color:#fde68a}html.dark .kph-iss.bad{background:rgba(127,29,29,.3);color:#fecaca}html.dark .kph-iss.info{background:rgba(30,58,138,.35);color:#bfdbfe}',
+      '.kph-iss b{display:block}',
+      '.kph-in{display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid #e2e8f0}html.dark .kph-in{border-color:#1e293b}',
+      '.kph-in input{flex:1;min-width:0;border:1px solid #cbd5e1;border-radius:999px;padding:10px 14px;font-size:14px;outline:none;background:#fff;color:#0f172a}html.dark .kph-in input{background:#1e293b;border-color:#334155;color:#f1f5f9}',
+      '.kph-in button{border:0;background:#2563eb;color:#fff;border-radius:999px;width:42px;height:42px;display:grid;place-items:center;cursor:pointer;flex:none}',
+      '.kph-f{font-size:13px}.kph-f label{display:block;font-weight:700;color:#475569;margin:12px 0 5px}html.dark .kph-f label{color:#cbd5e1}',
+      '.kph-f input,.kph-f textarea{width:100%;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:12px;padding:10px 12px;font-size:14px;background:#fff;color:#0f172a;font-family:inherit;outline:none}',
+      'html.dark .kph-f input,html.dark .kph-f textarea{background:#1e293b;border-color:#334155;color:#f1f5f9}.kph-f textarea{min-height:130px;resize:vertical}',
+      '.kph-btn{width:100%;border:0;background:#2563eb;color:#fff;font-weight:800;font-size:14px;padding:12px;border-radius:12px;cursor:pointer;margin-top:14px}.kph-btn:disabled{opacity:.6}',
+      '.kph-note{font-size:11.5px;color:#94a3b8;margin-top:8px;line-height:1.45}',
+      '.kph-err{margin-top:10px;padding:8px 10px;border-radius:10px;background:#fef2f2;color:#991b1b;font-size:12.5px;display:none}',
       '.kph-rp{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:11px 12px;margin-bottom:8px;font-size:12.5px}html.dark .kph-rp{background:#1e293b;border-color:#334155}',
-      '.kph-rp .h{display:flex;gap:6px;align-items:center;font-weight:800;font-size:13.5px}.kph-st{font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px;margin-left:auto;white-space:nowrap}',
-      '.kph-st.baru{background:#e0e7ff;color:#3730a3}.kph-st.proses{background:#fef3c7;color:#92400e}.kph-st.selesai{background:#dcfce7;color:#166534}.kph-st.antre{background:#f1f5f9;color:#475569}',
-      '.kph-rp .r{margin-top:8px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:8px 10px;color:#14532d;white-space:pre-wrap}html.dark .kph-rp .r{background:rgba(20,83,45,.3);border-color:#14532d;color:#bbf7d0}',
-      '.kph-mut{font-size:11px;color:#94a3b8;font-weight:600}',
+      '.kph-rp .h{display:flex;gap:8px;align-items:flex-start;font-weight:800;font-size:13.5px}.kph-st{font-size:10.5px;font-weight:800;margin-left:auto;white-space:nowrap;color:#64748b}.kph-st.selesai{color:#16a34a}.kph-st.proses{color:#d97706}',
+      '.kph-rp .r{margin-top:8px;background:#f0fdf4;border-radius:10px;padding:8px 10px;color:#14532d;white-space:pre-wrap}html.dark .kph-rp .r{background:rgba(20,83,45,.35);color:#bbf7d0}',
+      '.kph-mut{font-size:11px;color:#94a3b8}',
       '.kph-typing{display:inline-flex;gap:4px}.kph-typing i{width:6px;height:6px;border-radius:50%;background:#94a3b8;animation:kphb 1s infinite}.kph-typing i:nth-child(2){animation-delay:.15s}.kph-typing i:nth-child(3){animation-delay:.3s}',
-      '@keyframes kphb{0%,80%,100%{opacity:.3;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}',
-      '.kph-entry{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:18px;border:1px solid #bfdbfe;background:linear-gradient(135deg,#eff6ff,#fff);cursor:pointer;text-align:left;width:100%}',
-      'html.dark .kph-entry{background:linear-gradient(135deg,rgba(37,99,235,.18),#0f172a);border-color:#1e3a8a}',
-      '.kph-entry .i{width:42px;height:42px;border-radius:14px;background:#2563eb;color:#fff;display:grid;place-items:center;flex:none}',
-      '.kph-entry b{display:block;font-size:14.5px;font-weight:800;color:#0f172a}html.dark .kph-entry b{color:#f1f5f9}.kph-entry small{display:block;font-size:12px;color:#64748b;margin-top:2px;line-height:1.4}',
-      '.kph-link{display:inline-flex;align-items:center;gap:4px;border:0;background:transparent;color:inherit;font-weight:700;font-size:12px;cursor:pointer;text-decoration:underline;opacity:.9;padding:4px}'
+      '@keyframes kphb{0%,80%,100%{opacity:.3}40%{opacity:1}}',
+      '.kph-mini{display:inline-flex;align-items:center;gap:6px;border:1px solid #e2e8f0;background:transparent;color:#64748b;font-size:12.5px;font-weight:700;padding:8px 14px;border-radius:999px;cursor:pointer}',
+      '.kph-mini:hover{color:#2563eb;border-color:#bfdbfe}html.dark .kph-mini{border-color:#334155;color:#94a3b8}.kph-mini span{font-size:17px}',
+      '.kph-mini b{color:#dc2626;font-weight:800}',
+      '.kph-link{display:inline-flex;align-items:center;gap:4px;border:0;background:transparent;color:inherit;font-weight:600;font-size:12px;cursor:pointer;opacity:.9;padding:4px}'
     ].join('');
     document.head.appendChild(s);
   }
-  var tab = 'chat';
+  function header() {
+    var n = myReports().length, unread = myReports().filter(function (r) { return r.unread; }).length;
+    var hd = ov && ov.querySelector('.kph-hd'); if (!hd) return;
+    hd.innerHTML = (view !== 'chat' ? '<button type="button" class="kph-ib" data-go="chat" aria-label="Kembali"><span class="material-symbols-outlined">arrow_back</span></button>' : '') +
+      '<b>' + (view === 'form' ? 'Laporkan ke tim' : view === 'rep' ? 'Laporan saya' : 'Pusat Bantuan') + '</b>' +
+      (view === 'chat' && n ? '<button type="button" class="kph-ib" data-go="rep" aria-label="Laporan saya" title="Laporan saya"><span class="material-symbols-outlined">inbox</span>' + (unread ? '<i>' + unread + '</i>' : '') + '</button>' : '') +
+      '<button type="button" class="kph-ib" data-x="1" aria-label="Tutup"><span class="material-symbols-outlined">close</span></button>';
+  }
+  function go(v) {
+    view = v; header();
+    $('kph-in').style.display = v === 'chat' ? '' : 'none';
+    if (v === 'chat') renderChat(); else if (v === 'rep') showReports(); else openReport();
+  }
   function open(topic) {
     css(); wrapAlert();
-    if (ov) { if (topic) answer(topic); return; }
+    if (ov) { if (topic) answer(topic, true); return; }
     ov = document.createElement('div'); ov.className = 'kph-ov';
-    ov.innerHTML = '<div class="kph" role="dialog" aria-modal="true" aria-label="Pusat Bantuan"><div class="kph-hd"><div class="kph-av"><span class="material-symbols-outlined">support_agent</span></div><div><b>Pusat Bantuan</b><small>Asisten Keuanganku · menjawab otomatis 24 jam</small></div><button type="button" class="kph-x" aria-label="Tutup"><span class="material-symbols-outlined">close</span></button></div>' +
-      '<div class="kph-tabs"><button type="button" class="kph-tab on" data-tab="chat"><span class="material-symbols-outlined">forum</span>Tanya</button><button type="button" class="kph-tab" data-tab="diag"><span class="material-symbols-outlined">health_and_safety</span>Cek otomatis</button><button type="button" class="kph-tab" data-tab="rep"><span class="material-symbols-outlined">inbox</span>Laporan saya<span class="dot" id="kph-dot" style="display:none"></span></button></div>' +
-      '<div class="kph-bd" id="kph-bd"></div><div class="kph-in" id="kph-in"><input type="text" id="kph-q" placeholder="Ketik masalah Anda, misal: lupa PIN" autocomplete="off" enterkeyhint="send"><button type="button" id="kph-send" aria-label="Kirim"><span class="material-symbols-outlined">send</span></button></div></div>';
+    ov.innerHTML = '<div class="kph" role="dialog" aria-modal="true" aria-label="Pusat Bantuan"><div class="kph-hd"></div><div class="kph-bd" id="kph-bd"></div>' +
+      '<div class="kph-in" id="kph-in"><input type="text" id="kph-q" placeholder="Ketik kendala Anda..." autocomplete="off" enterkeyhint="send"><button type="button" id="kph-send" aria-label="Kirim"><span class="material-symbols-outlined">send</span></button></div></div>';
     document.body.appendChild(ov);
     requestAnimationFrame(function () { ov.classList.add('in'); });
     ov.addEventListener('click', onClick);
     $('kph-q').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); ask(); } });
     $('kph-send').addEventListener('click', ask);
     document.addEventListener('keydown', onKey, true);
-    chat = [];
-    renderChat(true);
-    if (topic) answer(topic);
-    refreshReports(true);
+    chat = []; view = 'chat'; header();
+    bot('<p>Halo' + (name() ? ' ' + esc(name()) : '') + '! Ada kendala apa? Ketik saja, atau pilih:</p>', chips());
+    if (topic) answer(topic, true); else renderChat();
+    refreshReports(true).then(header);
   }
   function onKey(e) { if (e.key === 'Escape' && ov && !document.querySelector('.kpd-ov')) { e.preventDefault(); close(); } }
   function close() {
@@ -2915,17 +2914,10 @@
     var o = ov; ov = null; o.classList.remove('in'); setTimeout(function () { o.remove(); }, 180);
     document.removeEventListener('keydown', onKey, true);
   }
-  function setTab(t) {
-    tab = t;
-    if (!ov) return;
-    ov.querySelectorAll('.kph-tab').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-tab') === t); });
-    $('kph-in').style.display = t === 'chat' ? '' : 'none';
-    if (t === 'chat') renderChat(false); else if (t === 'diag') showDiag(false); else showReports();
-  }
   function onClick(e) {
-    if (e.target === ov || e.target.closest('.kph-x')) { close(); return; }
+    if (e.target === ov || e.target.closest('[data-x]')) { close(); return; }
     var b;
-    if ((b = e.target.closest('[data-tab]'))) { setTab(b.getAttribute('data-tab')); return; }
+    if ((b = e.target.closest('[data-go]'))) { go(b.getAttribute('data-go')); return; }
     if ((b = e.target.closest('[data-act]'))) { var a = ACT[b.getAttribute('data-act')]; if (a) a.run(); return; }
     if ((b = e.target.closest('[data-art]'))) { answer(b.getAttribute('data-art'), true); return; }
     if ((b = e.target.closest('[data-cat]'))) { showCat(b.getAttribute('data-cat')); return; }
@@ -2935,18 +2927,13 @@
   /* ---------- obrolan ---------- */
   function bot(html, extra) { chat.push({ w: 'b', h: html, x: extra || '' }); }
   function user(txt) { chat.push({ w: 'u', h: esc(txt) }); }
-  function name() { var l = lic(), g = null; try { g = JSON.parse(ls('KEUANGANKU_GOOGLE_USER') || 'null'); } catch (e) {} var n = (g && (g.name || g.given_name)) || (l && l.buyerName) || ''; n = String(n).split(' ')[0]; return n && n.length < 20 ? n : ''; }
+  function name() { var g = null; try { g = JSON.parse(ls('KEUANGANKU_GOOGLE_USER') || 'null'); } catch (e) {} var n = String((g && (g.given_name || g.name)) || '').split(' ')[0]; return n.length < 20 ? n : ''; }
   function chips() {
-    return '<div class="kph-chips">' + CATS.map(function (c) { return '<button type="button" class="kph-c" data-cat="' + c[0] + '"><span class="material-symbols-outlined">' + c[2] + '</span>' + c[1] + '</button>'; }).join('') +
-      '<button type="button" class="kph-c" data-act="check"><span class="material-symbols-outlined">health_and_safety</span>Cek akun saya</button></div>';
+    return '<div class="kph-chips">' + CATS.map(function (c) { return '<button type="button" class="kph-c" data-cat="' + c[0] + '">' + c[1] + '</button>'; }).join('') +
+      '<button type="button" class="kph-c" data-act="check">Cek akun saya</button></div>';
   }
-  function renderChat(first) {
-    if (tab !== 'chat' || !ov) return;
-    if (first && !chat.length) {
-      var n = name(), d = diagnose(), top = d.issues.filter(function (x) { return x.s !== 'info'; });
-      bot('<p>Assalamu\'alaikum' + (n ? ' ' + esc(n) : '') + '! 👋 Saya asisten Keuanganku. Ceritakan kendalanya, atau pilih topik di bawah.</p>' +
-        (top.length ? '<p>Saya juga melihat <b>' + top.length + ' hal</b> di akun ini yang mungkin perlu dicek. <button type="button" class="kph-link" data-tab="diag">Lihat hasil cek otomatis</button></p>' : ''), chips());
-    }
+  function renderChat() {
+    if (view !== 'chat' || !ov) return;
     var bd = $('kph-bd');
     bd.innerHTML = chat.map(function (m) { return '<div class="kph-m ' + m.w + '">' + m.h + '</div>' + (m.x || ''); }).join('');
     bd.scrollTop = bd.scrollHeight;
@@ -2957,85 +2944,60 @@
     return '<div class="kph-acts">' + ids.map(function (id) { return '<button type="button" class="kph-a" data-act="' + id + '"><span class="material-symbols-outlined">' + ACT[id].i + '</span>' + esc(ACT[id].l) + '</button>'; }).join('') + '</div>';
   }
   function findArt(id) { for (var i = 0; i < KB.length; i++) if (KB[i].id === id) return KB[i]; return null; }
-  var lastQ = '', alts = [];
   function answer(id, fromClick) {
     var a = findArt(id); if (!a) return;
-    if (tab !== 'chat') setTab('chat');
+    if (view !== 'chat') go('chat');
     if (fromClick) user(a.t);
+    lastArt = a;
     bot('<h5>' + esc(a.t) + '</h5>' + a.a + actsHtml(a.act) +
-      '<div class="kph-fb"><button type="button" data-fb="ok" data-id="' + a.id + '">👍 Sudah beres</button><button type="button" data-fb="no" data-id="' + a.id + '">Belum, masih ada kendala</button></div>');
-    renderChat(false);
-    track(a.id);
+      '<div class="kph-fb"><button type="button" data-fb="ok" data-id="' + a.id + '">Sudah beres</button><button type="button" data-fb="no" data-id="' + a.id + '">Masih bermasalah</button></div>');
+    renderChat(); track(a.id);
   }
   function typing(cb) {
     var bd = $('kph-bd'); if (!bd) return cb();
     var t = document.createElement('div'); t.className = 'kph-m b'; t.innerHTML = '<span class="kph-typing"><i></i><i></i><i></i></span>';
     bd.appendChild(t); bd.scrollTop = bd.scrollHeight;
-    setTimeout(function () { t.remove(); cb(); }, 450);
+    setTimeout(function () { t.remove(); cb(); }, 400);
   }
   function ask() {
     var inp = $('kph-q'), q = (inp.value || '').trim(); if (!q) return;
-    inp.value = ''; user(q); renderChat(false); lastQ = q;
+    inp.value = ''; user(q); renderChat();
     typing(function () {
       var r = search(q);
-      if (/^(halo|hai|hi|assalamu|selamat|pagi|siang|sore|malam|p)\b/i.test(q) && (!r.length || r[0].s < 6)) {
-        bot('<p>Wa\'alaikumussalam / halo! 😊 Silakan ceritakan kendalanya, misalnya "data tidak sinkron" atau "lupa PIN".</p>', chips()); renderChat(false); return;
-      }
-      if (/^(terima ?kasih|makasih|thanks|tq|oke|ok|sip|mantap)\b/i.test(q) && (!r.length || r[0].s < 6)) {
-        bot('<p>Sama-sama! Semoga lancar. Kalau ada kendala lain, tanya saja kapan pun.</p>'); renderChat(false); return;
-      }
-      if (!r.length) {
-        bot('<p>Maaf, saya belum menemukan jawaban yang pas untuk itu. Coba pilih topik terdekat, atau jalankan cek otomatis:</p>', chips() + '<div class="kph-acts" style="margin-bottom:10px">' + actsHtml(['check', 'report']).replace('<div class="kph-acts">', '').replace(/<\/div>$/, '') + '</div>');
-        renderChat(false); track('-:' + q.slice(0, 60)); return;
-      }
-      alts = r.slice(1, 4).map(function (x) { return x.a.id; });
+      if (/^(halo|hai|hi|assalamu|selamat|pagi|siang|sore|malam|p)\b/i.test(q) && (!r.length || r[0].s < 6)) { bot('<p>Halo! Silakan ceritakan kendalanya, misalnya "lupa PIN" atau "data tidak sinkron".</p>'); renderChat(); return; }
+      if (/^(terima ?kasih|makasih|thanks|tq|oke|ok|sip|mantap)\b/i.test(q) && (!r.length || r[0].s < 6)) { bot('<p>Sama-sama! 😊</p>'); renderChat(); return; }
+      if (!r.length) { bot('<p>Maaf, saya belum paham. Coba pilih topik terdekat:</p>', chips() + actsHtml(['report'])); renderChat(); track('-:' + q.slice(0, 60)); return; }
       answer(r[0].a.id, false);
-      if (r.length > 1 && r[1].s >= r[0].s * 0.6) {
-        bot('<p>Mungkin juga terkait:</p>', '<div class="kph-chips">' + r.slice(1, 4).map(function (x) { return '<button type="button" class="kph-c" data-art="' + x.a.id + '">' + esc(x.a.t) + '</button>'; }).join('') + '</div>');
-        renderChat(false);
-      }
+      if (r.length > 1 && r[1].s >= r[0].s * 0.6) { bot('<p>Atau mungkin:</p>', '<div class="kph-chips">' + r.slice(1, 3).map(function (x) { return '<button type="button" class="kph-c" data-art="' + x.a.id + '">' + esc(x.a.t) + '</button>'; }).join('') + '</div>'); renderChat(); }
     });
   }
   function showCat(c) {
     var cat = CATS.filter(function (x) { return x[0] === c; })[0]; if (!cat) return;
     user(cat[1]);
-    var list = KB.filter(function (a) { return a.c === c; });
-    bot('<p>Pilih yang paling sesuai:</p>', '<div class="kph-chips">' + list.map(function (a) { return '<button type="button" class="kph-c" data-art="' + a.id + '">' + esc(a.t) + '</button>'; }).join('') + '</div>');
-    renderChat(false);
+    bot('<p>Pilih yang paling sesuai:</p>', '<div class="kph-chips">' + KB.filter(function (a) { return a.c === c; }).map(function (a) { return '<button type="button" class="kph-c" data-art="' + a.id + '">' + esc(a.t) + '</button>'; }).join('') + '</div>');
+    renderChat();
   }
   function feedback(v, id) {
-    if (v === 'ok') { user('Sudah beres 👍'); bot('<p>Alhamdulillah! Senang bisa membantu. 😊</p>'); track('ok:' + id); renderChat(false); return; }
-    user('Belum, masih ada kendala');
-    var a = findArt(id), others = alts.filter(function (x) { return x !== id; });
-    var html = '<p>Baik. Sebelum lapor ke tim, coba dua langkah cepat ini:</p><ol><li>Perbarui aplikasi ke versi terbaru.</li><li>Jalankan cek otomatis untuk melihat kondisi akun Anda.</li></ol><p>Jika tetap belum beres, kirim laporan. Data diagnosa ikut terlampir otomatis, jadi Anda tidak perlu menjelaskan teknisnya.</p>';
-    bot(html, actsHtml(['update', 'check', 'report']) + (others.length ? '<div class="kph-chips">' + others.map(function (x) { var o = findArt(x); return o ? '<button type="button" class="kph-c" data-art="' + o.id + '">' + esc(o.t) + '</button>' : ''; }).join('') + '</div>' : ''));
-    track('no:' + id);
-    renderChat(false);
-    window.__kphReportCat = a ? a.c : '';
-    window.__kphReportArt = a ? a.t : '';
+    if (v === 'ok') { user('Sudah beres'); bot('<p>Alhamdulillah! 😊</p>'); track('ok:' + id); renderChat(); return; }
+    user('Masih bermasalah'); lastArt = findArt(id) || lastArt;
+    bot('<p>Coba perbarui aplikasi dulu. Kalau tetap bermasalah, laporkan ke tim. Kami akan membalas di sini.</p>' + actsHtml(['update', 'report']));
+    track('no:' + id); renderChat();
   }
   function track(k) { try { var s = JSON.parse(localStorage.getItem('KP_HELP_STATS') || '{}'); s[k] = (s[k] || 0) + 1; localStorage.setItem('KP_HELP_STATS', JSON.stringify(s)); } catch (e) {} }
 
-  /* ---------- cek otomatis ---------- */
-  function showDiag(fromChat) {
-    if (tab !== 'diag') { tab = 'diag'; if (ov) { ov.querySelectorAll('.kph-tab').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-tab') === 'diag'); }); $('kph-in').style.display = 'none'; } }
-    var d = diagnose(), I = d.info, bd = $('kph-bd'); if (!bd) return;
-    var issues = d.issues;
-    var html = '<div class="kph-dg"><h6><span class="material-symbols-outlined" style="color:#2563eb">health_and_safety</span>Hasil cek otomatis</h6>';
-    if (!issues.length) html += '<div class="kph-is ok"><b>Semua terlihat normal ✓</b>Lisensi, koneksi, dan sinkron tidak bermasalah.</div>';
-    issues.forEach(function (x) {
-      html += '<div class="kph-is ' + x.s + '"><b>' + esc(x.t) + '</b>' + esc(x.d) + (x.art ? '<div class="kph-acts"><button type="button" class="kph-a" data-art="' + x.art + '"><span class="material-symbols-outlined">lightbulb</span>Lihat solusinya</button></div>' : '') + actsHtml(x.a) + '</div>';
+  /* ---------- cek akun (jawaban bot) ---------- */
+  function showDiag() {
+    if (view !== 'chat') go('chat');
+    user('Cek akun saya');
+    var d = diagnose(), L = d.issues.filter(function (x) { return x.s !== 'info'; }), info = d.issues.filter(function (x) { return x.s === 'info'; }).slice(0, 2);
+    var all = L.concat(info);
+    var h = !L.length ? '<p><b>Semua normal ✓</b> Lisensi, koneksi, dan sinkron tidak bermasalah.</p>' : '<p>Saya menemukan <b>' + L.length + ' hal</b> yang perlu dicek:</p>';
+    if (!L.length && info.length) h += '<p>Saran tambahan:</p>';
+    all.forEach(function (x) {
+      h += '<div class="kph-iss ' + x.s + '"><b>' + esc(x.t) + '</b>' + esc(x.d) + (x.art ? '<div class="kph-acts"><button type="button" class="kph-a" data-art="' + x.art + '">Lihat solusinya</button></div>' : '') + actsHtml(x.a) + '</div>';
     });
-    html += '</div><div class="kph-dg"><h6><span class="material-symbols-outlined" style="color:#64748b">info</span>Data perangkat ini</h6><div class="kph-kv">' +
-      kv('Versi aplikasi', I.versi) + kv('Perangkat', I.perangkat) + kv('Internet', I.online ? 'Terhubung' : 'Offline') + kv('Status', I.lisensi) +
-      (I.ujiCobaSisaHari !== null ? kv('Sisa uji coba', I.ujiCobaSisaHari + ' hari') : '') + kv('Email', I.email) + kv('Google Drive', I.google && I.driveDb ? 'Terhubung' : 'Belum') +
-      kv('Sinkron', ({ synced: 'Tersinkron', syncing: 'Sedang sinkron', error: 'Gagal, perlu dicoba lagi', off: 'Nonaktif', unknown: '-' })[I.sinkron]) +
-      kv('Dipasang di layar utama', I.terpasang ? 'Ya' : 'Belum') + kv('Jumlah transaksi', I.jumlahTransaksi) + '</div>' +
-      '<p class="kph-mut" style="margin:10px 0 0">Data ini tidak berisi nominal atau isi transaksi Anda.</p></div>' +
-      '<div class="kph-acts">' + actsHtml(['update', 'report']).replace('<div class="kph-acts">', '').replace(/<\/div>$/, '') + '</div>';
-    bd.innerHTML = html; bd.scrollTop = 0;
+    bot(h); renderChat();
   }
-  function kv(k, v) { return '<span>' + esc(k) + '</span><b>' + esc(v == null || v === '' ? '-' : v) + '</b>'; }
 
   /* ---------- laporan ---------- */
   function myReports() { try { return JSON.parse(localStorage.getItem('KP_HELP_REPORTS') || '[]'); } catch (e) { return []; } }
@@ -3049,56 +3011,49 @@
       return await r.json();
     } finally { clearTimeout(to); }
   }
-  var CATNAME = { masuk: 'Masuk & PIN', lisensi: 'Lisensi & Pembayaran', perangkat: 'Perangkat', data: 'Sinkron & Data', aplikasi: 'Instal & Tampilan', fitur: 'Cara pakai fitur', lain: 'Lainnya' };
+  var CATNAME = { masuk: 'Masuk & PIN', lisensi: 'Lisensi & Pembayaran', perangkat: 'Perangkat', data: 'Sinkron & Data', aplikasi: 'Instal & Tampilan', fitur: 'Cara pakai fitur' };
   function openReport() {
     if (!ov) open();
-    tab = 'rep'; ov.querySelectorAll('.kph-tab').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-tab') === 'rep'); }); $('kph-in').style.display = 'none';
+    if (view !== 'form') { view = 'form'; header(); $('kph-in').style.display = 'none'; }
     var l = lic() || {}, g = null; try { g = JSON.parse(ls('KEUANGANKU_GOOGLE_USER') || 'null'); } catch (e) {}
     var em = l.email || (g && g.email) || '';
-    var cat = window.__kphReportCat || '';
-    var bd = $('kph-bd');
-    bd.innerHTML = '<div class="kph-dg kph-f"><h6><span class="material-symbols-outlined" style="color:#2563eb">support_agent</span>Kirim laporan ke tim</h6>' +
-      '<p class="kph-mut" style="margin:0">Laporan masuk ke tim Keuanganku. Balasan muncul di tab <b>Laporan saya</b> (cek berkala).</p>' +
-      '<label for="kph-r-cat">Topik</label><select id="kph-r-cat">' + Object.keys(CATNAME).map(function (k) { return '<option value="' + k + '"' + (k === cat ? ' selected' : '') + '>' + CATNAME[k] + '</option>'; }).join('') + '</select>' +
-      '<label for="kph-r-sub">Judul singkat</label><input id="kph-r-sub" maxlength="100" placeholder="Contoh: Sudah bayar paket Keluarga, lisensi belum aktif" value="' + esc(window.__kphReportArt || '') + '">' +
-      '<label for="kph-r-msg">Ceritakan kendalanya</label><textarea id="kph-r-msg" maxlength="2000" placeholder="Apa yang Anda lakukan, apa yang muncul, sejak kapan. Untuk pembayaran: nama pembeli, paket, dan waktu bayar."></textarea>' +
+    $('kph-bd').innerHTML = '<div class="kph-f"><label for="kph-r-msg" style="margin-top:0">Ceritakan kendalanya</label>' +
+      '<textarea id="kph-r-msg" maxlength="2000" placeholder="' + esc(lastArt ? 'Tentang: ' + lastArt.t + '. Apa yang terjadi?' : 'Apa yang terjadi? Untuk pembayaran, sertakan nama pembeli, paket, dan waktu bayar.') + '"></textarea>' +
       '<label for="kph-r-em">Email untuk balasan</label><input id="kph-r-em" type="email" maxlength="120" placeholder="nama@gmail.com" value="' + esc(em) + '">' +
-      '<label style="display:flex;gap:8px;align-items:flex-start;font-weight:600;margin-top:12px"><input type="checkbox" id="kph-r-dg" checked style="margin-top:2px;flex:none"> <span>Sertakan data diagnosa (versi, status lisensi & sinkron, perangkat, pesan galat terakhir). Tanpa nominal atau isi transaksi.</span></label>' +
-      '<div id="kph-r-err" class="kph-is bad" style="display:none"></div>' +
-      '<button type="button" class="kph-btn" id="kph-r-send">Kirim laporan</button><button type="button" class="kph-btn g" data-tab="rep">Batal</button></div>';
-    bd.scrollTop = 0;
+      '<div class="kph-err" id="kph-r-err"></div><button type="button" class="kph-btn" id="kph-r-send">Kirim</button>' +
+      '<p class="kph-note">Info perangkat (versi, status lisensi & sinkron) ikut terkirim agar tim cepat membantu. Tanpa nominal atau isi transaksi.</p></div>';
     $('kph-r-send').onclick = sendReport;
+    setTimeout(function () { try { $('kph-r-msg').focus(); } catch (e) {} }, 100);
   }
   async function sendReport() {
-    var cat = $('kph-r-cat').value, sub = $('kph-r-sub').value.trim(), msg = $('kph-r-msg').value.trim(), em = $('kph-r-em').value.trim(), withDg = $('kph-r-dg').checked;
-    var err = $('kph-r-err');
+    var msg = $('kph-r-msg').value.trim(), em = $('kph-r-em').value.trim(), err = $('kph-r-err');
     function fail(t) { err.textContent = t; err.style.display = 'block'; }
-    if (sub.length < 5) return fail('Isi judul singkat (minimal 5 huruf).');
-    if (msg.length < 15) return fail('Ceritakan kendalanya sedikit lebih jelas (minimal 15 huruf).');
+    if (msg.length < 15) return fail('Ceritakan sedikit lebih jelas (minimal 15 huruf).');
     if (em && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) return fail('Format email belum benar.');
     err.style.display = 'none';
     var btn = $('kph-r-send'); btn.disabled = true; btn.textContent = 'Mengirim...';
-    var l = lic() || {}, d = withDg ? diagnose() : null;
+    var l = lic() || {}, d = diagnose();
+    var sub = lastArt ? lastArt.t : (msg.split(/[.\n!?]/)[0] || msg).slice(0, 80);
+    var cat = lastArt ? (CATNAME[lastArt.c] || 'Lainnya') : 'Lainnya';
     var payload = {
-      action: 'submit_report', category: CATNAME[cat] || cat, subject: sub, message: msg, email: em,
+      action: 'submit_report', category: cat, subject: sub, message: msg, email: em,
       deviceId: ls('KEUANGANKU_DEVICE_ID') || '', token: l.token || '',
-      diag: d ? JSON.stringify({ info: d.info, issues: d.issues.map(function (x) { return x.t; }), log: d.log.slice(-8), ua: navigator.userAgent.slice(0, 180), url: location.pathname }) : ''
+      diag: JSON.stringify({ info: d.info, issues: d.issues.map(function (x) { return x.t; }), log: d.log.slice(-8), ua: navigator.userAgent.slice(0, 180) })
     };
-    var rec = { id: '', key: '', subject: sub, category: CATNAME[cat], createdAt: Date.now(), status: 'antre', reply: '' };
+    var rec = { id: '', key: '', subject: sub, category: cat, createdAt: Date.now(), status: 'antre', reply: '' };
+    var ok = false;
     try {
       var res = await post(payload);
       if (!res || !res.success) throw new Error((res && res.message) || 'Gagal');
-      rec.id = res.reportId; rec.key = res.reportKey; rec.status = 'baru';
-      var L = myReports(); L.unshift(rec); saveReports(L);
-      toast('✓ Laporan terkirim. Nomor: ' + rec.id);
-      window.__kphReportCat = ''; window.__kphReportArt = '';
-      showReports('<div class="kph-is ok"><b>Laporan terkirim ✓</b>Nomor laporan <b style="display:inline">' + esc(rec.id) + '</b>. Balasan akan muncul di sini' + (em ? ' dan dikirim ke ' + esc(em) : '') + '.</div>');
-    } catch (e) {
-      /* simpan dulu, kirim otomatis saat online */
-      rec.payload = payload; rec.status = 'antre';
-      var L2 = myReports(); L2.unshift(rec); saveReports(L2);
-      showReports('<div class="kph-is warn"><b>Laporan disimpan di perangkat</b>Belum bisa terkirim sekarang (' + esc(navigator.onLine === false ? 'offline' : (e.message || 'server sibuk')) + '). Akan dikirim otomatis saat Pusat Bantuan dibuka lagi dengan internet.</div>');
-    }
+      rec.id = res.reportId; rec.key = res.reportKey; rec.status = 'baru'; ok = true;
+    } catch (e) { rec.payload = payload; }
+    var L = myReports(); L.unshift(rec); saveReports(L);
+    lastArt = null;
+    view = 'chat'; header(); $('kph-in').style.display = '';
+    user('Laporan dikirim');
+    bot(ok ? '<p><b>Laporan terkirim ✓</b> (No. ' + esc(rec.id) + ')</p><p>Tim akan membalas di sini' + (em ? ' dan ke ' + esc(em) : '') + '. Lihat lewat ikon kotak masuk di atas.</p>'
+      : '<p>Laporan disimpan dulu karena belum ada koneksi. Akan terkirim otomatis saat online.</p>');
+    renderChat();
   }
   async function flushQueue() {
     var L = myReports(), changed = false;
@@ -3124,55 +3079,47 @@
       }
     } catch (e) {}
     badge();
-    if (!silent && tab === 'rep' && ov) showReports();
+    if (ov && view === 'rep') showReports();
   }
   function badge() {
-    var n = myReports().filter(function (r) { return r.unread; }).length, d = $('kph-dot');
-    if (d) { d.textContent = n; d.style.display = n ? '' : 'none'; }
-    var e = document.querySelectorAll('.kph-entry-dot'); e.forEach(function (x) { x.textContent = n ? n + ' balasan baru' : ''; x.style.display = n ? '' : 'none'; });
+    var n = myReports().filter(function (r) { return r.unread; }).length;
+    document.querySelectorAll('.kph-badge').forEach(function (x) { x.textContent = n ? ' · ' + n + ' balasan baru' : ''; });
+    if (ov && view === 'chat') header();
   }
-  function renderReportList(top) {
+  function showReports() {
     var bd = $('kph-bd'); if (!bd) return;
-    var L = myReports();
-    var html = (top || '') + '<button type="button" class="kph-btn" data-act="report" style="margin:0 0 12px"><span class="material-symbols-outlined" style="vertical-align:-4px;font-size:18px">add</span> Buat laporan baru</button>';
-    if (!L.length) html += '<div class="kph-dg" style="text-align:center;color:#64748b;font-size:13px">Belum ada laporan.<br>Sebagian besar kendala bisa selesai lewat tab <b>Tanya</b> dan <b>Cek otomatis</b>.</div>';
+    var L = myReports(), html = '';
+    if (!L.length) html = '<p class="kph-mut" style="text-align:center;padding:30px 0">Belum ada laporan.</p>';
     L.forEach(function (r) {
-      var st = r.status || 'baru', lab = { baru: 'Terkirim', proses: 'Sedang ditangani', selesai: 'Selesai', antre: 'Menunggu internet' }[st] || st;
+      var st = r.status || 'baru', lab = { baru: 'Terkirim', proses: 'Diproses', selesai: 'Selesai', antre: 'Menunggu internet' }[st] || st;
       html += '<div class="kph-rp"><div class="h"><span style="min-width:0;word-break:break-word">' + esc(r.subject) + '</span><span class="kph-st ' + esc(st) + '">' + esc(lab) + '</span></div>' +
-        '<div class="kph-mut" style="margin-top:3px">' + esc(r.category || '') + (r.id ? ' · No. ' + esc(r.id) : '') + ' · ' + esc(when(r.createdAt)) + '</div>' +
-        (r.reply ? '<div class="r"><b>Balasan tim' + (r.repliedAt ? ' · ' + esc(when(r.repliedAt)) : '') + ':</b>\n' + esc(r.reply) + '</div>' : '') + '</div>';
+        '<div class="kph-mut" style="margin-top:3px">' + (r.id ? 'No. ' + esc(r.id) + ' · ' : '') + esc(when(r.createdAt)) + '</div>' +
+        (r.reply ? '<div class="r"><b>Balasan tim:</b>\n' + esc(r.reply) + '</div>' : '') + '</div>';
       r.unread = false;
     });
     saveReports(L); badge();
-    var y = bd.scrollTop; bd.innerHTML = html; bd.scrollTop = top ? 0 : y;
-  }
-  function showReports(top) {
-    renderReportList(top);
-    refreshReports(true).then(function () { if (tab === 'rep' && ov && !$('kph-r-msg')) renderReportList(top); });
+    bd.innerHTML = html; bd.scrollTop = 0;
   }
 
   /* ---------- titik masuk ---------- */
-  function entryHtml() {
-    return '<button type="button" class="kph-entry" onclick="kpHelpOpen()"><span class="i"><span class="material-symbols-outlined">support_agent</span></span><span style="flex:1;min-width:0"><b>Pusat Bantuan</b><small>Ada kendala? Tanya asisten otomatis, cek kondisi akun, atau kirim laporan ke tim.</small><small class="kph-entry-dot" style="display:none;color:#dc2626;font-weight:800"></small></span><span class="material-symbols-outlined" style="color:#94a3b8">chevron_right</span></button>';
-  }
   function mount() {
     css();
     var host = $('setup-unlocked-content');
     if (host && !$('kph-setup-entry')) {
-      var w = document.createElement('div'); w.id = 'kph-setup-entry'; w.style.maxWidth = '980px'; w.style.margin = '0 auto'; w.style.width = '100%';
-      w.innerHTML = entryHtml();
-      host.insertBefore(w, host.firstChild);
+      var w = document.createElement('div'); w.id = 'kph-setup-entry'; w.style.textAlign = 'center'; w.style.padding = '8px 0 4px';
+      w.innerHTML = '<button type="button" class="kph-mini" onclick="kpHelpOpen()"><span class="material-symbols-outlined">help</span>Pusat Bantuan<b class="kph-badge"></b></button>';
+      host.appendChild(w);
     }
     var lock = $('setup-lock-card');
     if (lock && !$('kph-lock-link')) {
       var p = document.createElement('div'); p.id = 'kph-lock-link'; p.style.textAlign = 'center';
-      p.innerHTML = '<button type="button" class="kph-link" style="color:#2563eb" onclick="kpHelpOpen(\'lupa-pin\')"><span class="material-symbols-outlined" style="font-size:16px">help</span>Lupa PIN atau ada kendala? Buka Pusat Bantuan</button>';
+      p.innerHTML = '<button type="button" class="kph-link" style="color:#2563eb" onclick="kpHelpOpen(\'lupa-pin\')">Lupa PIN? Buka Pusat Bantuan</button>';
       lock.appendChild(p);
     }
     var bp = $('bumper-pin-section');
     if (bp && !$('kph-splash-link')) {
       var s = document.createElement('div'); s.id = 'kph-splash-link'; s.style.textAlign = 'center'; s.style.marginTop = '6px';
-      s.innerHTML = '<button type="button" class="kph-link" style="color:#bfdbfe" onclick="kpHelpOpen()"><span class="material-symbols-outlined" style="font-size:16px">help</span>Butuh bantuan? Lupa PIN?</button>';
+      s.innerHTML = '<button type="button" class="kph-link" style="color:#bfdbfe" onclick="kpHelpOpen()">Butuh bantuan?</button>';
       bp.appendChild(s);
     }
     badge();
